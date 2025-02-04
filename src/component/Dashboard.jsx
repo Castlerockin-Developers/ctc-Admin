@@ -1,0 +1,168 @@
+import React, { useEffect, useState } from "react";
+import closeicon from '../assets/close.png';
+import { motion } from "motion/react";
+import EditExam from "./EditExam";
+
+const Dashboard = () => {
+    const [dashboardData, setDashboardData] = useState(null);
+    const [showPopup, setShowPopup] = useState(false);
+    const [showEditPopup, setShowEditPopup] = useState(false);
+    const [selectedExam, setSelectedExam] = useState(null);
+    const [testDetails, setTestDetails] = useState([]);
+
+    const togglePopup = () => setShowPopup(!showPopup);
+
+    const openEditPopup = (exam) => {
+        setSelectedExam(exam);
+        setShowEditPopup(true);
+    };
+    const closeEditPopup = () => setShowEditPopup(false);
+
+    useEffect(() => {
+        setTimeout(() => {
+            setDashboardData({
+                activeContest: 15,
+                liveContest: 2,
+                averageScore: 90,
+                totalStudents: 572
+            });
+
+            // Sample test details
+            setTestDetails([
+                { id: 1, name: "Math Test", startTime: "10:00 AM", endTime: "11:00 AM" },
+                { id: 2, name: "Science Quiz", startTime: "12:00 PM", endTime: "1:00 PM" },
+                { id: 3, name: "History Exam", startTime: "2:00 PM", endTime: "3:30 PM" }
+            ]);
+        }, 1000);
+    }, []);
+
+    if (!dashboardData) {
+        return <p className="text-center text-lg">Loading data...</p>;
+    }
+
+    return (
+        <div className="lg:w-3xl justify-center flex flex-wrap dashboard">
+            <div className="greeting">
+                <h1>Welcome Admin</h1>
+                <div className="grid grid-cols-2 lg:grid-cols-4 md:grid-cols-4 gap-4 w-full">
+                    <motion.div whileTap={{ scale: 1.1 }} className="top-display top-display-clickable" onClick={togglePopup}>
+                        <h4 className="xl:text-2xl lg:text-2xl md:text-xl">Active Test</h4>
+                        <h2 className="xl:text-4xl lg:text-4xl md:text-4xl flex justify-center">
+                            {dashboardData.activeContest}
+                        </h2>
+                    </motion.div>
+
+                    {/* Popup Modal */}
+                    {showPopup && (
+                        <div className="fixed inset-0 flex items-center justify-center top-display-pop">
+                            <div className="top-display-pop-card rounded-sm shadow-lg w-3/4 md:w-1/2">
+                                <div className="flex justify-between items-center mb-4 top-display-pop-title">
+                                    <h2 className="font-semibold text-center">Active Exams</h2>
+                                    <motion.button whileTap={{ scale: 1.2 }} className="text-red-500 text-lg" onClick={togglePopup}><img src={closeicon} alt="" /></motion.button>
+                                </div>
+
+                                {/* Table */}
+                                <div className="flex justify-center rounded-sm">
+                                    <table className="pop-up-table">
+                                        <thead>
+                                            <tr className="bg-gray-200">
+                                                <th className="">#</th>
+                                                <th className="">Name</th>
+                                                <th className="">Start Time</th>
+                                                <th className="">End Time</th>
+                                                <th className=""></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {testDetails.length > 0 ? (
+                                                testDetails.map((test, index) => (
+                                                    <tr key={test.id}>
+                                                        <td>{index + 1}</td>
+                                                        <td>{test.name}</td>
+                                                        <td>{test.startTime}</td>
+                                                        <td>{test.endTime}</td>
+                                                        <td><motion.button whileTap={{ scale: 1.1 }} className="viewexam-btn-pop" onClick={() => openEditPopup(test)}>View</motion.button></td>
+                                                    </tr>
+                                                ))
+                                            ) : (
+                                                <tr>
+                                                    <td colSpan="4" className="text-center">No tests available</td>
+                                                </tr>
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                    <div className="top-display">
+                        <h4 className="xl:text-2xl lg:text-2xl md:text-xl">Live Contest</h4>
+                        <h2 className="xl:text-4xl lg:text-4xl md:text-4xl flex justify-center">
+                            {dashboardData.liveContest}
+                        </h2>
+                    </div>
+                    <div className="top-display">
+                        <h4 className="xl:text-2xl lg:text-2xl md:text-xl">Average Score</h4>
+                        <h2 className="xl:text-4xl lg:text-4xl md:text-4xl flex justify-center">
+                            {dashboardData.averageScore}
+                        </h2>
+                    </div>
+                    <div className="top-display">
+                        <h4 className="xl:text-2xl lg:text-2xl md:text-xl">Total Students</h4>
+                        <h2 className="xl:text-4xl lg:text-4xl md:text-4xl flex justify-center">
+                            {dashboardData.totalStudents}
+                        </h2>
+                    </div>
+                    {/* Second pop-up for Edit Exam */}
+                    {showEditPopup && <EditExam onClose={closeEditPopup} examDetails={selectedExam} />}
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full mid-container">
+                    <div className="w-4/10 mid-display">
+                        <h4>Recent Tests</h4>
+                        <div className="flex w-full justify-center">
+                            <div className="tablee">
+                                <h5>DSA Crash Course</h5>
+                                <div className="tablee-content">
+                                    <h6>Hello World</h6>
+                                </div>
+                                <div className="tablee-content">
+                                    <h6>Hello World</h6>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="w-4/10 mid-display">
+                        <h4>Completed Result</h4>
+                        <div className="flex w-full justify-center">
+                            <div className="tablee">
+                                <h5>DSA Crash Course</h5>
+                                <div className="tablee-content">
+                                    <h6>Hello World</h6>
+                                </div>
+                                <div className="tablee-content">
+                                    <h6>Hello World</h6>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="w-10/10">
+                        <div className="mid-display2">
+                            <h4>Quick links</h4>
+                            <ul className="list-disc">
+                                <li>Create Exam</li>
+                                <li>Add Student </li>
+                                <li>Placeholder</li>
+                                <li>Placeholder</li>
+                            </ul>
+                        </div>
+                        <div className="mid-display2">
+                            <h4>Notifications</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default Dashboard;

@@ -1,0 +1,76 @@
+* {
+    margin: 0px;
+    padding: 0px;
+    box-sizing: border-box;
+}
+
+.app-background {
+    width: 100%;
+    height: 100vh;
+    box-sizing: border-box;
+    background-color: #181817;
+    overflow-y: auto;
+}
+
+@font-face {
+    font-family: madina-light;
+    src: url(./font/Madani\ Arabic\ Light.ttf);
+}
+
+@font-face {
+    font-family: madina-medium;
+    src: url(./font/Madani\ Arabic\ Medium.ttf);
+}
+
+@font-face {
+    font-family: madina-regular;
+    src: url(./font/Madani\ Arabic\ Regular.ttf);
+}
+
+@font-face {
+    font-family: madina-semibold;
+    src: url(./font/Madani\ Arabic\ Semi\ Bold.ttf);
+}
+
+@font-face {
+    font-family: madina;
+    src: url(./font/Madani\ Arabic\ Variable.ttf);
+}
+
+.madina {
+    font-family: madina;
+    font-style: normal !important;
+}
+
+body {
+    scrollbar-width: auto;
+    -ms-overflow-style: auto;
+}
+
+body::-webkit-scrollbar {
+    width: auto;
+}
+
+body::-webkit-scrollbar-track {
+    background: initial !important;
+}
+
+body::-webkit-scrollbar-thumb {
+    background: initial !important;
+}
+
+
+*::-webkit-scrollbar {
+    width: 8px;
+}
+
+*::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 10px;
+}
+
+*::-webkit-scrollbar-thumb {
+    background-color: #C4C4C4;
+    border-radius: 10px;
+    border: 1px solid #2D2D2D;
+}
