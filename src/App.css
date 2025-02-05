@@ -11,31 +11,33 @@
     background-color: #181817;
     overflow-y: auto;
 }
-
+/* 
 @font-face {
     font-family: madina-light;
-    src: url(./font/Madani\ Arabic\ Light.ttf);
+    src: url(./font/Madani\ Arabic\ Light.ttf) format('truetype');
 }
 
 @font-face {
     font-family: madina-medium;
-    src: url(./font/Madani\ Arabic\ Medium.ttf);
+    src: url(./font/Madani\ Arabic\ Medium.ttf) format('truetype');
 }
 
 @font-face {
     font-family: madina-regular;
-    src: url(./font/Madani\ Arabic\ Regular.ttf);
+    src: url(./font/Madani\ Arabic\ Regular.ttf) format('truetype');
 }
 
 @font-face {
     font-family: madina-semibold;
-    src: url(./font/Madani\ Arabic\ Semi\ Bold.ttf);
+    src: url(./font/Madani\ Arabic\ Semi\ Bold.ttf) format('truetype');
+    font-weight: 600;
+    font-style: normal;
 }
 
 @font-face {
     font-family: madina;
-    src: url(./font/Madani\ Arabic\ Variable.ttf);
-}
+    src: url(./font/Madani\ Arabic\ Variable.ttf) format('truetype');
+} */
 
 .madina {
     font-family: madina;
