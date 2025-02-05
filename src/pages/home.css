@@ -696,17 +696,21 @@
 /* Edit Exam */
 .edit-container {
     height: 70vh;
+    width: 55vw;
     border-radius: 10px;
     border: 1px solid rgb(139, 139, 139);
-    background-color: #4B4B4B;
+    display: flex;
+    flex-direction: column;
 }
 
 .edit-exam-header {
     background-color: #5A5A5A;
-    height: 5.5vh;
+    padding: 10px;
     border-top-left-radius: 10px;
     border-top-right-radius: 10px;
     border-bottom: 1px solid white;
+    position: sticky;
+    width: 100%;
 }
 
 .edit-exam-header h2 {
@@ -719,6 +723,413 @@
 .edit-exam-header button img {
     width: 35px;
     margin-right: 15px;
+    cursor: pointer;
+}
+
+.Edit-exam-body {
+    background-color: #4B4B4B;
+    overflow-y: scroll;
+}
+
+.exam-creation-edit {
+    width: 100%;
+    background-color: #3A3A3A;
+    padding: 20px;
+    border-radius: 10px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.exam-creation-edit p {
+    width: 10vw;
+    color: white;
+    font-family: madina-semibold;
+}
+
+.desc {
+    margin: 12px 0px;
+}
+
+.edit-ename-options input {
+    background-color: #424242;
+    border: 1px solid rgb(134, 134, 134);
+    border-radius: 5px;
+    padding: 10px;
+}
+
+.edit-ename-options button,
+.desc button {
+    margin-left: 12px;
+    padding: 2px 15px 2px;
+    cursor: pointer;
+}
+
+.custom-date-picker,
+.custom-time-picker {
+    background-color: #424242;
+    font-size: 1rem;
+    height: 4.5vh;
+    color: white;
+}
+
+/* Calendar Styling */
+.custom-calendar {
+    border-radius: 8px;
+    background: white;
+    padding: 10px;
+}
+
+/* Change the background color of the calendar */
+.react-calendar {
+    background-color: #333333;
+    color: black;
+    border-radius: 10px;
+    padding: 10px;
+    border: none;
+}
+
+.react-time-picker__inputGroup__amPm:focus {
+    background-color: #555555 !important;
+    color: black !important;
+}
+
+.edit-section {
+    padding-bottom: 20px;
+}
+
+.edit-section details {
+    background-color: #303030;
+    width: 48vw;
+    color: white;
+    border-radius: 10px;
+    font-size: 1.4rem;
+    padding: 0.5rem 1rem;
+}
+
+.edit-section details[open] {
+    height: auto;
+}
+
+.edit-section details summary {
+    color: white;
+    font-size: 1.4rem;
+    font-family: madina-semibold;
+    cursor: pointer;
+    outline: none;
+    display: block;
+    padding: 10px;
+}
+
+.edit-sections-expand {
+    background-color: #3A3A3A;
+    width: 46.3vw;
+    height: auto;
+    max-height: 30vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    border-bottom-right-radius: 10px;
+    border-bottom-left-radius: 10px;
+    font-family: madina-regular;
+    padding: 15px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.edit-sections-content {
+    width: 80%;
+    white-space: normal;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+.edit-sections-content p {
+    color: white;
+    font-size: 1.1rem;
+    text-align: justify;
+}
+
+.edit-sections-buttons {
+    width: 20%;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 10px;
+}
+
+.edit-sections-buttons button {
+    background-color: #8E5DAF;
+    padding: 5px 15px;
+    border-radius: 7px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    border: none;
+    color: white;
+}
+
+.e-warning-note {
+    color: white;
+    font-family: madina-regular;
+    margin-top: 20px;
+    padding-bottom: 20px;
+}
+
+.e-warning-note p {
+    font-size: 1.1rem;
+}
+
+.e-warning-note p span {
+    color: red;
+}
+
+.e-warning-note button {
+    padding: 7px 20px 7px;
+    border-radius: 5px;
+    gap: 10px;
+    cursor: pointer;
+}
+
+.MCQ-edit-container {
+    background-color: #1F1F1F;
+    border: 1px solid rgb(124, 124, 124);
+    width: 60%;
+    padding-bottom: 15px;
+}
+
+.MCQ-edit-container h2 {
+    margin: 15px 20px;
+    font-family: madina-semibold;
+    font-size: 1.8rem;
+}
+
+.MCQ-edit-container label {
+    width: 8vw;
+    margin: 8px 20px;
+    font-size: 1.1rem;
+    font-family: madina-regular;
+}
+
+.MCQ-question input {
+    width: 82%;
+    background-color: #424242;
+    padding: 0px 20px;
+}
+
+.MCQ-edit-container textarea {
+    width: 70%;
+    height: 18vh;
+    background-color: #424242;
+}
+
+.MCQ-question {
+    margin-bottom: 15px;
+}
+
+.MCQ-question-options {
+    height: 4vh;
+    width: 89.6% !important;
+    padding: 15px;
+    margin-bottom: 10px;
+    margin-left: 11px;
+}
+
+.m-checkbox {
+    position: relative;
+    bottom: 5px;
+    left: 8px;
+    width: 22px !important;
+    cursor: pointer;
+}
+
+.add_options {
+    padding: 8px 15px;
+    margin-left: 20px;
+    margin-top: 10px;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.e-delete-btn {
+    position: relative;
+    left: 15px;
+    bottom: 6px;
+    cursor: pointer;
+    font-size: 20px;
+}
+
+.add_options span {
+    font-size: 1.3rem;
+}
+
+.save-cancel button {
+    margin-top: 1rem;
+    padding: 8px 15px;
+    font-family: madina-light;
+    margin-right: 15px;
+    cursor: pointer;
+}
+
+.ql-container {
+    color: white !important;
+    background-color: #4B4B4B !important;
+    border-bottom-right-radius: 5px;
+    border-bottom-left-radius: 5px;
+    width: 93.8%;
+    position: relative;
+    left: 5px;
+}
+
+.ql-toolbar {
+    background: #303030 !important;
+    border-radius: 8px 8px 0 0;
+    color: white !important;
+    width: 93.8%;
+    position: relative;
+    left: 5px;
+}
+
+.ql-editor {
+    min-height: 150px;
+    color: white !important;
+}
+
+.Coding-edit-container {
+    background-color: #1F1F1F;
+    border: 1px solid rgb(124, 124, 124);
+    width: 60%;
+    padding-bottom: 15px;
+    height: 70vh;
+    overflow-y: auto;
+}
+
+.Coding-question-statement {
+    margin-bottom: 15px;
+}
+
+.Coding-edit-container h2 {
+    margin: 15px 20px;
+    font-family: madina-semibold;
+    font-size: 1.8rem;
+}
+
+.Coding-edit-container label {
+    width: 8vw;
+    margin: 8px 20px;
+    font-size: 1.1rem;
+    font-family: madina-regular;
+}
+
+.Coding-question {
+    margin-bottom: 15px;
+}
+
+.Coding-question input {
+    width: 50%;
+    background-color: #424242;
+    padding: 0px 20px;
+}
+
+.test-case {
+    margin-bottom: 15px;
+    margin-top: 50px;
+}
+
+.test-case-output {
+    margin-bottom: 15px;
+    margin-top: 15px;
+}
+
+.test-case textarea,
+.test-case-output textarea {
+    width: 50% !important;
+    height: 13vh !important;
+    background-color: #424242 !important;
+    padding: 0px 20px;
+}
+
+.heading {
+    color: white;
+    text-align: center;
+}
+
+.test-case-io {
+    display: flex;
+    gap: 10px;
+}
+
+.test-case textarea {
+    width: 250px;
+    height: 100px;
+    background-color: #323232;
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid gray;
+}
+
+.add-btn {
+    display: block;
+    width: 100%;
+    background-color: green;
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 20px;
+}
+
+.add-btn:hover {
+    background-color: darkgreen;
+}
+
+.delete-btn {
+    background-color: red;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.delete-btn:hover {
+    background-color: darkred;
+}
+
+.test-casee {
+    display: flex;
+    margin-bottom: 15px;
+}
+
+.test-casee label {
+    width: 7.8vw;
+}
+
+.test-casee textarea {
+    width: 15vw;
+    height: 100px;
+    background-color: #424242;
+    padding: 0px 20px;
+    font-family: madina-regular;
+}
+
+.e-line {
+    width: 100%;
+    height: 1px;
+    margin-top: 70px;
+    margin-bottom: 20px;
+}
+
+.e-line-top {
+    width: 100%;
+    height: 1px;
+    margin-top: 140px;
+    margin-bottom: 10px;
 }
 
 /* Responsive Section */
