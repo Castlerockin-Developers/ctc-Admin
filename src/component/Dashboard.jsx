@@ -3,7 +3,7 @@ import closeicon from '../assets/close.png';
 import { motion } from "motion/react";
 import EditExam from "./EditExam";
 
-const Dashboard = () => {
+const Dashboard = ({ onCreateExam, onAddStudent }) => {
     const [dashboardData, setDashboardData] = useState(null);
     const [showPopup, setShowPopup] = useState(false);
     const [showEditPopup, setShowEditPopup] = useState(false);
@@ -165,10 +165,14 @@ const Dashboard = () => {
                         <div className="mid-display2">
                             <h4>Quick links</h4>
                             <ul className="list-disc">
-                                <li>Create Exam</li>
-                                <li>Add Student </li>
-                                <li>Placeholder</li>
-                                <li>Placeholder</li>
+                                <li onClick={onCreateExam}>
+                                    Create Exam
+                                </li>
+                                <li onClick={onAddStudent}>
+                                    Add Student
+                                </li>
+                                <li>Add User</li>
+                                <li>Buy Credits</li>
                             </ul>
                         </div>
                         <div className="mid-display2">

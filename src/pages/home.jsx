@@ -40,8 +40,12 @@ const Home = () => {
 
                 {/* Main Content Area */}
                 <div className="xl:w-8/10 lg:w-8/10 md:w-10/10 sm:w-full">
-                    {/* Main Navigation Components */}
-                    {activeComponent === "dashboard" && <Dashboard />}
+                    {/* Render components conditionally based on activeComponent */}
+                    {activeComponent === "dashboard" && (
+                        // Pass the onCreateExam prop to Dashboard
+                        <Dashboard onCreateExam={() => setActiveComponent("newExam")}
+                            onAddStudent={() => setActiveComponent("student")} />
+                    )}
                     {activeComponent === "subcribe" && <Subcription />}
                     {activeComponent === "settings" && <Settings />}
                     {activeComponent === "manageExam" && (
