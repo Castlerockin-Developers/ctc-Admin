@@ -26,6 +26,22 @@ const NewExam = ({ onBack, onNext }) => {
     };
 
     // const handleSubmit = async () => {
+        // if (!examName.trim()) {
+        //     alert("Test Name is required.");
+        //     return;
+        // }
+        // if (!startTime.trim()) {
+        //     alert("Start Time is required.");
+        //     return;
+        // }
+        // if (!endTime.trim()) {
+        //     alert("End Time is required.");
+        //     return;
+        // }
+        // if (timedTest && !timerDuration) {
+        //     alert("Timer duration is required for a timed test.");
+        //     return;
+        // }
     //     const examData = {
     //         name: examName,
     //         start_time: startTime,
