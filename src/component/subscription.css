@@ -1,0 +1,350 @@
+.subscription-container {
+    background-color: #282828;
+    width: calc(100% - 69px);
+    height: 87vh;
+    overflow-y: auto;
+    padding: 1.2rem;
+    border-radius: 5px;
+}
+
+.subscription-box {
+    width: 95%;
+    padding-top: 1.5rem;
+    height: 70%;
+}
+
+.subscription-box h1 {
+    color: white;
+    font-family: madina-semibold;
+    font-size: 2.5rem;
+    margin-top: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+.subscription-card-container {
+    width: 100%;
+    padding: 1.2rem;
+    border: 1px solid rgb(177, 177, 177);
+    background-color: #333333;
+}
+
+.subscription-card-container h3 {
+    color: white;
+    font-family: madina-semibold;
+    font-size: 1.9rem;
+}
+
+.subscribe-card {
+    width: 550px;
+    height: 221px;
+    border: 1px solid white;
+    border-radius: 20px;
+    margin-top: 20px;
+    margin-left: 40px;
+    background: linear-gradient(to left, #3a3a3a 0%, #242323 100%);
+    position: relative;
+    overflow: hidden;
+    padding: 1.5rem;
+}
+
+.subscribe-bg {
+    position: absolute;
+    top: -40px;
+    left: 120px;
+    width: 30vw;
+    height: 28.5vh;
+    object-fit: contain;
+}
+
+.subscribe-card ul {
+    color: white;
+    list-style: disc;
+    margin-left: 20px;
+}
+
+.subscribe-card ul li {
+    font-family: madina-light;
+}
+
+.credit-balance {
+    margin-top: 15px;
+}
+
+.credit-balance p {
+    color: white;
+    font-family: madina-regular;
+}
+
+.credit-balance p span {
+    font-family: madina-semibold;
+    margin-left: 10px;
+}
+
+.ctc-coin {
+    width: 20px;
+    margin-left: 5px;
+}
+
+.subscribe-bottom {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 20px;
+    color: white;
+}
+
+.subscribe-bottom p {
+    font-family: madina-regular;
+    font-size: 1.2rem;
+}
+
+.subscribe-bottom p span {
+    font-family: madina-semibold;
+    font-size: 1.5rem;
+    margin-left: 10px;
+}
+
+.subscribe-bottom button {
+    background-color: #FF0099;
+    padding: 10px 10px 10px;
+    border-radius: 5px;
+    font-family: madina-semibold;
+    cursor: pointer;
+}
+
+.subscribe-bottom button:hover {
+    background-color: #97005b;
+}
+
+.credit-history {
+    margin-left: 35px;
+    margin-bottom: 2px;
+}
+
+.credit-history p {
+    color: white;
+    margin-right: 10px;
+    font-family: madina-light;
+    font-size: 1.25rem;
+    cursor: pointer;
+}
+
+.credit-history p.active {
+    font-weight: bold;
+    border-bottom: 2px solid #FF0099;
+}
+
+.buy-item {
+    width: 95%;
+    display: flex;
+    justify-content: end;
+}
+
+.bug-icon {
+    margin-right: 10px;
+}
+
+.buy-item button {
+    color: white;
+    padding: 5px 20px 5px;
+    background-color: #8E5DAF;
+    border-radius: 5px;
+    font-size: 1.2rem;
+    margin-left: 15px;
+    cursor: pointer;
+}
+
+.buy-item button:hover {
+    background-color: #6200a3;
+}
+
+.buy-item p {
+    color: white;
+    font-size: 1.2rem;
+    font-family: madina-semibold;
+    margin-top: 2px;
+}
+
+
+.subcribe-table,
+.subcribe-history-table {
+    width: 95%;
+    margin-top: 0.5rem;
+    height: 30vh;
+    background-color: #2D2D2D;
+    border-radius: 10px;
+    border-collapse: collapse;
+    display: flex;
+    flex-direction: column;
+    overflow-x: auto;
+    margin-bottom: 20px;
+}
+
+.subcribe-table thead,
+.subcribe-history-table thead {
+    width: 100%;
+    display: table;
+    table-layout: fixed;
+}
+
+.subcribe-table thead th,
+.subcribe-history-table thead th {
+    position: relative;
+    background-color: #515151;
+    height: 5vh;
+    color: white;
+    font-size: 1.3rem;
+}
+
+/* Add a pseudo-element for a partial right border on all header cells except the last one */
+.subcribe-table thead th:not(:last-child)::after,
+.subcribe-history-table thead th:not(:last-child)::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    top: 25%;
+    height: 50%;
+    border-right: 1px solid #ccc;
+}
+
+.subcribe-table tbody,
+.subcribe-history-table tbody {
+    max-height: 40vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    width: 100%;
+    display: table;
+    table-layout: fixed;
+    background-color: #393939;
+}
+
+.subcribe-table tbody tr,
+.subcribe-history-table tbody tr {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+    height: 50px;
+    border-top: 1px solid rgb(133, 133, 133);
+    border-bottom: 1px solid rgb(133, 133, 133);
+}
+
+.subcribe-table tbody td,
+.subcribe-history-table tbody td {
+    padding: 12px;
+    text-align: center;
+    color: white;
+}
+
+.add-credit-btn {
+    background-color: #65979B;
+    width: 40%;
+    height: 30px;
+    border-radius: 5px;
+    border: 1px solid #00577D;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 5px auto;
+    font-size: 1.3rem;
+    font-weight: bold;
+}
+
+.add-credit-btn button {
+    color: #00577D;
+    font-size: 2rem;
+    margin-top: -5px;
+    font-weight: bold;
+}
+
+.minus {
+    margin-right: 10px;
+    cursor: pointer;
+}
+
+.plus {
+    margin-left: 5px;
+    cursor: pointer;
+}
+
+.reciept-btn {
+    background-color: #8E5DAF;
+    padding: 5px 15px 5px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: madina-semibold;
+}
+
+.reciept-btn:hover {
+    background-color: #6200a3;
+
+}
+
+@media (min-width:1025px) and (max-width:1440px) {
+    .subscribe-bg {
+        width: 34vw;
+    }
+}
+
+@media (min-width:769px) and (max-width:1024px) {
+    .subscription-container {
+        width: 100%;
+    }
+
+    .subscribe-bg {
+        width: 52vw;
+    }
+
+    .subscription-box {
+        height: 77%;
+    }
+
+    .subscription-box h1 {
+        font-size: 2.1rem;
+        margin-top: 0rem;
+        margin-bottom: 0.3rem;
+    }
+
+    .subscription-card-container h3 {
+        font-size: 1.7rem;
+    }
+
+    .subcribe-table thead,
+    .subcribe-table tbody,
+    .subcribe-history-table thead,
+    .subcribe-history-table tbody {
+        width: 120%;
+    }
+}
+
+@media (max-width: 768px) {
+    .subscription-container {
+        width: 100%;
+    }
+
+    .subscribe-bg {
+        width: 65vw;
+        height: 30vh;
+    }
+
+    .subscription-box {
+        height: 79%;
+    }
+
+    .subcribe-table thead,
+    .subcribe-table tbody,
+    .subcribe-history-table thead,
+    .subcribe-history-table tbody {
+        width: 130%;
+    }
+}
+
+@media (max-width: 425px) {
+    .subscribe-card {
+        width: 400px;
+        margin-right: 60px;
+    }
+
+    .subscribe-bg {
+        width: 65vw;
+        height: 50vh;
+    }
+}

@@ -3,36 +3,36 @@
     src: url('/public/fonts/Madani\ Arabic\ Light.ttf') format('truetype');
     font-weight: 300;
     font-style: normal;
-  }
-  
-  @font-face {
+}
+
+@font-face {
     font-family: 'madina-medium';
     src: url('/public/fonts/Madani\ Arabic\ Medium.ttf') format('truetype');
     font-weight: 400;
     font-style: normal;
-  }
-  
-  @font-face {
+}
+
+@font-face {
     font-family: 'madina-regular';
     src: url('/public/fonts/Madani\ Arabic\ Regular.ttf') format('truetype');
     font-weight: 400;
     font-style: normal;
-  }
-  
-  @font-face {
+}
+
+@font-face {
     font-family: 'madina-semibold';
     src: url('/public/fonts/Madani\ Arabic\ Semi\ Bold.ttf') format('truetype');
     font-weight: 600;
     font-style: normal;
-  }
-  
-  @font-face {
+}
+
+@font-face {
     font-family: 'madina';
     src: url('/public/fonts/Madani\ Arabic\ Variable.ttf') format('truetype');
     font-weight: 400;
     font-style: normal;
-  }
-  
+}
+
 .sidebar-container {
     display: flex;
     flex-direction: column;
@@ -88,14 +88,10 @@
     margin-bottom: 10px;
 }
 
-.side-active {
-    background-color: #282828;
-}
-
 .sidebar-item {
     color: white;
     font-size: 1.4rem;
-    font-family: madina-regular;
+    font-family: madina-semibold;
 }
 
 .sidebar-animation {
@@ -138,7 +134,11 @@
 
 /* Active Button */
 .sidebar-button.side-active {
-    background-color: #3B3B3B;
+    background-color: #282828;
+}
+
+.bottom-sidebar-button.side-active {
+    background-color: #282828;
 }
 
 .menu-toggle {
@@ -164,6 +164,7 @@
     height: 87vh;
     overflow-y: auto;
     transition: width 0.3s ease-in-out, margin-left 0.3s ease-in-out;
+    border-radius: 5px;
 }
 
 .greeting {
@@ -174,7 +175,7 @@
 .greeting h1 {
     font-size: 2.5rem;
     color: white;
-    font-family: 'madina-semibold'!important;
+    font-family: madina-semibold;
     margin-top: 0.9rem;
     margin-bottom: 2rem;
 }
@@ -391,11 +392,12 @@
     overflow-y: auto;
     transition: width 0.3s ease-in-out, margin-left 0.3s ease-in-out;
     padding: 1.5rem;
+    border-radius: 5px;
 }
 
 /* Exam Header */
 .exam-greeting {
-    width: 92%;
+    width: 95%;
     padding-top: 1.5rem;
 }
 
@@ -736,6 +738,8 @@
     border: 1px solid rgb(139, 139, 139);
     display: flex;
     flex-direction: column;
+    position: relative;
+    left: 7rem;
 }
 
 .edit-exam-header {
@@ -763,7 +767,7 @@
 
 .Edit-exam-body {
     background-color: #4B4B4B;
-    overflow-y: scroll;
+    overflow: auto;
 }
 
 .exam-creation-edit {
@@ -778,7 +782,7 @@
 .exam-creation-edit p {
     width: 10vw;
     color: white;
-    font-family: madina-semibold;
+    font-family: madina-regular;
 }
 
 .desc {
@@ -790,6 +794,23 @@
     border: 1px solid rgb(134, 134, 134);
     border-radius: 5px;
     padding: 10px;
+    color: white;
+    font-family: madina-light;
+    width: 510px;
+}
+
+.edit-ename-options textarea {
+    display: none;
+}
+
+.edit-ename-options-e-time input {
+    background-color: #424242;
+    border: 1px solid rgb(134, 134, 134);
+    border-radius: 5px;
+    padding: 10px;
+    color: white;
+    font-family: madina-light;
+    width: 210px;
 }
 
 .edit-ename-options button,
@@ -797,6 +818,8 @@
     margin-left: 12px;
     padding: 2px 15px 2px;
     cursor: pointer;
+    color: white;
+    font-family: madina-semibold;
 }
 
 .custom-date-picker,
@@ -857,7 +880,7 @@
 
 .edit-sections-expand {
     background-color: #3A3A3A;
-    width: 46.3vw;
+    width: auto;
     height: auto;
     max-height: 30vh;
     overflow-y: auto;
@@ -884,6 +907,7 @@
     color: white;
     font-size: 1.1rem;
     text-align: justify;
+    font-family: madina-regular;
 }
 
 .edit-sections-buttons {
@@ -913,6 +937,7 @@
 
 .e-warning-note p {
     font-size: 1.1rem;
+    font-family: madina-regular;
 }
 
 .e-warning-note p span {
@@ -924,6 +949,9 @@
     border-radius: 5px;
     gap: 10px;
     cursor: pointer;
+    color: white;
+    font-family: madina-semibold;
+    font-weight: bold;
 }
 
 .MCQ-edit-container {
@@ -940,34 +968,53 @@
 }
 
 .MCQ-edit-container label {
-    width: 8vw;
+    width: 4.2vw;
     margin: 8px 20px;
     font-size: 1.1rem;
     font-family: madina-regular;
 }
 
 .MCQ-question input {
+    width: 81.8%;
+    background-color: #424242;
+    padding: 0px 10px;
+    color: white;
+    font-family: madina-light;
+}
+
+.MCQ-question textarea {
+    display: none;
     width: 82%;
     background-color: #424242;
     padding: 0px 20px;
+    color: white;
+    font-family: madina-light;
 }
 
 .MCQ-edit-container textarea {
     width: 70%;
     height: 18vh;
     background-color: #424242;
+    font-family: madina-regular;
 }
 
 .MCQ-question {
     margin-bottom: 15px;
 }
 
+.options-list {
+    margin-bottom: 8px;
+}
+
+.options-list textarea {
+    display: none;
+}
+
 .MCQ-question-options {
-    height: 4vh;
-    width: 89.6% !important;
-    padding: 15px;
-    margin-bottom: 10px;
-    margin-left: 11px;
+    height: 4.5vh;
+    width: 90.7%;
+    padding: 10px;
+    margin-left: 7px;
 }
 
 .m-checkbox {
@@ -979,11 +1026,12 @@
 }
 
 .add_options {
-    padding: 8px 15px;
+    padding: 4px 15px;
     margin-left: 20px;
     margin-top: 10px;
     cursor: pointer;
     font-size: 1rem;
+    font-family: madina-semibold;
 }
 
 .e-delete-btn {
@@ -1177,6 +1225,14 @@
         width: 100%;
     }
 
+    .sidebar-button {
+        width: calc(100% - 60px);
+    }
+
+    .sidebar-item {
+        font-size: 1.2rem;
+    }
+
     .bottom-sidebar-button {
         width: calc(100% - 90px);
     }
@@ -1198,6 +1254,26 @@
     .mid-display2 {
         height: 23vh;
     }
+
+    .edit-container {
+        width: 65vw;
+        position: relative;
+        left: 7rem;
+    }
+
+    .edit-section details {
+        width: 60vw;
+    }
+
+    .MCQ-question-options {
+        margin-left: 19px;
+        width: 85%;
+    }
+
+    .MCQ-question input {
+        width: 75%;
+        margin-left: 20px;
+    }
 }
 
 @media (min-width:769px) and (max-width:1024px) {
@@ -1207,11 +1283,15 @@
     }
 
     .sidebar-button {
-        width: calc(100% - 50px);
+        width: calc(100% - 20px);
     }
 
     .sidebar-item {
-        font-size: 1.1rem;
+        font-size: 1rem;
+    }
+
+    .bottom-sidebar-button {
+        width: calc(100% - 40px);
     }
 
     .sidebar-animation {
@@ -1223,10 +1303,14 @@
     }
 
     .dashboard {
-        width: calc(100% - 42px);
+        width: calc(100%);
     }
 
     /* manage exam */
+    .exam-container {
+        width: 100%;
+    }
+
     .exam-greeting h1 {
         margin-bottom: 0.5rem;
     }
@@ -1292,6 +1376,69 @@
         font-size: 1.1rem;
         width: 15vw;
     }
+
+    .edit-container {
+        width: 70vw;
+    }
+
+    .body-control {
+        width: 90%;
+    }
+
+    .edit-ename-options input {
+        width: 280px;
+    }
+
+    .exam-creation-edit p {
+        width: 12vw;
+    }
+
+    .edit-ename-options-e-time input {
+        width: 155px;
+    }
+
+    .edit-section details {
+        width: 62.3vw;
+    }
+
+    .e-warning-note p {
+        font-size: 0.9rem;
+    }
+
+    .edit-sections-content {
+        width: 70%;
+    }
+
+    .edit-sections-content p {
+        font-size: 1rem;
+    }
+
+    .edit-sections-buttons button {
+        font-size: 1rem;
+    }
+
+    .MCQ-question-options {
+        margin-left: 10px;
+        width: 80%;
+    }
+
+    .MCQ-edit-container label {
+        width: 6vw;
+    }
+
+    .MCQ-question input {
+        width: 66.6%;
+        margin-left: 11px;
+    }
+
+    .add_options {
+        font-size: 0.9rem;
+        padding: 3px 12px;
+    }
+
+    .add_options span {
+        font-size: 0.9rem;
+    }
 }
 
 @media (max-width: 768px) {
@@ -1305,6 +1452,10 @@
         transform: translateX(-100%);
         transition: transform 0.3s ease-in-out;
         z-index: 1000;
+    }
+
+    .sidebar-item {
+        font-size: 1.1rem;
     }
 
     .greeting {
@@ -1412,6 +1563,138 @@
     .pop-up-table tbody td {
         width: 20vw;
     }
+
+    .edit-container {
+        width: 78vw;
+        position: fixed;
+        left: 5.5rem;
+    }
+
+    .body-control {
+        width: 90%;
+    }
+
+    .edit-ename-options input {
+        width: 200px;
+        padding: 5px;
+    }
+
+    .exam-creation-edit p {
+        width: 15vw;
+    }
+
+    .edit-ename-options-e-time input {
+        width: 155px;
+        padding: 5px;
+    }
+
+    .edit-section details {
+        width: 69vw;
+    }
+
+    .edit-sections-content {
+        width: 68%;
+        font-size: 0.8rem;
+    }
+
+    .edit-sections-buttons button {
+        font-size: 0.9rem;
+    }
+
+    .e-warning-note p {
+        font-size: 0.8rem;
+        width: 45vw;
+    }
+
+    .e-warning-note button {
+        font-size: 0.9rem;
+        padding: 6px 6px 6px;
+    }
+
+    .MCQ-edit-container {
+        width: 90%;
+    }
+
+    .MCQ-edit-container label {
+        width: 8vw;
+    }
+
+    .MCQ-question input {
+        width: 65vw;
+        margin-left: 15px;
+    }
+
+    .MCQ-question-options {
+        width: 65.2vw;
+        margin-left: 14px;
+    }
+
+    .Coding-question {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .Coding-question input {
+        width: 80%;
+        height: 5vh;
+        margin-left: 1.2rem;
+    }
+
+    .Coding-question-statement {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .ql-container {
+        margin-left: 0.8rem !important;
+    }
+
+    .ql-toolbar {
+        margin-left: 0.8rem;
+    }
+
+    .e-line-top {
+        margin-top: 5rem;
+    }
+
+    .test-case,
+    .test-case-output {
+        flex-direction: column;
+    }
+
+    .test-case label,
+    .test-case-output label {
+        width: 70%;
+    }
+
+    .test-case textarea,
+    .test-case-output textarea {
+        margin-left: 20px;
+        width: 80% !important;
+    }
+
+    .test-case-io {
+        flex-direction: column;
+    }
+
+    .test-casee {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .test-casee label {
+        width: 90%;
+    }
+
+    .test-casee textarea {
+        width: 80%;
+        margin-left: 20px;
+    }
+
+    .delete-btn {
+        margin-left: 20px;
+    }
+
 }
 
 @media (max-width: 425px) {
@@ -1515,5 +1798,157 @@
     .pop-up-table thead th,
     .pop-up-table tbody td {
         width: 35vw;
+    }
+
+    .edit-container {
+        width: 95vw;
+        position: fixed;
+        left: 10px;
+    }
+
+    .body-control {
+        width: 90%;
+    }
+
+    .desc {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .desc p {
+        width: 40vw;
+        font-size: 1.2rem;
+    }
+
+    .edit-ename-options,
+    .edit-ename-options-e-time {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .edit-ename-options-e-time button {
+        margin-top: 10px;
+        width: 30%;
+    }
+
+    .edit-ename-options-desc input {
+        display: none;
+    }
+
+    .edit-ename-options textarea {
+        display: block;
+        background-color: #424242;
+        border: 1px solid rgb(134, 134, 134);
+        border-radius: 5px;
+        padding: 10px;
+        color: white;
+        font-family: madina-light;
+        width: 300px;
+    }
+
+    .edit-ename-options input {
+        width: 300px;
+    }
+
+    .edit-ename-options button {
+        margin-top: 10px;
+        width: 30%;
+        display: flex;
+        justify-content: center;
+    }
+
+    .edit-section details {
+        width: 83vw;
+    }
+
+    .edit-sections-expand {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .edit-sections-content {
+        width: 100%;
+    }
+
+    .edit-sections-buttons {
+        width: 100%;
+    }
+
+    .e-warning-note {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .e-warning-note p {
+        font-size: 0.9rem;
+        width: 100%;
+
+    }
+
+    .e-warning-note button {
+        margin-top: 10px;
+        margin-left: 10px;
+        position: relative;
+        right: 10px;
+    }
+
+    .r-btn {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .r-btn button {
+        width: 30%;
+        margin-top: 10px;
+    }
+
+    .MCQ-edit-container {
+        height: 80vh;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    .MCQ-question {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .MCQ-question input {
+        display: none;
+    }
+
+    .MCQ-question textarea {
+        display: block;
+        width: 86%;
+        margin-left: 20px;
+    }
+
+    .options-list {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .options-list label {
+        width: 100%;
+        margin-left: 3.5rem;
+    }
+
+    .MCQ-question-options {
+        display: none;
+    }
+
+    .options-list textarea {
+        display: block;
+        width: 70%;
+        margin-left: 1.1rem;
+        background-color: #424242;
+        padding: 0px 10px;
+        color: white;
+        font-family: madina-light;
+    }
+
+    .Coding-edit-container {
+        width: 95vw;
+        height: 90vh;
     }
 }

@@ -4,7 +4,7 @@ import filter from '../assets/filter.png';
 import line from '../assets/Line.png';
 import { motion } from "motion/react";
 
-const ManageExam = () => {
+const ManageExam = ({ onCreateNewExam }) => {
     const [activeButton, setActiveButton] = useState("all");
     const [showFilter, setShowFilter] = useState(false);
     const [hoveredBranch, setHoveredBranch] = useState(null);
@@ -136,7 +136,7 @@ const ManageExam = () => {
                             />
                         </div>
 
-                        <motion.button whileTap={{ scale: 1.2 }} className="create-btn w-full sm:w-auto">
+                        <motion.button whileTap={{ scale: 1.2 }} className="create-btn w-full sm:w-auto" onClick={onCreateNewExam}>
                             <FaPlus className="icon" /> Create New Exam
                         </motion.button>
                     </div>

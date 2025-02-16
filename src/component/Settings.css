@@ -1,0 +1,505 @@
+.settings-container {
+    background-color: #282828;
+    width: calc(100% - 69px);
+    height: 87vh;
+    overflow-y: auto;
+    padding: 1.2rem;
+    border-radius: 5px;
+}
+
+.settings-box {
+    width: 95%;
+    padding-top: 1.5rem;
+}
+
+.settings-box h1 {
+    color: white;
+    font-family: madina-semibold;
+    font-size: 2.5rem;
+    margin-top: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+.profile-card {
+    width: 100%;
+    background-color: #333333;
+    padding: 1rem;
+    border-radius: 10px;
+    border: 1px solid rgb(221, 221, 221);
+}
+
+.profile-card h3 {
+    color: white;
+    font-family: madina-semibold;
+    font-size: 1.9rem;
+}
+
+.profile-details {
+    width: 65%;
+    margin-top: 1rem;
+}
+
+.profile-img-col {
+    margin-left: 20px;
+    width: 400px;
+}
+
+.profile-img-col img {
+    margin-right: 30px;
+    width: 120px;
+    height: 120px;
+    border-radius: 15px;
+}
+
+.profile-img-col p {
+    color: white;
+    font-family: madina-regular;
+    font-size: 1.2rem;
+    margin-top: 8px;
+}
+
+.profile-d-display p {
+    color: white;
+    font-family: madina-light;
+    font-size: 1.2rem;
+    margin-top: 8px;
+}
+
+.r-activity-history {
+    width: 33%;
+}
+
+.activity-history {
+    width: 100%;
+    height: 323px;
+    background-color: #4B4B4B;
+    padding: 5px 20px 5px;
+    white-space: normal;
+    word-break: break-all;
+    border: 1px solid rgb(221, 221, 221);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.activity-history h5 {
+    color: white;
+    font-family: madina-semibold;
+    margin-top: 15px;
+    margin-bottom: 15px;
+    font-size: 1.5rem;
+}
+
+.activity-history p {
+    color: white;
+    font-family: madina-light;
+    font-size: 0.9rem;
+}
+
+.activity-list {
+    height: 190px;
+    overflow-y: auto;
+}
+
+.activity-history button {
+    padding: 5px 15px 5px;
+    background-color: #5B7091;
+    color: white;
+    font-family: madina-semibold;
+    margin-top: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.5s ease;
+}
+
+.activity-history button:hover {
+    background-color: #10459b;
+
+}
+
+.Account-manager-box {
+    width: 100%;
+    height: 160px;
+    background-color: #4B4B4B;
+    margin-top: 25px;
+    margin-bottom: 20px;
+    border-radius: 15px;
+    border: 1px solid rgb(221, 221, 221);
+    padding: 1.5rem;
+}
+
+.Account-manager-box h5 {
+    color: white;
+    font-family: madina-semibold;
+    font-size: 1.5rem;
+}
+
+.Account-manager-box p {
+    color: white;
+    font-family: madina-regular;
+    font-size: 1.1rem;
+    margin-top: 10px;
+}
+
+.manage-table-container {
+    margin-top: 25px;
+}
+
+.manage-btn button {
+    color: rgb(129, 129, 129);
+    font-family: madina-light;
+    font-size: 1.2rem;
+    cursor: pointer;
+}
+
+.manage-active {
+    font-family: madina-semibold;
+    text-decoration: underline;
+    text-decoration-color: #ff0099;
+    text-decoration-thickness: 4px;
+    text-underline-offset: 5px;
+    color: white !important;
+}
+
+.m-icon {
+    color: white;
+}
+
+.manage-table {
+    border-radius: 10px;
+    margin-top: 20px;
+    min-height: 30vh;
+    max-height: 40vh;
+    background-color: #393939;
+}
+
+.manage-table table thead {
+    height: 5vh;
+    background-color: #535353;
+    font-size: 1.3rem;
+    border-bottom: 1px solid #888;
+}
+
+.manage-table table thead th {
+    position: relative;
+}
+
+.manage-table table thead th:not(:last-child)::after {
+    content: "";
+    position: absolute;
+    top: 20%;
+    bottom: 20%;
+    right: 0;
+    width: 2px;
+    background-color: white;
+}
+
+
+.manage-table table tbody tr {
+    height: 6vh;
+    color: white;
+    background-color: #424242;
+    text-align: center;
+    border-bottom: 1px solid white;
+    font-size: 1.1rem;
+}
+
+.m-edit-btn {
+    background-color: #8E5DAF;
+    padding: 5px 25px;
+    font-size: 1.1rem;
+    font-family: madina-semibold;
+    cursor: pointer;
+}
+
+.manage-create-btn {
+    font-family: madina-semibold;
+    background: #ff0099;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.manage-create-btn:hover {
+    background: #9b005d;
+}
+
+.icon-pen {
+    font-size: 17px;
+}
+
+.m-delte-btn {
+    padding: 5px 15px;
+    font-size: 1.1rem;
+    font-family: madina-semibold;
+}
+
+/* Modal Backdrop */
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    /* semi-transparent overlay */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    /* ensure it appears above other elements */
+}
+
+/* Modal Content */
+.modal-content {
+    background-color: #1E1E1E;
+    /* match your dark theme color */
+    padding: 2rem;
+    border-radius: 8px;
+    width: 500px;
+    max-width: 90%;
+    color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
+.modal-content h2 {
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+}
+
+.modal-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding: 10px;
+}
+
+.modal-row label {
+    width: 30%;
+    font-weight: 500;
+    font-family: madina-regular;
+}
+
+.modal-row select {
+    background-color: #2e2e2e;
+    padding: 10px;
+    font-family: madina-light;
+    border-radius: 5px;
+}
+
+.modal-row input {
+    width: 70%;
+    padding: 0.5rem;
+    border-radius: 4px;
+    border: 1px solid #6e6e6e;
+    background-color: #2e2e2e;
+    color: #fff;
+    font-family: madina-light;
+}
+
+/* Permissions Grid */
+.permissions-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.permission-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* Example toggle switch styling */
+.m-toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 24px;
+}
+
+.m-toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.m-toggle-switch .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: 0.4s;
+    border-radius: 34px;
+}
+
+.m-toggle-switch .slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: 0.4s;
+    border-radius: 50%;
+}
+
+.m-toggle-switch input:checked+.slider {
+    background-color: #4caf50;
+}
+
+.m-toggle-switch input:checked+.slider:before {
+    transform: translateX(26px);
+}
+
+/* Modal Buttons */
+.modal-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+}
+
+.modal-buttons button {
+    background-color: #E91E63;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    border-radius: 4px;
+    cursor: pointer;
+    color: #fff;
+    font-weight: 500;
+}
+
+.modal-buttons button:hover {
+    background-color: #d81b60;
+}
+
+/* Optional: A separate style for the "Back" button */
+.modal-buttons button:first-child {
+    background-color: #666;
+}
+
+.modal-buttons button:first-child:hover {
+    background-color: #555;
+}
+
+/* .create-btn can have a unique style if desired */
+.create-btn {
+    background-color: #E91E63;
+}
+
+@media (min-width:769px) and (max-width:1024px) {
+    .profile-details-container {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .profile-img-col {
+        margin-left: 10px;
+        width: 400px;
+    }
+
+    .profile-img-col img {
+        width: 90px;
+        height: 90px;
+    }
+
+    .profile-img-col p,
+    .profile-d-display p {
+        font-size: 1rem;
+    }
+
+    .Account-manager-box {
+        width: 635px;
+    }
+
+    .r-activity-history {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+    }
+
+    .activity-history {
+        width: 100%;
+        height: 200px;
+    }
+
+    .activity-history h5 {
+        margin-bottom: 5px;
+    }
+
+    .activity-list {
+        height: 80px;
+    }
+
+    .Account-manager-box p {
+        margin-top: 0px;
+    }
+
+    .manage-table-container {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .search-box input {
+        width: 100%;
+    }
+
+    .manage-table table {
+        width: 120%;
+    }
+}
+
+@media (max-width: 768px) {
+    .settings-container {
+        width: 100%;
+    }
+
+    .profile-details-container {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .Account-manager-box {
+        width: 655px;
+    }
+
+    .r-activity-history {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+    }
+
+    .activity-history {
+        width: 100%;
+        height: 200px;
+    }
+
+    .activity-list {
+        height: 70px;
+    }
+
+    .manage-table table {
+        width: 120%;
+    }
+}
+
+@media (max-width: 425px) {
+    .Account-manager-box {
+        width: 550px;
+    }
+
+    .profile-img-col {
+        width: 320px;
+    }
+
+    .profile-d-display p {
+        font-size: 1rem;
+        margin-top: 13px;
+    }
+}
