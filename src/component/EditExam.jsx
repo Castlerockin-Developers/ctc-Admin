@@ -11,6 +11,49 @@ import 'react-quill/dist/quill.snow.css';
 import ReactQuill from 'react-quill';
 import Line from '../assets/Line.png';
 
+
+
+
+// import axios from "axios";
+
+// const API_BASE_URL = "http://127.0.0.1:8000/api/exams/";
+
+// const handleSaveChanges = async () => {
+//     if (!examDetails || !examDetails.id) {
+//         Swal.fire("Error", "Invalid Exam ID", "error");
+//         return;
+//     }
+
+//     const updatedExam = {
+//         name: question || examDetails.name,
+//         description: value || examDetails.description,
+//         start_time: date ? `${date}T${time}:00` : examDetails.start_time,
+//         end_time: date ? `${date}T${time}:00` : examDetails.end_time,
+//     };
+
+//     try {
+//         const response = await axios.put(`${API_BASE_URL}${examDetails.id}/update_exam/`, updatedExam, {
+//             headers: { "Content-Type": "application/json" },
+//         });
+
+//         Swal.fire({
+//             title: "Saved!",
+//             text: "Exam details updated successfully.",
+//             icon: "success",
+//             background: "#181817",
+//             color: "#fff",
+//             timer: 1500,
+//         });
+
+//         setShowEditMCQPopup(false);
+//     } catch (error) {
+//         console.error("Error updating exam:", error);
+//         Swal.fire("Error", "Failed to update exam. Please try again.", "error");
+//     }
+// };
+
+
+
 const EditExam = ({ onClose, examDetails }) => {
     const [date, setDate] = useState(null);
     const [time, setTime] = useState("");
