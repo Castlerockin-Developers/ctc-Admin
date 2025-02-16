@@ -5,6 +5,8 @@ import { motion } from "motion/react";
 import EditExam from "./EditExam";
 
 
+const Dashboard = ({ onCreateExam, onAddStudent, onAddUser, onAddCredits }) => {
+
 // const API_BASE_URL = "http://127.0.0.1:8000/api/";
 
 
@@ -179,6 +181,7 @@ import EditExam from "./EditExam";
 
 
 const Dashboard = ({ onCreateExam, onAddStudent }) => {
+
     const [dashboardData, setDashboardData] = useState(null);
     const [showPopup, setShowPopup] = useState(false);
     const [showEditPopup, setShowEditPopup] = useState(false);
@@ -346,8 +349,10 @@ const Dashboard = ({ onCreateExam, onAddStudent }) => {
                                 <li onClick={onAddStudent}>
                                     Add Student
                                 </li>
-                                <li>Add User</li>
-                                <li>Buy Credits</li>
+                                <li onClick={onAddUser}>
+                                    Add User
+                                </li>
+                                <li onClick={onAddCredits}>Buy Credits</li>
                             </ul>
                         </div>
                         <div className="mid-display2">

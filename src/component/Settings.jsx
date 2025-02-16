@@ -1,15 +1,15 @@
-import React, { useMemo, useState } from 'react';
-import { motion } from 'motion/react';
+import React, { useMemo, useState } from "react";
+import { motion } from "motion/react";
 import { FaPen, FaSearch } from "react-icons/fa";
-import swal from 'sweetalert';
-import './Settings.css';
+import swal from "sweetalert";
+import "./Settings.css";
 
-const Settings = () => {
+const Settings = ({ openAddUserModal, setOpenAddUserModal }) => {
     // Search query state
     const [searchQuery, setSearchQuery] = useState("");
 
-    // Modal visibility states
-    const [showAddUserModal, setShowAddUserModal] = useState(false);
+    // We no longer use a local state for the Add User modal.
+    // const [showAddUserModal, setShowAddUserModal] = useState(false);
     const [showEditUserModal, setShowEditUserModal] = useState(false);
     const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
 
@@ -38,18 +38,18 @@ const Settings = () => {
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
 
-    // Create a new user (Add User modal)
+    // Function to create a new user (Add User modal)
     const handleCreateUser = () => {
         const newUser = {
-            id: users.length > 0 ? Math.max(...users.map(u => u.id)) + 1 : 1,
+            id: users.length > 0 ? Math.max(...users.map((u) => u.id)) + 1 : 1,
             name: newUserName,
             email: newUserEmail,
             phone: newUserPhone,
             role: newUserRole,
         };
 
-        setUsers(prev => [...prev, newUser]);
-        setShowAddUserModal(false);
+        setUsers((prev) => [...prev, newUser]);
+        setOpenAddUserModal(false); // Close modal using parent's setter
         // Clear form fields
         setNewUserName("");
         setNewUserEmail("");
@@ -57,12 +57,7 @@ const Settings = () => {
         setNewUserRole("User");
     };
 
-    // Open the Add User modal
-    const onCreateNew = () => {
-        setShowAddUserModal(true);
-    };
-
-    // Open the Edit User modal and pre-populate fields with the user data
+    // Open the Edit User modal and pre-populate fields
     const handleEditUser = (user) => {
         setEditUserId(user.id);
         setEditName(user.name);
@@ -72,10 +67,10 @@ const Settings = () => {
         setShowEditUserModal(true);
     };
 
-    // Update the user with the new values from the Edit modal
+    // Update user details from the Edit modal
     const handleUpdateUser = () => {
-        setUsers(prev =>
-            prev.map(u =>
+        setUsers((prev) =>
+            prev.map((u) =>
                 u.id === editUserId
                     ? { ...u, name: editName, email: editEmail, phone: editPhone, role: editRole }
                     : u
@@ -84,7 +79,7 @@ const Settings = () => {
         setShowEditUserModal(false);
     };
 
-    // Delete a user after confirming with SweetAlert
+    // Delete a user with confirmation
     const handleDeleteUser = (userId) => {
         swal({
             title: "Are you sure?",
@@ -94,19 +89,18 @@ const Settings = () => {
             dangerMode: true,
         }).then((willDelete) => {
             if (willDelete) {
-                setUsers(prev => prev.filter(u => u.id !== userId));
+                setUsers((prev) => prev.filter((u) => u.id !== userId));
                 swal("User has been deleted!", { icon: "success" });
             }
         });
     };
 
-    // Handle password change and validate new passwords
+    // Handle password change
     const handleChangePassword = () => {
         if (newPassword !== confirmPassword) {
             swal("Error", "New password and confirm password do not match", "error");
             return;
         }
-        // Password change logic here (e.g., API call). For now, show success.
         swal("Success", "Password changed successfully", "success");
         // Clear password fields and close modal
         setOldPassword("");
@@ -115,7 +109,7 @@ const Settings = () => {
         setShowChangePasswordModal(false);
     };
 
-    // Filter users based on the search query
+    // Filter users based on search query
     const filteredUserData = useMemo(() => {
         if (!searchQuery) return users;
         return users.filter((user) =>
@@ -124,49 +118,40 @@ const Settings = () => {
     }, [searchQuery, users]);
 
     return (
-        <div className='settings-container justify-center flex flex-wrap'>
-            <div className='settings-box'>
+        <div className="settings-container justify-center flex flex-wrap">
+            <div className="settings-box">
                 <h1>Settings</h1>
-                <div className='profile-card'>
+                {/* Profile Card */}
+                <div className="profile-card">
                     <h3>Profile:</h3>
-                    <div className='flex justify-between gap-2 profile-details-container'>
-                        <div className='profile-details'>
-                            <div className='flex'>
-                                <div className='flex'>
-                                    <div className='flex profile-img-col'>
-                                        <img src="https://i.pravatar.cc/120?img=3" alt="Profile Avatar" />
-                                        <div>
-                                            <p>Name:</p>
-                                            <p>Email:</p>
-                                            <p>Phone Number:</p>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className='profile-d-display'>
-                                    <p>Administration</p>
-                                    <p>admin@castlerockin.com</p>
-                                    <p>987654321</p>
+                    <div className="flex justify-between gap-2 profile-details-container">
+                        <div className="profile-details">
+                            <div className="flex profile-img-col">
+                                <img src="https://i.pravatar.cc/120?img=3" alt="Profile Avatar" />
+                                <div>
+                                    <p>Name:</p>
+                                    <p>Email:</p>
+                                    <p>Phone Number:</p>
                                 </div>
                             </div>
-                            <div className='Account-manager-box'>
-                                <h5>Account Manager:</h5>
-                                <p>Name: Relation Manager</p>
-                                <div className='flex justify-between'>
-                                    <p>Email: abc@xyz.in</p>
-                                    <p>Phone Number: 987654321</p>
-                                </div>
+                            <div className="profile-d-display">
+                                <p>Administration</p>
+                                <p>admin@castlerockin.com</p>
+                                <p>987654321</p>
                             </div>
                         </div>
-                        <div className='r-activity-history'>
-                            <div className='activity-history'>
+                        <div className="r-activity-history">
+                            <div className="activity-history">
                                 <h5>Activity History</h5>
-                                <div className='activity-list'>
+                                <div className="activity-list">
                                     <p>Created assessment by XYZ - 22:11 01/02/2025</p>
                                     <p>Created assessment by XYZ - 22:11 01/02/2025</p>
                                     <p>Created assessment by XYZ - 22:11 01/02/2025</p>
                                 </div>
-                                <div className='flex justify-end'>
-                                    <button onClick={() => setShowChangePasswordModal(true)}>Change Password</button>
+                                <div className="flex justify-end">
+                                    <button onClick={() => setShowChangePasswordModal(true)}>
+                                        Change Password
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -181,8 +166,7 @@ const Settings = () => {
                             Manage Users
                         </motion.button>
                     </div>
-
-                    {/* Search Bar & Create Button */}
+                    {/* Search & Add User Button */}
                     <div className="flex flex-wrap items-center justify-center sm:justify-end gap-2 w-full sm:w-auto">
                         <div className="search-box flex items-center w-full sm:w-auto">
                             <FaSearch className="m-icon" />
@@ -197,14 +181,14 @@ const Settings = () => {
                         <motion.button
                             whileTap={{ scale: 1.2 }}
                             className="manage-create-btn w-full sm:w-auto"
-                            onClick={onCreateNew}
+                            onClick={() => setOpenAddUserModal(true)}
                         >
                             Add User
                         </motion.button>
                     </div>
                 </div>
 
-                {/* Table Section: Users */}
+                {/* Users Table */}
                 <div className="overflow-x-auto manage-table">
                     <table className="w-full border-collapse">
                         <thead>
@@ -258,8 +242,8 @@ const Settings = () => {
                     </table>
                 </div>
 
-                {/* ========== MODAL FOR ADDING A NEW USER ========== */}
-                {showAddUserModal && (
+                {/* Add User Modal */}
+                {openAddUserModal && (
                     <div className="modal-backdrop">
                         <div className="modal-content">
                             <h2>Add User</h2>
@@ -301,7 +285,7 @@ const Settings = () => {
                                 </select>
                             </div>
                             <div className="modal-buttons">
-                                <button onClick={() => setShowAddUserModal(false)}>Back</button>
+                                <button onClick={() => setOpenAddUserModal(false)}>Back</button>
                                 <button onClick={handleCreateUser} className="create-btn">
                                     Create
                                 </button>
@@ -310,7 +294,7 @@ const Settings = () => {
                     </div>
                 )}
 
-                {/* ========== MODAL FOR EDITING AN EXISTING USER ========== */}
+                {/* Edit User Modal */}
                 {showEditUserModal && (
                     <div className="modal-backdrop">
                         <div className="modal-content">
@@ -359,7 +343,7 @@ const Settings = () => {
                     </div>
                 )}
 
-                {/* ========== MODAL FOR CHANGING PASSWORD ========== */}
+                {/* Change Password Modal */}
                 {showChangePasswordModal && (
                     <div className="modal-backdrop">
                         <div className="modal-content">
@@ -392,7 +376,9 @@ const Settings = () => {
                                 />
                             </div>
                             <div className="modal-buttons">
-                                <button onClick={() => setShowChangePasswordModal(false)}>Back</button>
+                                <button onClick={() => setShowChangePasswordModal(false)}>
+                                    Back
+                                </button>
                                 <button onClick={handleChangePassword} className="create-btn">
                                     Update Password
                                 </button>

@@ -14,6 +14,8 @@ import Settings from "../component/Settings";
 
 const Home = () => {
     const [activeComponent, setActiveComponent] = useState("dashboard");
+    const [isStudentModalOpen, setStudentModalOpen] = useState(false);
+    const [openAddUserModal, setOpenAddUserModal] = useState(false);
 
     // Function to handle exam creation alert
     const handleCreateExam = () => {
@@ -40,19 +42,40 @@ const Home = () => {
 
                 {/* Main Content Area */}
                 <div className="xl:w-8/10 lg:w-8/10 md:w-10/10 sm:w-full">
-                    {/* Render components conditionally based on activeComponent */}
+                    {/* Main Navigation Components */}
                     {activeComponent === "dashboard" && (
-                        // Pass the onCreateExam prop to Dashboard
-                        <Dashboard onCreateExam={() => setActiveComponent("newExam")}
-                            onAddStudent={() => setActiveComponent("student")} />
+                        <Dashboard
+                            onCreateExam={() => setActiveComponent("manageExam")}
+                            onAddStudent={() => {
+                                setActiveComponent("student");
+                                setStudentModalOpen(true); // Open modal when quick link is clicked
+                            }}
+                            onAddUser={() => {
+                                setActiveComponent("settings");
+                                setOpenAddUserModal(true);
+                            }}
+                            onAddCredits={() => {
+                                setActiveComponent("subcribe");
+                            }}
+                        />
                     )}
                     {activeComponent === "subcribe" && <Subcription />}
-                    {activeComponent === "settings" && <Settings />}
+                    {activeComponent === "settings" && (
+                        <Settings
+                            openAddUserModal={openAddUserModal}
+                            setOpenAddUserModal={setOpenAddUserModal}
+                        />
+                    )}
                     {activeComponent === "manageExam" && (
                         <ManageExam onCreateNewExam={() => setActiveComponent("newExam")} />
                     )}
                     {activeComponent === "result" && <ManageResult />}
-                    {activeComponent === "student" && <ManageStudents />}
+                    {activeComponent === "student" && (
+                        <ManageStudents
+                            studentModalOpen={isStudentModalOpen}
+                            setStudentModalOpen={setStudentModalOpen}
+                        />
+                    )}
 
                     {/* Exam Flow Navigation */}
                     {activeComponent === "newExam" && (
