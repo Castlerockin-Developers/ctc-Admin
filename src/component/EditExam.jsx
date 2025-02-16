@@ -176,7 +176,7 @@ const EditExam = ({ onClose, examDetails }) => {
 
 
     return (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-1100">
             <div className='edit-container'>
                 <div className="flex justify-between items-center edit-exam-header">
                     <h2>Exam Section</h2>
@@ -190,10 +190,10 @@ const EditExam = ({ onClose, examDetails }) => {
                 </div>
                 <div className='flex justify-center Edit-exam-body'>
                     {/* Necessary exam data edit */}
-                    <div>
+                    <div className='body-control'>
                         <div className='exam-creation-edit'>
                             <div className='flex desc'>
-                                <p className='text-2xl'>Exam Name:</p>
+                                <p className='xl:text-2xl lg:text-xl md:text-lg'>Exam Name:</p>
                                 <div className='flex edit-ename-options'>
                                     <input type="text" className='w-lg' placeholder='Enter Descriptions' />
                                     <button className='bg-blue-500 hover:bg-blue-800 rounded-lg'>Save</button>
@@ -201,31 +201,32 @@ const EditExam = ({ onClose, examDetails }) => {
                                 </div>
                             </div>
                             <div className='flex desc'>
-                                <p className='text-2xl'>Description:</p>
-                                <div className='flex edit-ename-options'>
+                                <p className='text-2xl lg:text-xl md:text-lg'>Description:</p>
+                                <div className='flex edit-ename-options edit-ename-options-desc'>
                                     <input type="text" className='w-lg' placeholder='Enter Descriptions' />
+                                    <textarea type="text" className='w-lg' placeholder='Enter Descriptions' rows={10}></textarea>
                                     <button className='bg-blue-500 hover:bg-blue-800 rounded-lg'>Save</button>
                                     <button className='bg-gray-500 hover:bg-gray-800 rounded-lg'>Cancel</button>
                                 </div>
                             </div>
                             <div className='flex desc'>
-                                <p className='text-2xl'>Overall Time:</p>
-                                <div className='flex edit-ename-options e-time'>
+                                <p className='text-2xl lg:text-xl md:text-lg'>Overall Time:</p>
+                                <div className='flex edit-ename-options-e-time'>
                                     <input type="text" className='w-29' placeholder='Overall Time' />
                                     <button className='bg-blue-500 hover:bg-blue-800 rounded-lg'>Save</button>
                                     <button className='bg-gray-500 hover:bg-gray-800 rounded-lg'>Cancel</button>
                                 </div>
                             </div>
                             <div className='flex desc'>
-                                <p className='text-2xl'>Section Time:</p>
-                                <div className='flex edit-ename-options e-stime'>
+                                <p className='text-2xl lg:text-xl md:text-lg'>Section Time:</p>
+                                <div className='flex edit-ename-options-e-time'>
                                     <input type="text" className='w-29' placeholder='Enter Descriptions' />
                                     <button className='bg-blue-500 hover:bg-blue-800 rounded-lg'>Save</button>
                                     <button className='bg-gray-500 hover:bg-gray-800 rounded-lg'>Cancel</button>
                                 </div>
                             </div>
                             <div className='flex desc'>
-                                <p className='text-2xl'>Start Time:</p>
+                                <p className='text-2xl lg:text-xl md:text-lg'>Start Time:</p>
                                 <div className="flex ">
                                     <div className="flex items-center p-3 rounded-lg shadow-md">
                                         {/* Date Picker */}
@@ -254,7 +255,7 @@ const EditExam = ({ onClose, examDetails }) => {
                                 </div>
 
                                 {/* Save & Cancel Buttons */}
-                                <div className="flex space-x-4">
+                                <div className="flex space-x-4 r-btn">
                                     <button className="bg-blue-500 hover:bg-blue-800 text-white rounded-lg transition">
                                         Save
                                     </button>
@@ -264,7 +265,7 @@ const EditExam = ({ onClose, examDetails }) => {
                                 </div>
                             </div>
                             <div className='flex desc'>
-                                <p className='text-2xl'>End Time:</p>
+                                <p className='xl:text-2xl lg:text-xl md:text-lg'>End Time:</p>
                                 <div className="flex ">
                                     <div className="flex items-center rounded-lg shadow-md">
                                         {/* Date Picker */}
@@ -293,7 +294,7 @@ const EditExam = ({ onClose, examDetails }) => {
                                 </div>
 
                                 {/* Save & Cancel Buttons */}
-                                <div className="flex space-x-4">
+                                <div className="flex space-x-4 r-btn">
                                     <button className="bg-blue-500 hover:bg-blue-800 text-white rounded-lg transition">
                                         Save
                                     </button>
@@ -357,7 +358,7 @@ const EditExam = ({ onClose, examDetails }) => {
 
                         <div className='e-warning-note flex justify-between'>
                             <p><span>Note:</span> By clicking delete button, exam will deleted from the server</p>
-                            <div className='flex gap-5'>
+                            <div className='flex xl:gap-5 lg:gap-3 md:gap-2'>
                                 <motion.button
                                     whileTap={{ scale: 1.1 }}
                                     className="bg-teal-500 hover:bg-teal-800 text-white px-4 py-2 rounded-md"
@@ -375,6 +376,7 @@ const EditExam = ({ onClose, examDetails }) => {
                         </div>
                     </div>
                 </div>
+
                 {showEditMCQPopup && (
                     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
                         <motion.div
@@ -395,18 +397,32 @@ const EditExam = ({ onClose, examDetails }) => {
                                     className="rounded-md mt-1 mb-3 border border-gray-600"
                                     placeholder="Enter your question"
                                 />
+
+                                <textarea
+                                    type="text"
+                                    value={question}
+                                    onChange={(e) => setQuestion(e.target.value)}
+                                    className="rounded-md mt-1 mb-3 border border-gray-600"
+                                    placeholder="Enter your question"></textarea>
                             </div>
 
                             {/* Options List */}
                             {options.map((option, index) => (
-                                <div key={index} className="flex items-center">
-                                    <label className="block text-sm font-medium">Options</label>
+                                <div key={index} className="flex items-center options-list">
+                                    <label className="block text-sm font-medium">Options:</label>
                                     <div className='flex w-full'>
                                         <input
                                             type="text"
                                             value={option.text}
                                             onChange={(e) => handleOptionChange(index, e.target.value)}
                                             className=" MCQ-question-options rounded-md border border-gray-600 "
+                                            placeholder={`Option ${index + 1}`}
+                                        />
+                                        <textarea
+                                            type="text"
+                                            value={option.text}
+                                            onChange={(e) => handleOptionChange(index, e.target.value)}
+                                            className="rounded-md border border-gray-600 "
                                             placeholder={`Option ${index + 1}`}
                                         />
                                         <input
@@ -475,6 +491,12 @@ const EditExam = ({ onClose, examDetails }) => {
                                     className="rounded-md mt-1 mb-3 border border-gray-600"
                                     placeholder="Enter your question"
                                 />
+                                <textarea
+                                    type="text"
+                                    value={question}
+                                    onChange={(e) => setQuestion(e.target.value)}
+                                    className="rounded-md mt-1 mb-3 border border-gray-600"
+                                    placeholder="Enter your question"></textarea>
                             </div>
 
                             {/* Save & Cancel Buttons */}

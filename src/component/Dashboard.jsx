@@ -10,7 +10,8 @@ const Dashboard = () => {
     const [selectedExam, setSelectedExam] = useState(null);
     const [testDetails, setTestDetails] = useState([]);
 
-    const togglePopup = () => setShowPopup(!showPopup);
+    const togglePopup = () => setShowPopup((prev) => !prev);
+    const closePopup = () => setShowPopup(false); // Separate function for closing pop-up
 
     const openEditPopup = (exam) => {
         setSelectedExam(exam);
@@ -18,12 +19,27 @@ const Dashboard = () => {
     };
     const closeEditPopup = () => setShowEditPopup(false);
 
+    // Close pop-ups when ESC is pressed
+    useEffect(() => {
+        const handleKeyDown = (event) => {
+            if (event.key === "Escape") {
+                setShowEditPopup(false);
+                setShowPopup(false);
+            }
+        };
+
+        document.addEventListener("keydown", handleKeyDown);
+        return () => {
+            document.removeEventListener("keydown", handleKeyDown);
+        };
+    }, []);
+
     useEffect(() => {
         setTimeout(() => {
             setDashboardData({
                 activeContest: 15,
                 liveContest: 2,
-                averageScore: 90,
+                credit: 1000,
                 totalStudents: 572
             });
 
@@ -44,9 +60,9 @@ const Dashboard = () => {
         <div className="lg:w-3xl justify-center flex flex-wrap dashboard">
             <div className="greeting">
                 <h1>Welcome Admin</h1>
-                <div className="grid grid-cols-2 lg:grid-cols-4 md:grid-cols-4 gap-4 w-full">
+                <div className="grid grid-cols-2 xl:grid-cols-4 lg:grid-cols-2 md:grid-cols-4 gap-4 w-full">
                     <motion.div whileTap={{ scale: 1.1 }} className="top-display top-display-clickable" onClick={togglePopup}>
-                        <h4 className="xl:text-2xl lg:text-2xl md:text-xl">Active Test</h4>
+                        <h4 className="xl:text-xl lg:text-xl md:text-xl">Active Test</h4>
                         <h2 className="xl:text-4xl lg:text-4xl md:text-4xl flex justify-center">
                             {dashboardData.activeContest}
                         </h2>
@@ -58,7 +74,7 @@ const Dashboard = () => {
                             <div className="top-display-pop-card rounded-sm shadow-lg w-3/4 md:w-1/2">
                                 <div className="flex justify-between items-center mb-4 top-display-pop-title">
                                     <h2 className="font-semibold text-center">Active Exams</h2>
-                                    <motion.button whileTap={{ scale: 1.2 }} className="text-red-500 text-lg" onClick={togglePopup}><img src={closeicon} alt="" /></motion.button>
+                                    <motion.button whileTap={{ scale: 1.2 }} className="text-red-500 text-lg" onClick={closePopup}><img src={closeicon} alt="" /></motion.button>
                                 </div>
 
                                 {/* Table */}
@@ -96,19 +112,19 @@ const Dashboard = () => {
                         </div>
                     )}
                     <div className="top-display">
-                        <h4 className="xl:text-2xl lg:text-2xl md:text-xl">Live Contest</h4>
+                        <h4 className="xl:text-xl lg:text-xl md:text-xl">Live Contest</h4>
                         <h2 className="xl:text-4xl lg:text-4xl md:text-4xl flex justify-center">
                             {dashboardData.liveContest}
                         </h2>
                     </div>
                     <div className="top-display">
-                        <h4 className="xl:text-2xl lg:text-2xl md:text-xl">Average Score</h4>
+                        <h4 className="xl:text-xl lg:text-xl md:text-xl">Remaining Credits</h4>
                         <h2 className="xl:text-4xl lg:text-4xl md:text-4xl flex justify-center">
-                            {dashboardData.averageScore}
+                            {dashboardData.credit}
                         </h2>
                     </div>
                     <div className="top-display">
-                        <h4 className="xl:text-2xl lg:text-2xl md:text-xl">Total Students</h4>
+                        <h4 className="xl:text-xl lg:text-xl md:text-xl">Total Students</h4>
                         <h2 className="xl:text-4xl lg:text-4xl md:text-4xl flex justify-center">
                             {dashboardData.totalStudents}
                         </h2>

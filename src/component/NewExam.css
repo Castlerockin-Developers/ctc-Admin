@@ -1,0 +1,1304 @@
+.newexam-container {
+    background-color: #282828;
+    width: calc(100% - 69px);
+    height: 87vh;
+    overflow-y: auto;
+    transition: width 0.3s ease-in-out, margin-left 0.3s ease-in-out;
+    padding: 1.2rem;
+    border-radius: 5px;
+}
+
+.newexam-box {
+    width: 95%;
+    padding-top: 1.5rem;
+}
+
+.newexam-box h1 {
+    color: white;
+    font-family: madina-semibold;
+    font-size: 2.5rem;
+    margin-top: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+.newexam-entry1 {
+    margin-top: 10px;
+}
+
+.createexam-col1 {
+    width: 90%;
+}
+
+.createexam-col1 h4 {
+    color: white;
+    font-size: 1.4rem;
+    font-family: madina-regular;
+    margin-top: 20px;
+    position: relative;
+    bottom: 6px;
+    width: 15vw;
+}
+
+.createexam-col1 input {
+    width: 40%;
+    height: 5.5vh;
+    padding: 5px;
+    margin-top: 10px;
+    margin-left: 40px;
+    background-color: #434343;
+    border: 1px solid rgb(141, 141, 141);
+    border-radius: 5px;
+    color: white;
+    font-family: madina-light;
+}
+
+.createexam-col1 select {
+    max-width: 50%;
+    padding: 5px;
+    background-color: #434343;
+    border: 1px solid rgb(141, 141, 141);
+    border-radius: 5px;
+    margin-top: 10px;
+    margin-left: 40px;
+    color: white;
+    font-family: madina-light;
+}
+
+.custom-input {
+    position: relative;
+    left: 20px;
+    width: 25% !important;
+}
+
+.toggle-switch {
+    position: relative;
+    display: block;
+    width: 50px;
+    height: 24px;
+    top: 22px;
+}
+
+/* Hide default checkbox */
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+/* The track */
+.slider {
+    position: absolute;
+    cursor: pointer;
+    background-color: #434343;
+    border: 1px solid rgb(136, 136, 136);
+    border-radius: 24px;
+    width: 100%;
+    height: 100%;
+    transition: background-color 0.3s;
+}
+
+/* The circular slider */
+.slider::before {
+    content: "";
+    position: absolute;
+    height: 24px;
+    width: 24px;
+    left: -1px;
+    top: -1px;
+    background-color: white;
+    border-radius: 50%;
+    transition: transform 0.3s;
+}
+
+/* Toggled state */
+.toggle-switch input:checked+.slider {
+    background-color: #4caf50;
+}
+
+.toggle-switch input:checked+.slider::before {
+    transform: translateX(26px);
+}
+
+.timer-h4 {
+    color: white;
+    font-size: 1.4rem;
+    font-family: madina-regular;
+    margin-left: 90px;
+    width: 10vw !important;
+}
+
+.timer-h4 span {
+    margin-left: 5rem;
+}
+
+.timer-input {
+    width: 16% !important;
+    margin-bottom: 20px;
+    margin-left: 0px !important;
+}
+
+.ql-container,
+.ql-toolbar {
+    width: 121%;
+    border: 1px solid rgb(141, 141, 141) !important;
+    margin-left: 33px;
+}
+
+.ql-container {
+    height: 80%;
+}
+
+.ql-toolbar {
+    margin-top: 15px;
+}
+
+.bottom-btns {
+    width: 18%;
+    display: flex;
+    justify-content: space-between;
+    margin-top: -10px;
+}
+
+.back-btn-create {
+    color: white;
+    font-family: madina-regular;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1.1rem;
+}
+
+.back-btn-create:hover {
+    background-color: rgb(167, 0, 0);
+}
+
+.bottom-btns p {
+    color: white;
+    padding: 10px;
+    font-family: madina-regular;
+}
+
+.next-btn {
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    background-color: #9B005D;
+    font-family: madina-semibold;
+    cursor: pointer;
+}
+
+.next-btn:hover {
+    background-color: #df0086;
+}
+
+.addq-container {
+    background-color: #282828;
+    width: calc(100% - 69px);
+    height: 87vh;
+    overflow-y: auto;
+    transition: width 0.3s ease-in-out, margin-left 0.3s ease-in-out;
+    padding: 1.2rem;
+    border-radius: 5px;
+}
+
+.addquestion-box {
+    width: 93%;
+    padding-top: 1.5rem;
+}
+
+.addquestion-box h1,
+.addStudent-box h1 {
+    color: white;
+    font-family: madina-semibold;
+    font-size: 2.5rem;
+    margin-top: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+.add-q-container {
+    margin-top: 10px;
+}
+
+.questionbank-container {
+    width: 100%;
+    height: 60vh;
+}
+
+.question-bank {
+    margin-top: 6px;
+}
+
+.question-bank-head {
+    width: 100%;
+    background-color: #313131;
+    padding: 1rem;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    border: 1px solid rgb(107, 107, 107);
+}
+
+.question-bank-head h3,
+.addedquestion-bank-head h3 {
+    color: white;
+    font-size: 1.3rem;
+    font-family: madina-semibold;
+}
+
+.question-bank-head span,
+.addedquestion-bank-head span {
+    color: white;
+    font-family: madina-semibold;
+}
+
+.question-bank-head button {
+    background-color: #FF0099;
+    padding: 5px 20px 5px;
+    color: white;
+    font-size: 1.2rem;
+    border-radius: 5px;
+    font-family: madina-semibold;
+    cursor: pointer;
+}
+
+.question-bank-head button:hover {
+    background-color: #8b0054;
+}
+
+.question-bank-body {
+    background-color: #434343;
+    width: 100%;
+    height: 52.3vh;
+    display: flex;
+    flex-direction: column;
+    border-bottom-right-radius: 10px;
+    border-bottom-left-radius: 10px;
+    border: 1px solid rgb(107, 107, 107);
+    overflow-y: auto;
+    padding: 10px;
+    gap: 10px;
+}
+
+.question-templet-wrapper {
+    flex-grow: 1;
+    width: 95%;
+    min-height: 20vh;
+    display: flex;
+    flex-direction: column;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-left: 15px;
+}
+
+.question-templet-header {
+    background-color: #373737;
+    padding: 10px;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    border: 1px solid rgb(95, 95, 95);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.question-templet-header p {
+    color: white;
+    font-family: madina-regular;
+}
+
+.question-templet-header span {
+    color: white;
+    margin-left: 10px;
+    font-family: madina-light;
+}
+
+.question-templet-header button {
+    color: white;
+    padding: 2px 10px 2px;
+    cursor: pointer;
+    margin-left: 10px;
+}
+
+.question-templet-body {
+    flex-grow: 1;
+    max-height: 30vh;
+    background-color: #4D4D4D;
+    border-bottom-right-radius: 10px;
+    border-bottom-left-radius: 10px;
+    border: 1px solid rgb(102, 102, 102);
+    position: relative;
+    overflow: hidden;
+}
+
+.question-templet-body::-webkit-scrollbar {
+    display: none;
+    /* Chrome, Safari */
+}
+
+.question {
+    padding-bottom: 1px;
+    position: relative;
+}
+
+.question details {
+    background-color: #5F5F5F;
+    width: 100%;
+    color: white;
+    font-size: 15px;
+    padding: 0.5rem 1rem;
+    border: 1px solid rgb(88, 88, 88);
+    cursor: pointer;
+}
+
+.question details summary {
+    font-family: madina-regular;
+}
+
+.question details summary button {
+    padding: 2px 10px 2px;
+    background-color: #4caf50;
+    border-radius: 5px;
+    font-family: madina-semibold;
+    cursor: pointer;
+}
+
+.question details summary button:hover {
+    background-color: #056308;
+}
+
+.question details p {
+    margin-top: 10px;
+}
+
+.addedquestion-bank-head {
+    width: 100%;
+    background-color: #313131;
+    padding: 1.1rem;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    border: 1px solid rgb(107, 107, 107);
+}
+
+/* Section timer block shown on desktop */
+.section-timer-desktop {
+    display: block;
+}
+
+.section-timer-desktop input {
+    width: 5vw;
+    margin-right: 5px;
+    padding: 4px;
+    background-color: #434343;
+    color: white;
+    font-family: madina-light;
+    border: 1px solid rgb(133, 133, 133);
+    border-radius: 5px;
+    font-size: 1rem;
+}
+
+/* Hide filter button by default */
+.r-filter-btn {
+    padding: 0.7rem;
+    margin-right: 5px;
+    border-radius: 5px;
+    border: 1px solid rgb(133, 133, 133);
+    background-color: #424242;
+    cursor: pointer;
+    display: none;
+}
+
+.r-filter-btn:hover {
+    background-color: #292929;
+}
+
+/* Dropdown Menu for the Filter Button */
+.filter-dropdown {
+    position: absolute;
+    top: 110%;
+    /* positions the dropdown below the filter btn */
+    right: 0;
+    background-color: #313131;
+    border: 1px solid #858585;
+    border-radius: 5px;
+    z-index: 100;
+    width: 150px;
+}
+
+.filter-dropdown2 {
+    position: absolute;
+    top: 110%;
+    right: 0%;
+    background-color: #313131;
+    border: 1px solid #858585;
+    border-radius: 5px;
+    z-index: 100;
+    width: 150px;
+}
+
+.filter-dropdown .dropdown-item {
+    padding: 10px;
+    cursor: pointer;
+    font-family: madina-regular;
+    font-size: 0.9rem;
+    color: white;
+}
+
+.filter-dropdown .dropdown-item:hover {
+    background-color: #424242;
+}
+
+.filter-dropdown2 .dropdown-item {
+    padding: 10px;
+    cursor: pointer;
+    font-family: madina-regular;
+    font-size: 0.9rem;
+    color: white;
+}
+
+.filter-dropdown2 .dropdown-item:hover {
+    background-color: #424242;
+}
+
+
+.r-randomize-btn {
+    padding: 10px;
+    background: linear-gradient(#CBC8FF 0%, #E2BAFF 100%);
+    font-size: 0.9rem;
+    color: white;
+    font-family: madina-semibold;
+}
+
+.randomize-btn {
+    padding: 10px;
+    background: linear-gradient(#CBC8FF 0%, #E2BAFF 100%);
+    font-size: 0.9rem;
+    border-radius: 5px;
+    margin-right: 10px;
+}
+
+.addedquestion-bank-head button {
+    font-size: 0.9rem;
+    font-family: madina-medium;
+    padding: 4px 10px 5px;
+    color: white;
+    background-color: #FF0099;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.addedquestion-bank-head button:hover {
+    background-color: #a30062;
+}
+
+.addedquestion-bank-head span {
+    font-size: 1rem;
+    margin-right: 5px;
+    font-family: madina-regular;
+}
+
+/* Timer Pop-up Modal Styles */
+.timer-popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.timer-popup-content {
+    background: #313131;
+    padding: 1rem;
+    border-radius: 5px;
+    position: relative;
+    color: white;
+    min-width: 300px;
+}
+
+.timer-popup-content span {
+    color: white;
+    font-family: madina-medium;
+    margin-right: 10px;
+}
+
+.timer-popup-content input {
+    border: 1px solid rgb(107, 107, 107);
+    padding: 0.8rem;
+    border-radius: 5px;
+    width: 60%;
+}
+
+.r-close-btn {
+    position: absolute;
+    top: 0.1rem;
+    right: 0.5rem;
+    background: transparent;
+    border: none;
+    font-size: 1.2rem;
+    color: white;
+    cursor: pointer;
+    font-family: madina-semibold;
+}
+
+.r-close-btn:hover {
+    color: red;
+}
+
+.addedquestion-bank-body {
+    background-color: #434343;
+    width: 100%;
+    height: 22vh;
+    justify-content: center;
+    border-bottom-right-radius: 10px;
+    border-bottom-left-radius: 10px;
+    border: 1px solid rgb(107, 107, 107);
+    overflow-y: auto;
+    position: relative;
+}
+
+.addedquestion-bank-body details {
+    background-color: #5F5F5F;
+    width: 100%;
+    color: white;
+    font-size: 15px;
+    padding: 0.5rem 1rem;
+    border: 1px solid rgb(88, 88, 88);
+    cursor: pointer;
+}
+
+.addedquestion-bank-body details summary {
+    font-family: madina-regular;
+}
+
+.addedquestion-bank-body details summary button {
+    padding: 2px 10px 3px;
+    background-color: #b63939;
+    border-radius: 5px;
+    font-family: madina-semibold;
+    cursor: pointer;
+}
+
+.addedquestion-bank-body details summary button:hover {
+    background-color: #ff0000;
+}
+
+.draggable-active {
+    opacity: 0.6;
+    transform: scale(0.98);
+    cursor: grabbing;
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+    transition: opacity 0.2s, transform 0.2s, box-shadow 0.2s;
+    background-color: #5F5F5F;
+}
+
+.line-bottom {
+    width: 90%;
+    height: 1px;
+    margin-top: 20px;
+}
+
+.exam-previous-btn {
+    padding: 10px;
+    color: white;
+    border-radius: 5px;
+    background-color: #434343;
+    margin-right: 20px;
+    font-family: madina-semibold;
+    cursor: pointer;
+}
+
+.exam-previous-btn:hover {
+    background-color: #5c5c5c;
+}
+
+.bottom-control {
+    margin-top: 20px;
+}
+
+.left-icon {
+    margin-right: 10px;
+}
+
+.bottom-control p {
+    color: white;
+    width: 40px;
+    margin-top: 10px;
+    font-family: madina-semibold;
+}
+
+.exam-next-btn {
+    color: white;
+    padding: 10px 20px 10px;
+    border-radius: 5px;
+    background-color: #9B005D;
+    margin-right: 20px;
+    font-family: madina-semibold;
+    cursor: pointer;
+}
+
+.exam-next-btn:hover {
+    background-color: #ff0099;
+}
+
+.MCQ-question-score {
+    margin-bottom: 15px;
+}
+
+.MCQ-question-score input {
+    width: 12%;
+    background-color: #424242;
+    padding: 0px 10px;
+    color: white;
+    font-family: madina-light;
+}
+
+.MCQ-question-score textarea {
+    display: none;
+    width: 82%;
+    background-color: #424242;
+    padding: 0px 20px;
+    color: white;
+    font-family: madina-light;
+}
+
+.adds-container {
+    background-color: #282828;
+    width: calc(100% - 69px);
+    height: 87vh;
+    overflow-y: auto;
+    transition: width 0.3s ease-in-out, margin-left 0.3s ease-in-out;
+    padding: 1.2rem;
+    border-radius: 5px;
+}
+
+.addStudent-box {
+    width: 93%;
+    padding-top: 1.5rem;
+}
+
+.addStudent-box img {
+    width: 100%;
+    height: 2px;
+}
+
+/* .add-s-container {} */
+
+.all-student,
+.all-student-added {
+    width: 100%;
+    height: 100%;
+}
+
+.all-s-header,
+.all-s-header-added {
+    width: 100%;
+    background-color: #313131;
+    padding: 0.8rem;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    border: 1px solid rgb(107, 107, 107);
+}
+
+.all-s-header h3,
+.all-s-header-added h3 {
+    color: white;
+    font-family: madina-semibold;
+    font-size: 1.3rem;
+}
+
+.all-s-header button,
+.all-s-header-added button {
+    background-color: #424242;
+    border: 1px solid white;
+    padding: 0.8rem;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.all-s-header button:hover,
+.all-s-header-added button:hover {
+    background-color: #222222;
+}
+
+.all-s-header button img,
+.all-s-header-added button img {
+    width: 15px;
+    height: 10px;
+}
+
+.s-search-container input {
+    padding: 3px 27px 3px;
+    border: 1px solid rgb(133, 133, 133);
+    border-radius: 5px;
+    color: white;
+}
+
+.s-icon {
+    color: white;
+    position: absolute;
+    left: 6px;
+    top: 10px;
+    font-size: 18px;
+}
+
+.all-s-body {
+    background-color: #434343;
+    width: 100%;
+    height: 53vh;
+    display: flex;
+    flex-direction: column;
+    border-bottom-right-radius: 10px;
+    border-bottom-left-radius: 10px;
+    border: 1px solid rgb(107, 107, 107);
+    overflow-y: auto;
+    padding: 10px;
+    gap: 10px;
+}
+
+.all-s-body .adds-table-wrapper,
+.addeds-table-wrapper {
+    border-radius: 10px;
+}
+
+
+.all-s-body table {
+    width: 100%;
+    border-collapse: collapse;
+    border-spacing: 0;
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 15px 0px;
+}
+
+/* Apply border-radius to table corners */
+.all-s-body table thead tr:first-child td:first-child {
+    border-top-left-radius: 10px;
+}
+
+.all-s-body table thead tr:first-child td:last-child {
+    border-top-right-radius: 10px;
+}
+
+.all-s-body table tbody tr:last-child td:first-child {
+    border-bottom-left-radius: 10px;
+}
+
+.all-s-body table tbody tr:last-child td:last-child {
+    border-bottom-right-radius: 10px;
+}
+
+.all-s-body table thead tr {
+    background-color: #373737;
+    border: 1px solid rgb(172, 172, 172);
+}
+
+.all-s-body table thead tr td {
+    color: white;
+    padding: 0.5rem;
+    font-family: madina-semibold;
+}
+
+.adds-branch,
+.adds-btn {
+    padding: 0.2rem;
+    font-family: madina-semibold;
+    margin-left: 10px;
+    cursor: pointer;
+}
+
+.all-s-body table tbody {
+    background-color: #4D4D4D;
+}
+
+.all-s-body table tbody tr td {
+    color: white;
+    padding: 0.5rem;
+    font-family: madina-regular;
+}
+
+.all-s-body table tbody tr {
+    border: 1px solid rgb(172, 172, 172);
+}
+
+
+/* Filter Popup */
+.inadd-student {
+    position: fixed;
+    left: 26.5%;
+    top: 28%;
+    background: #1e1e1e;
+    padding: 20px;
+    border-radius: 10px;
+    width: 300px;
+    text-align: center;
+    z-index: 1000;
+}
+
+
+.inadd-student h3 {
+    color: white;
+    font-size: 1.3rem;
+    font-family: madina-semibold;
+}
+
+.inadded-student {
+    position: fixed;
+    right: 23%;
+    top: 28%;
+    background: #1e1e1e;
+    padding: 20px;
+    border-radius: 10px;
+    width: 300px;
+    text-align: center;
+    z-index: 1000;
+}
+
+
+.inadded-student h3 {
+    color: white;
+    font-size: 1.3rem;
+    font-family: madina-semibold;
+}
+
+.s-ilter-line {
+    width: 70%;
+    margin-top: 0.5rem;
+}
+
+/* Filter Options */
+.inadd-student-filter-options {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    margin: 5px 0;
+}
+
+.adds-filter-item:hover {
+    background: #4A4A4A;
+}
+
+/* Filter Items */
+.adds-filter-item {
+    background: transparent;
+    color: white;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 1rem;
+    position: relative;
+}
+
+/* Keep the active item highlighted */
+.adds-active-filter-item,
+.adds-filter-item:hover {
+    background: #4A4A4A;
+}
+
+/* Sub-popup for Years */
+.adds-sub-popup {
+    position: fixed;
+    background: #1e1e1e;
+    padding: 10px;
+    border-radius: 10px;
+    width: 180px;
+    text-align: center;
+    z-index: 1001;
+}
+
+.adds-sub-popup h4 {
+    color: white;
+    font-family: madina-light;
+}
+
+/* Sub-items */
+.sub-item {
+    background: transparent;
+    color: white;
+    border: none;
+    padding: 8px;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 0.9rem;
+    width: 100%;
+    text-align: left;
+}
+
+.sub-item:hover {
+    background: #4A4A4A;
+}
+
+@media(min-width:1025px) and (max-width:1440px) {
+
+    .newexam-box h1,
+    .addStudent-box h1 {
+        margin-top: 0rem;
+    }
+
+    .newexam-entry1 {
+        margin-top: 5px;
+    }
+
+    .createexam-col1 input {
+        width: 54.5%;
+    }
+
+    .toggle-switch {
+        top: 0px;
+        left: 40px;
+    }
+
+    .timer-h4 {
+        margin-left: 75px;
+    }
+
+    .timer-h4 span {
+        margin-left: 3rem;
+    }
+
+    .timer-input {
+        width: 29% !important;
+    }
+
+    .custom-input {
+        width: 34% !important;
+    }
+
+    .question-bank-head button {
+        padding: 2px 20px 8px;
+    }
+
+    .addedquestion-bank-head button {
+        padding: 4px 5px 5px;
+    }
+
+    .all-s-header h3,
+    .all-s-header-added h3 {
+        font-size: 1.2rem;
+    }
+
+    .adds-branch {
+        padding: 4px 6px 4px;
+    }
+
+}
+
+@media (min-width:769px) and (max-width:1024px) {
+
+    .newexam-box h1,
+    .addquestion-box h1 {
+        font-size: 2.1rem;
+        margin-top: 0rem;
+        margin-bottom: 0.3rem;
+    }
+
+    .createexam-col1 h4 {
+        font-size: 1.1rem;
+        width: 18vw;
+    }
+
+    .createexam-col1 input {
+        width: 60%;
+        height: 5vh;
+    }
+
+    .custom-input {
+        width: 30% !important;
+    }
+
+    .timer-h4 {
+        margin-left: 60px;
+        width: 14vw !important;
+    }
+
+    .timer-h4 span {
+        margin-left: 4rem;
+    }
+
+    .timer-input {
+        width: 24.9% !important;
+    }
+
+    .toggle-switch {
+        top: -40px;
+        left: 40px;
+    }
+
+    .ql-container,
+    .ql-toolbar {
+        width: 90%;
+    }
+
+    .bottom-btns {
+        margin-top: 50px;
+        width: 30%;
+    }
+
+    .back-btn-create {
+        font-size: 1rem;
+    }
+
+    .question-templet-wrapper {
+        width: 100%;
+        margin-left: 0px;
+    }
+
+    .question-templet-header span {
+        display: none;
+    }
+
+    .exam-type {
+        font-size: 0.9rem;
+    }
+
+    .addedquestion-bank-head span {
+        display: none;
+    }
+
+    .addedquestion-bank-head input {
+        display: none;
+    }
+
+    .randomize-btn {
+        display: none;
+    }
+
+    /* Hide the desktop timer input */
+    .section-timer-desktop {
+        display: none;
+    }
+
+    /* Show the filter button */
+    .r-filter-btn {
+        display: block;
+    }
+
+    .addedquestion-bank-body {
+        height: 21.4vh;
+    }
+
+    .bottom-control button,
+    p {
+        font-size: 0.9rem;
+    }
+
+    .all-s-header-added,
+    .all-s-header {
+        flex-direction: column;
+    }
+
+    .all-s-header-added h3 {
+        font-size: 1.2rem;
+    }
+
+    .s-search-container input {
+        width: 250px;
+    }
+
+    .r-header-search {
+        margin-top: 10px;
+    }
+
+    .all-s-body table {
+        width: 150%;
+    }
+}
+
+@media (max-width: 768px) {
+
+    .newexam-container,
+    .addq-container,
+    .adds-container {
+        width: 100%;
+    }
+
+    .newexam-box {
+        width: 100%;
+    }
+
+    .newexam-box h1,
+    .addquestion-box h1 {
+        margin-top: 0rem;
+        font-size: 2.2rem;
+    }
+
+    .createexam-col1 h4 {
+        font-size: 1.2rem;
+        width: 20vw;
+    }
+
+    .timer-h4 {
+        width: 20vw !important;
+    }
+
+    .timer-input {
+        width: 27vw !important;
+    }
+
+    .createexam-col1 input {
+        width: 70%;
+    }
+
+    .custom-input {
+        width: 42% !important;
+    }
+
+    .ql-container,
+    .ql-toolbar {
+        width: 113%;
+    }
+
+    .ql-container {
+        margin-left: 33px !important;
+    }
+
+    .toggle-switch {
+        top: 0px;
+        left: 40px;
+    }
+
+    .bottom-btns {
+        margin-top: 30px;
+        width: 30%;
+    }
+
+    .bottom-btns button,
+    p {
+        font-size: 0.8rem;
+    }
+
+    .question-templet-header span {
+        display: none;
+    }
+
+    .section-timer-desktop input {
+        width: 15vw;
+    }
+
+    .questionbank-container {
+        margin-bottom: 10px;
+    }
+
+    .addedquestion-bank-head {
+        margin-top: 20px;
+    }
+
+    .s-search-container input {
+        width: 250px;
+    }
+
+    .r-header-search {
+        margin-top: 10px;
+    }
+
+    .inadd-student {
+        position: absolute;
+        top: 33%;
+    }
+
+    .inadded-student {
+        position: absolute;
+        top: 30%;
+    }
+}
+
+@media (max-width: 425px) {
+    .newexam-container {
+        width: 100%;
+    }
+
+    .newexam-entry1 {
+        display: grid !important;
+        grid-template-columns: 1 !important;
+    }
+
+    .newexam-box h1 {
+        font-size: 1.5rem;
+    }
+
+    .createexam-col1 {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .createexam-col1 h4 {
+        font-size: 1.1rem;
+        width: 45vw;
+    }
+
+    .createexam-col1 input {
+        margin-left: 0px;
+        width: 110%;
+    }
+
+    .createexam-col1 select {
+        margin-left: 0px;
+    }
+
+    .custom-input {
+        left: 0px;
+        width: 50% !important;
+    }
+
+    .toggle-switch {
+        top: -10px;
+        left: 0px;
+    }
+
+    .timer-h4 {
+        position: relative;
+        width: 50vw !important;
+        margin-left: 0px;
+        top: 10px;
+    }
+
+    .timer-h4 span {
+        margin-left: 5.4rem;
+    }
+
+    .timer-input {
+        margin-top: 20px !important;
+        width: 50% !important;
+    }
+
+    .ql-container,
+    .ql-toolbar {
+        margin-left: 0px !important;
+        width: 110% !important;
+    }
+
+    .bottom-btns {
+        width: 55%;
+        margin-top: 60px;
+    }
+
+    .addq-container,
+    .addquestion-box {
+        width: 117.5%;
+    }
+
+    .addquestion-box h1 {
+        font-size: 2rem;
+    }
+
+    .section-timer-desktop,
+    .randomize-btn {
+        display: none;
+    }
+
+    .r-filter-btn {
+        display: block;
+    }
+
+    .all-s-header-added,
+    .all-s-header {
+        flex-direction: column;
+    }
+
+    .all-s-body table {
+        width: 150%;
+    }
+}
