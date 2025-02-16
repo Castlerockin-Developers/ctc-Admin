@@ -180,7 +180,7 @@ const Dashboard = ({ onCreateExam, onAddStudent, onAddUser, onAddCredits }) => {
 // export default Dashboard;
 
 
-const Dashboard = ({ onCreateExam, onAddStudent }) => {
+// const Dashboard = ({ onCreateExam, onAddStudent }) => {
 
     const [dashboardData, setDashboardData] = useState(null);
     const [showPopup, setShowPopup] = useState(false);
