@@ -4,6 +4,69 @@ import filter from "../assets/filter.png";
 import { motion } from "framer-motion";
 import { FaDatabase, FaPen, FaUpload } from "react-icons/fa";
 
+
+
+
+// import { useEffect, useState } from "react";
+// import axios from "axios";
+
+// const API_BASE_URL = "http://127.0.0.1:8000/api/";
+
+// const [studentsData, setStudentsData] = useState({});
+
+// const fetchStudents = async () => {
+//     try {
+//         const response = await axios.get(`${API_BASE_URL}students/`);
+//         const groupedData = {
+//             "I Year": response.data.filter(student => student.batch === "2025"),
+//             "II Year": response.data.filter(student => student.batch === "2024"),
+//             "III Year": response.data.filter(student => student.batch === "2023"),
+//             "IV Year": response.data.filter(student => student.batch === "2022"),
+//         };
+//         setStudentsData(groupedData);
+//     } catch (error) {
+//         console.error("Error fetching students:", error);
+//     }
+// };
+
+// useEffect(() => {
+//     fetchStudents();
+// }, []);
+
+
+// const handleCreateStudent = async () => {
+//     try {
+//         await axios.post(`${API_BASE_URL}students/`, student, {
+//             headers: { "Content-Type": "application/json" },
+//         });
+
+//         alert("Student added successfully!");
+//         fetchStudents(); // Refresh student list after adding
+//         onClose();
+//     } catch (error) {
+//         console.error("Error adding student:", error);
+//         alert("Failed to add student. Please try again.");
+//     }
+// };
+
+// const handleDeleteStudent = async (usn) => {
+//     try {
+//         await axios.delete(`${API_BASE_URL}students/${usn}/`);
+//         alert("Student deleted successfully!");
+//         fetchStudents();
+//     } catch (error) {
+//         console.error("Error deleting student:", error);
+//         alert("Failed to delete student.");
+//     }
+// };
+
+
+// <motion.button className="delete-btn" whileTap={{ scale: 1.1 }} onClick={() => handleDeleteStudent(student.usn)}>
+//     <FaTrash size={14} className="icon" />
+// </motion.button>
+
+
+
 const ManageStudents = ({ studentModalOpen, setStudentModalOpen }) => {
     const [searchQuery, setSearchQuery] = useState("");
     const [showFilter, setShowFilter] = useState(false);
