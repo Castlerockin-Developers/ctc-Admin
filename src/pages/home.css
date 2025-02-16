@@ -1799,156 +1799,616 @@
     .pop-up-table tbody td {
         width: 35vw;
     }
+}
 
-    .edit-container {
-        width: 95vw;
-        position: fixed;
-        left: 10px;
+/* Manage Result */
+/* Result Container */
+.result-container {
+    background-color: #282828;
+    width: calc(100% - 69px);
+    height: 87vh;
+    overflow-y: auto;
+    transition: width 0.3s ease-in-out, margin-left 0.3s ease-in-out;
+    padding: 1.5rem;
+}
+
+/* Result Header */
+.result-header {
+    width: 92%;
+    padding-top: 1.5rem;
+}
+
+.result-header h1 {
+    font-size: 2.5rem;
+    color: white;
+    font-family: madina-semibold;
+    margin-top: 0.9rem;
+    margin-bottom: 1.5rem;
+}
+
+/* Left Button Group */
+.m-btn-left {
+    gap: 25px;
+    display: flex;
+}
+
+.m-btn-left button {
+    background-color: transparent;
+    color: rgb(117, 117, 117);
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+}
+
+/* Active Button */
+.m-active {
+    text-decoration: underline;
+    text-decoration-color: #ff0099;
+    text-decoration-thickness: 4px;
+    text-underline-offset: 5px;
+    color: white !important;
+}
+
+/* Right Side Buttons & Search */
+.m-btn-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Filter Button */
+.filter-btn {
+    background: #424242;
+    border: 1px solid white;
+    color: white;
+    padding: 13px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.filter-btn:hover {
+    background-color: #323232;
+}
+
+/* Search Box */
+.search-box {
+    display: flex;
+    align-items: center;
+    background: #535353;
+    padding: 7px 10px;
+    border-radius: 5px;
+    border: 1px solid white;
+}
+
+.search-box:hover {
+    background-color: #383838;
+}
+
+.search-box input {
+    border: none;
+    background: none;
+    color: white;
+    outline: none;
+    margin-left: 8px;
+    font-size: 1rem;
+}
+
+.search-icon {
+    color: white;
+}
+
+/* No Data Found */
+.no-data {
+    text-align: center;
+    padding: 20px;
+    color: white;
+    font-size: 1.2rem;
+    background-color: #424242;
+}
+
+/* Results Table */
+.m-table-container {
+    width: 100%;
+    margin-top: 1rem;
+    border-radius: 10px;
+    border: 1px solid rgb(153, 153, 153);
+    overflow-x: hidden;
+}
+
+.m-table-container table {
+    width: 100%;
+    height: 61vh;
+    background-color: #393939;
+    border-radius: 10px;
+    border-collapse: collapse;
+    display: flex;
+    flex-direction: column;
+    overflow-x: auto;
+}
+
+.m-table-container table thead {
+    background-color: #535353;
+    color: white;
+    font-size: 1.1rem;
+    width: 100%;
+    display: table;
+    table-layout: fixed;
+}
+
+.m-table-container table thead th {
+    position: relative;
+    padding: 12px;
+    text-align: center;
+    background-color: #535353;
+    border-bottom: 1px solid #888;
+}
+
+/* Create shorter vertical separators */
+.m-table-container table thead th:not(:last-child)::after {
+    content: "";
+    position: absolute;
+    top: 20%;
+    bottom: 20%;
+    right: 0;
+    width: 2px;
+    background-color: white;
+}
+
+/* Fixed tbody height and scroll */
+.m-table-container table tbody {
+    max-height: 53vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    width: 100%;
+    display: table;
+    table-layout: fixed;
+}
+
+/* Ensure rows stay aligned */
+.m-table-container table tbody tr {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+    height: 50px;
+    border-top: 1px solid rgb(133, 133, 133);
+    border-bottom: 1px solid rgb(133, 133, 133);
+}
+
+/* Ensure td matches header width */
+.m-table-container table tbody td {
+    padding: 12px;
+    text-align: center;
+    color: white;
+}
+
+/* Alternate row colors */
+.even-row {
+    background-color: #393939;
+}
+
+.odd-row {
+    background-color: #424242;
+}
+
+/* View Exam Button */
+.viewexam-btn {
+    background-color: #8E5DAF;
+    padding: 5px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: madina-semibold;
+    white-space: nowrap;
+}
+
+.viewexam-btn:hover {
+    background-color: #7421ac;
+}
+
+/* Responsive Section */
+@media (max-width: 768px) {
+    .result-container {
+        width: 100vw;
     }
 
-    .body-control {
-        width: 90%;
+    .result-header {
+        padding-top: 0rem;
     }
 
-    .desc {
-        display: flex;
-        flex-direction: column;
+    .result-header h1 {
+        margin-top: 0rem;
     }
 
-    .desc p {
-        width: 40vw;
-        font-size: 1.2rem;
+    .m-btn-left {
+        gap: 10px;
     }
 
-    .edit-ename-options,
-    .edit-ename-options-e-time {
-        display: flex;
-        flex-direction: column;
+    .m-btn-left button {
+        font-size: 1rem;
     }
 
-    .edit-ename-options-e-time button {
-        margin-top: 10px;
-        width: 30%;
+    .filter-btn {
+        padding: 9px 9px;
     }
 
-    .edit-ename-options-desc input {
-        display: none;
-    }
-
-    .edit-ename-options textarea {
-        display: block;
-        background-color: #424242;
-        border: 1px solid rgb(134, 134, 134);
-        border-radius: 5px;
-        padding: 10px;
-        color: white;
-        font-family: madina-light;
-        width: 300px;
-    }
-
-    .edit-ename-options input {
-        width: 300px;
-    }
-
-    .edit-ename-options button {
-        margin-top: 10px;
-        width: 30%;
-        display: flex;
-        justify-content: center;
-    }
-
-    .edit-section details {
-        width: 83vw;
-    }
-
-    .edit-sections-expand {
-        display: flex;
-        flex-direction: column;
-    }
-
-    .edit-sections-content {
-        width: 100%;
-    }
-
-    .edit-sections-buttons {
-        width: 100%;
-    }
-
-    .e-warning-note {
-        display: flex;
-        flex-direction: column;
-    }
-
-    .e-warning-note p {
+    .create-btn {
         font-size: 0.9rem;
-        width: 100%;
-
+        padding: 5px 12px;
     }
 
-    .e-warning-note button {
-        margin-top: 10px;
-        margin-left: 10px;
+    .search-box {
+        padding: 3px 10px;
+    }
+
+    .search-box input {
+        width: 100px;
+    }
+
+    .m-table-container table thead th {
+        font-size: 0.9rem;
+    }
+
+    .m-table-container table tbody td {
+        font-size: 0.9rem;
+    }
+
+    .viewexam-btn {
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 425px) {
+    .result-container {
+        width: 96vw;
         position: relative;
-        right: 10px;
+        left: 0.4rem;
     }
 
-    .r-btn {
-        display: flex;
-        flex-direction: column;
+    .result-header {
+        width: 88%;
     }
 
-    .r-btn button {
-        width: 30%;
-        margin-top: 10px;
+    .result-header h1 {
+        font-size: 2rem;
     }
 
-    .MCQ-edit-container {
-        height: 80vh;
-        overflow-y: auto;
-        overflow-x: hidden;
+    .search-box input {
+        width: 80px;
     }
 
-    .MCQ-question {
-        display: flex;
-        flex-direction: column;
+    .m-table-container table thead th {
+        font-size: 0.8rem;
     }
 
-    .MCQ-question input {
-        display: none;
+    .m-table-container table tbody td {
+        font-size: 0.8rem;
     }
+}
+.m-table-container {
+    width: 100%;
+    margin-top: 1rem;
+    border-radius: 10px;
+    border: 1px solid rgb(153, 153, 153);
+    overflow-x: hidden;
+}
 
-    .MCQ-question textarea {
-        display: block;
-        width: 86%;
-        margin-left: 20px;
-    }
+.m-table-container table {
+    width: 100%;
+    height: 61vh;
+    background-color: #393939;
+    border-radius: 10px;
+    border-collapse: collapse;
+    display: flex;
+    flex-direction: column;
+    overflow-x: auto;
+}
 
-    .options-list {
-        display: flex;
-        flex-direction: column;
-    }
+.m-table-container table thead {
+    background-color: #535353;
+    color: white;
+    font-size: 1.1rem;
+    width: 100%;
+    display: table;
+    table-layout: fixed;
+}
 
-    .options-list label {
-        width: 100%;
-        margin-left: 3.5rem;
-    }
+.m-table-container table tbody {
+    max-height: 53vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    width: 100%;
+    display: table;
+    table-layout: fixed;
+}
 
-    .MCQ-question-options {
-        display: none;
-    }
+.m-table-container table tbody tr {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+    height: 50px;
+    border-top: 1px solid rgb(133, 133, 133);
+    border-bottom: 1px solid rgb(133, 133, 133);
+}
 
-    .options-list textarea {
-        display: block;
-        width: 70%;
-        margin-left: 1.1rem;
-        background-color: #424242;
-        padding: 0px 10px;
-        color: white;
-        font-family: madina-light;
-    }
+.m-table-container table tbody td {
+    padding: 12px;
+    text-align: center;
+    color: white;
+}
 
-    .Coding-edit-container {
-        width: 95vw;
-        height: 90vh;
-    }
+.even-row {
+    background-color: #393939;
+}
+
+.odd-row {
+    background-color: #424242;
+}
+
+/* Buttons */
+.create-btn {
+    background-color: #d90495;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    min-width: 175px;
+
+}
+
+.viewexam-btn {
+    background-color: #8E5DAF;
+    padding: 5px;
+    border-radius: 5px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+
+/* Action Buttons */
+.action-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Edit Button */
+.edit-btn {
+    background-color: #8E5DAF;
+    padding: 8px 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: white;
+    font-weight: 600;
+    border: none;
+    transition: all 0.2s ease-in-out;
+}
+
+.edit-btn .icon {
+    margin-right: 6px;
+}
+
+.edit-btn:hover {
+    background-color: #7B4DA1;
+}
+
+/* Delete Button */
+.delete-btn {
+    background-color: #E63946;
+    padding:13px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: white;
+    font-weight: 600;
+    border: none;
+    transition: all 0.2s ease-in-out;
+}
+
+.delete-btn:hover {
+    background-color: #C72F3A;
+}
+
+/* Header Wrapper - Align title & Total Students */
+.header-wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+
+}
+
+/* Manage Students Title */
+.header-title {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: white;
+}
+
+/* Total Students Card */
+.total-students-card {
+    background-color: #535353;
+    padding: 12px 20px;
+    border-radius: 5px;
+    text-align: center;
+    min-width: 175px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom:25px;
+}
+
+.total-label {
+    color: #A0A0A0;
+    font-size: 0.85rem;
+}
+
+.total-count {
+    font-size: 1.4rem;
+    font-weight: bold;
+    color: white;
+}
+
+/* MODAL OVERLAY */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+/* MODAL CONTAINER */
+.modal-container {
+    background: #1a1a1a;
+    padding: 30px;
+    border-radius: 12px;
+    width: 500px;
+    box-shadow: 0px 0px 10px rgba(255, 255, 255, 0.1);
+}
+
+/* MODAL TITLE */
+.modal-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: white;
+    margin-bottom: 20px;
+}
+
+/* TOGGLE BUTTONS */
+.toggle-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.toggle-btn {
+    background: #2A2A2A;
+    padding: 10px 15px;
+    border-radius: 8px;
+    color: white;
+    font-size: 1rem;
+    cursor: pointer;
+    border: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.toggle-btn.active {
+    background: #4A4A4A;
+}
+
+/* EXCEL UPLOAD SECTION */
+.upload-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: #2A2A2A;
+    padding: 15px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.upload-label {
+    color: white;
+    font-size: 1rem;
+    margin-bottom: 10px;
+}
+
+.file-input {
+    display: block;
+    padding: 10px;
+    background: #333;
+    border-radius: 8px;
+    color: white;
+    border: none;
+}
+
+.upload-icon {
+    color: white;
+    font-size: 1.2rem;
+    margin-top: 10px;
+}
+
+/* FORM INPUT GROUP */
+
+.form-group {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start; /* Aligns labels to the right */
+    margin-bottom: 12px;
+}
+
+.form-group label {
+    font-size: 1rem;
+    color: white;
+    width: 150px; /* Adjust width to ensure proper spacing */
+    text-align: left; /* Moves text to right side */
+    margin-right: 15px; /* Space between label and input */
+}
+
+.form-input {
+    flex-grow: 1;
+    padding: 8px;
+    border: 1px solid #555;
+    border-radius: 6px;
+    background: transparent;
+    color: white;
+    width: 60%; /* Adjust width for better layout */
+}
+
+
+/* MODAL BUTTONS */
+.modal-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+/* BACK BUTTON (GRAY) */
+.back-btn {
+    background: #4A4A4A;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    border: none;
+    font-size: 1rem;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* CREATE BUTTON (MAGENTA) */
+.create-btn-student {
+    background: #D90495;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    border: none;
+    font-size: 1rem;
+    font-weight: bold;
+}
+
+.create-btn-student {
+    background: #B30275;
 }
