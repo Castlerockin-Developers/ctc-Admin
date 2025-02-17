@@ -4,7 +4,7 @@ import filter from "../assets/filter.png";
 import line from "../assets/Line.png";
 import { motion } from "framer-motion";
 
-const ManageResult = () => {
+const ManageResult = ({ onNext, onBack }) => {
     const [activeTab, setActiveTab] = useState("all");
     const [searchQuery, setSearchQuery] = useState("");
     const [showFilter, setShowFilter] = useState(false);
@@ -112,7 +112,7 @@ const ManageResult = () => {
                                         <td>{row.analytics}</td>
                                         <td className={row.status === "Expired" ? "text-red-500" : ""}>{row.status}</td>
                                         <td>
-                                            <motion.button className="viewexam-btn" whileTap={{ scale: 1.2 }}>
+                                            <motion.button className="viewexam-btn" whileTap={{ scale: 1.2 }} onClick={onNext}>
                                                 View Result
                                             </motion.button>
                                         </td>

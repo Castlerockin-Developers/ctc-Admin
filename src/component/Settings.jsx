@@ -126,18 +126,28 @@ const Settings = ({ openAddUserModal, setOpenAddUserModal }) => {
                     <h3>Profile:</h3>
                     <div className="flex justify-between gap-2 profile-details-container">
                         <div className="profile-details">
-                            <div className="flex profile-img-col">
-                                <img src="https://i.pravatar.cc/120?img=3" alt="Profile Avatar" />
-                                <div>
-                                    <p>Name:</p>
-                                    <p>Email:</p>
-                                    <p>Phone Number:</p>
+                            <div className="flex">
+                                <div className="flex profile-img-col">
+                                    <img src="https://i.pravatar.cc/120?img=3" alt="Profile Avatar" />
+                                    <div>
+                                        <p>Name:</p>
+                                        <p>Email:</p>
+                                        <p>Phone Number:</p>
+                                    </div>
+                                </div>
+                                <div className="profile-d-display">
+                                    <p>Administration</p>
+                                    <p>admin@castlerockin.com</p>
+                                    <p>987654321</p>
                                 </div>
                             </div>
-                            <div className="profile-d-display">
-                                <p>Administration</p>
-                                <p>admin@castlerockin.com</p>
-                                <p>987654321</p>
+                            <div className='Account-manager-box'>
+                                <h5>Account Manager:</h5>
+                                <p>Name: Relation Manager</p>
+                                <div className='flex justify-between'>
+                                    <p>Email: abc@xyz.in</p>
+                                    <p>Phone Number: 987654321</p>
+                                </div>
                             </div>
                         </div>
                         <div className="r-activity-history">

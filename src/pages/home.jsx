@@ -11,6 +11,8 @@ import AddStudents from "../component/AddStudents";
 import Swal from "sweetalert2";
 import Subcription from "../component/Subcription";
 import Settings from "../component/Settings";
+import ViewResult from "../component/ViewResult";
+import PerticularResult from "../component/PerticularResult";
 
 const Home = () => {
     const [activeComponent, setActiveComponent] = useState("dashboard");
@@ -45,7 +47,7 @@ const Home = () => {
                     {/* Main Navigation Components */}
                     {activeComponent === "dashboard" && (
                         <Dashboard
-                            onCreateExam={() => setActiveComponent("manageExam")}
+                            onCreateExam={() => setActiveComponent("newExam")}
                             onAddStudent={() => {
                                 setActiveComponent("student");
                                 setStudentModalOpen(true); // Open modal when quick link is clicked
@@ -69,7 +71,19 @@ const Home = () => {
                     {activeComponent === "manageExam" && (
                         <ManageExam onCreateNewExam={() => setActiveComponent("newExam")} />
                     )}
-                    {activeComponent === "result" && <ManageResult />}
+                    {activeComponent === "result" && <ManageResult
+                        onNext={() => setActiveComponent("viewresult")}
+
+                    />}
+                    {activeComponent === "viewresult" && <ViewResult
+                        onBack={() => setActiveComponent("result")}
+                        onNext={() => setActiveComponent("perticularresult")}
+
+                    />}
+                    {activeComponent === "perticularresult" && <PerticularResult
+                        onBack={() => setActiveComponent("viewresult")}
+
+                    />}
                     {activeComponent === "student" && (
                         <ManageStudents
                             studentModalOpen={isStudentModalOpen}
