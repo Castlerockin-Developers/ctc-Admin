@@ -60,6 +60,12 @@ const Home = () => {
                             onAddCredits={() => {
                                 setActiveComponent("subcribe");
                             }}
+                            onViewexam={() => {
+                                setActiveComponent("viewexam");
+                            }}
+                            onManageExam={() => {
+                                setActiveComponent("viewexam");
+                            }}
                         />
                     )}
                     {activeComponent === "subcribe" && <Subcription />}
