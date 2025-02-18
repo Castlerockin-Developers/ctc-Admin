@@ -2240,3 +2240,41 @@
 .create-btn-student {
     background: #B30275;
 }
+
+/*notification-table*/
+.notification-table{
+    width: 90%;
+    height: 40vh;
+    margin-top: 1rem;
+    border-collapse: collapse;
+    box-shadow: 0 0 8px rgba(36, 36, 36, 0.3);
+    border: 1px solid rgb(92, 92, 92);
+    border-radius: 5px;
+    overflow-y: auto;
+    word-wrap: break-word; /* or */
+    overflow-wrap: break-word;
+}
+.tablee-new {
+    background-color: #656565;
+    padding: 7px 25px;
+    border: 1px solid rgb(159, 159, 159);
+    overflow-x: auto;
+    display: block;
+    max-width: 100%;
+    
+    /* Ensuring text wraps */
+    white-space: normal; 
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+.tablee-new h6 {
+    color: white;
+    font-family: madina-regular;
+    font-size: 1rem;
+    
+    /* Ensuring text wraps */
+    white-space: normal; 
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
