@@ -40,7 +40,10 @@ const Home = () => {
             <div className="flex">
                 {/* Sidebar */}
                 <div className="xl:w-2/10 lg:w-2/10 md:w-0/10 sm:w-0">
-                    <Sidebar setActiveComponent={setActiveComponent} />
+                    <Sidebar activeComponent={activeComponent}
+                        setActiveComponent={setActiveComponent}
+                        onCreateExam={() => setActiveComponent("newExam")}
+                    />
                 </div>
 
                 {/* Main Content Area */}
