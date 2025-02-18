@@ -290,7 +290,7 @@ const Dashboard = ({ onCreateExam, onAddStudent, onAddUser, onAddCredits }) => {
                         </div>
                     )}
                     <div className="top-display">
-                        <h4 className="xl:text-xl lg:text-xl md:text-xl">Live Contest</h4>
+                        <h4 className="xl:text-xl lg:text-xl md:text-xl">Completed Exams</h4>
                         <h2 className="xl:text-4xl lg:text-4xl md:text-4xl flex justify-center">
                             {dashboardData.liveContest}
                         </h2>

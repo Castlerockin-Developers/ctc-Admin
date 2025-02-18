@@ -1,9 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
+import Swal from 'sweetalert2';
 import line from '../assets/Line.png';
 import filter from '../assets/filter.png';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faRotateLeft } from '@fortawesome/free-solid-svg-icons';
-import { faSearch } from '@fortawesome/free-solid-svg-icons';
+import { faRotateLeft, faSearch } from '@fortawesome/free-solid-svg-icons';
 
 const AddStudents = ({ onBack, onSubmit }) => {
     // Main filter popups for All & Added students
@@ -110,11 +110,35 @@ const AddStudents = ({ onBack, onSubmit }) => {
         setHoveredYear(null);
     };
 
+    // NEW: Handle CreateExam button click using SweetAlert
+    const handleCreateExam = () => {
+        if (addedStudents.length === 0) {
+            Swal.fire({
+                title: "No Students Added",
+                text: "Please add at least one student before creating the exam.",
+                icon: "error",
+                confirmButtonText: "OK",
+                background: "#181817",
+                color: "#fff"
+            });
+            return;
+        }
+        Swal.fire({
+            title: "Test Created",
+            text: "Test has been created.",
+            icon: "success",
+            confirmButtonText: "OK",
+            background: "#181817",
+            color: "#fff"
+        }).then(() => {
+            onSubmit();
+        });
+    };
+
     return (
         <div className='adds-container justify-center flex flex-wrap'>
             <div className='addStudent-box'>
                 <h1>Add Students</h1>
-                {/* <img src={line} alt="line" /> */}
 
                 <div className='grid lg:grid-cols-2 md:grid-cols-1 gap-2.5 add-s-container'>
                     {/* All Students Section */}
@@ -219,9 +243,11 @@ const AddStudents = ({ onBack, onSubmit }) => {
                     <img src={line} alt="line" className='line-bottom' />
                 </div>
                 <div className='flex w-full justify-end bottom-control gap-1'>
-                    <button onClick={onBack} className="exam-previous-btn"><FontAwesomeIcon icon={faRotateLeft} className='left-icon' />back</button>
+                    <button onClick={onBack} className="exam-previous-btn">
+                        <FontAwesomeIcon icon={faRotateLeft} className='left-icon' />back
+                    </button>
                     <p>3/3</p>
-                    <button className='exam-next-btn' onClick={onSubmit}>+ CreateExam</button>
+                    <button className='exam-next-btn' onClick={handleCreateExam}>+ CreateExam</button>
                 </div>
 
                 {/* -------------------------------

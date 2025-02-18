@@ -142,8 +142,6 @@ const PerticularResult = ({ onBack }) => {
                         </div>
                     </div>
                 </div>
-
-
             </div>
         </div>
     )

@@ -3,12 +3,21 @@ import React, { useState } from 'react';
 import line from '../assets/Line.png';
 import './NewExam.css';
 import ReactQuill from 'react-quill';
+import Swal from 'sweetalert2';
 
 // const API_BASE_URL = "http://127.0.0.1:8000/api/exams/";
 
 const NewExam = ({ onBack, onNext }) => {
+    const [testName, setTestName] = useState("");
+    const [examDate, setExamDate] = useState("");
+    const [startTime, setStartTime] = useState("");
+    const [endTime, setEndTime] = useState("");
     const [selectedOption, setSelectedOption] = useState("");
     const [customTime, setCustomTime] = useState("");
+    const [timedTest, setTimedTest] = useState(false);
+    const [timer, setTimer] = useState("");
+    const [attemptsAllowed, setAttemptsAllowed] = useState("");
+    const [instructions, setInstructions] = useState("");
 
     // const [examName, setExamName] = useState("");
     // const [startTime, setStartTime] = useState("");
@@ -25,23 +34,95 @@ const NewExam = ({ onBack, onNext }) => {
         }
     };
 
+    const handleNext = () => {
+        if (!testName || !startTime || !endTime) {
+            Swal.fire({
+                title: "Missing Fields",
+                text: "Please fill in Test Name, Start Time, and End Time.",
+                icon: "warning",
+                confirmButtonText: "OK",
+                background: "#181817",
+                color: "#fff"
+            });
+            return;
+        }
+        if (selectedOption === "") {
+            Swal.fire({
+                title: "Missing Selection",
+                text: "Please select a Login Window option.",
+                icon: "warning",
+                confirmButtonText: "OK",
+                background: "#181817",
+                color: "#fff"
+            });
+            return;
+        }
+        if (selectedOption === "custom" && !customTime) {
+            Swal.fire({
+                title: "Missing Custom Time",
+                text: "Please enter a custom time for the Login Window.",
+                icon: "warning",
+                confirmButtonText: "OK",
+                background: "#181817",
+                color: "#fff"
+            });
+            return;
+        }
+        if (timedTest && !timer) {
+            Swal.fire({
+                title: "Missing Timer Value",
+                text: "Please provide a timer value for the Timed Test.",
+                icon: "warning",
+                confirmButtonText: "OK",
+                background: "#181817",
+                color: "#fff"
+            });
+            return;
+        }
+        if (!attemptsAllowed) {
+            Swal.fire({
+                title: "Missing Attempts Allowed",
+                text: "Please fill in Attempts Allowed.",
+                icon: "warning",
+                confirmButtonText: "OK",
+                background: "#181817",
+                color: "#fff"
+            });
+            return;
+        }
+        if (!instructions) {
+            Swal.fire({
+                title: "Missing Instructions",
+                text: "Please provide instructions.",
+                icon: "warning",
+                confirmButtonText: "OK",
+                background: "#181817",
+                color: "#fff"
+            });
+            return;
+        }
+
+        // If all validations pass, proceed to next component
+        onNext();
+    };
+
     // const handleSubmit = async () => {
-        // if (!examName.trim()) {
-        //     alert("Test Name is required.");
-        //     return;
-        // }
-        // if (!startTime.trim()) {
-        //     alert("Start Time is required.");
-        //     return;
-        // }
-        // if (!endTime.trim()) {
-        //     alert("End Time is required.");
-        //     return;
-        // }
-        // if (timedTest && !timerDuration) {
-        //     alert("Timer duration is required for a timed test.");
-        //     return;
-        // }
+    // if (!examName.trim()) {
+    //     alert("Test Name is required.");
+    //     return;
+    // }
+    // if (!startTime.trim()) {
+    //     alert("Start Time is required.");
+    //     return;
+    // }
+    // if (!endTime.trim()) {
+    //     alert("End Time is required.");
+    //     return;
+    // }
+    // if (timedTest && !timerDuration) {
+    //     alert("Timer duration is required for a timed test.");
+    //     return;
+    // }
     //     const examData = {
     //         name: examName,
     //         start_time: startTime,
@@ -67,28 +148,62 @@ const NewExam = ({ onBack, onNext }) => {
     //         alert("Failed to create exam. Please try again.");
     //     }
     // };
-    
+
     return (
         <div className='newexam-container justify-center flex flex-wrap'>
             <div className='newexam-box'>
                 <h1>Create New Exam</h1>
                 <img src={line} alt="line" className='w-full h-0.5' />
                 <div className='newexam-entry1'>
-                    <div className='createexam-col1 flex '>
-                        <h4 className='flex justify-between'>Test Name <span>:</span></h4>
-                        <input type="text" />
-                    </div>
+                    {/* Test Name */}
                     <div className='createexam-col1 flex'>
-                        <h4 className='flex justify-between'>Start Time <span>:</span></h4>
-                        <input type="text" />
+                        <h4 className='flex justify-between'>
+                            Test Name <span>:</span>
+                        </h4>
+                        <input
+                            type="text"
+                            value={testName}
+                            onChange={(e) => setTestName(e.target.value)}
+                        />
                     </div>
+                    {/* Exam Date Field (Calendar) */}
                     <div className='createexam-col1 flex'>
-                        <h4 className='flex justify-between'>End Time <span>:</span></h4>
-                        <input type="text" />
-
+                        <h4 className='flex justify-between'>
+                            Exam Date <span>:</span>
+                        </h4>
+                        <input
+                            type="date"
+                            value={examDate}
+                            onChange={(e) => setExamDate(e.target.value)}
+                        />
                     </div>
+                    {/* Start Time */}
                     <div className='createexam-col1 flex'>
-                        <h4 className='flex justify-between'>Login Window <span>:</span></h4>
+                        <h4 className='flex justify-between'>
+                            Start Time <span>:</span>
+                        </h4>
+                        <input
+                            type="time"
+                            value={startTime}
+                            onChange={(e) => setStartTime(e.target.value)}
+                        />
+                    </div>
+                    {/* End Time */}
+                    <div className='createexam-col1 flex'>
+                        <h4 className='flex justify-between'>
+                            End Time <span>:</span>
+                        </h4>
+                        <input
+                            type="time"
+                            value={endTime}
+                            onChange={(e) => setEndTime(e.target.value)}
+                        />
+                    </div>
+                    {/* Login Window */}
+                    <div className='createexam-col1 flex'>
+                        <h4 className='flex justify-between'>
+                            Login Window <span>:</span>
+                        </h4>
                         <select value={selectedOption} onChange={handleSelectChange}>
                             <option value="">Select</option>
                             <option value="10">10 minutes</option>
@@ -97,43 +212,73 @@ const NewExam = ({ onBack, onNext }) => {
                             <option value="30">30 minutes</option>
                             <option value="45">45 minutes</option>
                             <option value="60">1 hour</option>
-                            <option value="custom">Custom</option> {/* Custom Option */}
+                            <option value="custom">Custom</option>
                         </select>
-
-                        {/* Show input field if "Custom" is selected */}
                         {selectedOption === "custom" && (
                             <input
-                                type="number"
-                                placeholder="Enter custom time (e.g., 90 minutes)"
+                                type="time"
+                                placeholder="HH:MM"
                                 value={customTime}
                                 onChange={(e) => setCustomTime(e.target.value)}
                                 className="border p-2 ml-2 custom-input"
                             />
                         )}
                     </div>
+                    {/* Timed Test */}
                     <div className='createexam-col1 flex'>
-                        <h4 className='flex justify-between'>Timed Test <span>:</span></h4>
+                        <h4 className='flex justify-between'>
+                            Timed Test <span>:</span>
+                        </h4>
                         <div>
                             <label className="toggle-switch">
-                                <input type="checkbox" />
+                                <input
+                                    type="checkbox"
+                                    checked={timedTest}
+                                    onChange={(e) => setTimedTest(e.target.checked)}
+                                />
                                 <span className="slider"></span>
                             </label>
                         </div>
-                        <h4 className='timer-h4'>Timer <span>:</span></h4>
-                        <input type="number" placeholder='Time in minutes' className='timer-input' />
+                        {timedTest && (
+                            <>
+                                <h4 className='timer-h4'>
+                                    Timer <span>:</span>
+                                </h4>
+                                <input
+                                    type="time"
+                                    placeholder="HH:MM"
+                                    className='timer-input'
+                                    value={timer}
+                                    onChange={(e) => setTimer(e.target.value)}
+                                />
+                            </>
+                        )}
                     </div>
                 </div>
 
                 <img src={line} alt="line" className='w-full h-0.5' />
 
                 <div className='newexam-entry1'>
+                    {/* Attempts Allowed */}
                     <div className='createexam-col1 flex'>
-                        <h4 className='flex justify-between'>Attempts Allowed <span>:</span></h4>
-                        <input type="text" />
+                        <h4 className='flex justify-between'>
+                            Attempts Allowed <span>:</span>
+                        </h4>
+                        <input
+                            type="number"
+                            value={attemptsAllowed}
+                            onChange={(e) => setAttemptsAllowed(e.target.value)}
+                        />
                     </div>
+                    {/* Instructions */}
                     <div className='createexam-col1 flex'>
-                        <h4 className='flex justify-between'>Instructions <span>:</span></h4>
-                        <ReactQuill />
+                        <h4 className='flex justify-between'>
+                            Instructions <span>:</span>
+                        </h4>
+                        <ReactQuill
+                            value={instructions}
+                            onChange={setInstructions}
+                        />
                     </div>
                 </div>
 
@@ -141,12 +286,11 @@ const NewExam = ({ onBack, onNext }) => {
                     <div className='flex bottom-btns'>
                         <button className="back-btn-create" onClick={onBack}>Back</button>
                         <p>1/3</p>
-                        <button className='next-btn' onClick={onNext}>Next</button>
+                        <button className='next-btn' onClick={handleNext}>Next</button>
                     </div>
                 </div>
             </div>
         </div>
-
     );
 }
 

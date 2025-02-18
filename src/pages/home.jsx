@@ -13,6 +13,7 @@ import Subcription from "../component/Subcription";
 import Settings from "../component/Settings";
 import ViewResult from "../component/ViewResult";
 import PerticularResult from "../component/PerticularResult";
+import ViewExam from "../component/ViewExam";
 
 const Home = () => {
     const [activeComponent, setActiveComponent] = useState("dashboard");
@@ -69,8 +70,11 @@ const Home = () => {
                         />
                     )}
                     {activeComponent === "manageExam" && (
-                        <ManageExam onCreateNewExam={() => setActiveComponent("newExam")} />
+                        <ManageExam onCreateNewExam={() => setActiveComponent("newExam")}
+                            onNext={() => setActiveComponent("viewexam")} />
                     )}
+                    {activeComponent === "viewexam" && <ViewExam
+                        onBack={() => setActiveComponent("manageExam")} />}
                     {activeComponent === "result" && <ManageResult
                         onNext={() => setActiveComponent("viewresult")}
 

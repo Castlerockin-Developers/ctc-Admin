@@ -1545,10 +1545,12 @@
 
     .m-table-container table thead th {
         font-size: 0.9rem;
+        width: 17vw;
     }
 
     .m-table-container table tbody td {
         font-size: 0.9rem;
+        width: 17vw;
     }
 
     .viewexam-btn {

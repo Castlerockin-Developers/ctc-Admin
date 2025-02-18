@@ -7,10 +7,10 @@ import { motion } from "motion/react";
 
 // const API_BASE_URL = "http://127.0.0.1:8000/api/exams/";
 
-const ManageExam = ({ onCreateNewExam }) => {
+const ManageExam = ({ onCreateNewExam, onNext }) => {
     const [activeButton, setActiveButton] = useState("all");
     const [searchQuery, setSearchQuery] = useState("");
-//    const [exams, setExams] = useState([]);
+    //    const [exams, setExams] = useState([]);
     const [showFilter, setShowFilter] = useState(false);
     const [hoveredBranch, setHoveredBranch] = useState(null);
     const [subMenuPosition, setSubMenuPosition] = useState({ top: 0, left: 0 });
@@ -18,23 +18,23 @@ const ManageExam = ({ onCreateNewExam }) => {
     const subPopupRef = useRef(null);
     let hoverTimeout = useRef(null);
 
-        // // Fetch exams from backend
-        // const fetchExams = async () => {
-        //     try {
-        //         let url = `${API_BASE_URL}`;
-        //         if (activeButton !== "all") {
-        //             url += `?category=${activeButton}`;
-        //         }
-        //         const response = await axios.get(url);
-        //         setExams(response.data);
-        //     } catch (error) {
-        //         console.error("Error fetching exams:", error);
-        //     }
-        // };
+    // // Fetch exams from backend
+    // const fetchExams = async () => {
+    //     try {
+    //         let url = `${API_BASE_URL}`;
+    //         if (activeButton !== "all") {
+    //             url += `?category=${activeButton}`;
+    //         }
+    //         const response = await axios.get(url);
+    //         setExams(response.data);
+    //     } catch (error) {
+    //         console.error("Error fetching exams:", error);
+    //     }
+    // };
 
 
 
-            // Handle search API call
+    // Handle search API call
     // const handleSearch = async (query) => {
     //     setSearchQuery(query);
     //     if (query.length > 0) {
@@ -243,7 +243,7 @@ const ManageExam = ({ onCreateNewExam }) => {
                                         <td>{row.endTime}</td>
                                         <td>{row.analytics}</td>
                                         <td>{row.status}</td>
-                                        <td><motion.button className="viewexam-btn" whileTap={{ scale: 1.2 }}>View Exam</motion.button></td>
+                                        <td><motion.button className="viewexam-btn" whileTap={{ scale: 1.2 }} onClick={onNext}>View Exam</motion.button></td>
                                     </tr>
                                 ))
                             ) : (

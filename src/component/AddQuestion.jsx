@@ -98,7 +98,7 @@ const AddQuestion = ({ onBack, onNexts }) => {
     // Popup handlers for editing
     const handleCodingEdit = () => {
         setShowEditCodingPopup(true);
-    }
+    };
 
     const handleMcqEdit = () => {
         setShowEditMCQPopup(true);
@@ -253,6 +253,61 @@ const AddQuestion = ({ onBack, onNexts }) => {
     // Toggle timer popup (used for both opening and closing)
     const toggleTimerPopup = () => {
         setShowTimerPopup(prev => !prev);
+    };
+
+    // NEW: Handle Next button click with validations for added questions
+    const handleNextButtonClick = () => {
+        // If no question is added in either section, show error
+        if (mcqQuestions.length === 0 && codingQuestions.length === 0) {
+            Swal.fire({
+                title: "Error",
+                text: "Please add at least one question from the Question Bank to proceed.",
+                icon: "error",
+                background: "#181817",
+                color: "#fff",
+                showConfirmButton: false,
+                timer: 1500,
+            });
+            return;
+        }
+        // If only MCQ questions are added, warn the user that coding questions are missing
+        if (mcqQuestions.length > 0 && codingQuestions.length === 0) {
+            Swal.fire({
+                title: "Warning",
+                text: "You have not added any Coding questions. Do you want to proceed?",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Yes",
+                cancelButtonText: "No",
+                background: "#181817",
+                color: "#fff",
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    onNexts();
+                }
+            });
+            return;
+        }
+        // If only Coding questions are added, warn the user that MCQ questions are missing
+        if (codingQuestions.length > 0 && mcqQuestions.length === 0) {
+            Swal.fire({
+                title: "Warning",
+                text: "You have not added any MCQ questions. Do you want to proceed?",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Yes",
+                cancelButtonText: "No",
+                background: "#181817",
+                color: "#fff",
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    onNexts();
+                }
+            });
+            return;
+        }
+        // If both sections have at least one question, proceed
+        onNexts();
     };
 
     return (
@@ -467,7 +522,8 @@ const AddQuestion = ({ onBack, onNexts }) => {
                         <FontAwesomeIcon icon={faRotateLeft} className='left-icon' />back
                     </button>
                     <p>2/3</p>
-                    <button className='exam-next-btn' onClick={onNexts}>Next</button>
+                    {/* Use the new handler here */}
+                    <button className='exam-next-btn' onClick={handleNextButtonClick}>Next</button>
                 </div>
             </div>
             {showEditMCQPopup && (
