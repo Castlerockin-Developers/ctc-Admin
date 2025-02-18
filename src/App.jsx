@@ -1,6 +1,8 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Home from './pages/home'; // Create a Home component for your homepage
+import Dashboard from './component/Dashboard'; // Import the Dashboard component
+import SubcriptionPage from './component/Subcription'; // Import the SubscriptionPage component
+import Home from './pages/Home'; // Import Home page component
 import './App.css'; // Import your CSS file
 
 function App() {
@@ -8,10 +10,18 @@ function App() {
     <Router>
       <div className='app-background'>
         <Routes>
-          <Route path="/" element={<Home />} /> {/* Home page route */}
+          {/* Home page route */}
+          <Route path="/" element={<Home />} />
+
+          {/* Dashboard page route */}
+          <Route path="/dashboard" element={<Dashboard />} />
+
+          {/* Subscription page route */}
+          <Route path="/subcription" element={<SubcriptionPage />} />
         </Routes>
       </div>
-    </Router >
+    </Router>
   );
 }
+
 export default App;
