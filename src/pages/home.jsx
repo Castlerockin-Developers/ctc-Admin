@@ -68,7 +68,10 @@ const Home = () => {
                                 setActiveComponent("viewexam");
                             }}
                             onManageExam={() => {
-                                setActiveComponent("viewexam");
+                                setActiveComponent("manageExam");
+                            }}
+                            onSubscription={() => {
+                                setActiveComponent("subcribe");
                             }}
                         />
                     )}

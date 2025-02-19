@@ -4,7 +4,7 @@ import { motion } from "motion/react";
 import EditExam from "./EditExam";
 
 
-const Dashboard = ({ onCreateExam, onAddStudent, onAddUser, onAddCredits ,onViewexam,onManageExam}) => {
+const Dashboard = ({ onCreateExam, onAddStudent, onAddUser, onAddCredits ,onViewexam,onManageExam, onSubscription}) => {
 
     // const API_BASE_URL = "http://127.0.0.1:8000/api/";
 
@@ -269,7 +269,7 @@ const Dashboard = ({ onCreateExam, onAddStudent, onAddUser, onAddCredits ,onView
                     <motion.div 
                         whileTap={{ scale: 1.1 }} 
                         className="top-display top-display-clickable cursor-pointer" 
-                        onClick={onManageStudent}> {/* Now this will work */}
+                        onClick={onManageExam}> 
                         <h4 className="xl:text-xl lg:text-xl md:text-xl">Total Students</h4>
                         <h2 className="xl:text-4xl lg:text-4xl md:text-4xl flex justify-center">
                             {dashboardData.totalStudents}
