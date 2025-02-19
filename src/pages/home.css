@@ -350,40 +350,53 @@
 }
 
 .tablee {
+    /* Outer card container */
     width: 90%;
     height: 40vh;
     margin-top: 1rem;
     border-collapse: collapse;
-    box-shadow: 0 0 8px rgba(36, 36, 36, 0.3);
-    border: 1px solid rgb(92, 92, 92);
+    border: 1px solid #656565;      /* Subtle border */
     border-radius: 5px;
+    background-color: #4B4B4B;      /* Outer background color */
+    box-shadow: 0 0 8px rgba(36, 36, 36, 0.3);
     overflow-y: auto;
-}
-
-.tablee h5 {
-    color: white;
+  }
+  
+  .tablee h5 {
+    color: #fff;
     font-family: madina-regular;
     font-size: 1rem;
     padding: 10px 25px 5px;
-}
-
-.tablee-content {
-    background-color: #656565;
+    border-bottom: 1px solid #656565;
+  }
+  
+  /* Inside rows are #656565 by default */
+  .tablee-content {
+    background-color: #4B4B4B;
     padding: 7px 25px;
-    border: 1px solid rgb(159, 159, 159);
+    border-bottom: 1px solid #656565;
     overflow-x: auto;
     white-space: nowrap;
     display: block;
     max-width: 100%;
-}
-
-
-.tablee-content h6 {
-    color: white;
+    cursor: pointer; /* Pointer on hover */
+  }
+  
+  .tablee-content h6 {
+    color: #fff;                   /* White text by default */
     font-family: madina-regular;
     font-size: 1rem;
-}
-
+    transition: color 0.3s ease;
+  }
+  
+  .tablee-content:hover {
+    background-color: #656565;
+  }
+  
+  .tablee-content:hover h6 {
+    color: #fff;
+  }
+    
 /* Manage Exam */
 /* Exam Container */
 .exam-container {
@@ -2239,4 +2252,42 @@
 
 .create-btn-student {
     background: #B30275;
+}
+
+/*notification-table*/
+.notification-table{
+    width: 90%;
+    height: 40vh;
+    margin-top: 1rem;
+    border-collapse: collapse;
+    box-shadow: 0 0 8px rgba(36, 36, 36, 0.3);
+    border: 1px solid rgb(92, 92, 92);
+    border-radius: 5px;
+    overflow-y: auto;
+    word-wrap: break-word; /* or */
+    overflow-wrap: break-word;
+}
+.tablee-new {
+    background-color: #656565;
+    padding: 7px 25px;
+    border: 1px solid rgb(159, 159, 159);
+    overflow-x: auto;
+    display: block;
+    max-width: 100%;
+    
+    /* Ensuring text wraps */
+    white-space: normal; 
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+.tablee-new h6 {
+    color: white;
+    font-family: madina-regular;
+    font-size: 1rem;
+    
+    /* Ensuring text wraps */
+    white-space: normal; 
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
