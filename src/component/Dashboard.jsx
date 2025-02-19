@@ -346,7 +346,7 @@ const Dashboard = ({ onCreateExam, onAddStudent, onAddUser, onAddCredits }) => {
                                 <li onClick={onCreateExam}>
                                     Create Exam
                                 </li>
-                                <li onClick={onAddStudent}>
+                                <li onClick={onAddStudent}> 
                                     Add Student
                                 </li>
                                 <li onClick={onAddUser}>
@@ -357,6 +357,26 @@ const Dashboard = ({ onCreateExam, onAddStudent, onAddUser, onAddCredits }) => {
                         </div>
                         <div className="mid-display2">
                             <h4>Notifications</h4>
+                            <div className="flex justify-center">
+                                <div className="notification-table">
+                                    <div className="tablee-new">
+                                        <h6>📢 Reminder: Your subscription is about to expire! Renew now to continue enjoying uninterrupted service.</h6>
+                                    </div>
+                                    
+                                    <div className="tablee-new">
+                                        <h6>🎉 Special Festive Offer! Get 50% off on all premium plans. Limited time only—grab the deal now!</h6>
+                                    </div>
+                                    <div className="tablee-new">
+                                        <h6>💰 Credits Reminder: You have 200 credits left in your account. Use them before they expire!</h6>
+                                    </div>
+                                    <div className="tablee-new">
+                                        <h6>⚠️ Low Credit Alert: You are running low on credits! Recharge now to avoid service interruptions.</h6>
+                                    </div>
+                                    <div className="tablee-new">
+                                        <h6>🎓 Congratulations! You have successfully completed your exam. Check your results soon!</h6>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
