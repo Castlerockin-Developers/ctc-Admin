@@ -5,7 +5,7 @@ import { motion } from "motion/react";
 import EditExam from "./EditExam";
 
 
-const Dashboard = ({ onCreateExam, onAddStudent, onAddUser, onAddCredits }) => {
+const Dashboard = ({ onCreateExam, onAddStudent, onAddUser, onAddCredits ,onViewexam,onManageExam}) => {
 
     // const API_BASE_URL = "http://127.0.0.1:8000/api/";
 
@@ -275,7 +275,7 @@ const Dashboard = ({ onCreateExam, onAddStudent, onAddUser, onAddCredits }) => {
                                                         <td>{test.name}</td>
                                                         <td>{test.startTime}</td>
                                                         <td>{test.endTime}</td>
-                                                        <td><motion.button whileTap={{ scale: 1.1 }} className="viewexam-btn-pop" onClick={() => openEditPopup(test)}>View</motion.button></td>
+                                                        <td><motion.button whileTap={{ scale: 1.1 }} className="viewexam-btn-pop" onClick={onViewexam}>View</motion.button></td>
                                                     </tr>
                                                 ))
                                             ) : (
@@ -315,27 +315,32 @@ const Dashboard = ({ onCreateExam, onAddStudent, onAddUser, onAddCredits }) => {
                         <h4>Recent Tests</h4>
                         <div className="flex w-full justify-center">
                             <div className="tablee">
-                                <h5>DSA Crash Course</h5>
-                                <div className="tablee-content">
-                                    <h6>Hello World</h6>
-                                </div>
-                                <div className="tablee-content">
-                                    <h6>Hello World</h6>
-                                </div>
+                            <div className="tablee-content"onClick={onManageExam}>
+                                <h6>DSA Crash Course</h6>
+                            </div>
+                            <div className="tablee-content">
+                                <h6>Hello World</h6>
+                            </div>
+                            <div className="tablee-content">
+                                <h6>Hello World</h6>
+                            </div>
                             </div>
                         </div>
-                    </div>
+                     </div>
+                        {/* Completed Result */}
                     <div className="w-4/10 mid-display">
                         <h4>Completed Result</h4>
                         <div className="flex w-full justify-center">
                             <div className="tablee">
-                                <h5>DSA Crash Course</h5>
-                                <div className="tablee-content">
-                                    <h6>Hello World</h6>
-                                </div>
-                                <div className="tablee-content">
-                                    <h6>Hello World</h6>
-                                </div>
+                            <div className="tablee-content" onClick={onManageExam}>
+                                <h6>DSA Crash Course</h6>
+                            </div>
+                            <div className="tablee-content">
+                                <h6>Hello World</h6>
+                            </div>
+                            <div className="tablee-content">
+                                <h6>Hello World</h6>
+                            </div>
                             </div>
                         </div>
                     </div>
