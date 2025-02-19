@@ -1,19 +1,22 @@
-import React, { useState } from 'react';
-import subcribebg from '../assets/subcribebg.png';
-import coin from '../assets/CTCcoin.png';
-import './subscription.css';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faInfoCircle } from '@fortawesome/free-solid-svg-icons';
-import { faShoppingBag } from '@fortawesome/free-solid-svg-icons';
+import React, { useState } from "react";
+import subcribebg from "../assets/subcribebg.png";
+import coin from "../assets/CTCcoin.png";
+import ReceiptModal from "./ReceiptModal"; // Import the ReceiptModal component
+import "./subscription.css";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faInfoCircle, faShoppingBag } from "@fortawesome/free-solid-svg-icons";
 
-const Subcription = () => {
+const Subscription = () => {
     // State for credit quantity
     const [quantity, setQuantity] = useState(0);
-    const pricePerCredit = 500; // base price per item
+    const pricePerCredit = 500; // Base price per item
     const total = quantity * pricePerCredit;
 
     // State for active tab: "buy" for Buy Credits, "history" for Billing History
     const [activeTab, setActiveTab] = useState("buy");
+
+    // State for receipt modal visibility
+    const [showReceipt, setShowReceipt] = useState(false);
 
     const handleIncrement = () => {
         setQuantity((prev) => prev + 1);
@@ -26,7 +29,7 @@ const Subcription = () => {
     };
 
     return (
-        <div className="subscription-container justify-center flex flex-wrap">
+        <div className={`subscription-container justify-center flex flex-wrap ${showReceipt ? "blur-background" : ""}`}>
             <div className="subscription-box">
                 <h1>Subscription</h1>
                 <div className="subscription-card-container">
@@ -36,7 +39,7 @@ const Subcription = () => {
                         <h3>Premium</h3>
                         <ul>
                             <li>Full Language Learning Access</li>
-                            <li>10 Assessment Included Annually</li>
+                            <li>10 Assessments Included Annually</li>
                             <li>AI Speech & Coding Included</li>
                             <li>Additional Contest Access</li>
                         </ul>
@@ -82,8 +85,9 @@ const Subcription = () => {
                 </div>
             </div>
 
-            {/* Conditionally Render the Buy Credits Table */}
-            {activeTab === "buy" && (
+            {/* Billing History */}
+             {/* Conditionally Render the Buy Credits Table */}
+             {activeTab === "buy" && (
                 <>
                     <div className="flex justify-center rounded-sm">
                         <table className="subcribe-table">
@@ -153,7 +157,6 @@ const Subcription = () => {
                 </>
             )}
 
-            {/* Conditionally Render the Billing History Table */}
             {activeTab === "history" && (
                 <div className="flex justify-center rounded-sm">
                     <table className="subcribe-history-table">
@@ -177,16 +180,18 @@ const Subcription = () => {
                                 <td>Placeholder</td>
                                 <td>Status</td>
                                 <td>
-                                    <button className='reciept-btn'>Get Receipt</button>
+                                    <button className="reciept-btn" onClick={() => setShowReceipt(true)}>Get Receipt</button>
                                 </td>
                             </tr>
-                            {/* Add additional rows as needed */}
                         </tbody>
                     </table>
                 </div>
             )}
+
+            {/* Receipt Modal */}
+            {showReceipt && <ReceiptModal onClose={() => setShowReceipt(false)} />}
         </div>
     );
 };
 
-export default Subcription;
+export default Subscription;
