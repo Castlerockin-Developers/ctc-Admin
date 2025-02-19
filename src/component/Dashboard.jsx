@@ -14,6 +14,7 @@ const Dashboard = ({ onCreateExam, onAddStudent, onAddUser, onAddCredits, onView
     const [showCompletedPopup, setShowCompletedPopup] = useState(false);
     const [recentTests, setRecentTests] = useState([]);
     const [completedResults, setCompletedResults] = useState([]);
+    const [notifications, setNotifications] = useState([]); // State for notifications
     const [error, setError] = useState(null);
 
     const togglePopup = () => setShowPopup((prev) => !prev);
@@ -36,10 +37,11 @@ const Dashboard = ({ onCreateExam, onAddStudent, onAddUser, onAddCredits, onView
         const fetchDashboardData = async () => {
             try {
                 // Commenting out the API calls for now
-                // const [dashboardResponse, recentTestsResponse, completedResultsResponse] = await Promise.all([
-                //     axios.get("http://your-backend-url/api/dashboard/"),
-                //     axios.get("http://your-backend-url/api/recent-tests/"),
-                //     axios.get("http://your-backend-url/api/completed-results/")
+                // const [dashboardResponse, recentTestsResponse, completedResultsResponse, notificationsResponse] = await Promise.all([
+                //     axios.get("http://backend-url/api/dashboard/"),
+                //     axios.get("http://backend-url/api/recent-tests/"),
+                //     axios.get("http://backend-url/api/completed-results/"),
+                //     axios.get("http://backend-url/api/notifications/") // New endpoint for notifications
                 // ]);
 
                 // Simulate dashboard data (temporary mock data while the backend is not available)
@@ -61,10 +63,19 @@ const Dashboard = ({ onCreateExam, onAddStudent, onAddUser, onAddCredits, onView
                     { id: 1, title: "DSA Course", description: "sample", status: "Completed" },
                     { id: 2, title: "React 101", description: "sample", status: "Completed" }
                 ];
+                const mockNotifications = [
+                    { id: 1, message: "📢 Reminder: Your subscription is about to expire! Renew now to continue enjoying uninterrupted service." },
+                    { id: 2, message: "🎉 Special Festive Offer! Get 50% off on all premium plans. Limited time only—grab the deal now!" },
+                    { id: 3, message: "💰 Credits Reminder: You have 200 credits left in your account. Use them before they expire!" },
+                    { id: 4, message: "⚠️ Low Credit Alert: You are running low on credits! Recharge now to avoid service interruptions." },
+                    { id: 5, message: "🎓 Congratulations! You have successfully completed your exam. Check your results soon!" }
+                ];
+
                 setDashboardData(mockDashboardData);
                 setTestDetails(mockDashboardData.testDetails);
                 setRecentTests(mockRecentTests);
                 setCompletedResults(mockCompletedResults);
+                setNotifications(mockNotifications); // Set mock notifications
             } catch (error) {
                 console.error("Error fetching dashboard data", error);
                 setError("Failed to load data. Please try again later.");
@@ -271,21 +282,11 @@ const Dashboard = ({ onCreateExam, onAddStudent, onAddUser, onAddCredits, onView
                             <h4>Notifications</h4>
                             <div className="flex justify-center">
                                 <div className="notification-table">
-                                    <div className="tablee-new">
-                                        <h6>📢 Reminder: Your subscription is about to expire! Renew now to continue enjoying uninterrupted service.</h6>
-                                    </div>
-                                    <div className="tablee-new">
-                                        <h6>🎉 Special Festive Offer! Get 50% off on all premium plans. Limited time only—grab the deal now!</h6>
-                                    </div>
-                                    <div className="tablee-new">
-                                        <h6>💰 Credits Reminder: You have 200 credits left in your account. Use them before they expire!</h6>
-                                    </div>
-                                    <div className="tablee-new">
-                                        <h6>⚠️ Low Credit Alert: You are running low on credits! Recharge now to avoid service interruptions.</h6>
-                                    </div>
-                                    <div className="tablee-new">
-                                        <h6>🎓 Congratulations! You have successfully completed your exam. Check your results soon!</h6>
-                                    </div>
+                                    {notifications.map((notification, index) => (
+                                        <div key={index} className="tablee-new">
+                                            <h6>{notification.message}</h6>
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
                         </div>
