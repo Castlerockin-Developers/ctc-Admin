@@ -10,15 +10,13 @@ import { faInfoCircle, faShoppingBag } from "@fortawesome/free-solid-svg-icons";
 const Subscription = () => {
     // State for credit quantity
     const [quantity, setQuantity] = useState(0);
-    const pricePerCredit = 500;
+    const pricePerCredit = 30;
 
-//     const numericQuantity = parseInt(quantity || "0", 10);
-    const total = pricePerCredit * 500; // or your pricePerCredit
+    const numericQuantity = parseInt(quantity || "0", 10);
+    const total = numericQuantity * pricePerCredit;
 
-    // State for active tab: "buy" for Buy Credits, "history" for Billing History
     const [activeTab, setActiveTab] = useState("buy");
-    
-    // New state for expiry date; default value set as "365 days"
+
     const [expiryDate, setExpiryDate] = useState("35 days");
     const [message, setMessage] = useState("");
     const [showModal, setShowModal] = useState(false);
@@ -276,7 +274,7 @@ const Subscription = () => {
                                     <td>{item.placeholder2}</td>
                                     <td>{item.status}</td>
                                     <td>
-                                        <button className='reciept-btn'>Get Receipt</button>
+                                        <button className='reciept-btn' onClick={() => setShowReceipt(true)}>Get Receipt</button>
                                     </td>
                                 </tr>
                             ))}
