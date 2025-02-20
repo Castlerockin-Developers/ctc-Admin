@@ -474,6 +474,21 @@
     margin-right: 10px;
 }
 
+.random-data{
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+    padding: 5px 40px 5px;
+}
+
+.random-data label{
+    width: 13vw;
+}
+
+.random-data input{
+    margin-left: 20px;
+}
+
 .addedquestion-bank-head button {
     font-size: 0.9rem;
     font-family: madina-medium;
@@ -1301,10 +1316,26 @@
         width: 150%;
     }
 }
+
 .edit-button{
     padding: 10px;
     background: rgb(120, 120, 120)!important;
     font-size: 0.9rem;
     border-radius: 5px;
     margin-right: 10px;
+}
+
+.default-btn{
+    font-size: 0.9rem;
+    font-family: madina-medium;
+    padding: 4px 10px 5px;
+    color: white;
+    background-color: #FF0099;
+    border-radius: 5px;
+    cursor: pointer;
+    margin: 30px;
+}
+
+.randomize-head{
+    margin: 20px;
 }

@@ -2,14 +2,18 @@ import React, { useEffect, useState } from 'react';
 import line from '../assets/Line.png';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faRotateLeft } from '@fortawesome/free-solid-svg-icons';
+import { faListCheck, faCode } from "@fortawesome/free-solid-svg-icons";
 import Swal from "sweetalert2";
 import ReactQuill from 'react-quill';
 import filter from '../assets/filter.png';
+import { motion } from "motion/react";
+import closeicon from '../assets/close.png';
+import { useDropzone } from "react-dropzone";
+import { FaDatabase, FaPen } from "react-icons/fa";
+
 
 const AddQuestion = ({ onBack, onNexts }) => {
-    // State to track window width for responsive truncation
     const [windowWidth, setWindowWidth] = useState(window.innerWidth);
-
     useEffect(() => {
         const handleResize = () => setWindowWidth(window.innerWidth);
         window.addEventListener("resize", handleResize);
@@ -30,7 +34,9 @@ const AddQuestion = ({ onBack, onNexts }) => {
     const [showEditCodingPopup, setShowEditCodingPopup] = useState(false);
     const [showTimerPopup, setShowTimerPopup] = useState(false);
 
-    // MCQ option states
+//   Import Question Bank Popup
+    const [showImportPopup,setShowImportPopup] = useState(false)
+
     const [options, setOptions] = useState([{ text: "", isCorrect: false }]);
     const [question, setQuestion] = useState("");
     const [testCases, setTestCases] = useState([{ input: "", output: "" }]);
@@ -59,91 +65,49 @@ const AddQuestion = ({ onBack, onNexts }) => {
 
     // Source questions (Question Bank)
     const [sourceQuestions, setSourceQuestions] = useState([
-        {
-            id: 1,
-            title: "Question Title - Medium Difficulty",
-            content: "It is a long established fact that a reader ...",
-            type: "mcq"
-        },
-        {
-            id: 2,
-            title: "Question Title - Medium Difficulty",
-            content: "It is a long established fact that a reader ...",
-            type: "coding"
-        },
-        {
-            id: 3,
-            title: "Question Title - Medium Difficulty",
-            content: "It is a long established fact that a reader ...",
-            type: "mcq"
-        }
+        { id: 1, title: "Question Title - Medium Difficulty", content: "Content 1", type: "mcq" },
+        { id: 2, title: "Question Title - Medium Difficulty", content: "Content 2", type: "coding" },
+        { id: 3, title: "Question Title - Medium Difficulty", content: "Content 3", type: "mcq" }
     ]);
-
-    // Questions that have been added (split by type)
+    //  Track editing of scores
+    const [isEditingScoreMCQ, setIsEditingScoreMCQ] = useState(false);
+    const [isEditingScoreCoding, setIsEditingScoreCoding] = useState(false);
+    
     const [mcqQuestions, setMcqQuestions] = useState([]);
     const [codingQuestions, setCodingQuestions] = useState([]);
     const [isQuestionBankVisible, setIsQuestionBankVisible] = useState(true);
+    const [question, setQuestion] = useState("");
+    const [testCases, setTestCases] = useState([{ input: "", output: "" }]);
+    const [showEditCodingPopup, setShowEditCodingPopup] = useState(false);
+    const [showTimerPopup, setShowTimerPopup] = useState(false);
+    const [showFilterDropdownMCQ, setShowFilterDropdownMCQ] = useState(false);
+    const [showFilterDropdownCoding, setShowFilterDropdownCoding] = useState(false);
 
-    // NEW: Track editing of scores
-    const [isEditingScoreMCQ, setIsEditingScoreMCQ] = useState(false);
-    const [isEditingScoreCoding, setIsEditingScoreCoding] = useState(false);
+    // Import Question bank
+    const toggleImportPopup = () => setShowImportPopup((prev) => !prev);
+    const closeImportPopup = () => setShowImportPopup(false);
+    const [file, setFile] = useState(null);
+  
+    const [value, setValue] = useState('');
+    const [showRandomizePopup, setShowRandomizePopup] = useState(false);
+    const [selectedDifficulty, setSelectedDifficulty] = useState('medium');
+    const [selectedNumberOfQuestions, setSelectedNumberOfQuestions] = useState(1);
+    const [selectedQuestionType, setSelectedQuestionType] = useState('mcq');
 
-    // -------------------- Timer & Dropdown Logic --------------------
-    const toggleFilterDropdownMCQ = () => {
-        setShowFilterDropdownMCQ(prev => !prev);
-    };
-    const toggleFilterDropdownCoding = () => {
-        setShowFilterDropdownCoding(prev => !prev);
-    };
-    const handleSectionTimerClick = () => {
-        setShowTimerPopup(true);
-        // close dropdown
-        setShowFilterDropdownMCQ(false);
-        setShowFilterDropdownCoding(false);
-    };
-    const toggleTimerPopup = () => {
-        setShowTimerPopup(prev => !prev);
-    };
+    useEffect(() => {
+        const handleResize = () => setWindowWidth(window.innerWidth);
+        window.addEventListener("resize", handleResize);
+        return () => window.removeEventListener("resize", handleResize);
+    }, []);
 
-    // (Previously "Randomize" handler) - you can keep or remove as needed
-    const handleRandomizeClick = () => {
-        console.log("Randomize clicked");
-        // close dropdown
-        setShowFilterDropdownMCQ(false);
-        setShowFilterDropdownCoding(false);
-    };
-
-    // -------------------- Score Editing Logic --------------------
-    const handleEditScoreMCQ = () => {
-        // Toggle the editing state
-        setIsEditingScoreMCQ(prev => !prev);
-    };
-    const handleEditScoreCoding = () => {
-        // Toggle the editing state
-        setIsEditingScoreCoding(prev => !prev);
+    const truncateTitle = (title, wordLimit = 5) => {
+        const words = title.split(" ");
+        if (words.length > wordLimit) {
+            return words.slice(0, wordLimit).join(" ") + "...";
+        }
+        return title;
     };
 
-    // Handle changes to the score input for MCQ
-    const handleScoreChangeMCQ = (questionId, newScore) => {
-        const limitedScore = Math.min(10, Math.max(0, newScore)); // Ensure score is between 0 and 10
-        setMcqQuestions(prevQuestions =>
-            prevQuestions.map(q =>
-                q.id === questionId ? { ...q, score: limitedScore } : q
-            )
-        );
-    };
-
-// Handle changes to the score input for Coding
-const handleScoreChangeCoding = (questionId, newScore) => {
-    const limitedScore = Math.min(10, Math.max(0, newScore)); // Ensure score is between 0 and 10
-    setCodingQuestions(prevQuestions =>
-        prevQuestions.map(q =>
-            q.id === questionId ? { ...q, score: limitedScore } : q
-        )
-    );
-};
-
-    // -------------------- Test Case Handlers for Coding Popup --------------------
     const handleChange = (index, field, value) => {
         const newTestCases = [...testCases];
         newTestCases[index][field] = value;
@@ -157,7 +121,6 @@ const handleScoreChangeCoding = (questionId, newScore) => {
         setTestCases(newTestCases);
     };
 
-    // -------------------- Popup Handlers (MCQ & Coding) --------------------
     const handleCodingEdit = () => {
         setShowEditCodingPopup(true);
     };
@@ -169,7 +132,6 @@ const handleScoreChangeCoding = (questionId, newScore) => {
         setShowEditCodingPopup(false);
     };
 
-    // -------------------- MCQ Option Handlers --------------------
     const handleAddOption = () => {
         setOptions([...options, { text: "", isCorrect: false }]);
     };
@@ -202,6 +164,37 @@ const handleScoreChangeCoding = (questionId, newScore) => {
         }
     };
 
+
+    // -------------------- Score Editing Logic --------------------
+    const handleEditScoreMCQ = () => {
+        // Toggle the editing state
+        setIsEditingScoreMCQ(prev => !prev);
+    };
+    const handleEditScoreCoding = () => {
+        // Toggle the editing state
+        setIsEditingScoreCoding(prev => !prev);
+    };
+
+    // Handle changes to the score input for MCQ
+    const handleScoreChangeMCQ = (questionId, newScore) => {
+        const limitedScore = Math.min(10, Math.max(0, newScore)); // Ensure score is between 0 and 10
+        setMcqQuestions(prevQuestions =>
+            prevQuestions.map(q =>
+                q.id === questionId ? { ...q, score: limitedScore } : q
+            )
+        );
+    };
+
+    // Handle changes to the score input for Coding
+    const handleScoreChangeCoding = (questionId, newScore) => {
+        const limitedScore = Math.min(10, Math.max(0, newScore)); // Ensure score is between 0 and 10
+        setCodingQuestions(prevQuestions =>
+            prevQuestions.map(q =>
+                q.id === questionId ? { ...q, score: limitedScore } : q
+            )
+        );
+    };
+
     const handleSaveChanges = () => {
         console.log("Updated Question:", question);
         console.log("Updated Options:", options);
@@ -218,7 +211,6 @@ const handleScoreChangeCoding = (questionId, newScore) => {
         });
     };
 
-    // -------------------- Drag & Drop for Adding Questions --------------------
     const handleDragStart = (e, question) => {
         e.dataTransfer.setData('question', JSON.stringify(question));
         e.target.classList.add('draggable-active');
@@ -284,9 +276,38 @@ const handleScoreChangeCoding = (questionId, newScore) => {
         setIsQuestionBankVisible(true);
     };
 
-    // -------------------- Navigation (Next/Back) --------------------
+    const toggleFilterDropdownMCQ = () => {
+        setShowFilterDropdownMCQ(prev => !prev);
+    };
+
+    const toggleFilterDropdownCoding = () => {
+        setShowFilterDropdownCoding(prev => !prev);
+    };
+
+    const handleSectionTimerClick = () => {
+        setShowTimerPopup(true);
+        setShowFilterDropdownMCQ(false);
+        setShowFilterDropdownCoding(false);
+    };
+
+    const handleRandomizeClick = () => {
+        setShowFilterDropdownMCQ(false);
+        setShowFilterDropdownCoding(false);
+        setShowRandomizePopup(true);
+    };
+
+    const toggleTimerPopup = () => {
+        setShowTimerPopup(prev => !prev);
+    };
+
+//     Drop questionbank dataset logic
+    const onDrop = (acceptedFiles) => {
+        setFile(acceptedFiles[0]);
+    };
+
+    const { getRootProps, getInputProps } = useDropzone({ onDrop });
+
     const handleNextButtonClick = () => {
-        // If no question is added in either section, show error
         if (mcqQuestions.length === 0 && codingQuestions.length === 0) {
             Swal.fire({
                 title: "Error",
@@ -299,7 +320,6 @@ const handleScoreChangeCoding = (questionId, newScore) => {
             });
             return;
         }
-        // If only MCQ questions are added, warn the user that coding questions are missing
         if (mcqQuestions.length > 0 && codingQuestions.length === 0) {
             Swal.fire({
                 title: "Warning",
@@ -317,7 +337,6 @@ const handleScoreChangeCoding = (questionId, newScore) => {
             });
             return;
         }
-        // If only Coding questions are added, warn the user that MCQ questions are missing
         if (codingQuestions.length > 0 && mcqQuestions.length === 0) {
             Swal.fire({
                 title: "Warning",
@@ -335,8 +354,16 @@ const handleScoreChangeCoding = (questionId, newScore) => {
             });
             return;
         }
-        // If both sections have at least one question, proceed
         onNexts();
+    };
+
+    const handleRandomizePopupClose = () => {
+        setShowRandomizePopup(false);
+    };
+
+    const handleAddRandomizedQuestions = () => {
+        console.log("Adding randomized questions:", selectedNumberOfQuestions, selectedDifficulty, selectedQuestionType);
+        setShowRandomizePopup(false);
     };
 
     return (
@@ -344,12 +371,16 @@ const handleScoreChangeCoding = (questionId, newScore) => {
             <div className='addquestion-box'>
                 <h1>Add Questions</h1>
                 <div className='grid lg:grid-cols-2 md:grid-cols-1 add-q-container gap-1.5'>
-                    {/* Question Bank */}
                     <div className='questionbank-container'>
                         <div className='question-bank'>
                             <div className='question-bank-head flex justify-between'>
                                 <h3>Question Bank</h3>
-                                <button>+ Import</button>
+                                <div className='flex gap-2'>
+                                    <button onClick={toggleImportPopup}>+ Import</button>
+                                    <button onClick={handleRandomizeClick} className="randomize-button">
+                                        Randomize
+                                    </button>
+                                </div>
                             </div>
                             <div className='question-bank-body'>
                                 {isQuestionBankVisible && (
@@ -404,79 +435,122 @@ const handleScoreChangeCoding = (questionId, newScore) => {
                             </div>
                         </div>
                     </div>
-                    {/* Added Questions */}
                     <div className='questionbank-added-container'>
-    {/* MCQ Section */}
-    <div className='question-bank'>
-        <div className='addedquestion-bank-head flex justify-between'>
-            <h3>MCQ</h3>
-            <div className='flex relative'>
-                <div className="section-timer-desktop">
-                    <span>Section timer: </span>
-                    <input type="number" placeholder='In minutes' />
-                </div>
-                {/* Filter button for mobile */}
-                <div className='r-filter-btn' onClick={toggleFilterDropdownMCQ}>
-                    <img src={filter} alt="filter-options" />
-                    {showFilterDropdownMCQ && (
-                        <div className="filter-dropdown">
-                            <div className="dropdown-item" onClick={handleSectionTimerClick}>
-                                Section Timer
+                        <div className='question-bank'>
+                            <div className='addedquestion-bank-head flex justify-between'>
+                                <h3>MCQ</h3>
+                                <div className='flex relative'>
+                                    <div className="section-timer-desktop">
+                                        <span>Section timer: </span>
+                                        <input type="number" placeholder='In minutes' />
+                                    </div>
+                                    <div className='r-filter-btn' onClick={toggleFilterDropdownMCQ}>
+                                        <img src={filter} alt="filter-options" />
+                                        {showFilterDropdownMCQ && (
+                                            <div className="filter-dropdown">
+                                                <div className="dropdown-item" onClick={handleSectionTimerClick}>
+                                                    Section Timer
+                                                </div>
+                                                <div className="r-randomize-btn" onClick={handleRandomizeClick}>
+                                                    Randomize
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <button className='randomize-btn'>Randomize</button>
+                                    <button onClick={handleMcqEdit}>Create</button>
+                                </div>
                             </div>
-                            <div className="r-randomize-btn" onClick={handleRandomizeClick}>
-                                Randomize
+                            {showTimerPopup && (
+                                <div className="timer-popup-overlay" onClick={toggleTimerPopup}>
+                                    <div
+                                        className="timer-popup-content"
+                                        onClick={(e) => e.stopPropagation()}
+                                    >
+                                        <button className="close-btn" onClick={toggleTimerPopup}>X</button>
+                                        <div>
+                                            <span>Section timer: </span>
+                                            <input type="number" placeholder='In minutes' />
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                            <div
+                                className='addedquestion-bank-body'
+                                onDragOver={handleDragOver}
+                                onDrop={(e) => handleDrop(e, 'mcq')}
+                            >
+                                {mcqQuestions.map(question => (
+                                    <details key={question.id}>
+                                        <summary className='flex justify-between'>
+                                            {windowWidth <= 1024
+                                                ? truncateTitle(question.title, 3)
+                                                : question.title}
+                                                <div className="flex items-center gap-4">
+                                                    <input
+                                                        type="number"
+                                                        max={10}
+                                                        value={question.score ?? 0}
+                                                        disabled={!isEditingScoreMCQ}
+                                                        onChange={(e) => handleScoreChangeMCQ(question.id, e.target.value)}
+                                                        className={`${isEditingScoreMCQ ? 'w-16' : 'w-8'} mr-2 text-black rounded-sm text-white text-center ${isEditingScoreMCQ ? '[background-color:oklch(0.42_0_0)]' : ''}`}
+                                                    />
+                                                    {!isEditingScoreMCQ && <span className="ml-1">score</span>}
+                                                <button
+                                                    onClick={() => handleReturnQuestion(question)}
+                                                    className="bg-red-500 hover:bg-red-700 px-2 py-1 rounded"
+                                                >
+                                                    Remove
+                                                </button>
+                                        </summary>
+                                        <p>{question.content}</p>
+                                    </details>
+                                ))}
                             </div>
                         </div>
-                    )}
-                </div>
-                {/* Edit Score Button */}
-                <button className='edit-button' onClick={handleEditScoreMCQ}>
-                    {isEditingScoreMCQ ? "Save Changes" : "Edit Score"}
-                </button>
-                <button onClick={handleMcqEdit}>Create</button>
-            </div>
-        </div>
-
-        {/* Timer Popup Modal (global) */}
-        {showTimerPopup && (
-            <div className="timer-popup-overlay" onClick={toggleTimerPopup}>
-                <div
-                    className="timer-popup-content"
-                    onClick={(e) => e.stopPropagation()}
-                >
-                    <button className="close-btn" onClick={toggleTimerPopup}>X</button>
-                    <div>
-                        <span>Section timer: </span>
-                        <input type="number" placeholder='In minutes' />
-                    </div>
-                </div>
-            </div>
-        )}
-
-        <div
-            className='addedquestion-bank-body'
-            onDragOver={handleDragOver}
-            onDrop={(e) => handleDrop(e, 'mcq')}
-        >
-            {mcqQuestions.map(question => (
-                <details key={question.id}>
-                    <summary className='flex justify-between'>
-                        {windowWidth <= 1024
-                            ? truncateTitle(question.title, 3)
-                            : question.title}
-                        <div className="flex items-center gap-4">
-                            <input
-                                type="number"
-                                max={10}
-                                value={question.score ?? 0}
-                                disabled={!isEditingScoreMCQ}
-                                onChange={(e) => handleScoreChangeMCQ(question.id, e.target.value)}
-                                className={`${isEditingScoreMCQ ? 'w-16' : 'w-8'} mr-2 text-black rounded-sm text-white text-center ${isEditingScoreMCQ ? '[background-color:oklch(0.42_0_0)]' : ''}`}
-                            />
-                            {!isEditingScoreMCQ && <span className="ml-1">score</span>}
-                            <button
-                                onClick={() => handleReturnQuestion(question)}
-                                className="bg-red-500 hover:bg-red-700 px-2 py-1 rounded"
+                        <div className='question-bank'>
+                            <div className='addedquestion-bank-head flex justify-between'>
+                                <h3>Coding</h3>
+                                <div className='flex relative'>
+                                    <div className='section-timer-desktop'>
+                                        <span>Section timer: </span>
+                                        <input type="number" placeholder='In minutes' />
+                                    </div>
+                                    <div className='r-filter-btn' onClick={toggleFilterDropdownCoding}>
+                                        <img src={filter} alt="filter-options" />
+                                        {showFilterDropdownCoding && (
+                                            <div className="filter-dropdown2">
+                                                <div className="dropdown-item" onClick={handleSectionTimerClick}>
+                                                    Section Timer
+                                                </div>
+                                                <div className="r-randomize-btn" onClick={handleRandomizeClick}>
+                                                    Randomize
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <button className='randomize-btn'>Randomize</button>
+                                    <button onClick={handleCodingEdit}>Create</button>
+                                </div>
+                            </div>
+                            {showTimerPopup && (
+                                <div className="timer-popup-overlay" onClick={toggleTimerPopup}>
+                                    <div
+                                        className="timer-popup-content"
+                                        onClick={(e) => e.stopPropagation()}
+                                    >
+                                        <button className="close-btn" onClick={toggleTimerPopup}>X</button>
+                                        <div>
+                                            <span>Section timer: </span>
+                                            <input type="number" placeholder='In minutes' />
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                            <div
+                                className='addedquestion-bank-body'
+                                onDragOver={handleDragOver}
+                                onDrop={(e) => handleDrop(e, 'coding')}
                             >
                                 Remove
                             </button>
@@ -579,37 +653,75 @@ const handleScoreChangeCoding = (questionId, newScore) => {
                     <button className='exam-next-btn' onClick={handleNextButtonClick}>Next</button>
                 </div>
             </div>
-
-            {/* MCQ Edit Popup */}
+            {showImportPopup && (
+                <div className="fixed inset-0 flex items-center justify-center top-display-pop">
+                    <div className="top-display-pop-card rounded-sm shadow-lg w-3/4 md:w-1/2 min-h-[500px]">
+                        <div className="flex justify-between items-center mb-4 top-display-pop-title">
+                            <h2 className="font-semibold text-center">Import Questionbank</h2>
+                            <motion.button whileTap={{ scale: 1.2 }} className="text-red-500 text-lg" onClick={closeImportPopup}>
+                                <img src={closeicon} alt="Close" />
+                            </motion.button>
+                            
+                        </div>
+                        
+                        <div>
+                        <div
+                            {...getRootProps()}
+                            className="border-2 border-dashed border-gray-500 p-6 rounded-lg text-center cursor-pointer hover:border-gray-300 transition"
+                        >
+                            <input {...getInputProps()} />
+                            <div className="flex flex-col items-center">
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="w-12 h-12 text-gray-400"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                            >
+                                <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M12 16v-4m0 0V8m0 4h4m-4 0H8m12 4v4H4v-4M4 16l8-8 8 8"
+                                />
+                            </svg>
+                            <h2  className="mt-2 text-white text-3xl">Drag the dataset</h2>
+                            <p className="text-sm text-gray-400 text-3xl">or <span className="text-blue-400 cursor-pointer">upload from device</span></p>
+                            </div>
+                        </div>
+                        {file && (
+                            <p className="mt-3 text-sm text-green-400">Selected: {file.name}</p>
+                        )}
+                        
+                        </div>
+                        
+                    </div>
+                </div>
+                
+            )}
+            
             {showEditMCQPopup && (
                 <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-                    <div className="MCQ-edit-container text-white p-6 rounded-lg shadow-lg w-96">
-                        <h2 className="text-xl font-semibold mb-4">Edit Question</h2>
-                        <div className='flex MCQ-question'>
-                            <label className="block text-sm font-medium">Question:</label>
-                            <input
-                                type="text"
-                                value={question}
-                                onChange={(e) => setQuestion(e.target.value)}
-                                className="rounded-md mt-1 mb-3 border border-gray-600"
-                                placeholder="Enter your question"
-                            />
+                    <div className="MCQ-edit-container text-white p-8 rounded-lg shadow-lg w-[600px]">
+                        <h2 className="text-2xl font-semibold mb-6">Edit Question</h2>
+                        <div className='mb-6'>
+                            <label className="block text-sm font-medium mb-2">Question:</label>
                             <textarea
                                 value={question}
                                 onChange={(e) => setQuestion(e.target.value)}
-                                className="rounded-md mt-1 mb-3 border border-gray-600"
+                                className="rounded-md w-full border border-gray-600 p-2 bg-[#333] text-white"
                                 placeholder="Enter your question"
                             ></textarea>
                         </div>
-                        <div className='flex MCQ-question-score'>
-                            <label className="block text-sm font-medium">Score:</label>
-                            <input
-                                type="number"
-                                value={question}
-                                onChange={(e) => setQuestion(e.target.value)}
-                                className="rounded-md mt-1 mb-3 border border-gray-600"
-                                placeholder="Enter Score"
-                            />
+                        <div className='mb-6'>
+                            <label className="block text-sm font-medium mb-2">Score:</label>
+                            // <input
+                            //     type="number"
+                            //     value={question}
+                            //     onChange={(e) => setQuestion(e.target.value)}
+                            //     className="rounded-md w-full border border-gray-600 p-2 bg-[#333] text-white"
+                            //     placeholder="Enter Score"
+                            // />
                             <textarea
                                 value={question}
                                 onChange={(e) => setQuestion(e.target.value)}
@@ -618,16 +730,16 @@ const handleScoreChangeCoding = (questionId, newScore) => {
                             ></textarea>
                         </div>
                         {options.map((option, index) => (
-                            <div key={index} className="flex items-center options-list">
-                                <label className="block text-sm font-medium">Options:</label>
-                                <div className='flex w-full'>
-                                    <input
-                                        type="text"
-                                        value={option.text}
-                                        onChange={(e) => handleOptionChange(index, e.target.value)}
-                                        className="MCQ-question-options rounded-md border border-gray-600"
-                                        placeholder={`Option ${index + 1}`}
-                                    />
+                            <div key={index} className="mb-4">
+                                <label className="block text-sm font-medium mb-2">Option {index + 1}:</label>
+                                <div className='flex items-center space-x-4'>
+                                    // <input
+                                    //     type="text"
+                                    //     value={option.text}
+                                    //     onChange={(e) => handleOptionChange(index, e.target.value)}
+                                    //     className="flex-1 rounded-md border border-gray-600 p-2 bg-[#333] text-white"
+                                    //     placeholder={`Option ${index + 1}`}
+                                    // />
                                     <textarea
                                         value={option.text}
                                         onChange={(e) => handleOptionChange(index, e.target.value)}
@@ -652,11 +764,11 @@ const handleScoreChangeCoding = (questionId, newScore) => {
                         ))}
                         <button
                             onClick={handleAddOption}
-                            className="bg-blue-500 hover:bg-blue-800 text-white rounded-md add_options"
+                            className="bg-blue-500 hover:bg-blue-800 text-white rounded-md px-4 py-2"
                         >
-                            <span>+</span> Add Options
+                            <span>+</span> Add Option
                         </button>
-                        <div className="flex justify-end save-cancel">
+                        <div className="flex justify-end space-x-4 mt-6">
                             <button
                                 onClick={handleCloseEditPopup}
                                 className="bg-gray-600 hover:bg-gray-800 text-white px-4 py-2 rounded-md"
@@ -677,68 +789,69 @@ const handleScoreChangeCoding = (questionId, newScore) => {
             {/* Coding Edit Popup */}
             {showEditCodingPopup && (
                 <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-                    <div className="Coding-edit-container text-white p-6 rounded-lg shadow-lg w-96">
-                        <h2 className="text-xl font-semibold mb-4">Coding Question</h2>
-                        <div className='flex Coding-question'>
-                            <label className="block text-sm font-medium">Question:</label>
+                    <div className="Coding-edit-container text-white p-8 rounded-lg shadow-lg w-[600px]">
+                        <h2 className="text-2xl font-semibold mb-6">Coding Question</h2>
+                        <div className='mb-6'>
+                            <label className="block text-sm font-medium mb-2">Question:</label>
                             <input
                                 type="text"
                                 value={question}
                                 onChange={(e) => setQuestion(e.target.value)}
-                                className="rounded-md mt-1 mb-3 border border-gray-600"
+                                className="rounded-md w-full border border-gray-600 p-2 bg-[#333] text-white"
                                 placeholder="Enter your question"
                             />
                         </div>
-                        <div className='flex Coding-question-statement'>
-                            <label className="block text-sm font-medium">Statement:</label>
-                            <ReactQuill theme="snow" value={value} onChange={setValue} modules={modules} />
+                        <div className='mb-6'>
+                            <label className="block text-sm font-medium mb-2">Statement:</label>
+                            <ReactQuill theme="snow" value={value} onChange={setValue} />
                         </div>
-                        <img src={line} alt="line" className='e-line-top' />
-                        <div className='flex test-case'>
-                            <label className="block text-sm font-medium">Sample Test Case:</label>
+                        <div className='mb-6'>
+                            <label className="block text-sm font-medium mb-2">Sample Test Case:</label>
                             <textarea
                                 value={question}
                                 onChange={(e) => setQuestion(e.target.value)}
-                                className="rounded-md mt-1 mb-3 border border-gray-600"
-                                placeholder="Enter sample test case"
-                            />
+                                className="rounded-md w-full border border-gray-600 p-2 bg-[#333] text-white"
+                                placeholder="Enter your question"
+                            ></textarea>
                         </div>
-                        <div className='flex test-case-output'>
-                            <label className="block text-sm font-medium">Sample Test Case Output:</label>
+                        <div className='mb-6'>
+                            <label className="block text-sm font-medium mb-2">Sample Test Case Output:</label>
                             <textarea
                                 value={question}
                                 onChange={(e) => setQuestion(e.target.value)}
-                                className="rounded-md mt-1 mb-3 border border-gray-600"
-                                placeholder="Enter sample output"
-                            />
+                            //     className="rounded-md mt-1 mb-3 border border-gray-600"
+                            //     placeholder="Enter sample output"
+                            // />
+                                className="rounded-md w-full border border-gray-600 p-2 bg-[#333] text-white"
+                                placeholder="Enter your question"
+                            ></textarea>
                         </div>
-                        <img src={line} alt="line" className='e-line' />
-                        <h2 className="heading">Test Cases</h2>
+                        <h2 className="text-xl font-semibold mb-4">Test Cases</h2>
                         {testCases.map((testCase, index) => (
-                            <div key={index} className="flex test-case-io">
-                                <div className="test-casee">
-                                    <label className="block text-sm font-medium">Test Case Input:</label>
+                            <div key={index} className="mb-4">
+                                <div className='mb-4'>
+                                    <label className="block text-sm font-medium mb-2">Test Case Input:</label>
                                     <textarea
                                         value={testCase.input}
                                         onChange={(e) => handleChange(index, "input", e.target.value)}
-                                        className="rounded-md mt-1 mb-3 border border-gray-600"
+                                        className="rounded-md w-full border border-gray-600 p-2 bg-[#333] text-white"
                                         placeholder="Enter test case input"
-                                    />
+                                    ></textarea>
                                 </div>
-                                <div className="test-casee">
-                                    <label className="block text-sm font-medium">Test Case Output:</label>
+                                <div className='mb-4'>
+                                    <label className="block text-sm font-medium mb-2">Test Case Output:</label>
                                     <textarea
                                         value={testCase.output}
                                         onChange={(e) => handleChange(index, "output", e.target.value)}
-                                        className="rounded-md mt-1 mb-3 border border-gray-600"
+                                        className="rounded-md w-full border border-gray-600 p-2 bg-[#333] text-white"
                                         placeholder="Enter test case output"
-                                    />
+                                    ></textarea>
                                 </div>
                                 <button className="delete-btn" onClick={() => removeTestCase(index)}>🗑️</button>
                             </div>
                         ))}
                         <button className="add-btn" onClick={addTestCase}>➕ Add Test Case</button>
-                        <div className="flex justify-end save-cancel">
+                        <div className="flex justify-end space-x-4 mt-6">
                             <button
                                 onClick={handleCloseEditPopup}
                                 className="bg-gray-600 hover:bg-gray-800 text-white px-4 py-2 rounded-md"
@@ -755,6 +868,92 @@ const handleScoreChangeCoding = (questionId, newScore) => {
                     </div>
                 </div>
             )}
+            {showRandomizePopup && (
+                <div className="fixed inset-0 flex items-center justify-center top-display-pop">
+                    <div className="rounded-sm shadow-lg w-[700px]  flex flex-col bg-[#1e1e1e] text-white">
+                        <div className="flex justify-between items-center top-display-pop-title randomize-head">
+                            <h2 className="font-semibold text-2xl text-center text-white">Randomize Questions</h2>
+                            <motion.button whileTap={{ scale: 1.2 }} className="text-red-500 text-2xl" onClick={handleRandomizePopupClose}>
+                                <img src={closeicon} alt="Close" />
+                            </motion.button>
+                        </div>
+
+                        <div className="flex flex-col justify-center random-data form-content">
+                            <div className="flex">
+                                <div className= "flex">
+                                <label className="block text-xl font-medium mb-6 text-white">Number of Questions </label><span>:</span>
+                                </div>
+                                <input
+                                    type="number"
+                                    value={selectedNumberOfQuestions}
+                                    onChange={(e) => setSelectedNumberOfQuestions(Number(e.target.value))}
+                                    className="rounded-md w-sm border border-gray-600 p-4 bg-[#333] text-white text-xl"
+                                    placeholder="Enter number of questions"
+                                    min="1"
+                                />
+                            </div>
+                            <div className="flex-grow">
+                                <div className="flex">
+                                <label className="block text-xl font-medium mb-6 text-white">Question Type:</label>
+                                <div className="flex flex-col space-y-4">
+                                    <div className="toggle-buttons flex space-x-4">
+                                        <motion.button
+                                            className={`toggle-btn ${selectedQuestionType === "mcq" ? "active" : ""}`}
+                                            onClick={() => setSelectedQuestionType("mcq")}
+                                        >
+                                            <FontAwesomeIcon icon={faListCheck} className="icon" /> MCQ
+                                        </motion.button>
+                                        <motion.button
+                                            className={`toggle-btn ${selectedQuestionType === "coding" ? "active" : ""}`}
+                                            onClick={() => setSelectedQuestionType("coding")}
+                                        >
+                                            <FontAwesomeIcon icon={faCode} className="icon" /> Coding
+                                        </motion.button>
+                                    </div>
+                                </div>
+                                </div>
+                            </div>
+                            <div className="flex-grow">
+                                <div className="flex">
+                                <label className="block text-xl font-medium mb-6 text-white">Difficulty Level:</label>
+                                <div className="flex flex-col space-y-4">
+                                    <div className="toggle-buttons flex space-x-4 mt-4">
+                                        <motion.button
+                                            className={`toggle-btn ${selectedDifficulty === "easy" ? "active" : ""}`}
+                                            onClick={() => setSelectedDifficulty("easy")}
+                                        >
+                                            Easy
+                                        </motion.button>
+                                        <motion.button
+                                            className={`toggle-btn ${selectedDifficulty === "medium" ? "active" : ""}`}
+                                            onClick={() => setSelectedDifficulty("medium")}
+                                        >
+                                            Medium
+                                        </motion.button>
+                                        <motion.button
+                                            className={`toggle-btn ${selectedDifficulty === "hard" ? "active" : ""}`}
+                                            onClick={() => setSelectedDifficulty("hard")}
+                                        >
+                                            Hard
+                                        </motion.button>
+                                    </div>
+                                </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex justify-end space-x-6 mt-6">
+                            <button
+                                onClick={handleAddRandomizedQuestions}
+                                className="bg-green-500 hover:bg-green-800 text-white px-7 py-4 rounded-md text-lg  default-btn"
+                            >
+                                Add Questions
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
         </div>
     );
 };
