@@ -25,43 +25,21 @@ const AddQuestion = ({ onBack, onNexts }) => {
         return title;
     };
 
+    // Popup states
     const [showEditMCQPopup, setShowEditMCQPopup] = useState(false);
-    const [options, setOptions] = useState([{ text: "", isCorrect: false }]);
-    const [sourceQuestions, setSourceQuestions] = useState([
-        {
-            id: 1,
-            title: "Question Title - Medium Difficulty",
-            content: "It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is",
-            type: "mcq"
-        },
-        {
-            id: 2,
-            title: "Question Title - Medium Difficulty",
-            content: "It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is",
-            type: "coding"
-        },
-        {
-            id: 3,
-            title: "Question Title - Medium Difficulty",
-            content: "It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is",
-            type: "mcq"
-        }
-    ]);
-
-    const [mcqQuestions, setMcqQuestions] = useState([]);
-    const [codingQuestions, setCodingQuestions] = useState([]);
-    const [isQuestionBankVisible, setIsQuestionBankVisible] = useState(true);
-    const [question, setQuestion] = useState("");
-    const [testCases, setTestCases] = useState([{ input: "", output: "" }]);
     const [showEditCodingPopup, setShowEditCodingPopup] = useState(false);
-    // Global state for the timer popup (shared between sections)
     const [showTimerPopup, setShowTimerPopup] = useState(false);
 
-    // Separate states for each section's filter dropdown
+    // MCQ option states
+    const [options, setOptions] = useState([{ text: "", isCorrect: false }]);
+    const [question, setQuestion] = useState("");
+    const [testCases, setTestCases] = useState([{ input: "", output: "" }]);
+
+    // Filter dropdown toggles
     const [showFilterDropdownMCQ, setShowFilterDropdownMCQ] = useState(false);
     const [showFilterDropdownCoding, setShowFilterDropdownCoding] = useState(false);
 
-    // ReactQuill editor state and modules
+    // ReactQuill editor state and modules (for coding statement)
     const [value, setValue] = useState('');
     const modules = {
         toolbar: [
@@ -79,47 +57,127 @@ const AddQuestion = ({ onBack, onNexts }) => {
         ],
     };
 
-    // Test case handlers
+    // Source questions (Question Bank)
+    const [sourceQuestions, setSourceQuestions] = useState([
+        {
+            id: 1,
+            title: "Question Title - Medium Difficulty",
+            content: "It is a long established fact that a reader ...",
+            type: "mcq"
+        },
+        {
+            id: 2,
+            title: "Question Title - Medium Difficulty",
+            content: "It is a long established fact that a reader ...",
+            type: "coding"
+        },
+        {
+            id: 3,
+            title: "Question Title - Medium Difficulty",
+            content: "It is a long established fact that a reader ...",
+            type: "mcq"
+        }
+    ]);
+
+    // Questions that have been added (split by type)
+    const [mcqQuestions, setMcqQuestions] = useState([]);
+    const [codingQuestions, setCodingQuestions] = useState([]);
+    const [isQuestionBankVisible, setIsQuestionBankVisible] = useState(true);
+
+    // NEW: Track editing of scores
+    const [isEditingScoreMCQ, setIsEditingScoreMCQ] = useState(false);
+    const [isEditingScoreCoding, setIsEditingScoreCoding] = useState(false);
+
+    // -------------------- Timer & Dropdown Logic --------------------
+    const toggleFilterDropdownMCQ = () => {
+        setShowFilterDropdownMCQ(prev => !prev);
+    };
+    const toggleFilterDropdownCoding = () => {
+        setShowFilterDropdownCoding(prev => !prev);
+    };
+    const handleSectionTimerClick = () => {
+        setShowTimerPopup(true);
+        // close dropdown
+        setShowFilterDropdownMCQ(false);
+        setShowFilterDropdownCoding(false);
+    };
+    const toggleTimerPopup = () => {
+        setShowTimerPopup(prev => !prev);
+    };
+
+    // (Previously "Randomize" handler) - you can keep or remove as needed
+    const handleRandomizeClick = () => {
+        console.log("Randomize clicked");
+        // close dropdown
+        setShowFilterDropdownMCQ(false);
+        setShowFilterDropdownCoding(false);
+    };
+
+    // -------------------- Score Editing Logic --------------------
+    const handleEditScoreMCQ = () => {
+        // Toggle the editing state
+        setIsEditingScoreMCQ(prev => !prev);
+    };
+    const handleEditScoreCoding = () => {
+        // Toggle the editing state
+        setIsEditingScoreCoding(prev => !prev);
+    };
+
+    // Handle changes to the score input for MCQ
+    const handleScoreChangeMCQ = (questionId, newScore) => {
+        const limitedScore = Math.min(10, Math.max(0, newScore)); // Ensure score is between 0 and 10
+        setMcqQuestions(prevQuestions =>
+            prevQuestions.map(q =>
+                q.id === questionId ? { ...q, score: limitedScore } : q
+            )
+        );
+    };
+
+// Handle changes to the score input for Coding
+const handleScoreChangeCoding = (questionId, newScore) => {
+    const limitedScore = Math.min(10, Math.max(0, newScore)); // Ensure score is between 0 and 10
+    setCodingQuestions(prevQuestions =>
+        prevQuestions.map(q =>
+            q.id === questionId ? { ...q, score: limitedScore } : q
+        )
+    );
+};
+
+    // -------------------- Test Case Handlers for Coding Popup --------------------
     const handleChange = (index, field, value) => {
         const newTestCases = [...testCases];
         newTestCases[index][field] = value;
         setTestCases(newTestCases);
     };
-
     const addTestCase = () => {
         setTestCases([...testCases, { input: "", output: "" }]);
     };
-
     const removeTestCase = (index) => {
         const newTestCases = testCases.filter((_, i) => i !== index);
         setTestCases(newTestCases);
     };
 
-    // Popup handlers for editing
+    // -------------------- Popup Handlers (MCQ & Coding) --------------------
     const handleCodingEdit = () => {
         setShowEditCodingPopup(true);
     };
-
     const handleMcqEdit = () => {
         setShowEditMCQPopup(true);
     };
-
     const handleCloseEditPopup = () => {
         setShowEditMCQPopup(false);
         setShowEditCodingPopup(false);
     };
 
-    // Option handlers for MCQ
+    // -------------------- MCQ Option Handlers --------------------
     const handleAddOption = () => {
         setOptions([...options, { text: "", isCorrect: false }]);
     };
-
     const handleOptionChange = (index, value) => {
         const newOptions = [...options];
         newOptions[index].text = value;
         setOptions(newOptions);
     };
-
     const handleCorrectAnswer = (index) => {
         const newOptions = options.map((option, i) => ({
             ...option,
@@ -127,7 +185,6 @@ const AddQuestion = ({ onBack, onNexts }) => {
         }));
         setOptions(newOptions);
     };
-
     const handleDeleteOption = (index) => {
         if (options.length > 1) {
             const newOptions = options.filter((_, i) => i !== index);
@@ -149,6 +206,7 @@ const AddQuestion = ({ onBack, onNexts }) => {
         console.log("Updated Question:", question);
         console.log("Updated Options:", options);
         setShowEditMCQPopup(false);
+        setShowEditCodingPopup(false);
         Swal.fire({
             title: "Saved!",
             text: "Your changes have been saved.",
@@ -160,22 +218,17 @@ const AddQuestion = ({ onBack, onNexts }) => {
         });
     };
 
-    // Drag and drop handlers for questions
+    // -------------------- Drag & Drop for Adding Questions --------------------
     const handleDragStart = (e, question) => {
         e.dataTransfer.setData('question', JSON.stringify(question));
-        const element = e.target;
-        element.classList.add('draggable-active');
+        e.target.classList.add('draggable-active');
     };
-
     const handleDragEnd = (e) => {
-        const element = e.target;
-        element.classList.remove('draggable-active');
+        e.target.classList.remove('draggable-active');
     };
-
     const handleDragOver = (e) => {
         e.preventDefault();
     };
-
     const handleDrop = (e, containerType) => {
         e.preventDefault();
         const questionData = JSON.parse(e.dataTransfer.getData('question'));
@@ -185,6 +238,11 @@ const AddQuestion = ({ onBack, onNexts }) => {
     };
 
     const addSingleQuestion = (questionToAdd, targetType) => {
+        // If the question doesn't have a score property, initialize it to 0
+        if (!('score' in questionToAdd)) {
+            questionToAdd.score = 0;
+        }
+
         const isAlreadyAdded = [...mcqQuestions, ...codingQuestions].some(q => q.id === questionToAdd.id);
         if (!isAlreadyAdded && questionToAdd.type === targetType) {
             if (targetType === 'mcq') {
@@ -203,12 +261,13 @@ const AddQuestion = ({ onBack, onNexts }) => {
     const addAllQuestions = () => {
         const mcqToAdd = sourceQuestions.filter(q =>
             q.type === 'mcq' && !mcqQuestions.some(added => added.id === q.id)
-        );
-        setMcqQuestions([...mcqQuestions, ...mcqToAdd]);
+        ).map(q => ({ ...q, score: q.score ?? 0 }));
 
         const codingToAdd = sourceQuestions.filter(q =>
             q.type === 'coding' && !codingQuestions.some(added => added.id === q.id)
-        );
+        ).map(q => ({ ...q, score: q.score ?? 0 }));
+
+        setMcqQuestions([...mcqQuestions, ...mcqToAdd]);
         setCodingQuestions([...codingQuestions, ...codingToAdd]);
 
         setSourceQuestions([]);
@@ -225,37 +284,7 @@ const AddQuestion = ({ onBack, onNexts }) => {
         setIsQuestionBankVisible(true);
     };
 
-    // Toggle functions for each dropdown
-    const toggleFilterDropdownMCQ = () => {
-        setShowFilterDropdownMCQ(prev => !prev);
-    };
-
-    const toggleFilterDropdownCoding = () => {
-        setShowFilterDropdownCoding(prev => !prev);
-    };
-
-    // Handle click on Section Timer in dropdown (opens timer popup)
-    const handleSectionTimerClick = () => {
-        setShowTimerPopup(true);
-        // Close both dropdowns
-        setShowFilterDropdownMCQ(false);
-        setShowFilterDropdownCoding(false);
-    };
-
-    // Handle Randomize action from dropdown
-    const handleRandomizeClick = () => {
-        console.log("Randomize clicked");
-        // Close both dropdowns after action
-        setShowFilterDropdownMCQ(false);
-        setShowFilterDropdownCoding(false);
-    };
-
-    // Toggle timer popup (used for both opening and closing)
-    const toggleTimerPopup = () => {
-        setShowTimerPopup(prev => !prev);
-    };
-
-    // NEW: Handle Next button click with validations for added questions
+    // -------------------- Navigation (Next/Back) --------------------
     const handleNextButtonClick = () => {
         // If no question is added in either section, show error
         if (mcqQuestions.length === 0 && codingQuestions.length === 0) {
@@ -377,142 +406,167 @@ const AddQuestion = ({ onBack, onNexts }) => {
                     </div>
                     {/* Added Questions */}
                     <div className='questionbank-added-container'>
-                        <div className='question-bank'>
-                            <div className='addedquestion-bank-head flex justify-between'>
-                                <h3>MCQ</h3>
-                                <div className='flex relative'>
-                                    {/* Desktop: Show timer input directly */}
-                                    <div className="section-timer-desktop">
-                                        <span>Section timer: </span>
-                                        <input type="number" placeholder='In minutes' />
-                                    </div>
-                                    {/* Filter button for mobile */}
-                                    <div className='r-filter-btn' onClick={toggleFilterDropdownMCQ}>
-                                        <img src={filter} alt="filter-options" />
-                                        {showFilterDropdownMCQ && (
-                                            <div className="filter-dropdown">
-                                                <div className="dropdown-item" onClick={handleSectionTimerClick}>
-                                                    Section Timer
-                                                </div>
-                                                <div className="r-randomize-btn" onClick={handleRandomizeClick}>
-                                                    Randomize
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                    <button className='randomize-btn'>Randomize</button>
-                                    <button onClick={handleMcqEdit}>Create</button>
-                                </div>
+    {/* MCQ Section */}
+    <div className='question-bank'>
+        <div className='addedquestion-bank-head flex justify-between'>
+            <h3>MCQ</h3>
+            <div className='flex relative'>
+                <div className="section-timer-desktop">
+                    <span>Section timer: </span>
+                    <input type="number" placeholder='In minutes' />
+                </div>
+                {/* Filter button for mobile */}
+                <div className='r-filter-btn' onClick={toggleFilterDropdownMCQ}>
+                    <img src={filter} alt="filter-options" />
+                    {showFilterDropdownMCQ && (
+                        <div className="filter-dropdown">
+                            <div className="dropdown-item" onClick={handleSectionTimerClick}>
+                                Section Timer
                             </div>
-
-                            {/* Timer Popup Modal (global) */}
-                            {showTimerPopup && (
-                                <div className="timer-popup-overlay" onClick={toggleTimerPopup}>
-                                    <div
-                                        className="timer-popup-content"
-                                        onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside
-                                    >
-                                        <button className="close-btn" onClick={toggleTimerPopup}>X</button>
-                                        <div>
-                                            <span>Section timer: </span>
-                                            <input type="number" placeholder='In minutes' />
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-
-                            <div
-                                className='addedquestion-bank-body'
-                                onDragOver={handleDragOver}
-                                onDrop={(e) => handleDrop(e, 'mcq')}
-                            >
-                                {mcqQuestions.map(question => (
-                                    <details key={question.id}>
-                                        <summary className='flex justify-between'>
-                                            {windowWidth <= 1024
-                                                ? truncateTitle(question.title, 3)
-                                                : question.title}
-                                            <button
-                                                onClick={() => handleReturnQuestion(question)}
-                                                className="bg-red-500 hover:bg-red-700 px-2 py-1 rounded"
-                                            >
-                                                Remove
-                                            </button>
-                                        </summary>
-                                        <p>{question.content}</p>
-                                    </details>
-                                ))}
+                            <div className="r-randomize-btn" onClick={handleRandomizeClick}>
+                                Randomize
                             </div>
                         </div>
+                    )}
+                </div>
+                {/* Edit Score Button */}
+                <button className='edit-button' onClick={handleEditScoreMCQ}>
+                    {isEditingScoreMCQ ? "Save Changes" : "Edit Score"}
+                </button>
+                <button onClick={handleMcqEdit}>Create</button>
+            </div>
+        </div>
 
-                        {/* Coding Section */}
-                        <div className='question-bank'>
-                            <div className='addedquestion-bank-head flex justify-between'>
-                                <h3>Coding</h3>
-                                <div className='flex relative'>
-                                    <div className='section-timer-desktop'>
-                                        <span>Section timer: </span>
-                                        <input type="number" placeholder='In minutes' />
-                                    </div>
-                                    {/* Filter button for mobile */}
-                                    <div className='r-filter-btn' onClick={toggleFilterDropdownCoding}>
-                                        <img src={filter} alt="filter-options" />
-                                        {showFilterDropdownCoding && (
-                                            <div className="filter-dropdown2">
-                                                <div className="dropdown-item" onClick={handleSectionTimerClick}>
-                                                    Section Timer
-                                                </div>
-                                                <div className="r-randomize-btn" onClick={handleRandomizeClick}>
-                                                    Randomize
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                    <button className='randomize-btn'>Randomize</button>
-                                    <button onClick={handleCodingEdit}>Create</button>
-                                </div>
-                            </div>
-
-                            {/* Timer Popup Modal (same global modal as above) */}
-                            {showTimerPopup && (
-                                <div className="timer-popup-overlay" onClick={toggleTimerPopup}>
-                                    <div
-                                        className="timer-popup-content"
-                                        onClick={(e) => e.stopPropagation()}
-                                    >
-                                        <button className="close-btn" onClick={toggleTimerPopup}>X</button>
-                                        <div>
-                                            <span>Section timer: </span>
-                                            <input type="number" placeholder='In minutes' />
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-
-                            <div
-                                className='addedquestion-bank-body'
-                                onDragOver={handleDragOver}
-                                onDrop={(e) => handleDrop(e, 'coding')}
-                            >
-                                {codingQuestions.map(question => (
-                                    <details key={question.id}>
-                                        <summary className='flex justify-between'>
-                                            {windowWidth <= 1024
-                                                ? truncateTitle(question.title, 3)
-                                                : question.title}
-                                            <button
-                                                onClick={() => handleReturnQuestion(question)}
-                                                className="bg-red-500 hover:bg-red-700 px-2 py-1 rounded"
-                                            >
-                                                Remove
-                                            </button>
-                                        </summary>
-                                        <p>{question.content}</p>
-                                    </details>
-                                ))}
-                            </div>
-                        </div>
+        {/* Timer Popup Modal (global) */}
+        {showTimerPopup && (
+            <div className="timer-popup-overlay" onClick={toggleTimerPopup}>
+                <div
+                    className="timer-popup-content"
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    <button className="close-btn" onClick={toggleTimerPopup}>X</button>
+                    <div>
+                        <span>Section timer: </span>
+                        <input type="number" placeholder='In minutes' />
                     </div>
+                </div>
+            </div>
+        )}
+
+        <div
+            className='addedquestion-bank-body'
+            onDragOver={handleDragOver}
+            onDrop={(e) => handleDrop(e, 'mcq')}
+        >
+            {mcqQuestions.map(question => (
+                <details key={question.id}>
+                    <summary className='flex justify-between'>
+                        {windowWidth <= 1024
+                            ? truncateTitle(question.title, 3)
+                            : question.title}
+                        <div className="flex items-center gap-4">
+                            <input
+                                type="number"
+                                max={10}
+                                value={question.score ?? 0}
+                                disabled={!isEditingScoreMCQ}
+                                onChange={(e) => handleScoreChangeMCQ(question.id, e.target.value)}
+                                className={`${isEditingScoreMCQ ? 'w-16' : 'w-8'} mr-2 text-black rounded-sm text-white text-center ${isEditingScoreMCQ ? '[background-color:oklch(0.42_0_0)]' : ''}`}
+                            />
+                            {!isEditingScoreMCQ && <span className="ml-1">score</span>}
+                            <button
+                                onClick={() => handleReturnQuestion(question)}
+                                className="bg-red-500 hover:bg-red-700 px-2 py-1 rounded"
+                            >
+                                Remove
+                            </button>
+                        </div>
+                    </summary>
+                    <p>{question.content}</p>
+                </details>
+            ))}
+        </div>
+    </div>
+
+    {/* Coding Section */}
+    <div className='question-bank'>
+        <div className='addedquestion-bank-head flex justify-between'>
+            <h3>Coding</h3>
+            <div className='flex relative'>
+                <div className='section-timer-desktop'>
+                    <span>Section timer: </span>
+                    <input type="number" placeholder='In minutes' />
+                </div>
+                {/* Filter button for mobile */}
+                <div className='r-filter-btn' onClick={toggleFilterDropdownCoding}>
+                    <img src={filter} alt="filter-options" />
+                    {showFilterDropdownCoding && (
+                        <div className="filter-dropdown2">
+                            <div className="dropdown-item" onClick={handleSectionTimerClick}>
+                                Section Timer
+                            </div>
+                        </div>
+                    )}
+                </div>
+                {/* Edit Score Button */}
+                <button className='edit-button' onClick={handleEditScoreCoding}>
+                    {isEditingScoreCoding ? "Save Changes" : "Edit Score"}
+                </button>
+                <button onClick={handleCodingEdit}>Create</button>
+            </div>
+        </div>
+
+        {/* Timer Popup Modal (same global modal as above) */}
+        {showTimerPopup && (
+            <div className="timer-popup-overlay" onClick={toggleTimerPopup}>
+                <div
+                    className="timer-popup-content"
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    <button className="close-btn" onClick={toggleTimerPopup}>X</button>
+                    <div>
+                        <span>Section timer: </span>
+                        <input type="number" placeholder='In minutes' />
+                    </div>
+                </div>
+            </div>
+        )}
+
+        <div
+            className='addedquestion-bank-body'
+            onDragOver={handleDragOver}
+            onDrop={(e) => handleDrop(e, 'coding')}
+        >
+            {codingQuestions.map(question => (
+                <details key={question.id}>
+                    <summary className='flex justify-between'>
+                        {windowWidth <= 1024
+                            ? truncateTitle(question.title, 3)
+                            : question.title}
+                        <div className="flex items-center gap-4">
+                            <input
+                                type="number"
+                                value={question.score ?? 0}
+                                disabled={!isEditingScoreCoding}
+                                onChange={(e) => handleScoreChangeCoding(question.id, e.target.value)}
+                                className={`${isEditingScoreCoding ? 'w-16' : 'w-8'} mr-2 text-black rounded-sm text-white text-center ${isEditingScoreCoding ? '[background-color:oklch(0.42_0_0)]' : ''}`}
+                            />
+                            {!isEditingScoreCoding && <span className="ml-1">score</span>}
+                            <button
+                                onClick={() => handleReturnQuestion(question)}
+                                className="bg-red-500 hover:bg-red-700 px-2 py-1 rounded"
+                            >
+                                Remove
+                            </button>
+                        </div>
+                    </summary>
+                    <p>{question.content}</p>
+                </details>
+            ))}
+        </div>
+    </div>
+</div>
+
                 </div>
                 <div className='flex justify-center'>
                     <img src={line} alt="line" className='line-bottom' />
@@ -522,10 +576,11 @@ const AddQuestion = ({ onBack, onNexts }) => {
                         <FontAwesomeIcon icon={faRotateLeft} className='left-icon' />back
                     </button>
                     <p>2/3</p>
-                    {/* Use the new handler here */}
                     <button className='exam-next-btn' onClick={handleNextButtonClick}>Next</button>
                 </div>
             </div>
+
+            {/* MCQ Edit Popup */}
             {showEditMCQPopup && (
                 <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
                     <div className="MCQ-edit-container text-white p-6 rounded-lg shadow-lg w-96">
@@ -540,7 +595,6 @@ const AddQuestion = ({ onBack, onNexts }) => {
                                 placeholder="Enter your question"
                             />
                             <textarea
-                                type="text"
                                 value={question}
                                 onChange={(e) => setQuestion(e.target.value)}
                                 className="rounded-md mt-1 mb-3 border border-gray-600"
@@ -557,7 +611,6 @@ const AddQuestion = ({ onBack, onNexts }) => {
                                 placeholder="Enter Score"
                             />
                             <textarea
-                                type="text"
                                 value={question}
                                 onChange={(e) => setQuestion(e.target.value)}
                                 className="rounded-md mt-1 mb-3 border border-gray-600"
@@ -576,7 +629,6 @@ const AddQuestion = ({ onBack, onNexts }) => {
                                         placeholder={`Option ${index + 1}`}
                                     />
                                     <textarea
-                                        type="text"
                                         value={option.text}
                                         onChange={(e) => handleOptionChange(index, e.target.value)}
                                         className="rounded-md border border-gray-600"
@@ -621,6 +673,8 @@ const AddQuestion = ({ onBack, onNexts }) => {
                     </div>
                 </div>
             )}
+
+            {/* Coding Edit Popup */}
             {showEditCodingPopup && (
                 <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
                     <div className="Coding-edit-container text-white p-6 rounded-lg shadow-lg w-96">
@@ -643,21 +697,19 @@ const AddQuestion = ({ onBack, onNexts }) => {
                         <div className='flex test-case'>
                             <label className="block text-sm font-medium">Sample Test Case:</label>
                             <textarea
-                                type="text"
                                 value={question}
                                 onChange={(e) => setQuestion(e.target.value)}
                                 className="rounded-md mt-1 mb-3 border border-gray-600"
-                                placeholder="Enter your question"
+                                placeholder="Enter sample test case"
                             />
                         </div>
                         <div className='flex test-case-output'>
                             <label className="block text-sm font-medium">Sample Test Case Output:</label>
                             <textarea
-                                type="text"
                                 value={question}
                                 onChange={(e) => setQuestion(e.target.value)}
                                 className="rounded-md mt-1 mb-3 border border-gray-600"
-                                placeholder="Enter your question"
+                                placeholder="Enter sample output"
                             />
                         </div>
                         <img src={line} alt="line" className='e-line' />
@@ -706,5 +758,4 @@ const AddQuestion = ({ onBack, onNexts }) => {
         </div>
     );
 };
-
 export default AddQuestion;
