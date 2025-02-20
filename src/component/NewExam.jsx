@@ -4,6 +4,8 @@ import line from '../assets/Line.png';
 import './NewExam.css';
 import ReactQuill from 'react-quill';
 import Swal from 'sweetalert2';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faInfoCircle, faShoppingBag } from "@fortawesome/free-solid-svg-icons";
 
 // const API_BASE_URL = "http://127.0.0.1:8000/api/exams/";
 
@@ -202,7 +204,16 @@ const NewExam = ({ onBack, onNext }) => {
                     {/* Login Window */}
                     <div className='createexam-col1 flex'>
                         <h4 className='flex justify-between'>
-                            Login Window <span>:</span>
+                            Login Window 
+                            <div className="tooltip-icon">
+                                <FontAwesomeIcon
+                                icon={faInfoCircle}
+                                style={{ marginLeft: "8px", color: "#888", cursor: "pointer" }}
+                                />
+                                <span className="tooltiptext">
+                                This is some information about CTC Credits.
+                                </span>
+                            </div> <span>:</span>
                         </h4>
                         <select value={selectedOption} onChange={handleSelectChange}>
                             <option value="">Select</option>

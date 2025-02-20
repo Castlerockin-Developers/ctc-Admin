@@ -1317,6 +1317,14 @@
     }
 }
 
+.edit-button{
+    padding: 10px;
+    background: rgb(120, 120, 120)!important;
+    font-size: 0.9rem;
+    border-radius: 5px;
+    margin-right: 10px;
+}
+
 .default-btn{
     font-size: 0.9rem;
     font-family: madina-medium;

@@ -14,15 +14,65 @@ import { FaDatabase, FaPen } from "react-icons/fa";
 
 const AddQuestion = ({ onBack, onNexts }) => {
     const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+    useEffect(() => {
+        const handleResize = () => setWindowWidth(window.innerWidth);
+        window.addEventListener("resize", handleResize);
+        return () => window.removeEventListener("resize", handleResize);
+    }, []);
+
+    // Helper function to truncate a title after a given number of words
+    const truncateTitle = (title, wordLimit = 5) => {
+        const words = title.split(" ");
+        if (words.length > wordLimit) {
+            return words.slice(0, wordLimit).join(" ") + "...";
+        }
+        return title;
+    };
+
+    // Popup states
     const [showEditMCQPopup, setShowEditMCQPopup] = useState(false);
+    const [showEditCodingPopup, setShowEditCodingPopup] = useState(false);
+    const [showTimerPopup, setShowTimerPopup] = useState(false);
+
+//   Import Question Bank Popup
     const [showImportPopup,setShowImportPopup] = useState(false)
 
     const [options, setOptions] = useState([{ text: "", isCorrect: false }]);
+    const [question, setQuestion] = useState("");
+    const [testCases, setTestCases] = useState([{ input: "", output: "" }]);
+
+    // Filter dropdown toggles
+    const [showFilterDropdownMCQ, setShowFilterDropdownMCQ] = useState(false);
+    const [showFilterDropdownCoding, setShowFilterDropdownCoding] = useState(false);
+
+    // ReactQuill editor state and modules (for coding statement)
+    const [value, setValue] = useState('');
+    const modules = {
+        toolbar: [
+            [{ font: [] }, { size: [] }],
+            ['bold', 'italic', 'underline', 'strike'],
+            [{ color: [] }, { background: [] }],
+            [{ script: 'sub' }, { script: 'super' }],
+            [{ header: '1' }, { header: '2' }, 'blockquote', 'code-block'],
+            [{ list: 'ordered' }, { list: 'bullet' }],
+            [{ indent: '-1' }, { indent: '+1' }],
+            [{ direction: 'rtl' }],
+            [{ align: [] }],
+            ['link', 'image', 'video'],
+            ['clean']
+        ],
+    };
+
+    // Source questions (Question Bank)
     const [sourceQuestions, setSourceQuestions] = useState([
         { id: 1, title: "Question Title - Medium Difficulty", content: "Content 1", type: "mcq" },
         { id: 2, title: "Question Title - Medium Difficulty", content: "Content 2", type: "coding" },
         { id: 3, title: "Question Title - Medium Difficulty", content: "Content 3", type: "mcq" }
     ]);
+    //  Track editing of scores
+    const [isEditingScoreMCQ, setIsEditingScoreMCQ] = useState(false);
+    const [isEditingScoreCoding, setIsEditingScoreCoding] = useState(false);
+    
     const [mcqQuestions, setMcqQuestions] = useState([]);
     const [codingQuestions, setCodingQuestions] = useState([]);
     const [isQuestionBankVisible, setIsQuestionBankVisible] = useState(true);
@@ -63,11 +113,9 @@ const AddQuestion = ({ onBack, onNexts }) => {
         newTestCases[index][field] = value;
         setTestCases(newTestCases);
     };
-
     const addTestCase = () => {
         setTestCases([...testCases, { input: "", output: "" }]);
     };
-
     const removeTestCase = (index) => {
         const newTestCases = testCases.filter((_, i) => i !== index);
         setTestCases(newTestCases);
@@ -76,11 +124,9 @@ const AddQuestion = ({ onBack, onNexts }) => {
     const handleCodingEdit = () => {
         setShowEditCodingPopup(true);
     };
-
     const handleMcqEdit = () => {
         setShowEditMCQPopup(true);
     };
-
     const handleCloseEditPopup = () => {
         setShowEditMCQPopup(false);
         setShowEditCodingPopup(false);
@@ -89,13 +135,11 @@ const AddQuestion = ({ onBack, onNexts }) => {
     const handleAddOption = () => {
         setOptions([...options, { text: "", isCorrect: false }]);
     };
-
     const handleOptionChange = (index, value) => {
         const newOptions = [...options];
         newOptions[index].text = value;
         setOptions(newOptions);
     };
-
     const handleCorrectAnswer = (index) => {
         const newOptions = options.map((option, i) => ({
             ...option,
@@ -103,7 +147,6 @@ const AddQuestion = ({ onBack, onNexts }) => {
         }));
         setOptions(newOptions);
     };
-
     const handleDeleteOption = (index) => {
         if (options.length > 1) {
             const newOptions = options.filter((_, i) => i !== index);
@@ -121,10 +164,42 @@ const AddQuestion = ({ onBack, onNexts }) => {
         }
     };
 
+
+    // -------------------- Score Editing Logic --------------------
+    const handleEditScoreMCQ = () => {
+        // Toggle the editing state
+        setIsEditingScoreMCQ(prev => !prev);
+    };
+    const handleEditScoreCoding = () => {
+        // Toggle the editing state
+        setIsEditingScoreCoding(prev => !prev);
+    };
+
+    // Handle changes to the score input for MCQ
+    const handleScoreChangeMCQ = (questionId, newScore) => {
+        const limitedScore = Math.min(10, Math.max(0, newScore)); // Ensure score is between 0 and 10
+        setMcqQuestions(prevQuestions =>
+            prevQuestions.map(q =>
+                q.id === questionId ? { ...q, score: limitedScore } : q
+            )
+        );
+    };
+
+    // Handle changes to the score input for Coding
+    const handleScoreChangeCoding = (questionId, newScore) => {
+        const limitedScore = Math.min(10, Math.max(0, newScore)); // Ensure score is between 0 and 10
+        setCodingQuestions(prevQuestions =>
+            prevQuestions.map(q =>
+                q.id === questionId ? { ...q, score: limitedScore } : q
+            )
+        );
+    };
+
     const handleSaveChanges = () => {
         console.log("Updated Question:", question);
         console.log("Updated Options:", options);
         setShowEditMCQPopup(false);
+        setShowEditCodingPopup(false);
         Swal.fire({
             title: "Saved!",
             text: "Your changes have been saved.",
@@ -138,19 +213,14 @@ const AddQuestion = ({ onBack, onNexts }) => {
 
     const handleDragStart = (e, question) => {
         e.dataTransfer.setData('question', JSON.stringify(question));
-        const element = e.target;
-        element.classList.add('draggable-active');
+        e.target.classList.add('draggable-active');
     };
-
     const handleDragEnd = (e) => {
-        const element = e.target;
-        element.classList.remove('draggable-active');
+        e.target.classList.remove('draggable-active');
     };
-
     const handleDragOver = (e) => {
         e.preventDefault();
     };
-
     const handleDrop = (e, containerType) => {
         e.preventDefault();
         const questionData = JSON.parse(e.dataTransfer.getData('question'));
@@ -160,6 +230,11 @@ const AddQuestion = ({ onBack, onNexts }) => {
     };
 
     const addSingleQuestion = (questionToAdd, targetType) => {
+        // If the question doesn't have a score property, initialize it to 0
+        if (!('score' in questionToAdd)) {
+            questionToAdd.score = 0;
+        }
+
         const isAlreadyAdded = [...mcqQuestions, ...codingQuestions].some(q => q.id === questionToAdd.id);
         if (!isAlreadyAdded && questionToAdd.type === targetType) {
             if (targetType === 'mcq') {
@@ -178,12 +253,13 @@ const AddQuestion = ({ onBack, onNexts }) => {
     const addAllQuestions = () => {
         const mcqToAdd = sourceQuestions.filter(q =>
             q.type === 'mcq' && !mcqQuestions.some(added => added.id === q.id)
-        );
-        setMcqQuestions([...mcqQuestions, ...mcqToAdd]);
+        ).map(q => ({ ...q, score: q.score ?? 0 }));
 
         const codingToAdd = sourceQuestions.filter(q =>
             q.type === 'coding' && !codingQuestions.some(added => added.id === q.id)
-        );
+        ).map(q => ({ ...q, score: q.score ?? 0 }));
+
+        setMcqQuestions([...mcqQuestions, ...mcqToAdd]);
         setCodingQuestions([...codingQuestions, ...codingToAdd]);
 
         setSourceQuestions([]);
@@ -410,12 +486,22 @@ const AddQuestion = ({ onBack, onNexts }) => {
                                             {windowWidth <= 1024
                                                 ? truncateTitle(question.title, 3)
                                                 : question.title}
-                                            <button
-                                                onClick={() => handleReturnQuestion(question)}
-                                                className="bg-red-500 hover:bg-red-700 px-2 py-1 rounded"
-                                            >
-                                                Remove
-                                            </button>
+                                                <div className="flex items-center gap-4">
+                                                    <input
+                                                        type="number"
+                                                        max={10}
+                                                        value={question.score ?? 0}
+                                                        disabled={!isEditingScoreMCQ}
+                                                        onChange={(e) => handleScoreChangeMCQ(question.id, e.target.value)}
+                                                        className={`${isEditingScoreMCQ ? 'w-16' : 'w-8'} mr-2 text-black rounded-sm text-white text-center ${isEditingScoreMCQ ? '[background-color:oklch(0.42_0_0)]' : ''}`}
+                                                    />
+                                                    {!isEditingScoreMCQ && <span className="ml-1">score</span>}
+                                                <button
+                                                    onClick={() => handleReturnQuestion(question)}
+                                                    className="bg-red-500 hover:bg-red-700 px-2 py-1 rounded"
+                                                >
+                                                    Remove
+                                                </button>
                                         </summary>
                                         <p>{question.content}</p>
                                     </details>
@@ -466,25 +552,95 @@ const AddQuestion = ({ onBack, onNexts }) => {
                                 onDragOver={handleDragOver}
                                 onDrop={(e) => handleDrop(e, 'coding')}
                             >
-                                {codingQuestions.map(question => (
-                                    <details key={question.id}>
-                                        <summary className='flex justify-between'>
-                                            {windowWidth <= 1024
-                                                ? truncateTitle(question.title, 3)
-                                                : question.title}
-                                            <button
-                                                onClick={() => handleReturnQuestion(question)}
-                                                className="bg-red-500 hover:bg-red-700 px-2 py-1 rounded"
-                                            >
-                                                Remove
-                                            </button>
-                                        </summary>
-                                        <p>{question.content}</p>
-                                    </details>
-                                ))}
+                                Remove
+                            </button>
+                        </div>
+                    </summary>
+                    <p>{question.content}</p>
+                </details>
+            ))}
+        </div>
+    </div>
+
+    {/* Coding Section */}
+    <div className='question-bank'>
+        <div className='addedquestion-bank-head flex justify-between'>
+            <h3>Coding</h3>
+            <div className='flex relative'>
+                <div className='section-timer-desktop'>
+                    <span>Section timer: </span>
+                    <input type="number" placeholder='In minutes' />
+                </div>
+                {/* Filter button for mobile */}
+                <div className='r-filter-btn' onClick={toggleFilterDropdownCoding}>
+                    <img src={filter} alt="filter-options" />
+                    {showFilterDropdownCoding && (
+                        <div className="filter-dropdown2">
+                            <div className="dropdown-item" onClick={handleSectionTimerClick}>
+                                Section Timer
                             </div>
                         </div>
+                    )}
+                </div>
+                {/* Edit Score Button */}
+                <button className='edit-button' onClick={handleEditScoreCoding}>
+                    {isEditingScoreCoding ? "Save Changes" : "Edit Score"}
+                </button>
+                <button onClick={handleCodingEdit}>Create</button>
+            </div>
+        </div>
+
+        {/* Timer Popup Modal (same global modal as above) */}
+        {showTimerPopup && (
+            <div className="timer-popup-overlay" onClick={toggleTimerPopup}>
+                <div
+                    className="timer-popup-content"
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    <button className="close-btn" onClick={toggleTimerPopup}>X</button>
+                    <div>
+                        <span>Section timer: </span>
+                        <input type="number" placeholder='In minutes' />
                     </div>
+                </div>
+            </div>
+        )}
+
+        <div
+            className='addedquestion-bank-body'
+            onDragOver={handleDragOver}
+            onDrop={(e) => handleDrop(e, 'coding')}
+        >
+            {codingQuestions.map(question => (
+                <details key={question.id}>
+                    <summary className='flex justify-between'>
+                        {windowWidth <= 1024
+                            ? truncateTitle(question.title, 3)
+                            : question.title}
+                        <div className="flex items-center gap-4">
+                            <input
+                                type="number"
+                                value={question.score ?? 0}
+                                disabled={!isEditingScoreCoding}
+                                onChange={(e) => handleScoreChangeCoding(question.id, e.target.value)}
+                                className={`${isEditingScoreCoding ? 'w-16' : 'w-8'} mr-2 text-black rounded-sm text-white text-center ${isEditingScoreCoding ? '[background-color:oklch(0.42_0_0)]' : ''}`}
+                            />
+                            {!isEditingScoreCoding && <span className="ml-1">score</span>}
+                            <button
+                                onClick={() => handleReturnQuestion(question)}
+                                className="bg-red-500 hover:bg-red-700 px-2 py-1 rounded"
+                            >
+                                Remove
+                            </button>
+                        </div>
+                    </summary>
+                    <p>{question.content}</p>
+                </details>
+            ))}
+        </div>
+    </div>
+</div>
+
                 </div>
                 <div className='flex justify-center'>
                     <img src={line} alt="line" className='line-bottom' />
@@ -559,25 +715,37 @@ const AddQuestion = ({ onBack, onNexts }) => {
                         </div>
                         <div className='mb-6'>
                             <label className="block text-sm font-medium mb-2">Score:</label>
-                            <input
-                                type="number"
+                            // <input
+                            //     type="number"
+                            //     value={question}
+                            //     onChange={(e) => setQuestion(e.target.value)}
+                            //     className="rounded-md w-full border border-gray-600 p-2 bg-[#333] text-white"
+                            //     placeholder="Enter Score"
+                            // />
+                            <textarea
                                 value={question}
                                 onChange={(e) => setQuestion(e.target.value)}
-                                className="rounded-md w-full border border-gray-600 p-2 bg-[#333] text-white"
-                                placeholder="Enter Score"
-                            />
+                                className="rounded-md mt-1 mb-3 border border-gray-600"
+                                placeholder="Enter your question"
+                            ></textarea>
                         </div>
                         {options.map((option, index) => (
                             <div key={index} className="mb-4">
                                 <label className="block text-sm font-medium mb-2">Option {index + 1}:</label>
                                 <div className='flex items-center space-x-4'>
-                                    <input
-                                        type="text"
+                                    // <input
+                                    //     type="text"
+                                    //     value={option.text}
+                                    //     onChange={(e) => handleOptionChange(index, e.target.value)}
+                                    //     className="flex-1 rounded-md border border-gray-600 p-2 bg-[#333] text-white"
+                                    //     placeholder={`Option ${index + 1}`}
+                                    // />
+                                    <textarea
                                         value={option.text}
                                         onChange={(e) => handleOptionChange(index, e.target.value)}
-                                        className="flex-1 rounded-md border border-gray-600 p-2 bg-[#333] text-white"
+                                        className="rounded-md border border-gray-600"
                                         placeholder={`Option ${index + 1}`}
-                                    />
+                                    ></textarea>
                                     <input
                                         type="checkbox"
                                         checked={option.isCorrect}
@@ -617,6 +785,8 @@ const AddQuestion = ({ onBack, onNexts }) => {
                     </div>
                 </div>
             )}
+
+            {/* Coding Edit Popup */}
             {showEditCodingPopup && (
                 <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
                     <div className="Coding-edit-container text-white p-8 rounded-lg shadow-lg w-[600px]">
@@ -649,6 +819,9 @@ const AddQuestion = ({ onBack, onNexts }) => {
                             <textarea
                                 value={question}
                                 onChange={(e) => setQuestion(e.target.value)}
+                            //     className="rounded-md mt-1 mb-3 border border-gray-600"
+                            //     placeholder="Enter sample output"
+                            // />
                                 className="rounded-md w-full border border-gray-600 p-2 bg-[#333] text-white"
                                 placeholder="Enter your question"
                             ></textarea>
@@ -784,5 +957,4 @@ const AddQuestion = ({ onBack, onNexts }) => {
         </div>
     );
 };
-
 export default AddQuestion;
