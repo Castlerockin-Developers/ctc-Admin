@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import subcribebg from "../assets/subcribebg.png";
 import coin from "../assets/CTCcoin.png";
 import ReceiptModal from "./ReceiptModal"; // Import the ReceiptModal component
