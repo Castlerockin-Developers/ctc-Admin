@@ -579,7 +579,7 @@ const AddQuestion = ({ onBack, onNexts }) => {
                                 onDrop={(e) => handleDrop(e, 'mcq')}
                             >
                                 {mcqQuestions.map(question => (
-                                    <details key={question.id} className='card-gap'>
+                                    <details key={question.id}>
                                         <summary className='flex justify-between'>
                                             {windowWidth <= 1024
                                                 ? truncateTitle(question.title, 3)
@@ -658,7 +658,7 @@ const AddQuestion = ({ onBack, onNexts }) => {
                             onDrop={(e) => handleDrop(e, 'coding')}
                         >
                             {codingQuestions.map(question => (
-                                <details key={question.id} className='card-gap'>
+                                <details key={question.id}>
                                     <summary className='flex justify-between'>
                                         {windowWidth <= 1024
                                             ? truncateTitle(question.title, 3)
