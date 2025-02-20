@@ -5,6 +5,10 @@ import { faRotateLeft } from '@fortawesome/free-solid-svg-icons';
 import Swal from "sweetalert2";
 import ReactQuill from 'react-quill';
 import filter from '../assets/filter.png';
+import { motion } from "motion/react";
+import closeicon from '../assets/close.png';
+import { useDropzone } from "react-dropzone";
+
 
 const AddQuestion = ({ onBack, onNexts }) => {
     // State to track window width for responsive truncation
@@ -26,6 +30,8 @@ const AddQuestion = ({ onBack, onNexts }) => {
     };
 
     const [showEditMCQPopup, setShowEditMCQPopup] = useState(false);
+    const [showImportPopup,setShowImportPopup] = useState(false)
+
     const [options, setOptions] = useState([{ text: "", isCorrect: false }]);
     const [sourceQuestions, setSourceQuestions] = useState([
         {
@@ -60,6 +66,9 @@ const AddQuestion = ({ onBack, onNexts }) => {
     // Separate states for each section's filter dropdown
     const [showFilterDropdownMCQ, setShowFilterDropdownMCQ] = useState(false);
     const [showFilterDropdownCoding, setShowFilterDropdownCoding] = useState(false);
+
+    const toggleImportPopup = () => setShowImportPopup((prev) => !prev);
+    const closeImportPopup = () => setShowImportPopup(false);
 
     // ReactQuill editor state and modules
     const [value, setValue] = useState('');
@@ -255,6 +264,13 @@ const AddQuestion = ({ onBack, onNexts }) => {
         setShowTimerPopup(prev => !prev);
     };
 
+    const [file, setFile] = useState(null);
+
+    const onDrop = (acceptedFiles) => {
+        setFile(acceptedFiles[0]);
+    };
+
+    const { getRootProps, getInputProps } = useDropzone({ onDrop });
     // NEW: Handle Next button click with validations for added questions
     const handleNextButtonClick = () => {
         // If no question is added in either section, show error
@@ -320,7 +336,7 @@ const AddQuestion = ({ onBack, onNexts }) => {
                         <div className='question-bank'>
                             <div className='question-bank-head flex justify-between'>
                                 <h3>Question Bank</h3>
-                                <button>+ Import</button>
+                                <button onClick={toggleImportPopup}>+ Import</button>
                             </div>
                             <div className='question-bank-body'>
                                 {isQuestionBankVisible && (
@@ -526,6 +542,53 @@ const AddQuestion = ({ onBack, onNexts }) => {
                     <button className='exam-next-btn' onClick={handleNextButtonClick}>Next</button>
                 </div>
             </div>
+            {showImportPopup && (
+                <div className="fixed inset-0 flex items-center justify-center top-display-pop">
+                    <div className="top-display-pop-card rounded-sm shadow-lg w-3/4 md:w-1/2 min-h-[500px]">
+                        <div className="flex justify-between items-center mb-4 top-display-pop-title">
+                            <h2 className="font-semibold text-center">Import Questionbank</h2>
+                            <motion.button whileTap={{ scale: 1.2 }} className="text-red-500 text-lg" onClick={closeImportPopup}>
+                                <img src={closeicon} alt="Close" />
+                            </motion.button>
+                            
+                        </div>
+                        
+                        <div>
+                        <div
+                            {...getRootProps()}
+                            className="border-2 border-dashed border-gray-500 p-6 rounded-lg text-center cursor-pointer hover:border-gray-300 transition"
+                        >
+                            <input {...getInputProps()} />
+                            <div className="flex flex-col items-center">
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="w-12 h-12 text-gray-400"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                            >
+                                <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M12 16v-4m0 0V8m0 4h4m-4 0H8m12 4v4H4v-4M4 16l8-8 8 8"
+                                />
+                            </svg>
+                            <h2  className="mt-2 text-white text-3xl">Drag the dataset</h2>
+                            <p className="text-sm text-gray-400 text-3xl">or <span className="text-blue-400 cursor-pointer">upload from device</span></p>
+                            </div>
+                        </div>
+                        {file && (
+                            <p className="mt-3 text-sm text-green-400">Selected: {file.name}</p>
+                        )}
+                        
+                        </div>
+                        
+                    </div>
+                </div>
+                
+            )}
+            
             {showEditMCQPopup && (
                 <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
                     <div className="MCQ-edit-container text-white p-6 rounded-lg shadow-lg w-96">
