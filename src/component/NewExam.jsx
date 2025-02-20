@@ -35,72 +35,72 @@ const NewExam = ({ onBack, onNext }) => {
     };
 
     const handleNext = () => {
-        if (!testName || !startTime || !endTime) {
-            Swal.fire({
-                title: "Missing Fields",
-                text: "Please fill in Test Name, Start Time, and End Time.",
-                icon: "warning",
-                confirmButtonText: "OK",
-                background: "#181817",
-                color: "#fff"
-            });
-            return;
-        }
-        if (selectedOption === "") {
-            Swal.fire({
-                title: "Missing Selection",
-                text: "Please select a Login Window option.",
-                icon: "warning",
-                confirmButtonText: "OK",
-                background: "#181817",
-                color: "#fff"
-            });
-            return;
-        }
-        if (selectedOption === "custom" && !customTime) {
-            Swal.fire({
-                title: "Missing Custom Time",
-                text: "Please enter a custom time for the Login Window.",
-                icon: "warning",
-                confirmButtonText: "OK",
-                background: "#181817",
-                color: "#fff"
-            });
-            return;
-        }
-        if (timedTest && !timer) {
-            Swal.fire({
-                title: "Missing Timer Value",
-                text: "Please provide a timer value for the Timed Test.",
-                icon: "warning",
-                confirmButtonText: "OK",
-                background: "#181817",
-                color: "#fff"
-            });
-            return;
-        }
-        if (!attemptsAllowed) {
-            Swal.fire({
-                title: "Missing Attempts Allowed",
-                text: "Please fill in Attempts Allowed.",
-                icon: "warning",
-                confirmButtonText: "OK",
-                background: "#181817",
-                color: "#fff"
-            });
-            return;
-        }
-        if (!instructions) {
-            Swal.fire({
-                title: "Missing Instructions",
-                text: "Please provide instructions.",
-                icon: "warning",
-                confirmButtonText: "OK",
-                background: "#181817",
-                color: "#fff"
-            });
-            return;
-        }
+        // if (!testName || !startTime || !endTime) {
+        //     Swal.fire({
+        //         title: "Missing Fields",
+        //         text: "Please fill in Test Name, Start Time, and End Time.",
+        //         icon: "warning",
+        //         confirmButtonText: "OK",
+        //         background: "#181817",
+        //         color: "#fff"
+        //     });
+        //     return;
+        // }
+        // if (selectedOption === "") {
+        //     Swal.fire({
+        //         title: "Missing Selection",
+        //         text: "Please select a Login Window option.",
+        //         icon: "warning",
+        //         confirmButtonText: "OK",
+        //         background: "#181817",
+        //         color: "#fff"
+        //     });
+        //     return;
+        // }
+        // if (selectedOption === "custom" && !customTime) {
+        //     Swal.fire({
+        //         title: "Missing Custom Time",
+        //         text: "Please enter a custom time for the Login Window.",
+        //         icon: "warning",
+        //         confirmButtonText: "OK",
+        //         background: "#181817",
+        //         color: "#fff"
+        //     });
+        //     return;
+        // }
+        // if (timedTest && !timer) {
+        //     Swal.fire({
+        //         title: "Missing Timer Value",
+        //         text: "Please provide a timer value for the Timed Test.",
+        //         icon: "warning",
+        //         confirmButtonText: "OK",
+        //         background: "#181817",
+        //         color: "#fff"
+        //     });
+        //     return;
+        // }
+        // if (!attemptsAllowed) {
+        //     Swal.fire({
+        //         title: "Missing Attempts Allowed",
+        //         text: "Please fill in Attempts Allowed.",
+        //         icon: "warning",
+        //         confirmButtonText: "OK",
+        //         background: "#181817",
+        //         color: "#fff"
+        //     });
+        //     return;
+        // }
+        // if (!instructions) {
+        //     Swal.fire({
+        //         title: "Missing Instructions",
+        //         text: "Please provide instructions.",
+        //         icon: "warning",
+        //         confirmButtonText: "OK",
+        //         background: "#181817",
+        //         color: "#fff"
+        //     });
+        //     return;
+        // }
 
         // If all validations pass, proceed to next component
         onNext();
