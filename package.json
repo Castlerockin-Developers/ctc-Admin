@@ -21,6 +21,7 @@
     "@tailwindcss/vite": "^4.0.0",
     "autoprefixer": "^10.4.20",
     "axios": "^1.7.9",
+    "jspdf": "^3.0.0",
     "motion": "^12.0.11",
     "postcss": "^8.5.1",
     "react": "^18.3.1",
@@ -32,6 +33,7 @@
     "react-quill": "^2.0.0",
     "react-router-dom": "^7.1.5",
     "react-time-picker": "^7.0.0",
+    "run": "^1.5.0",
     "sweetalert": "^2.1.2",
     "sweetalert2": "^11.15.10"
   },

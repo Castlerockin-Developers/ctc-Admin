@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import TopBar from "../component/TopBar";
-import Sidebar from "../component/Sibebar";
+import Sidebar from "../component/Sibebar"; // Ensure Sidebar is imported correctly
 import Dashboard from "../component/Dashboard";
 import ManageExam from "../component/ManageExam";
 import NewExam from "../component/NewExam";
@@ -35,8 +35,9 @@ const Home = () => {
     };
 
     return (
-        <div>
-            <TopBar />
+        <div className="home-container">
+            <TopBar /> {/* Keep top bar fixed */}
+            
             <div className="flex">
                 {/* Sidebar */}
                 <div className="xl:w-2/10 lg:w-2/10 md:w-0/10 sm:w-0">
@@ -63,6 +64,15 @@ const Home = () => {
                             onAddCredits={() => {
                                 setActiveComponent("subcribe");
                             }}
+                            onViewexam={() => {
+                                setActiveComponent("viewexam");
+                            }}
+                            onManageExam={() => {
+                                setActiveComponent("manageExam");
+                            }}
+                            onSubscription={() => {
+                                setActiveComponent("subcribe");
+                            }}
                         />
                     )}
                     {activeComponent === "subcribe" && <Subcription />}
@@ -80,16 +90,13 @@ const Home = () => {
                         onBack={() => setActiveComponent("manageExam")} />}
                     {activeComponent === "result" && <ManageResult
                         onNext={() => setActiveComponent("viewresult")}
-
                     />}
                     {activeComponent === "viewresult" && <ViewResult
                         onBack={() => setActiveComponent("result")}
                         onNext={() => setActiveComponent("perticularresult")}
-
                     />}
                     {activeComponent === "perticularresult" && <PerticularResult
                         onBack={() => setActiveComponent("viewresult")}
-
                     />}
                     {activeComponent === "student" && (
                         <ManageStudents
