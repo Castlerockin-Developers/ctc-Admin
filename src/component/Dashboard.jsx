@@ -4,7 +4,7 @@ import closeicon from '../assets/close.png';
 import { motion } from "motion/react";
 import EditExam from "./EditExam";
 
-const Dashboard = ({ onCreateExam, onAddStudent, onAddUser, onAddCredits, onViewexam, onManageExam, onSubscription }) => {
+const Dashboard = ({ onCreateExam, onAddStudent, onAddUser, onAddCredits, onViewexam, onManageExam, onSubscription , onManageStudents }) => {
     const [dashboardData, setDashboardData] = useState(null);
     const [showPopup, setShowPopup] = useState(false);
     const [showEditPopup, setShowEditPopup] = useState(false);
@@ -131,7 +131,7 @@ const Dashboard = ({ onCreateExam, onAddStudent, onAddUser, onAddCredits, onView
                     <motion.div
                         whileTap={{ scale: 1.1 }}
                         className="top-display top-display-clickable cursor-pointer"
-                        onClick={onManageExam}>
+                        onClick={onManageStudents}>
                         <h4 className="xl:text-xl lg:text-xl md:text-xl">Total Students</h4>
                         <h2 className="xl:text-4xl lg:text-4xl md:text-4xl flex justify-center">
                             {dashboardData.totalStudents}
@@ -242,7 +242,7 @@ const Dashboard = ({ onCreateExam, onAddStudent, onAddUser, onAddCredits, onView
                         <div className="flex w-full justify-center">
                             <div className="tablee">
                                 {recentTests.map((test, index) => (
-                                    <div key={index} className="tablee-content" onClick={onManageExam}>
+                                    <div key={index} className="tablee-content" onClick={onViewexam}>
                                         <h6>{test.title}</h6>
                                     </div>
                                 ))}
@@ -255,7 +255,7 @@ const Dashboard = ({ onCreateExam, onAddStudent, onAddUser, onAddCredits, onView
                         <div className="flex w-full justify-center">
                             <div className="tablee">
                                 {completedResults.map((result, index) => (
-                                    <div key={index} className="tablee-content" onClick={onManageExam}>
+                                    <div key={index} className="tablee-content" onClick={onViewexam}>
                                         <h6>{result.title}</h6>
                                     </div>
                                 ))}

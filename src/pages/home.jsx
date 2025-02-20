@@ -73,6 +73,9 @@ const Home = () => {
                             onSubscription={() => {
                                 setActiveComponent("subcribe");
                             }}
+                            onManageStudents={() => {
+                                setActiveComponent("student");
+                            }}
                         />
                     )}
                     {activeComponent === "subcribe" && <Subcription />}
