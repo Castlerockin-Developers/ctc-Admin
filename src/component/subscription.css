@@ -82,6 +82,7 @@
 
 .ctc-coin {
     width: 20px;
+    height: 20px;
     margin-left: 5px;
 }
 
@@ -319,6 +320,17 @@
         height: 50vh;
     }
 }
+
+.subscription-container h2 {
+    color: white;
+    font-family: madina-semibold;
+    font-size: 1.5rem; /* Adjust as needed */
+}
+
+.credits-remain-text{
+    line-height: 50%;
+}
+
 .buy-credits-container {
     width: 95%;
     margin: 0 auto;
@@ -512,5 +524,3 @@
     visibility: visible;
     opacity: 1;
 }
-
-

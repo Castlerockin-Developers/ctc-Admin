@@ -61,20 +61,31 @@ const Subscription = () => {
                 <h1>Subscription</h1>
                 <div className="subscription-card-container">
                     <h3>Your Plan:</h3>
-                    <div className="subscribe-card">
-                        <img src={subcribebg} alt="background" className="subscribe-bg" />
-                        <h3>Premium</h3>
-                        <ul>
-                            <li>Full Language Learning Access</li>
-                            <li>10 Assessments Included Annually</li>
-                            <li>AI Speech & Coding Included</li>
-                            <li>Additional Contest Access</li>
-                        </ul>
-                        <div className="flex justify-end w-full credit-balance">
-                            <p className="flex">
-                                Credits remaining: <span>4000</span>
-                                <img src={coin} alt="coin" className="ctc-coin" />
-                            </p>
+                    <div className='flex'>
+                        <div className="subscribe-card">
+                            <img src={subcribebg} alt="background" className="subscribe-bg" />
+                            <h3>Premium</h3>
+                            <ul>
+                                <li>Full Language Learning Access</li>
+                                <li>10 Assessment Included Annually</li>
+                                <li>AI Speech & Coding Included</li>
+                                <li>Additional Contest Access</li>
+                            </ul>
+                        </div>
+                        <div className="subscribe-card">
+                            <h3>Credits</h3>
+                            <div className="flex w-full credit-balance">
+                                <div className="flex">
+                                    <h2 className='credits-remain-text'>Credits remaining: <span>4000</span></h2>
+                                    <img src={coin} alt="coin" className="ctc-coin" />
+                                </div>
+                            </div>
+                            <ul>
+                                <li>Credits Used & Left</li>
+                                <li>Per Assessment & Usage</li>
+                                <li>Top-up Anytime</li>
+                                <li>Upgrade Plan</li>
+                            </ul>
                         </div>
                     </div>
                     <div className="subscribe-bottom">
