@@ -2,13 +2,13 @@ import React from 'react';
 import './ViewExam.css';
 import { FaShareSquare } from 'react-icons/fa';
 
-const ViewExam = ({ onBack }) => {
+const ViewExam = ({ exam, onBack }) => {
     return (
         <div className='viewexam-container justify-center flex flex-wrap'>
             <div className='viewexam-box'>
                 <div className='flex'>
                     <button onClick={onBack}>&lt;</button>
-                    <h1>#541 DSA one shot</h1>
+                    <h1>#{exam.id} {exam.name}</h1>
                 </div>
                 <div className="viewexam-section">
                     <div className="viewexam-header">
@@ -18,7 +18,6 @@ const ViewExam = ({ onBack }) => {
                             <button className='viewexam-edit-btn'>Edit</button>
                         </div>
                     </div>
-                    {/* Add items-center to center children horizontally */}
                     <div className="viewexam-body flex flex-col items-center justify-start">
                         <div className="viewexam-viwer">
                             <div className='viewexam-q'>
@@ -30,7 +29,6 @@ const ViewExam = ({ onBack }) => {
                                     <div className="viewexams-container">
                                         <details>
                                             <summary>
-                                                {/* Container INSIDE summary for flex layout */}
                                                 <div className="flex justify-between items-center w-full">
                                                     <p>1. Sample Question</p>
                                                 </div>
@@ -75,7 +73,6 @@ const ViewExam = ({ onBack }) => {
                                     <div className="viewexams-container">
                                         <details>
                                             <summary>
-                                                {/* Container INSIDE summary for flex layout */}
                                                 <div className="flex justify-between items-center w-full">
                                                     <p>1. Lorem ipsum dolor sit amet consectetur adipisicing elit. Nobis quo quaerat fuga laborum ducimus error voluptas quidem libero sunt aliquam!</p>
                                                 </div>
@@ -120,7 +117,7 @@ const ViewExam = ({ onBack }) => {
                 </div>
             </div>
         </div>
-    )
-}
+    );
+};
 
-export default ViewExam
+export default ViewExam;
