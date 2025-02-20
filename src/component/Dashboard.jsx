@@ -1,197 +1,25 @@
 import React, { useEffect, useState } from "react";
+// import axios from "axios"; // Commented out since backend is not ready
 import closeicon from '../assets/close.png';
 import { motion } from "motion/react";
 import EditExam from "./EditExam";
 
-
-const Dashboard = ({ onCreateExam, onAddStudent, onAddUser, onAddCredits ,onViewexam,onManageExam, onSubscription}) => {
-
-    // const API_BASE_URL = "http://127.0.0.1:8000/api/";
-
-
-
-
-    // const Dashboard = ({ onCreateExam, onAddStudent }) => {
-    //     const [dashboardData, setDashboardData] = useState(null);
-    //     const [showPopup, setShowPopup] = useState(false);
-    //     const [showEditPopup, setShowEditPopup] = useState(false);
-    //     const [selectedExam, setSelectedExam] = useState(null);
-    //     const [testDetails, setTestDetails] = useState([]);
-
-    //     useEffect(() => {
-    //         fetchDashboardData();
-    //         fetchExamData();
-    //     }, []);
-
-    //     // Fetch Dashboard Data from Django API
-    //     const fetchDashboardData = async () => {
-    //         try {
-    //             const response = await axios.get(`${API_BASE_URL}dashboard/`);
-    //             setDashboardData(response.data[0]); // Assuming only one dashboard entry exists
-    //         } catch (error) {
-    //             console.error("Error fetching dashboard data:", error);
-    //         }
-    //     };
-
-    //     // Fetch Exam Data from Django API
-    //     const fetchExamData = async () => {
-    //         try {
-    //             const response = await axios.get(`${API_BASE_URL}exams/`);
-    //             setTestDetails(response.data);
-    //         } catch (error) {
-    //             console.error("Error fetching exams:", error);
-    //         }
-    //     };
-
-    //     const togglePopup = () => setShowPopup((prev) => !prev);
-    //     const closePopup = () => setShowPopup(false);
-
-    //     const openEditPopup = (exam) => {
-    //         setSelectedExam(exam);
-    //         setShowEditPopup(true);
-    //     };
-    //     const closeEditPopup = () => setShowEditPopup(false);
-
-    //     useEffect(() => {
-    //         const handleKeyDown = (event) => {
-    //             if (event.key === "Escape") {
-    //                 setShowEditPopup(false);
-    //                 setShowPopup(false);
-    //             }
-    //         };
-    //         document.addEventListener("keydown", handleKeyDown);
-    //         return () => document.removeEventListener("keydown", handleKeyDown);
-    //     }, []);
-
-    //     if (!dashboardData) {
-    //         return <p className="text-center text-lg">Loading data...</p>;
-    //     }
-
-    //     return (
-    //         <div className="lg:w-3xl justify-center flex flex-wrap dashboard">
-    //             <div className="greeting">
-    //                 <h1>Welcome Admin</h1>
-    //                 <div className="grid grid-cols-2 xl:grid-cols-4 lg:grid-cols-2 md:grid-cols-4 gap-4 w-full">
-    //                     <motion.div whileTap={{ scale: 1.1 }} className="top-display top-display-clickable" onClick={togglePopup}>
-    //                         <h4 className="xl:text-xl lg:text-xl md:text-xl">Active Test</h4>
-    //                         <h2 className="xl:text-4xl lg:text-4xl md:text-4xl flex justify-center">
-    //                             {dashboardData.active_contest}
-    //                         </h2>
-    //                     </motion.div>
-
-    //                     {/* Popup Modal */}
-    //                     {showPopup && (
-    //                         <div className="fixed inset-0 flex items-center justify-center top-display-pop">
-    //                             <div className="top-display-pop-card rounded-sm shadow-lg w-3/4 md:w-1/2">
-    //                                 <div className="flex justify-between items-center mb-4 top-display-pop-title">
-    //                                     <h2 className="font-semibold text-center">Active Exams</h2>
-    //                                     <motion.button whileTap={{ scale: 1.2 }} className="text-red-500 text-lg" onClick={closePopup}>
-    //                                         <img src={closeicon} alt="Close" />
-    //                                     </motion.button>
-    //                                 </div>
-
-    //                                 {/* Table */}
-    //                                 <div className="flex justify-center rounded-sm">
-    //                                     <table className="pop-up-table">
-    //                                         <thead>
-    //                                             <tr className="bg-gray-200">
-    //                                                 <th>#</th>
-    //                                                 <th>Name</th>
-    //                                                 <th>Start Time</th>
-    //                                                 <th>End Time</th>
-    //                                                 <th></th>
-    //                                             </tr>
-    //                                         </thead>
-    //                                         <tbody>
-    //                                             {testDetails.length > 0 ? (
-    //                                                 testDetails.map((test, index) => (
-    //                                                     <tr key={test.id}>
-    //                                                         <td>{index + 1}</td>
-    //                                                         <td>{test.name}</td>
-    //                                                         <td>{test.start_time}</td>
-    //                                                         <td>{test.end_time}</td>
-    //                                                         <td>
-    //                                                             <motion.button whileTap={{ scale: 1.1 }} className="viewexam-btn-pop" onClick={() => openEditPopup(test)}>
-    //                                                                 View
-    //                                                             </motion.button>
-    //                                                         </td>
-    //                                                     </tr>
-    //                                                 ))
-    //                                             ) : (
-    //                                                 <tr>
-    //                                                     <td colSpan="4" className="text-center">No tests available</td>
-    //                                                 </tr>
-    //                                             )}
-    //                                         </tbody>
-    //                                     </table>
-    //                                 </div>
-    //                             </div>
-    //                         </div>
-    //                     )}
-    //                     <div className="top-display">
-    //                         <h4>Live Contest</h4>
-    //                         <h2>{dashboardData.live_contest}</h2>
-    //                     </div>
-    //                     <div className="top-display">
-    //                         <h4>Remaining Credits</h4>
-    //                         <h2>{dashboardData.credit}</h2>
-    //                     </div>
-    //                     <div className="top-display">
-    //                         <h4>Total Students</h4>
-    //                         <h2>{dashboardData.total_students}</h2>
-    //                     </div>
-    //                     {showEditPopup && <EditExam onClose={closeEditPopup} examDetails={selectedExam} />}
-    //                 </div>
-    //                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full mid-container">
-    //                     <div className="w-4/10 mid-display">
-    //                         <h4>Recent Tests</h4>
-    //                         <div className="flex w-full justify-center">
-    //                             <div className="tablee">
-    //                                 <h5>Recent Tests</h5>
-    //                                 {testDetails.map((test) => (
-    //                                     <div key={test.id} className="tablee-content">
-    //                                         <h6>{test.name}</h6>
-    //                                     </div>
-    //                                 ))}
-    //                             </div>
-    //                         </div>
-    //                     </div>
-    //                     <div className="w-10/10">
-    //                         <div className="mid-display2">
-    //                             <h4>Quick links</h4>
-    //                             <ul className="list-disc">
-    //                                 <li onClick={onCreateExam}>Create Exam</li>
-    //                                 <li onClick={onAddStudent}>Add Student</li>
-    //                                 <li>Add User</li>
-    //                                 <li>Buy Credits</li>
-    //                             </ul>
-    //                         </div>
-    //                         <div className="mid-display2">
-    //                             <h4>Notifications</h4>
-    //                         </div>
-    //                     </div>
-    //                 </div>
-    //             </div>
-    //         </div>
-    //     );
-    // };
-
-    // export default Dashboard;
-
-
-    // const Dashboard = ({ onCreateExam, onAddStudent }) => {
-
+const Dashboard = ({ onCreateExam, onAddStudent, onAddUser, onAddCredits, onViewexam, onManageExam, onSubscription , onManageStudents }) => {
     const [dashboardData, setDashboardData] = useState(null);
     const [showPopup, setShowPopup] = useState(false);
     const [showEditPopup, setShowEditPopup] = useState(false);
     const [selectedExam, setSelectedExam] = useState(null);
     const [testDetails, setTestDetails] = useState([]);
-    const [showSubscription, setShowSubscription] = useState(false); // State to toggle Subscription component
+    const [showSubscription, setShowSubscription] = useState(false);
     const [showCompletedPopup, setShowCompletedPopup] = useState(false);
+    const [recentTests, setRecentTests] = useState([]);
+    const [completedResults, setCompletedResults] = useState([]);
+    const [notifications, setNotifications] = useState([]); // State for notifications
+    const [error, setError] = useState(null);
 
     const togglePopup = () => setShowPopup((prev) => !prev);
     const closePopup = () => setShowPopup(false);
-    
+
     const toggleCompletedPopup = () => setShowCompletedPopup((prev) => !prev);
     const closeCompletedPopup = () => setShowCompletedPopup(false);
 
@@ -206,22 +34,60 @@ const Dashboard = ({ onCreateExam, onAddStudent, onAddUser, onAddCredits ,onView
     };
 
     useEffect(() => {
-        setTimeout(() => {
-            setDashboardData({
-                activeContest: 15,
-                liveContest: 2,
-                credit: 1000,
-                totalStudents: 572
-            });
+        const fetchDashboardData = async () => {
+            try {
+                // Commenting out the API calls for now
+                // const [dashboardResponse, recentTestsResponse, completedResultsResponse, notificationsResponse] = await Promise.all([
+                //     axios.get("http://backend-url/api/dashboard/"),
+                //     axios.get("http://backend-url/api/recent-tests/"),
+                //     axios.get("http://backend-url/api/completed-results/"),
+                //     axios.get("http://backend-url/api/notifications/") // New endpoint for notifications
+                // ]);
 
-            // Sample test details
-            setTestDetails([
-                { id: 1, name: "Math Test", startTime: "10:00 AM", endTime: "11:00 AM" },
-                { id: 2, name: "Science Quiz", startTime: "12:00 PM", endTime: "1:00 PM" },
-                { id: 3, name: "History Exam", startTime: "2:00 PM", endTime: "3:30 PM" }
-            ]);
-        }, 1000);
+                // Simulate dashboard data (temporary mock data while the backend is not available)
+                const mockDashboardData = {
+                    activeContest: 5,
+                    liveContest: 3,
+                    credit: 2000,
+                    totalStudents: 150,
+                    testDetails: [
+                        { id: 1, name: "Math Test", startTime: "10:00 AM", endTime: "11:00 AM" },
+                        { id: 2, name: "Science Quiz", startTime: "1:00 PM", endTime: "2:00 PM" }
+                    ]
+                };
+                const mockRecentTests = [
+                    { id: 1, title: "DSA Course", description: "sample", status: "Ongoing" },
+                    { id: 2, title: "JavaScript Basics", description: "sample", status: "Upcoming" }
+                ];
+                const mockCompletedResults = [
+                    { id: 1, title: "DSA Course", description: "sample", status: "Completed" },
+                    { id: 2, title: "React 101", description: "sample", status: "Completed" }
+                ];
+                const mockNotifications = [
+                    { id: 1, message: "📢 Reminder: Your subscription is about to expire! Renew now to continue enjoying uninterrupted service." },
+                    { id: 2, message: "🎉 Special Festive Offer! Get 50% off on all premium plans. Limited time only—grab the deal now!" },
+                    { id: 3, message: "💰 Credits Reminder: You have 200 credits left in your account. Use them before they expire!" },
+                    { id: 4, message: "⚠️ Low Credit Alert: You are running low on credits! Recharge now to avoid service interruptions." },
+                    { id: 5, message: "🎓 Congratulations! You have successfully completed your exam. Check your results soon!" }
+                ];
+
+                setDashboardData(mockDashboardData);
+                setTestDetails(mockDashboardData.testDetails);
+                setRecentTests(mockRecentTests);
+                setCompletedResults(mockCompletedResults);
+                setNotifications(mockNotifications); // Set mock notifications
+            } catch (error) {
+                console.error("Error fetching dashboard data", error);
+                setError("Failed to load data. Please try again later.");
+            }
+        };
+
+        fetchDashboardData();
     }, []);
+
+    if (error) {
+        return <p className="text-center text-lg text-red-500">{error}</p>;
+    }
 
     if (!dashboardData) {
         return <p className="text-center text-lg">Loading data...</p>;
@@ -232,10 +98,9 @@ const Dashboard = ({ onCreateExam, onAddStudent, onAddUser, onAddCredits ,onView
             <div className="greeting">
                 <h1>Welcome Admin</h1>
                 <div className="grid grid-cols-2 xl:grid-cols-4 lg:grid-cols-2 md:grid-cols-4 gap-4 w-full">
-                    {/* Active Test Tab */}
-                    <motion.div 
-                        whileTap={{ scale: 1.1 }} 
-                        className="top-display top-display-clickable cursor-pointer" 
+                    <motion.div
+                        whileTap={{ scale: 1.1 }}
+                        className="top-display top-display-clickable cursor-pointer"
                         onClick={togglePopup}>
                         <h4 className="xl:text-xl lg:text-xl md:text-xl">Active Test</h4>
                         <h2 className="xl:text-4xl lg:text-4xl md:text-4xl flex justify-center">
@@ -243,10 +108,9 @@ const Dashboard = ({ onCreateExam, onAddStudent, onAddUser, onAddCredits ,onView
                         </h2>
                     </motion.div>
 
-                    {/* Completed Exams Tab */}
-                    <motion.div 
-                        whileTap={{ scale: 1.1 }} 
-                        className="top-display top-display-clickable cursor-pointer" 
+                    <motion.div
+                        whileTap={{ scale: 1.1 }}
+                        className="top-display top-display-clickable cursor-pointer"
                         onClick={toggleCompletedPopup}>
                         <h4 className="xl:text-xl lg:text-xl md:text-xl">Completed Exams</h4>
                         <h2 className="xl:text-4xl lg:text-4xl md:text-4xl flex justify-center">
@@ -254,32 +118,26 @@ const Dashboard = ({ onCreateExam, onAddStudent, onAddUser, onAddCredits ,onView
                         </h2>
                     </motion.div>
 
-                    {/* Remaining Credits Tab */}
-                    <motion.div 
-                        whileTap={{ scale: 1.1 }} 
-                        className="top-display top-display-clickable cursor-pointer" 
-                        onClick={onSubscription}> {/* Toggle Subcription component */}
+                    <motion.div
+                        whileTap={{ scale: 1.1 }}
+                        className="top-display top-display-clickable cursor-pointer"
+                        onClick={onSubscription}>
                         <h4 className="xl:text-xl lg:text-xl md:text-xl">Remaining Credits</h4>
                         <h2 className="xl:text-4xl lg:text-4xl md:text-4xl flex justify-center">
                             {dashboardData.credit}
                         </h2>
                     </motion.div>
 
-                    {/* Total Students Tab */}
-                    <motion.div 
-                        whileTap={{ scale: 1.1 }} 
-                        className="top-display top-display-clickable cursor-pointer" 
-                        onClick={onManageExam}> 
+                    <motion.div
+                        whileTap={{ scale: 1.1 }}
+                        className="top-display top-display-clickable cursor-pointer"
+                        onClick={onManageStudents}>
                         <h4 className="xl:text-xl lg:text-xl md:text-xl">Total Students</h4>
                         <h2 className="xl:text-4xl lg:text-4xl md:text-4xl flex justify-center">
                             {dashboardData.totalStudents}
                         </h2>
-
-    
                     </motion.div>
 
-
-                    {/* Popup Modal */}
                     {showPopup && (
                         <div className="fixed inset-0 flex items-center justify-center top-display-pop">
                             <div className="top-display-pop-card rounded-sm shadow-lg w-3/4 md:w-1/2">
@@ -290,7 +148,6 @@ const Dashboard = ({ onCreateExam, onAddStudent, onAddUser, onAddCredits ,onView
                                     </motion.button>
                                 </div>
 
-                                {/* Table */}
                                 <div className="flex justify-center rounded-sm">
                                     <table className="pop-up-table">
                                         <thead>
@@ -334,7 +191,6 @@ const Dashboard = ({ onCreateExam, onAddStudent, onAddUser, onAddCredits ,onView
                                     </motion.button>
                                 </div>
 
-                                {/* Table */}
                                 <div className="flex justify-center rounded-sm">
                                     <table className="pop-up-table">
                                         <thead>
@@ -355,9 +211,9 @@ const Dashboard = ({ onCreateExam, onAddStudent, onAddUser, onAddCredits ,onView
                                                         <td>{test.startTime}</td>
                                                         <td>{test.endTime}</td>
                                                         <td>
-                                                            <motion.button 
-                                                                whileTap={{ scale: 1.1 }} 
-                                                                className="viewexam-btn-pop" 
+                                                            <motion.button
+                                                                whileTap={{ scale: 1.1 }}
+                                                                className="viewexam-btn-pop"
                                                                 onClick={() => openEditPopup(test)}>
                                                                 View
                                                             </motion.button>
@@ -377,8 +233,7 @@ const Dashboard = ({ onCreateExam, onAddStudent, onAddUser, onAddCredits ,onView
                     )}
                     {showEditPopup && <EditExam onClose={closeEditPopup} examDetails={selectedExam} />}
                 </div>
-                
-                {/* Conditional Rendering for Subscription Component */}
+
                 {showSubscription && <Subscription />}
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full mid-container">
@@ -386,32 +241,24 @@ const Dashboard = ({ onCreateExam, onAddStudent, onAddUser, onAddCredits ,onView
                         <h4>Recent Tests</h4>
                         <div className="flex w-full justify-center">
                             <div className="tablee">
-                            <div className="tablee-content"onClick={onManageExam}>
-                                <h6>DSA Crash Course</h6>
-                            </div>
-                            <div className="tablee-content">
-                                <h6>Hello World</h6>
-                            </div>
-                            <div className="tablee-content">
-                                <h6>Hello World</h6>
-                            </div>
+                                {recentTests.map((test, index) => (
+                                    <div key={index} className="tablee-content" onClick={onViewexam}>
+                                        <h6>{test.title}</h6>
+                                    </div>
+                                ))}
                             </div>
                         </div>
-                     </div>
-                        {/* Completed Result */}
+                    </div>
+
                     <div className="w-4/10 mid-display">
                         <h4>Completed Result</h4>
                         <div className="flex w-full justify-center">
                             <div className="tablee">
-                            <div className="tablee-content" onClick={onManageExam}>
-                                <h6>DSA Crash Course</h6>
-                            </div>
-                            <div className="tablee-content">
-                                <h6>Hello World</h6>
-                            </div>
-                            <div className="tablee-content">
-                                <h6>Hello World</h6>
-                            </div>
+                                {completedResults.map((result, index) => (
+                                    <div key={index} className="tablee-content" onClick={onViewexam}>
+                                        <h6>{result.title}</h6>
+                                    </div>
+                                ))}
                             </div>
                         </div>
                     </div>
@@ -422,7 +269,7 @@ const Dashboard = ({ onCreateExam, onAddStudent, onAddUser, onAddCredits ,onView
                                 <li onClick={onCreateExam}>
                                     Create Exam
                                 </li>
-                                <li onClick={onAddStudent}> 
+                                <li onClick={onAddStudent}>
                                     Add Student
                                 </li>
                                 <li onClick={onAddUser}>
@@ -435,22 +282,11 @@ const Dashboard = ({ onCreateExam, onAddStudent, onAddUser, onAddCredits ,onView
                             <h4>Notifications</h4>
                             <div className="flex justify-center">
                                 <div className="notification-table">
-                                    <div className="tablee-new">
-                                        <h6>📢 Reminder: Your subscription is about to expire! Renew now to continue enjoying uninterrupted service.</h6>
-                                    </div>
-                                    
-                                    <div className="tablee-new">
-                                        <h6>🎉 Special Festive Offer! Get 50% off on all premium plans. Limited time only—grab the deal now!</h6>
-                                    </div>
-                                    <div className="tablee-new">
-                                        <h6>💰 Credits Reminder: You have 200 credits left in your account. Use them before they expire!</h6>
-                                    </div>
-                                    <div className="tablee-new">
-                                        <h6>⚠️ Low Credit Alert: You are running low on credits! Recharge now to avoid service interruptions.</h6>
-                                    </div>
-                                    <div className="tablee-new">
-                                        <h6>🎓 Congratulations! You have successfully completed your exam. Check your results soon!</h6>
-                                    </div>
+                                    {notifications.map((notification, index) => (
+                                        <div key={index} className="tablee-new">
+                                            <h6>{notification.message}</h6>
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
                         </div>
