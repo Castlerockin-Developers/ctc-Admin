@@ -7,7 +7,6 @@ import ReactQuill from 'react-quill';
 import filter from '../assets/filter.png';
 
 const AddQuestion = ({ onBack, onNexts }) => {
-    // State to track window width for responsive truncation
     const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
     useEffect(() => {
@@ -16,7 +15,6 @@ const AddQuestion = ({ onBack, onNexts }) => {
         return () => window.removeEventListener("resize", handleResize);
     }, []);
 
-    // Helper function to truncate a title after a given number of words
     const truncateTitle = (title, wordLimit = 5) => {
         const words = title.split(" ");
         if (words.length > wordLimit) {
@@ -32,19 +30,50 @@ const AddQuestion = ({ onBack, onNexts }) => {
             id: 1,
             title: "Question Title - Medium Difficulty",
             content: "It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is",
-            type: "mcq"
+            type: "mcq",
+            dataset: "google"
         },
         {
             id: 2,
             title: "Question Title - Medium Difficulty",
             content: "It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is",
-            type: "coding"
+            type: "coding",
+            dataset: "google"
         },
         {
             id: 3,
             title: "Question Title - Medium Difficulty",
             content: "It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is",
-            type: "mcq"
+            type: "mcq",
+            dataset: "microsoft"
+        },
+        {
+            id: 4,
+            title: "Question Title - Internals Exam",
+            content: "This is a sample question for internals exam.",
+            type: "mcq",
+            dataset: "internals exams"
+        },
+        {
+            id: 5,
+            title: "Coding Question - Internals Exam",
+            content: "This is a sample coding question for internals exam.",
+            type: "coding",
+            dataset: "internals exams"
+        },
+        {
+            id: 6,
+            title: "Final Exam MCQ",
+            content: "This is a sample MCQ for the final exam.",
+            type: "mcq",
+            dataset: "final exams"
+        },
+        {
+            id: 7,
+            title: "Final Exam Coding",
+            content: "This is a sample coding question for the final exam.",
+            type: "coding",
+            dataset: "final exams"
         }
     ]);
 
@@ -54,15 +83,11 @@ const AddQuestion = ({ onBack, onNexts }) => {
     const [question, setQuestion] = useState("");
     const [testCases, setTestCases] = useState([{ input: "", output: "" }]);
     const [showEditCodingPopup, setShowEditCodingPopup] = useState(false);
-    // Global state for the timer popup (shared between sections)
     const [showTimerPopup, setShowTimerPopup] = useState(false);
-
-    // Separate states for each section's filter dropdown
     const [showFilterDropdownMCQ, setShowFilterDropdownMCQ] = useState(false);
     const [showFilterDropdownCoding, setShowFilterDropdownCoding] = useState(false);
-
-    // ReactQuill editor state and modules
     const [value, setValue] = useState('');
+
     const modules = {
         toolbar: [
             [{ font: [] }, { size: [] }],
@@ -79,7 +104,6 @@ const AddQuestion = ({ onBack, onNexts }) => {
         ],
     };
 
-    // Test case handlers
     const handleChange = (index, field, value) => {
         const newTestCases = [...testCases];
         newTestCases[index][field] = value;
@@ -95,7 +119,6 @@ const AddQuestion = ({ onBack, onNexts }) => {
         setTestCases(newTestCases);
     };
 
-    // Popup handlers for editing
     const handleCodingEdit = () => {
         setShowEditCodingPopup(true);
     };
@@ -109,7 +132,6 @@ const AddQuestion = ({ onBack, onNexts }) => {
         setShowEditCodingPopup(false);
     };
 
-    // Option handlers for MCQ
     const handleAddOption = () => {
         setOptions([...options, { text: "", isCorrect: false }]);
     };
@@ -160,7 +182,6 @@ const AddQuestion = ({ onBack, onNexts }) => {
         });
     };
 
-    // Drag and drop handlers for questions
     const handleDragStart = (e, question) => {
         e.dataTransfer.setData('question', JSON.stringify(question));
         const element = e.target;
@@ -200,19 +221,19 @@ const AddQuestion = ({ onBack, onNexts }) => {
         }
     };
 
-    const addAllQuestions = () => {
-        const mcqToAdd = sourceQuestions.filter(q =>
-            q.type === 'mcq' && !mcqQuestions.some(added => added.id === q.id)
-        );
-        setMcqQuestions([...mcqQuestions, ...mcqToAdd]);
-
-        const codingToAdd = sourceQuestions.filter(q =>
-            q.type === 'coding' && !codingQuestions.some(added => added.id === q.id)
-        );
-        setCodingQuestions([...codingQuestions, ...codingToAdd]);
-
-        setSourceQuestions([]);
-        setIsQuestionBankVisible(false);
+    const addAllQuestions = (dataset, type) => {
+        const questionsToAdd = sourceQuestions.filter(q => q.dataset === dataset && q.type === type && !mcqQuestions.some(added => added.id === q.id) && !codingQuestions.some(added => added.id === q.id));
+        questionsToAdd.forEach(question => {
+            if (question.type === 'mcq') {
+                setMcqQuestions(prev => [...prev, question]);
+            } else if (question.type === 'coding') {
+                setCodingQuestions(prev => [...prev, question]);
+            }
+        });
+        setSourceQuestions(sourceQuestions.filter(q => !(q.dataset === dataset && q.type === type)));
+        if (sourceQuestions.filter(q => !(q.dataset === dataset && q.type === type)).length === 0) {
+            setIsQuestionBankVisible(false);
+        }
     };
 
     const handleReturnQuestion = (questionToReturn) => {
@@ -225,7 +246,6 @@ const AddQuestion = ({ onBack, onNexts }) => {
         setIsQuestionBankVisible(true);
     };
 
-    // Toggle functions for each dropdown
     const toggleFilterDropdownMCQ = () => {
         setShowFilterDropdownMCQ(prev => !prev);
     };
@@ -234,30 +254,23 @@ const AddQuestion = ({ onBack, onNexts }) => {
         setShowFilterDropdownCoding(prev => !prev);
     };
 
-    // Handle click on Section Timer in dropdown (opens timer popup)
     const handleSectionTimerClick = () => {
         setShowTimerPopup(true);
-        // Close both dropdowns
         setShowFilterDropdownMCQ(false);
         setShowFilterDropdownCoding(false);
     };
 
-    // Handle Randomize action from dropdown
     const handleRandomizeClick = () => {
         console.log("Randomize clicked");
-        // Close both dropdowns after action
         setShowFilterDropdownMCQ(false);
         setShowFilterDropdownCoding(false);
     };
 
-    // Toggle timer popup (used for both opening and closing)
     const toggleTimerPopup = () => {
         setShowTimerPopup(prev => !prev);
     };
 
-    // NEW: Handle Next button click with validations for added questions
     const handleNextButtonClick = () => {
-        // If no question is added in either section, show error
         if (mcqQuestions.length === 0 && codingQuestions.length === 0) {
             Swal.fire({
                 title: "Error",
@@ -270,7 +283,6 @@ const AddQuestion = ({ onBack, onNexts }) => {
             });
             return;
         }
-        // If only MCQ questions are added, warn the user that coding questions are missing
         if (mcqQuestions.length > 0 && codingQuestions.length === 0) {
             Swal.fire({
                 title: "Warning",
@@ -288,7 +300,6 @@ const AddQuestion = ({ onBack, onNexts }) => {
             });
             return;
         }
-        // If only Coding questions are added, warn the user that MCQ questions are missing
         if (codingQuestions.length > 0 && mcqQuestions.length === 0) {
             Swal.fire({
                 title: "Warning",
@@ -306,12 +317,20 @@ const AddQuestion = ({ onBack, onNexts }) => {
             });
             return;
         }
-        // If both sections have at least one question, proceed
         onNexts();
     };
 
+    const uniqueDatasets = [...new Set(sourceQuestions.map(q => q.dataset))];
+
     return (
         <div className='addq-container justify-center flex flex-wrap'>
+            <style>
+                {`
+                    .card-gap {
+                        margin-bottom: 10px; /* Adjust the value to control the gap size */
+                    }
+                `}
+            </style>
             <div className='addquestion-box'>
                 <h1>Add Questions</h1>
                 <div className='grid lg:grid-cols-2 md:grid-cols-1 add-q-container gap-1.5'>
@@ -324,52 +343,111 @@ const AddQuestion = ({ onBack, onNexts }) => {
                             </div>
                             <div className='question-bank-body'>
                                 {isQuestionBankVisible && (
-                                    <div className='question-templet-wrapper'>
-                                        <div className='question-templet-header flex justify-between'>
-                                            <p>Hello World</p>
-                                            <div className='flex'>
-                                                <span>{sourceQuestions.filter(q => q.type === 'mcq').length} MCQ</span>
-                                                <span>{sourceQuestions.filter(q => q.type === 'coding').length} Coding</span>
-                                                <button
-                                                    className='bg-green-500 rounded-sm hover:bg-green-900 px-2'
-                                                    onClick={addAllQuestions}
-                                                >
-                                                    + Add Bank
-                                                </button>
-                                            </div>
-                                        </div>
-                                        <div className='question-templet-body'>
-                                            <div className='question'>
-                                                {sourceQuestions.map(question => (
-                                                    <details
-                                                        key={question.id}
-                                                        draggable
-                                                        onDragStart={(e) => handleDragStart(e, question)}
-                                                        onDragEnd={handleDragEnd}
-                                                    >
-                                                        <summary className='flex justify-between'>
-                                                            {windowWidth <= 1024
-                                                                ? truncateTitle(question.title, 2)
-                                                                : question.title}
-                                                            <div className="flex items-center gap-2 exam-type">
-                                                                <span className="text-sm">
-                                                                    {question.type.toUpperCase()}
-                                                                </span>
+                                    <div>
+                                        {uniqueDatasets.map(dataset => (
+                                            <div key={dataset}>
+                                                {/* MCQ Section */}
+                                                <div className='dataset-section card-gap'>
+                                                    <div className='question-templet-wrapper'>
+                                                        <div className='question-templet-header flex justify-between'>
+                                                            <p>{dataset.charAt(0).toUpperCase() + dataset.slice(1)} - MCQ</p>
+                                                            <div className='flex'>
+                                                                <span>{sourceQuestions.filter(q => q.dataset === dataset && q.type === 'mcq').length} MCQ</span>
                                                                 <button
-                                                                    onClick={(e) => {
-                                                                        e.preventDefault();
-                                                                        addSingleQuestion(question, question.type);
-                                                                    }}
+                                                                    className='bg-green-500 rounded-sm hover:bg-green-900 px-2'
+                                                                    onClick={() => addAllQuestions(dataset, 'mcq')}
                                                                 >
-                                                                    + Add
+                                                                    + Add All
                                                                 </button>
                                                             </div>
-                                                        </summary>
-                                                        <p>{question.content}</p>
-                                                    </details>
-                                                ))}
+                                                        </div>
+                                                        <div className='question-templet-body'>
+                                                            <div className='question'>
+                                                                {sourceQuestions.filter(q => q.dataset === dataset && q.type === 'mcq').map(question => (
+                                                                    <details
+                                                                        key={question.id}
+                                                                        draggable
+                                                                        onDragStart={(e) => handleDragStart(e, question)}
+                                                                        onDragEnd={handleDragEnd}
+                                                                        className='card-gap'
+                                                                    >
+                                                                        <summary className='flex justify-between'>
+                                                                            {windowWidth <= 1024
+                                                                                ? truncateTitle(question.title, 2)
+                                                                                : question.title}
+                                                                            <div className="flex items-center gap-2 exam-type">
+                                                                                <span className="text-sm">
+                                                                                    {question.type.toUpperCase()}
+                                                                                </span>
+                                                                                <button
+                                                                                    onClick={(e) => {
+                                                                                        e.preventDefault();
+                                                                                        addSingleQuestion(question, question.type);
+                                                                                    }}
+                                                                                >
+                                                                                    + Add
+                                                                                </button>
+                                                                            </div>
+                                                                        </summary>
+                                                                        <p>{question.content}</p>
+                                                                    </details>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                {/* Coding Section */}
+                                                <div className='dataset-section card-gap'>
+                                                    <div className='question-templet-wrapper'>
+                                                        <div className='question-templet-header flex justify-between'>
+                                                            <p>{dataset.charAt(0).toUpperCase() + dataset.slice(1)} - Coding</p>
+                                                            <div className='flex'>
+                                                                <span>{sourceQuestions.filter(q => q.dataset === dataset && q.type === 'coding').length} Coding</span>
+                                                                <button
+                                                                    className='bg-green-500 rounded-sm hover:bg-green-900 px-2'
+                                                                    onClick={() => addAllQuestions(dataset, 'coding')}
+                                                                >
+                                                                    + Add All
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                        <div className='question-templet-body'>
+                                                            <div className='question'>
+                                                                {sourceQuestions.filter(q => q.dataset === dataset && q.type === 'coding').map(question => (
+                                                                    <details
+                                                                        key={question.id}
+                                                                        draggable
+                                                                        onDragStart={(e) => handleDragStart(e, question)}
+                                                                        onDragEnd={handleDragEnd}
+                                                                        className='card-gap'
+                                                                    >
+                                                                        <summary className='flex justify-between'>
+                                                                            {windowWidth <= 1024
+                                                                                ? truncateTitle(question.title, 2)
+                                                                                : question.title}
+                                                                            <div className="flex items-center gap-2 exam-type">
+                                                                                <span className="text-sm">
+                                                                                    {question.type.toUpperCase()}
+                                                                                </span>
+                                                                                <button
+                                                                                    onClick={(e) => {
+                                                                                        e.preventDefault();
+                                                                                        addSingleQuestion(question, question.type);
+                                                                                    }}
+                                                                                >
+                                                                                    + Add
+                                                                                </button>
+                                                                            </div>
+                                                                        </summary>
+                                                                        <p>{question.content}</p>
+                                                                    </details>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
-                                        </div>
+                                        ))}
                                     </div>
                                 )}
                             </div>
@@ -381,12 +459,10 @@ const AddQuestion = ({ onBack, onNexts }) => {
                             <div className='addedquestion-bank-head flex justify-between'>
                                 <h3>MCQ</h3>
                                 <div className='flex relative'>
-                                    {/* Desktop: Show timer input directly */}
                                     <div className="section-timer-desktop">
                                         <span>Section timer: </span>
                                         <input type="number" placeholder='In minutes' />
                                     </div>
-                                    {/* Filter button for mobile */}
                                     <div className='r-filter-btn' onClick={toggleFilterDropdownMCQ}>
                                         <img src={filter} alt="filter-options" />
                                         {showFilterDropdownMCQ && (
@@ -405,12 +481,11 @@ const AddQuestion = ({ onBack, onNexts }) => {
                                 </div>
                             </div>
 
-                            {/* Timer Popup Modal (global) */}
                             {showTimerPopup && (
                                 <div className="timer-popup-overlay" onClick={toggleTimerPopup}>
                                     <div
                                         className="timer-popup-content"
-                                        onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside
+                                        onClick={(e) => e.stopPropagation()}
                                     >
                                         <button className="close-btn" onClick={toggleTimerPopup}>X</button>
                                         <div>
@@ -427,7 +502,7 @@ const AddQuestion = ({ onBack, onNexts }) => {
                                 onDrop={(e) => handleDrop(e, 'mcq')}
                             >
                                 {mcqQuestions.map(question => (
-                                    <details key={question.id}>
+                                    <details key={question.id} className='card-gap'>
                                         <summary className='flex justify-between'>
                                             {windowWidth <= 1024
                                                 ? truncateTitle(question.title, 3)
@@ -445,7 +520,6 @@ const AddQuestion = ({ onBack, onNexts }) => {
                             </div>
                         </div>
 
-                        {/* Coding Section */}
                         <div className='question-bank'>
                             <div className='addedquestion-bank-head flex justify-between'>
                                 <h3>Coding</h3>
@@ -454,7 +528,6 @@ const AddQuestion = ({ onBack, onNexts }) => {
                                         <span>Section timer: </span>
                                         <input type="number" placeholder='In minutes' />
                                     </div>
-                                    {/* Filter button for mobile */}
                                     <div className='r-filter-btn' onClick={toggleFilterDropdownCoding}>
                                         <img src={filter} alt="filter-options" />
                                         {showFilterDropdownCoding && (
@@ -473,7 +546,6 @@ const AddQuestion = ({ onBack, onNexts }) => {
                                 </div>
                             </div>
 
-                            {/* Timer Popup Modal (same global modal as above) */}
                             {showTimerPopup && (
                                 <div className="timer-popup-overlay" onClick={toggleTimerPopup}>
                                     <div
@@ -495,7 +567,7 @@ const AddQuestion = ({ onBack, onNexts }) => {
                                 onDrop={(e) => handleDrop(e, 'coding')}
                             >
                                 {codingQuestions.map(question => (
-                                    <details key={question.id}>
+                                    <details key={question.id} className='card-gap'>
                                         <summary className='flex justify-between'>
                                             {windowWidth <= 1024
                                                 ? truncateTitle(question.title, 3)
@@ -522,7 +594,6 @@ const AddQuestion = ({ onBack, onNexts }) => {
                         <FontAwesomeIcon icon={faRotateLeft} className='left-icon' />back
                     </button>
                     <p>2/3</p>
-                    {/* Use the new handler here */}
                     <button className='exam-next-btn' onClick={handleNextButtonClick}>Next</button>
                 </div>
             </div>
