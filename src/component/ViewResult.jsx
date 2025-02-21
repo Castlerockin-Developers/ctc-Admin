@@ -2,8 +2,12 @@ import React, { useState } from 'react';
 import './ViewResult.css';
 import { FaSearch, FaShare } from 'react-icons/fa';
 
-const ViewResult = ({ onBack, onNext }) => {
+const ViewResult = ({ result, onBack, onNext }) => {
     const [searchQuery, setSearchQuery] = useState("");
+
+    if (!result) {
+        return <div>No result selected</div>;
+    }
 
     return (
         <div className='justify-center flex flex-wrap viewresult-container'>
@@ -11,35 +15,35 @@ const ViewResult = ({ onBack, onNext }) => {
                 <div className='flex justify-between top-viewresult'>
                     <div className='flex'>
                         <button onClick={onBack}>&lt;</button>
-                        <h1>#541 DSA one shot</h1>
+                        <h1> {result.id} -{result.name}</h1>
                     </div>
                     <div className='flex justify-between view-time'>
                         <div>
                             <p>Start Time</p>
-                            <p>12:30 1/5/2025</p>
+                            <p>{result.startTime}</p>
                         </div>
                         <div>
                             <p>End Time</p>
-                            <p>12:30 1/5/2025</p>
+                            <p>{result.endTime}</p>
                         </div>
                     </div>
                 </div>
                 <div className='flex justify-between view-r-card-container'>
                     <div className='view-r-cards'>
                         <p>Students Attempted</p>
-                        <h4>15</h4>
+                        <h4>{result.studentsAttempted}</h4>
                     </div>
                     <div className='view-r-cards'>
                         <p>Students Unattempted</p>
-                        <h4>2</h4>
+                        <h4>{result.studentsUnattempted}</h4>
                     </div>
                     <div className='view-r-cards'>
                         <p>Malpractice</p>
-                        <h4>90</h4>
+                        <h4>{result.malpractice}</h4>
                     </div>
                     <div className='view-r-cards'>
-                        <p>Avarage Score</p>
-                        <h4>572</h4>
+                        <p>Average Score</p>
+                        <h4>{result.averageScore}</h4>
                     </div>
                 </div>
                 <div>
@@ -76,15 +80,17 @@ const ViewResult = ({ onBack, onNext }) => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
-                                        <td>4NM20EC408</td>
-                                        <td>Manish Naik</td>
-                                        <td>Start Time</td>
-                                        <td>End Time</td>
-                                        <td>Score</td>
-                                        <td>Trust Score</td>
-                                        <td><button className='viewexam-btn' onClick={onNext}>View</button></td>
-                                    </tr>
+                                    {result.students.map((student, index) => (
+                                        <tr key={index}>
+                                            <td>{student.usn}</td>
+                                            <td>{student.name}</td>
+                                            <td>{student.startTime}</td>
+                                            <td>{student.endTime}</td>
+                                            <td>{student.score}</td>
+                                            <td>{student.trustScore}</td>
+                                            <td><button className='viewexam-btn' onClick={() => onNext(student)}>View</button></td>
+                                        </tr>
+                                    ))}
                                 </tbody>
                             </table>
                         </div>
@@ -92,7 +98,7 @@ const ViewResult = ({ onBack, onNext }) => {
                 </div>
             </div>
         </div>
-    )
-}
+    );
+};
 
-export default ViewResult
+export default ViewResult;
