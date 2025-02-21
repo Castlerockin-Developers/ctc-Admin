@@ -503,3 +503,15 @@
         margin-top: 13px;
     }
 }
+.m-password-btn {
+    padding: 5px 15px;
+    font-size: 1.1rem;
+    font-family: madina-semibold;
+    background-color: #5B7091;
+    margin-right: 30px;
+}
+
+.m-password-btn:hover {
+    background-color: #10459b;
+    transition: background-color 0.2s ease;
+}

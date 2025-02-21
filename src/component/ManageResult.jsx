@@ -26,7 +26,8 @@ const ManageResult = ({ onNext, onBack }) => {
             malpractice: 90,
             averageScore: 572,
             students: [
-                { usn: "4NM20EC408", name: "Manish Naik", startTime: "10:00 AM", endTime: "11:30 AM", score: 85, trustScore: 95 },
+                { usn: "4NM20EC408", name: "Manish Naik", startTime: "10:00 AM", endTime: "11:30 AM",mcqMarks: 8,codingMarks: 15, score: 85, trustScore: 15 },
+                { usn: "1AM22CI088", name: "Sanath Naik", startTime: "10:00 AM", endTime: "11:00 AM",mcqMarks: 10,codingMarks: 14, score: 75, trustScore: 75 },
                 // Add more student data as needed
             ]
         },
@@ -43,7 +44,7 @@ const ManageResult = ({ onNext, onBack }) => {
             malpractice: 10,
             averageScore: 650,
             students: [
-                { usn: "4NM20EC409", name: "John Doe", startTime: "12:00 PM", endTime: "1:30 PM", score: 90, trustScore: 98 },
+                { usn: "4NM20EC409", name: "John Doe", startTime: "12:00 PM", endTime: "1:30 PM",mcqMarks: 8,codingMarks: 15, score: 90, trustScore: 98 },
                 // Add more student data as needed
             ]
         },
