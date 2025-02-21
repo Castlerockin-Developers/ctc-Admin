@@ -26,8 +26,34 @@ const ManageResult = ({ onNext, onBack }) => {
             malpractice: 90,
             averageScore: 572,
             students: [
-                { usn: "4NM20EC408", name: "Manish Naik", startTime: "10:00 AM", endTime: "11:30 AM", score: 85, trustScore: 95 },
-                // Add more student data as needed
+                {
+                    usn: "4NM20EC408",
+                    name: "Manish Naik",
+                    startTime: "10:00 AM",
+                    endTime: "11:30 AM",
+                    score: 85,
+                    trustScore: 95,
+                    testId: "521",
+                    testName: "DSA one shot",
+                    questions: [
+                        { text: "What is a binary tree?", userAnswer: "A tree with two children", correctAnswer: "A hierarchical structure", correct: false, marks: 1 },
+                        { text: "What is Big O notation?", userAnswer: "Time complexity", correctAnswer: "Order of growth measurement", correct: true, marks: 1 },
+                    ]
+                },
+                {
+                    usn: "4NM20EC409",
+                    name: "Raghuveer",
+                    startTime: "10:05 AM",
+                    endTime: "11:20 AM",
+                    score: 75,
+                    trustScore: 88,
+                    testId: "521",
+                    testName: "DSA one shot",
+                    questions: [
+                        { text: "What is a stack?", userAnswer: "FIFO", correctAnswer: "LIFO", correct: false, marks: 1 },
+                        { text: "What is a linked list?", userAnswer: "Array", correctAnswer: "Nodes with pointers", correct: false, marks: 1 },
+                    ]
+                }
             ]
         },
         {
@@ -43,11 +69,65 @@ const ManageResult = ({ onNext, onBack }) => {
             malpractice: 10,
             averageScore: 650,
             students: [
-                { usn: "4NM20EC409", name: "John Doe", startTime: "12:00 PM", endTime: "1:30 PM", score: 90, trustScore: 98 },
-                // Add more student data as needed
+                {
+                    usn: "4NM20EC409",
+                    name: "John Doe",
+                    startTime: "12:00 PM",
+                    endTime: "1:30 PM",
+                    score: 90,
+                    trustScore: 98,
+                    testId: "522",
+                    testName: "Python Basics",
+                    questions: [
+                        { text: "What is Python?", userAnswer: "A programming language", correctAnswer: "A programming language", correct: true, marks: 1 },
+                        { text: "What is a list?", userAnswer: "An array", correctAnswer: "A mutable collection", correct: false, marks: 1 },
+                    ]
+                }
             ]
         },
-        // Add more result data as needed
+        {
+            id: 3,
+            category: "Upcoming",
+            name: "JavaScript Fundamentals",
+            startTime: "2:00 PM",
+            endTime: "3:30 PM",
+            analytics: "Scheduled",
+            status: "Upcoming",
+            studentsAttempted: 0,
+            studentsUnattempted: 25,
+            malpractice: 0,
+            averageScore: 0,
+            students: []
+        },
+        {
+            id: 4,
+            category: "Completed",
+            name: "Data Structures & Algorithms",
+            startTime: "4:00 PM",
+            endTime: "5:30 PM",
+            analytics: "70% Attempted",
+            status: "Completed",
+            studentsAttempted: 18,
+            studentsUnattempted: 7,
+            malpractice: 5,
+            averageScore: 590,
+            students: [
+                {
+                    usn: "4NM20EC414",
+                    name: "Ankit Verma",
+                    startTime: "4:00 PM",
+                    endTime: "5:30 PM",
+                    score: 88,
+                    trustScore: 97,
+                    testId: "523",
+                    testName: "Data Structures & Algorithms",
+                    questions: [
+                        { text: "What is a queue?", userAnswer: "FIFO", correctAnswer: "FIFO", correct: true, marks: 1 },
+                        { text: "What is a hash table?", userAnswer: "A table with keys", correctAnswer: "A data structure with key-value pairs", correct: true, marks: 1 },
+                    ]
+                }
+            ]
+        }
     ];
 
     // Filtering Results based on Tab Selection & Search Query

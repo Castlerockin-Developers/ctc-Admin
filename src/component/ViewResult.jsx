@@ -1,12 +1,19 @@
 import React, { useState } from 'react';
 import './ViewResult.css';
+import ExamReport from "./ExamReport";
 import { FaSearch, FaShare } from 'react-icons/fa';
+import PerticularResult from './PerticularResult';
 
-const ViewResult = ({ result, onBack, onNext }) => {
+const ViewResult = ({ result, onBack }) => {
     const [searchQuery, setSearchQuery] = useState("");
+    const [selectedStudent, setSelectedStudent] = useState(null);
 
     if (!result) {
         return <div>No result selected</div>;
+    }
+
+    if (selectedStudent) {
+        return <PerticularResult student={selectedStudent} onBack={() => setSelectedStudent(null)} />;
     }
 
     return (
@@ -15,7 +22,7 @@ const ViewResult = ({ result, onBack, onNext }) => {
                 <div className='flex justify-between top-viewresult'>
                     <div className='flex'>
                         <button onClick={onBack}>&lt;</button>
-                        <h1> {result.id} -{result.name}</h1>
+                        <h1> {result.id} - {result.name}</h1>
                     </div>
                     <div className='flex justify-between view-time'>
                         <div>
@@ -48,9 +55,7 @@ const ViewResult = ({ result, onBack, onNext }) => {
                 </div>
                 <div>
                     <div className='flex justify-between middle-view'>
-                        <p className='students'>
-                            Students
-                        </p>
+                        <p className='students'>Students</p>
                         <div className='flex'>
                             <div className="search-box flex items-center w-full sm:w-auto">
                                 <FaSearch className="search-icon" />
@@ -65,22 +70,23 @@ const ViewResult = ({ result, onBack, onNext }) => {
                             <button className='flex gap-2'><FaShare className='icon-export' /> Export</button>
                         </div>
                     </div>
-                    <div>
-                        <div className="view-table-container">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>USN</th>
-                                        <th>Name</th>
-                                        <th className="start-time">Start Time</th>
-                                        <th className="start-time">End Time</th>
-                                        <th>Score</th>
-                                        <th>Trust Score</th>
-                                        <th></th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {result.students.map((student, index) => (
+                    <div className="view-table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>USN</th>
+                                    <th>Name</th>
+                                    <th className="start-time">Start Time</th>
+                                    <th className="start-time">End Time</th>
+                                    <th>Score</th>
+                                    <th>Trust Score</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {result.students
+                                    .filter(student => student.name.toLowerCase().includes(searchQuery.toLowerCase()))
+                                    .map((student, index) => (
                                         <tr key={index}>
                                             <td>{student.usn}</td>
                                             <td>{student.name}</td>
@@ -88,12 +94,15 @@ const ViewResult = ({ result, onBack, onNext }) => {
                                             <td>{student.endTime}</td>
                                             <td>{student.score}</td>
                                             <td>{student.trustScore}</td>
-                                            <td><button className='viewexam-btn' onClick={() => onNext(student)}>View</button></td>
+                                            <td>
+                                                <button className='viewexam-btn' onClick={() => setSelectedStudent(student)}>
+                                                    View
+                                                </button>
+                                            </td>
                                         </tr>
                                     ))}
-                                </tbody>
-                            </table>
-                        </div>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
