@@ -47,7 +47,7 @@ const ViewExam = ({ exam, onBack }) => {
                                         <details>
                                             <summary>
                                                 <div className="flex justify-between items-center w-full">
-                                                    <p>1. Sample Question</p>
+                                                    <p>2. Sample Question</p>
                                                 </div>
                                             </summary>
                                             <div className="viewexam-answer-boxes">
@@ -93,7 +93,7 @@ const ViewExam = ({ exam, onBack }) => {
                                         <details>
                                             <summary>
                                                 <div className="flex justify-between items-center w-full">
-                                                    <p>1. Sample Question</p>
+                                                    <p>2. Sample Question</p>
                                                 </div>
                                             </summary>
                                             <div className="viewexam-answer-boxes">
