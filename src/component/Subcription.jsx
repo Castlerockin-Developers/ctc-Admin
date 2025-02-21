@@ -1,28 +1,61 @@
-import React, { useState, useEffect } from 'react';
-import subcribebg from '../assets/subcribebg.png';
-import coin from '../assets/CTCcoin.png';
-import './subscription.css';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faInfoCircle, faShoppingBag } from '@fortawesome/free-solid-svg-icons';
+
+import React, { useState, useEffect } from "react";
+import subcribebg from "../assets/subcribebg.png";
+import coin from "../assets/CTCcoin.png";
+import ReceiptModal from "./ReceiptModal"; // Import the ReceiptModal component
+import "./subscription.css";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faInfoCircle, faShoppingBag } from "@fortawesome/free-solid-svg-icons";
 
 const Subscription = () => {
+    // State for credit quantity
     const [quantity, setQuantity] = useState(0);
-    const pricePerCredit = 500;
-    const total = quantity * pricePerCredit;
+    const pricePerCredit = 30;
+
+    const numericQuantity = parseInt(quantity || "0", 10);
+    const total = numericQuantity * pricePerCredit;
+
     const [activeTab, setActiveTab] = useState("buy");
+
+    const [expiryDate, setExpiryDate] = useState("35 days");
     const [message, setMessage] = useState("");
     const [showModal, setShowModal] = useState(false);
     const [billingHistory, setBillingHistory] = useState([]);
+      // Uncomment the code below when your backend endpoint is ready
+    /*
+    useEffect(() => {
+        fetch('/api/subscription')
+          .then((res) => res.json())
+          .then((data) => {
+              // Assuming your backend returns an object with an expiresIn property.
+              setExpiryDate(data.expiresIn + " days");
+          })
+          .catch((err) => console.error("Error fetching subscription data:", err));
+    }, []);
+    */
+
+
+    // State for receipt modal visibility
+    const [showReceipt, setShowReceipt] = useState(false);
 
     const handleIncrement = () => {
-        setQuantity((prev) => prev + 1);
-    };
-
-    const handleDecrement = () => {
-        if (quantity > 0) {
-            setQuantity((prev) => prev - 1);
+        setQuantity(String(numericQuantity + 500));
+      };
+      
+      // Decrement in steps of 500 (cannot go below 0)
+      const handleDecrement = () => {
+        const newVal = Math.max(numericQuantity - 500, 0);
+        setQuantity(String(newVal));
+      };
+      
+      // Allow typing any non-negative integer or blank
+      const handleChange = (e) => {
+        const val = e.target.value;
+        // Only allow digits or empty
+        if (/^\d*$/.test(val)) {
+          setQuantity(val);
         }
-    };
+      };
 
     const mockPurchaseApi = () => {
         return new Promise((resolve) => {
@@ -83,30 +116,41 @@ const Subscription = () => {
     }, [activeTab]);
 
     return (
-        <div className="subscription-container justify-center flex flex-wrap">
+        <div className={`subscription-container justify-center flex flex-wrap ${showReceipt ? "blur-background" : ""}`}>
             <div className="subscription-box">
                 <h1>Subscription</h1>
                 <div className="subscription-card-container">
                     <h3>Your Plan:</h3>
-                    <div className="subscribe-card">
-                        <img src={subcribebg} alt="background" className="subscribe-bg" />
-                        <h3>Premium</h3>
-                        <ul>
-                            <li>Full Language Learning Access</li>
-                            <li>10 Assessment Included Annually</li>
-                            <li>AI Speech & Coding Included</li>
-                            <li>Additional Contest Access</li>
-                        </ul>
-                        <div className="flex justify-end w-full credit-balance">
-                            <p className="flex">
-                                Credits remaining: <span>4000</span>
-                                <img src={coin} alt="coin" className="ctc-coin" />
-                            </p>
+                    <div className='flex'>
+                        <div className="subscribe-card">
+                            <img src={subcribebg} alt="background" className="subscribe-bg" />
+                            <h3>Premium</h3>
+                            <ul>
+                                <li>Full Language Learning Access</li>
+                                <li>10 Assessment Included Annually</li>
+                                <li>AI Speech & Coding Included</li>
+                                <li>Additional Contest Access</li>
+                            </ul>
+                        </div>
+                        <div className="subscribe-card">
+                            <h3>Credits</h3>
+                            <div className="flex w-full credit-balance">
+                                <div className="flex">
+                                    <h2 className='credits-remain-text'>Credits remaining: <span>4000</span></h2>
+                                    <img src={coin} alt="coin" className="ctc-coin" />
+                                </div>
+                            </div>
+                            <ul>
+                                <li>Credits Used & Left</li>
+                                <li>Per Assessment & Usage</li>
+                                <li>Top-up Anytime</li>
+                                <li>Upgrade Plan</li>
+                            </ul>
                         </div>
                     </div>
                     <div className="subscribe-bottom">
                         <p>
-                            Expires in: <span>365 days</span>
+                            Expires in: <span>{expiryDate}</span>
                         </p>
                         {/* dont touch */}
                         <p></p>
@@ -119,7 +163,7 @@ const Subscription = () => {
                         <button onClick={handleChangePlan}>Change Plan</button>
                     </div>
                 </div>
-            </div>
+            </div> 
 
             <div className="w-full justify-start flex credit-history mb-4">
                 <div className="flex">
@@ -138,37 +182,54 @@ const Subscription = () => {
                 </div>
             </div>
 
+
             {activeTab === "buy" && (
-                <>
+//             div has been added
+                <div>
                     <div className="flex justify-center rounded-sm">
                         <table className="subcribe-table">
                             <thead>
                                 <tr style={{ borderBottom: "1px solid #ccc" }}>
+
                                     <th style={{ textAlign: "center", padding: "8px" }}>No.</th>
                                     <th style={{ textAlign: "center", padding: "8px" }}>Particulars</th>
-                                    <th style={{ textAlign: "center", padding: "8px" }}>Quantity</th>
-                                    <th style={{ textAlign: "center", padding: "8px" }}>Total</th>
+                                    <th style={{ textAlign: "center", padding: "8px" }}>Credit</th>
+                                    <th style={{ textAlign: "center", padding: "8px" }}>Price</th>
                                 </tr>
                             </thead>
                             <tbody>
+
                                 <tr style={{ borderBottom: "1px solid #ccc" }}>
                                     <td style={{ padding: "8px", textAlign: "center" }}>1</td>
                                     <td style={{ padding: "8px", textAlign: "center" }}>
-                                        Additional CTC Credits{" "}
+                                    Additional CTC Credits{" "}
+                                    <div className="tooltip-icon">
                                         <FontAwesomeIcon
-                                            icon={faInfoCircle}
-                                            style={{ marginLeft: "8px", color: "#888", cursor: "pointer" }}
+                                        icon={faInfoCircle}
+                                        style={{ marginLeft: "8px", color: "#888", cursor: "pointer" }}
                                         />
+                                        <span className="tooltiptext">
+                                        This is some information about CTC Credits.
+                                        </span>
+                                    </div>
                                     </td>
                                     <td className="text-center flex justify-center items-center">
                                         <div className="add-credit-btn">
-                                            <button onClick={handleDecrement} className="minus">
-                                                -
-                                            </button>
-                                            {quantity}
-                                            <button onClick={handleIncrement} className="plus">
-                                                +
-                                            </button>
+                                            <button onClick={handleDecrement} className="minus">-</button>
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                step="500"
+                                                value={quantity}
+                                                onChange={handleChange}
+                                                className="quantity-input"
+                                                onKeyDown={(e) => {
+                                                    if (["e", "E", "+", "-"].includes(e.key)) {
+                                                      e.preventDefault();
+                                                    }
+                                                  }}
+                                            />
+                                            <button onClick={handleIncrement} className="plus">+</button>
                                         </div>
                                     </td>
                                     <td style={{ padding: "8px", textAlign: "center" }}>{total}</td>
@@ -186,12 +247,12 @@ const Subscription = () => {
                             </button>
                         </div>
                     </div>
-                </>
+                </div>
             )}
 
             {activeTab === "history" && (
                 <div className="flex justify-center rounded-sm">
-                    <table className="subcribe-history-table">
+                    <table className="subcribe-history-table height-30">
                         <thead>
                             <tr className="bg-gray-200">
                                 <th>#ID</th>
@@ -213,7 +274,7 @@ const Subscription = () => {
                                     <td>{item.placeholder2}</td>
                                     <td>{item.status}</td>
                                     <td>
-                                        <button className='reciept-btn'>Get Receipt</button>
+                                        <button className='reciept-btn' onClick={() => setShowReceipt(true)}>Get Receipt</button>
                                     </td>
                                 </tr>
                             ))}
@@ -221,6 +282,7 @@ const Subscription = () => {
                     </table>
                 </div>
             )}
+
 
             {showModal && (
                 <div className="modal">
@@ -230,7 +292,10 @@ const Subscription = () => {
                     </div>
                 </div>
             )}
+            {/* Receipt Modal */}
+            {showReceipt && <ReceiptModal onClose={() => setShowReceipt(false)} />}
         </div>
+        
     );
 };
 

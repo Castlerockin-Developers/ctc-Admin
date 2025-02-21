@@ -1,0 +1,76 @@
+/* Overlay Background */
+.fixed {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Modal Container */
+.receipt-modal-container {
+    background-color: #181817; /* Light background for clarity */
+    width: 90%;
+    max-width: 1000px;
+    height: 90vh; /* Almost full-screen */
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 3px solid rgb(177, 177, 177); /* Border added */
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* Modal Title */
+.modal-title {
+    text-align: center;
+    font-size: 40px;
+    font-weight: bold;
+    padding: 10px;
+    background-color: #181817; /* Matches border color */
+    color: white;
+    font-family: madina-semibold;
+    font-size: 2.8rem;
+    margin-top: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+/* Full-Screen PDF Viewer */
+.full-screen-pdf {
+    flex-grow: 1;
+    width: 100%;
+    border: none;
+}
+
+/* Bottom Buttons */
+.modal-buttons {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 20px;
+    background-color: #181817;Matching background
+}
+
+/* Button Styles */
+.back-btn
+.download-btn {
+    text-align: center;
+    padding: 10px 15px;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 16px;
+    width: 48%;
+    color: white;
+}
+
+.back-btn {
+    background: rgb(150, 150, 150);
+}
+
+.download-btn {
+    background: rgb(77, 140, 255);
+}

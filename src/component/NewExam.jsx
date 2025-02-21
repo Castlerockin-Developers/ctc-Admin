@@ -4,6 +4,8 @@ import line from '../assets/Line.png';
 import './NewExam.css';
 import ReactQuill from 'react-quill';
 import Swal from 'sweetalert2';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faInfoCircle, faShoppingBag } from "@fortawesome/free-solid-svg-icons";
 
 // const API_BASE_URL = "http://127.0.0.1:8000/api/exams/";
 
@@ -35,72 +37,72 @@ const NewExam = ({ onBack, onNext }) => {
     };
 
     const handleNext = () => {
-        if (!testName || !startTime || !endTime) {
-            Swal.fire({
-                title: "Missing Fields",
-                text: "Please fill in Test Name, Start Time, and End Time.",
-                icon: "warning",
-                confirmButtonText: "OK",
-                background: "#181817",
-                color: "#fff"
-            });
-            return;
-        }
-        if (selectedOption === "") {
-            Swal.fire({
-                title: "Missing Selection",
-                text: "Please select a Login Window option.",
-                icon: "warning",
-                confirmButtonText: "OK",
-                background: "#181817",
-                color: "#fff"
-            });
-            return;
-        }
-        if (selectedOption === "custom" && !customTime) {
-            Swal.fire({
-                title: "Missing Custom Time",
-                text: "Please enter a custom time for the Login Window.",
-                icon: "warning",
-                confirmButtonText: "OK",
-                background: "#181817",
-                color: "#fff"
-            });
-            return;
-        }
-        if (timedTest && !timer) {
-            Swal.fire({
-                title: "Missing Timer Value",
-                text: "Please provide a timer value for the Timed Test.",
-                icon: "warning",
-                confirmButtonText: "OK",
-                background: "#181817",
-                color: "#fff"
-            });
-            return;
-        }
-        if (!attemptsAllowed) {
-            Swal.fire({
-                title: "Missing Attempts Allowed",
-                text: "Please fill in Attempts Allowed.",
-                icon: "warning",
-                confirmButtonText: "OK",
-                background: "#181817",
-                color: "#fff"
-            });
-            return;
-        }
-        if (!instructions) {
-            Swal.fire({
-                title: "Missing Instructions",
-                text: "Please provide instructions.",
-                icon: "warning",
-                confirmButtonText: "OK",
-                background: "#181817",
-                color: "#fff"
-            });
-            return;
-        }
+        // if (!testName || !startTime || !endTime) {
+        //     Swal.fire({
+        //         title: "Missing Fields",
+        //         text: "Please fill in Test Name, Start Time, and End Time.",
+        //         icon: "warning",
+        //         confirmButtonText: "OK",
+        //         background: "#181817",
+        //         color: "#fff"
+        //     });
+        //     return;
+        // }
+        // if (selectedOption === "") {
+        //     Swal.fire({
+        //         title: "Missing Selection",
+        //         text: "Please select a Login Window option.",
+        //         icon: "warning",
+        //         confirmButtonText: "OK",
+        //         background: "#181817",
+        //         color: "#fff"
+        //     });
+        //     return;
+        // }
+        // if (selectedOption === "custom" && !customTime) {
+        //     Swal.fire({
+        //         title: "Missing Custom Time",
+        //         text: "Please enter a custom time for the Login Window.",
+        //         icon: "warning",
+        //         confirmButtonText: "OK",
+        //         background: "#181817",
+        //         color: "#fff"
+        //     });
+        //     return;
+        // }
+        // if (timedTest && !timer) {
+        //     Swal.fire({
+        //         title: "Missing Timer Value",
+        //         text: "Please provide a timer value for the Timed Test.",
+        //         icon: "warning",
+        //         confirmButtonText: "OK",
+        //         background: "#181817",
+        //         color: "#fff"
+        //     });
+        //     return;
+        // }
+        // if (!attemptsAllowed) {
+        //     Swal.fire({
+        //         title: "Missing Attempts Allowed",
+        //         text: "Please fill in Attempts Allowed.",
+        //         icon: "warning",
+        //         confirmButtonText: "OK",
+        //         background: "#181817",
+        //         color: "#fff"
+        //     });
+        //     return;
+        // }
+        // if (!instructions) {
+        //     Swal.fire({
+        //         title: "Missing Instructions",
+        //         text: "Please provide instructions.",
+        //         icon: "warning",
+        //         confirmButtonText: "OK",
+        //         background: "#181817",
+        //         color: "#fff"
+        //     });
+        //     return;
+        // }
 
         // If all validations pass, proceed to next component
         onNext();
@@ -202,7 +204,16 @@ const NewExam = ({ onBack, onNext }) => {
                     {/* Login Window */}
                     <div className='createexam-col1 flex'>
                         <h4 className='flex justify-between'>
-                            Login Window <span>:</span>
+                            Login Window 
+                            <div className="tooltip-icon">
+                                <FontAwesomeIcon
+                                icon={faInfoCircle}
+                                style={{ marginLeft: "8px", color: "#888", cursor: "pointer" }}
+                                />
+                                <span className="tooltiptext">
+                                This is some information about CTC Credits.
+                                </span>
+                            </div> <span>:</span>
                         </h4>
                         <select value={selectedOption} onChange={handleSelectChange}>
                             <option value="">Select</option>
