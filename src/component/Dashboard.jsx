@@ -3,6 +3,7 @@ import closeicon from '../assets/close.png';
 import { motion } from "framer-motion";
 import EditExam from "./EditExam";
 import ViewExam from "./ViewExam"; // Import ViewExam component
+// import axios from 'axios'; // Uncomment and use axios for making HTTP requests when backend is ready
 
 const Dashboard = ({ onCreateExam, onAddStudent, onAddUser, onAddCredits, onManageExam, onSubscription, onManageStudents }) => {
     const [dashboardData, setDashboardData] = useState(null);
@@ -16,26 +17,15 @@ const Dashboard = ({ onCreateExam, onAddStudent, onAddUser, onAddCredits, onMana
     const [completedResults, setCompletedResults] = useState([]);
     const [notifications, setNotifications] = useState([]);
     const [error, setError] = useState(null);
-
-    const togglePopup = () => setShowPopup((prev) => !prev);
-    const closePopup = () => setShowPopup(false);
-
-    const toggleCompletedPopup = () => setShowCompletedPopup((prev) => !prev);
-    const closeCompletedPopup = () => setShowCompletedPopup(false);
-
-    const openEditPopup = (exam) => {
-        setSelectedExam(exam);
-        setShowEditPopup(true);
-    };
-    const closeEditPopup = () => setShowEditPopup(false);
-
-    const toggleSubscription = () => {
-        setShowSubscription((prev) => !prev);
-    };
+    const [loading, setLoading] = useState(true); // State to manage loading
 
     useEffect(() => {
         const fetchDashboardData = async () => {
             try {
+                // Uncomment and update the endpoint once your backend is ready
+                // const response = await axios.get('https://api.example.com/dashboard');
+                // setDashboardData(response.data);
+
                 // Simulate dashboard data (temporary mock data while the backend is not available)
                 const mockDashboardData = {
                     activeContest: 5,
@@ -68,21 +58,23 @@ const Dashboard = ({ onCreateExam, onAddStudent, onAddUser, onAddCredits, onMana
                 setRecentTests(mockRecentTests);
                 setCompletedResults(mockCompletedResults);
                 setNotifications(mockNotifications);
+                setLoading(false);
             } catch (error) {
                 console.error("Error fetching dashboard data", error);
                 setError("Failed to load data. Please try again later.");
+                setLoading(false);
             }
         };
 
         fetchDashboardData();
     }, []);
 
-    if (error) {
-        return <p className="text-center text-lg text-red-500">{error}</p>;
+    if (loading) {
+        return <p className="text-center text-lg">Loading data...</p>;
     }
 
-    if (!dashboardData) {
-        return <p className="text-center text-lg">Loading data...</p>;
+    if (error) {
+        return <p className="text-center text-lg text-red-500">{error}</p>;
     }
 
     const handleViewExam = (exam) => {
@@ -96,6 +88,22 @@ const Dashboard = ({ onCreateExam, onAddStudent, onAddUser, onAddCredits, onMana
     const onViewexam = (test) => {
         // Define the logic for viewing an exam when a test or result is clicked
         handleViewExam(test);
+    };
+
+    const togglePopup = () => setShowPopup((prev) => !prev);
+    const closePopup = () => setShowPopup(false);
+
+    const toggleCompletedPopup = () => setShowCompletedPopup((prev) => !prev);
+    const closeCompletedPopup = () => setShowCompletedPopup(false);
+
+    const openEditPopup = (exam) => {
+        setSelectedExam(exam);
+        setShowEditPopup(true);
+    };
+    const closeEditPopup = () => setShowEditPopup(false);
+
+    const toggleSubscription = () => {
+        setShowSubscription((prev) => !prev);
     };
 
     return (
@@ -229,7 +237,7 @@ const Dashboard = ({ onCreateExam, onAddStudent, onAddUser, onAddCredits, onMana
                                                                 <motion.button
                                                                     whileTap={{ scale: 1.1 }}
                                                                     className="viewexam-btn-pop"
-                                                                    onClick={() => openEditPopup(test)}>
+                                                                    onClick={() => handleViewExam(test)}>
                                                                     View
                                                                 </motion.button>
                                                             </td>

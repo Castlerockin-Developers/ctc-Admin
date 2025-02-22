@@ -1,7 +1,7 @@
-import React from 'react'
-import { FaShareAlt, FaShareSquare } from 'react-icons/fa'
+import React from 'react';
+import { FaShareAlt, FaShareSquare } from 'react-icons/fa';
 
-const PerticularResult = ({ onBack }) => {
+const ParticularResult = ({ student, onBack }) => {
     return (
         <div className='viewresult-container'>
             <div className='viewreult-box'>
@@ -9,19 +9,19 @@ const PerticularResult = ({ onBack }) => {
                     <div className='flex'>
                         <button onClick={onBack}>&lt;</button>
                         <div>
-                            <p><span>Tests</span> / <span>#521-DSA one shot</span></p>
-                            <h1>Manish Naik</h1>
-                            <h4>4NM20EC000</h4>
+                            <p><span>Tests</span> / <span>#{student.usn} - {student.name}</span></p>
+                            <h1>{student.name}</h1>
+                            <h4>{student.usn}</h4>
                         </div>
                     </div>
                     <div className='flex gap-10 justify-between marks-r-cards-container'>
                         <div className='marks-r-cards'>
                             <p>Obtained Score</p>
-                            <h4>15</h4>
+                            <h4>{student.score}</h4>
                         </div>
                         <div className='marks-r-cards'>
                             <p>Trust Score</p>
-                            <h4>2</h4>
+                            <h4>{student.trustScore}</h4>
                         </div>
                     </div>
                 </div>
@@ -144,7 +144,7 @@ const PerticularResult = ({ onBack }) => {
                 </div>
             </div>
         </div>
-    )
-}
+    );
+};
 
-export default PerticularResult
+export default ParticularResult;
