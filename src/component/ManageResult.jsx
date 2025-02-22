@@ -1,55 +1,78 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaSearch } from "react-icons/fa";
 import filter from "../assets/filter.png";
 import line from "../assets/Line.png";
 import { motion } from "framer-motion";
 import ViewResult from './ViewResult'; // Import ViewResult component
+// import axios from 'axios'; // Commented out since backend is not ready
 
 const ManageResult = ({ onNext, onBack }) => {
     const [activeTab, setActiveTab] = useState("all");
     const [searchQuery, setSearchQuery] = useState("");
     const [showFilter, setShowFilter] = useState(false);
     const [selectedResult, setSelectedResult] = useState(null);
+    const [resultsData, setResultsData] = useState([]); // State for dynamic data
+    const [loading, setLoading] = useState(false); // State to manage loading
+    const [error, setError] = useState(null); // State to manage errors
 
-    // Sample Data (Replace with dynamic data if needed)
-    const resultsData = [
-        {
-            id: 1,
-            category: "Active",
-            name: "DSA Crash Course",
-            startTime: "10:00 AM",
-            endTime: "11:30 AM",
-            analytics: "25% Attempted",
-            status: "Expired",
-            studentsAttempted: 15,
-            studentsUnattempted: 2,
-            malpractice: 90,
-            averageScore: 572,
-            students: [
-                { usn: "4NM20EC408", name: "Manish Naik", startTime: "10:00 AM", endTime: "11:30 AM",mcqMarks: 8,codingMarks: 15, score: 85, trustScore: 15 },
-                { usn: "1AM22CI088", name: "Sanath Naik", startTime: "10:00 AM", endTime: "11:00 AM",mcqMarks: 10,codingMarks: 14, score: 75, trustScore: 75 },
-                // Add more student data as needed
-            ]
-        },
-        {
-            id: 2,
-            category: "Completed",
-            name: "Python Basics",
-            startTime: "12:00 PM",
-            endTime: "1:30 PM",
-            analytics: "80% Attempted",
-            status: "Completed",
-            studentsAttempted: 20,
-            studentsUnattempted: 5,
-            malpractice: 10,
-            averageScore: 650,
-            students: [
-                { usn: "4NM20EC409", name: "John Doe", startTime: "12:00 PM", endTime: "1:30 PM",mcqMarks: 8,codingMarks: 15, score: 90, trustScore: 98 },
-                // Add more student data as needed
-            ]
-        },
-        // Add more result data as needed
-    ];
+    useEffect(() => {
+        // Commenting out the API call for now
+        // const fetchResultsData = async () => {
+        //     try {
+        //         const response = await axios.get('https://api.example.com/results'); // Replace with your API endpoint
+        //         setResultsData(response.data);
+        //         setLoading(false);
+        //     } catch (error) {
+        //         console.error("Error fetching results data", error);
+        //         setError("Failed to load data. Please try again later.");
+        //         setLoading(false);
+        //     }
+        // };
+
+        // fetchResultsData();
+
+        // Using mock data for demonstration
+        const mockResultsData = [
+            {
+                id: 1,
+                category: "Active",
+                name: "DSA Crash Course",
+                startTime: "10:00 AM",
+                endTime: "11:30 AM",
+                analytics: "25% Attempted",
+                status: "Expired",
+                studentsAttempted: 15,
+                studentsUnattempted: 2,
+                malpractice: 90,
+                averageScore: 572,
+                students: [
+                    { usn: "4NM20EC408", name: "Manish Naik", startTime: "10:00 AM", endTime: "11:30 AM", score: 85, trustScore: 95 },
+                    // Add more student data as needed
+                ]
+            },
+            {
+                id: 2,
+                category: "Completed",
+                name: "Python Basics",
+                startTime: "12:00 PM",
+                endTime: "1:30 PM",
+                analytics: "80% Attempted",
+                status: "Completed",
+                studentsAttempted: 20,
+                studentsUnattempted: 5,
+                malpractice: 10,
+                averageScore: 650,
+                students: [
+                    { usn: "4NM20EC409", name: "John Doe", startTime: "12:00 PM", endTime: "1:30 PM", score: 90, trustScore: 98 },
+                    // Add more student data as needed
+                ]
+            },
+            // Add more result data as needed
+        ];
+
+        setResultsData(mockResultsData);
+        setLoading(false);
+    }, []);
 
     // Filtering Results based on Tab Selection & Search Query
     const filteredResults = resultsData
@@ -71,6 +94,14 @@ const ManageResult = ({ onNext, onBack }) => {
     const handleBack = () => {
         setSelectedResult(null);
     };
+
+    if (loading) {
+        return <p className="text-center text-lg">Loading data...</p>;
+    }
+
+    if (error) {
+        return <p className="text-center text-lg text-red-500">{error}</p>;
+    }
 
     return (
         <div className="lg:w-3xl justify-center flex flex-wrap result-container">
