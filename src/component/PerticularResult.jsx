@@ -1,7 +1,11 @@
-import React from 'react'
-import { FaShareAlt, FaShareSquare } from 'react-icons/fa'
+import React from 'react';
+import { FaShareAlt, FaShareSquare } from 'react-icons/fa';
 
-const PerticularResult = ({ onBack }) => {
+const ParticularResult = ({ student, onBack }) => {
+    if (!student) {
+        return <div>No student data available</div>;
+    }
+
     return (
         <div className='viewresult-container'>
             <div className='viewreult-box'>
@@ -9,19 +13,19 @@ const PerticularResult = ({ onBack }) => {
                     <div className='flex'>
                         <button onClick={onBack}>&lt;</button>
                         <div>
-                            <p><span>Tests</span> / <span>#521-DSA one shot</span></p>
-                            <h1>Manish Naik</h1>
-                            <h4>4NM20EC000</h4>
+                            <p><span>Tests</span> / <span>#{student.usn}</span></p>
+                            <h1>{student.name}</h1>
+                            <h4>{student.usn}</h4>
                         </div>
                     </div>
                     <div className='flex gap-10 justify-between marks-r-cards-container'>
                         <div className='marks-r-cards'>
                             <p>Obtained Score</p>
-                            <h4>15</h4>
+                            <h4>{student.score}</h4>
                         </div>
                         <div className='marks-r-cards'>
                             <p>Trust Score</p>
-                            <h4>2</h4>
+                            <h4>{student.trustScore}</h4>
                         </div>
                     </div>
                 </div>
@@ -33,110 +37,72 @@ const PerticularResult = ({ onBack }) => {
                             Export as PDF
                         </button>
                     </div>
-                    {/* Add items-center to center children horizontally */}
                     <div className="p-result-body flex flex-col items-center justify-start">
+                        {/* MCQ Section */}
                         <div className="p-result-viwer">
                             <div className="p-reult-viwer-header flex justify-between">
                                 <h2>MCQ</h2>
-                                <p>3/4</p>
+                                <p>{student.mcqMarks || 'N/A'}/{student.totalMcqMarks || 'N/A'}</p>
                             </div>
                             <div className="p-result-viwer-body flex justify-center">
                                 <div className="presult-container">
-                                    <details>
-                                        <summary>
-                                            {/* Container INSIDE summary for flex layout */}
-                                            <div className="flex justify-between items-center w-full">
-                                                <p>1. Sample Question</p>
-                                                <div className="flex gap-40">
-                                                    <span className="status-correct">Correct</span>
-                                                    <p>1</p>
+                                    {student.mcqDetails && student.mcqDetails.map((detail, index) => (
+                                        <details key={index}>
+                                            <summary>
+                                                <div className="flex justify-between items-center w-full">
+                                                    <p>{index + 1}. {detail.question}</p>
+                                                    <div className="flex gap-40">
+                                                        <span className={`status-${detail.status}`}>{detail.status}</span>
+                                                        <p>{detail.marks}</p>
+                                                    </div>
+                                                </div>
+                                            </summary>
+                                            <div className="answer-boxes">
+                                                <div className="answer-box">
+                                                    <h3>Your Answer</h3>
+                                                    <p>{detail.yourAnswer}</p>
+                                                </div>
+                                                <div className="answer-box">
+                                                    <h3>Actual Answer</h3>
+                                                    <p>{detail.actualAnswer}</p>
                                                 </div>
                                             </div>
-                                        </summary>
-                                        <div className="answer-boxes">
-                                            <div className="answer-box">
-                                                <h3>Your Answer</h3>
-                                                <p>This is where your answer would appear.</p>
-                                            </div>
-                                            <div className="answer-box">
-                                                <h3>Actual Answer</h3>
-                                                <p>This is where the correct answer would appear.</p>
-                                            </div>
-                                        </div>
-                                    </details>
-                                    <details>
-                                        <summary>
-                                            <div className="flex justify-between items-center w-full">
-                                                <p>1. Sample Question</p>
-                                                <div className="flex gap-40">
-                                                    <span className="status-wrong">Wrong</span>
-                                                    <p>1</p>
-                                                </div>
-                                            </div>
-                                        </summary>
-                                        <div className="answer-boxes">
-                                            <div className="answer-box">
-                                                <h3>Your Answer</h3>
-                                                <p>This is where your answer would appear.</p>
-                                            </div>
-                                            <div className="answer-box">
-                                                <h3>Actual Answer</h3>
-                                                <p>This is where the correct answer would appear.</p>
-                                            </div>
-                                        </div>
-                                    </details>
+                                        </details>
+                                    ))}
                                 </div>
                             </div>
                         </div>
+                        {/* Coding Section */}
                         <div className="p-result-viwer">
                             <div className="p-reult-viwer-header flex justify-between">
                                 <h2>Coding</h2>
-                                <p>3/4</p>
+                                <p>{student.codingMarks || 'N/A'}/{student.totalCodingMarks || 'N/A'}</p>
                             </div>
                             <div className="p-result-viwer-body flex justify-center">
                                 <div className="presult-container">
-                                    <details>
-                                        <summary>
-                                            <div className="flex justify-between items-center w-full">
-                                                <p>1. Sample Question</p>
-                                                <div className="flex gap-40">
-                                                    <span className="status-correct">Correct</span>
-                                                    <p>1</p>
+                                    {student.codingDetails && student.codingDetails.map((detail, index) => (
+                                        <details key={index}>
+                                            <summary>
+                                                <div className="flex justify-between items-center w-full">
+                                                    <p>{index + 1}. {detail.question}</p>
+                                                    <div className="flex gap-40">
+                                                        <span className={`status-${detail.status}`}>{detail.status}</span>
+                                                        <p>{detail.marks}</p>
+                                                    </div>
+                                                </div>
+                                            </summary>
+                                            <div className="answer-boxes">
+                                                <div className="answer-box">
+                                                    <h3>Your Answer</h3>
+                                                    <p>{detail.yourAnswer}</p>
+                                                </div>
+                                                <div className="answer-box">
+                                                    <h3>Actual Answer</h3>
+                                                    <p>{detail.actualAnswer}</p>
                                                 </div>
                                             </div>
-                                        </summary>
-                                        <div className="answer-boxes">
-                                            <div className="answer-box">
-                                                <h3>Your Answer</h3>
-                                                <p>This is where your answer would appear.</p>
-                                            </div>
-                                            <div className="answer-box">
-                                                <h3>Actual Answer</h3>
-                                                <p>This is where the correct answer would appear.</p>
-                                            </div>
-                                        </div>
-                                    </details>
-                                    <details>
-                                        <summary>
-                                            <div className="flex justify-between items-center w-full">
-                                                <p>1. Sample Question</p>
-                                                <div className="flex gap-40">
-                                                    <span className="status-wrong">Wrong</span>
-                                                    <p>1</p>
-                                                </div>
-                                            </div>
-                                        </summary>
-                                        <div className="answer-boxes">
-                                            <div className="answer-box">
-                                                <h3>Your Answer</h3>
-                                                <p>This is where your answer would appear.</p>
-                                            </div>
-                                            <div className="answer-box">
-                                                <h3>Actual Answer</h3>
-                                                <p>This is where the correct answer would appear.</p>
-                                            </div>
-                                        </div>
-                                    </details>
+                                        </details>
+                                    ))}
                                 </div>
                             </div>
                         </div>
@@ -144,7 +110,7 @@ const PerticularResult = ({ onBack }) => {
                 </div>
             </div>
         </div>
-    )
-}
+    );
+};
 
-export default PerticularResult
+export default ParticularResult;
