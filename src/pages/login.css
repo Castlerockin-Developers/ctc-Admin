@@ -39,7 +39,7 @@
 }
 
 /* Heading */
-h2 {
+.heading {
   font-size: 30px;
   font-weight: bold;
   color: white;
@@ -106,20 +106,20 @@ h2 {
 }
 
 /* Forgot Password Link */
-p {
+.forgot {
   margin-top: 15px;
   text-align: right;
   font-family: "Golos Text", sans-serif;
   width: 100%;
 }
 
-p a {
+.forgot a {
   color: white;
   text-decoration: none;
   font-size: 16px;
 }
 
-p a:hover {
+.forgot a:hover {
   text-decoration: underline;
 }
 
@@ -130,7 +130,7 @@ p a:hover {
     width: 90%;
   }
 
-  h2 {
+  .heading {
     font-size: 26px;
   }
 
@@ -148,7 +148,7 @@ p a:hover {
     padding: 14px;
   }
 
-  p {
+  .forgot {
     font-size: 14px;
   }
 }
@@ -159,7 +159,7 @@ p a:hover {
     width: 100%;
   }
 
-  h2 {
+  .heading {
     font-size: 22px;
   }
 
@@ -177,7 +177,7 @@ p a:hover {
     padding: 12px;
   }
 
-  p {
+  .forgot {
     font-size: 12px;
   }
 }

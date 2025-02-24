@@ -11,7 +11,7 @@ const LoginPage = () => {
         <div className="logo-container">
           <img src={logo} alt="Logo" className="logo" />
         </div>
-        <h2>Login</h2>
+        <h2 className="heading">Login</h2>
         <div className="form-content">
           <form>
             <div className="form-group">
@@ -24,7 +24,7 @@ const LoginPage = () => {
             </div>
             <button type="submit" className="login-button">Login</button>
           </form>
-          <p>
+          <p className="forgot">
             <a href="#" onClick={() => setIsPopupOpen(true)}>Forgot Password?</a>
           </p>
         </div>
