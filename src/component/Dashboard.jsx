@@ -107,152 +107,153 @@ const Dashboard = ({ onCreateExam, onAddStudent, onAddUser, onAddCredits, onMana
     };
  
     return (
-        <div className="lg:w-3xl justify-center flex flex-wrap dashboard">
-            {selectedExam ? (
+    <div className="lg:w-full xl:w-3xl justify-center flex flex-wrap dashboard">
+                {selectedExam ? (
                 <ViewExam exam={selectedExam} onBack={handleBack} />
             ) : (
                 <div className="greeting">
-                    <h1>Welcome Admin</h1>
-                    <div className="grid grid-cols-2 xl:grid-cols-4 lg:grid-cols-2 md:grid-cols-4 gap-4 w-full">
-                        <motion.div
-                            whileTap={{ scale: 1.1 }}
-                            className="top-display top-display-clickable cursor-pointer"
-                            onClick={togglePopup}>
-                            <h4 className="xl:text-xl lg:text-xl md:text-xl">Active Test</h4>
-                            <h2 className="xl:text-4xl lg:text-4xl md:text-4xl flex justify-center">
-                                {dashboardData.activeContest}
-                            </h2>
-                        </motion.div>
+                    <h1 className="text-2xl md:text-3xl xl:text-4xl font-semibold text-white">Welcome Admin</h1>
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 w-full">
+                    <motion.div
+                    whileTap={{ scale: 1.1 }}
+                    className="top-display top-display-clickable cursor-pointer greet1"
+                    onClick={togglePopup}>
+                    <h4 className="xl:text-xl lg:text-xl md:text-xl">Active Test</h4>
+                    <h2 className="xl:text-4xl lg:text-4xl md:text-4xl flex justify-center">
+                        {dashboardData.activeContest}
+                    </h2>
+                    </motion.div>
+
+                    <motion.div
+                    whileTap={{ scale: 1.1 }}
+                    className="top-display top-display-clickable cursor-pointer"
+                    onClick={toggleCompletedPopup}>
+                    <h4 className="xl:text-xl lg:text-xl md:text-xl">Completed Exams</h4>
+                    <h2 className="xl:text-4xl lg:text-4xl md:text-4xl flex justify-center">
+                        {dashboardData.activeContest}
+                    </h2>
+                    </motion.div>
+
+                    <motion.div
+                    whileTap={{ scale: 1.1 }}
+                    className="top-display top-display-clickable cursor-pointer"
+                    onClick={onSubscription}>
+                    <h4 className="xl:text-xl lg:text-xl md:text-xl">Remaining Credits</h4>
+                    <h2 className="xl:text-4xl lg:text-4xl md:text-4xl flex justify-center">
+                        {dashboardData.credit}
+                    </h2>
+                    </motion.div>
+
+                    <motion.div
+                    whileTap={{ scale: 1.1 }}
+                    className="top-display top-display-clickable cursor-pointer"
+                    onClick={onManageStudents}>
+                    <h4 className="xl:text-xl lg:text-xl md:text-xl">Total Students</h4>
+                    <h2 className="xl:text-4xl lg:text-4xl md:text-4xl flex justify-center">
+                        {dashboardData.totalStudents}
+                    </h2>
+                    </motion.div>
  
-                        <motion.div
-                            whileTap={{ scale: 1.1 }}
-                            className="top-display top-display-clickable cursor-pointer"
-                            onClick={toggleCompletedPopup}>
-                            <h4 className="xl:text-xl lg:text-xl md:text-xl">Completed Exams</h4>
-                            <h2 className="xl:text-4xl lg:text-4xl md:text-4xl flex justify-center">
-                                {dashboardData.activeContest}
-                            </h2>
-                        </motion.div>
- 
-                        <motion.div
-                            whileTap={{ scale: 1.1 }}
-                            className="top-display top-display-clickable cursor-pointer"
-                            onClick={onSubscription}>
-                            <h4 className="xl:text-xl lg:text-xl md:text-xl">Remaining Credits</h4>
-                            <h2 className="xl:text-4xl lg:text-4xl md:text-4xl flex justify-center">
-                                {dashboardData.credit}
-                            </h2>
-                        </motion.div>
- 
-                        <motion.div
-                            whileTap={{ scale: 1.1 }}
-                            className="top-display top-display-clickable cursor-pointer"
-                            onClick={onManageStudents}>
-                            <h4 className="xl:text-xl lg:text-xl md:text-xl">Total Students</h4>
-                            <h2 className="xl:text-4xl lg:text-4xl md:text-4xl flex justify-center">
-                                {dashboardData.totalStudents}
-                            </h2>
-                        </motion.div>
- 
-                        {showPopup && (
-                            <div className="fixed inset-0 flex items-center justify-center top-display-pop">
-                                <div className="top-display-pop-card rounded-sm shadow-lg w-3/4 md:w-1/2">
-                                    <div className="flex justify-between items-center mb-4 top-display-pop-title">
-                                        <h2 className="font-semibold text-center">Active Exams</h2>
-                                        <motion.button whileTap={{ scale: 1.2 }} className="text-red-500 text-lg" onClick={closePopup}>
-                                            <img src={closeicon} alt="Close" />
+                    {showPopup && (
+                    <div className="fixed inset-0 flex items-center justify-center top-display-pop">
+                        <div className="top-display-pop-card rounded-sm shadow-lg w-11/12 md:w-3/4 lg:w-1/2">
+                        <div className="flex justify-between items-center mb-4 top-display-pop-title">
+                            <h2 className="font-semibold text-center">Active Exams</h2>
+                            <motion.button
+                            whileTap={{ scale: 1.2 }}
+                            className="text-red-500 text-lg"
+                            onClick={closePopup}>
+                            <img src={closeicon} alt="Close" />
+                            </motion.button>
+                        </div>
+                        <div className="flex justify-center rounded-sm">
+                            <table className="pop-up-table">
+                            <thead>
+                                <tr className="bg-gray-200">
+                                <th>#</th>
+                                <th>Name</th>
+                                <th>Start Time</th>
+                                <th>End Time</th>
+                                <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {testDetails.length > 0 ? (
+                                testDetails.map((test, index) => (
+                                    <tr key={test.id}>
+                                    <td>{index + 1}</td>
+                                    <td>{test.name}</td>
+                                    <td>{test.startTime}</td>
+                                    <td>{test.endTime}</td>
+                                    <td>
+                                        <motion.button
+                                        whileTap={{ scale: 1.1 }}
+                                        className="viewexam-btn-pop"
+                                        onClick={() => handleViewExam(test)}>
+                                        View
                                         </motion.button>
-                                    </div>
- 
-                                    <div className="flex justify-center rounded-sm">
-                                        <table className="pop-up-table">
-                                            <thead>
-                                                <tr className="bg-gray-200">
-                                                    <th>#</th>
-                                                    <th>Name</th>
-                                                    <th>Start Time</th>
-                                                    <th>End Time</th>
-                                                    <th></th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {testDetails.length > 0 ? (
-                                                    testDetails.map((test, index) => (
-                                                        <tr key={test.id}>
-                                                            <td>{index + 1}</td>
-                                                            <td>{test.name}</td>
-                                                            <td>{test.startTime}</td>
-                                                            <td>{test.endTime}</td>
-                                                            <td>
-                                                                <motion.button
-                                                                    whileTap={{ scale: 1.1 }}
-                                                                    className="viewexam-btn-pop"
-                                                                    onClick={() => handleViewExam(test)}>
-                                                                    View
-                                                                </motion.button>
-                                                            </td>
-                                                        </tr>
-                                                    ))
-                                                ) : (
-                                                    <tr>
-                                                        <td colSpan="4" className="text-center">No tests available</td>
-                                                    </tr>
-                                                )}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
+                                    </td>
+                                    </tr>
+                                ))
+                                ) : (
+                                <tr>
+                                    <td colSpan="5" className="text-center">No tests available</td>
+                                </tr>
+                                )}
+                            </tbody>
+                            </table>
+                        </div>
+                        </div>
+                    </div>
+                    )}
                         {showCompletedPopup && (
-                            <div className="fixed inset-0 flex items-center justify-center top-display-pop">
-                                <div className="top-display-pop-card rounded-sm shadow-lg w-3/4 md:w-1/2">
-                                    <div className="flex justify-between items-center mb-4 top-display-pop-title">
-                                        <h2 className="font-semibold text-center">Completed Exams</h2>
-                                        <motion.button whileTap={{ scale: 1.2 }} className="text-red-500 text-lg" onClick={closeCompletedPopup}>
-                                            <img src={closeicon} alt="Close" />
-                                        </motion.button>
-                                    </div>
- 
-                                    <div className="flex justify-center rounded-sm">
-                                        <table className="pop-up-table">
-                                            <thead>
-                                                <tr className="bg-gray-200">
-                                                    <th>#</th>
-                                                    <th>Name</th>
-                                                    <th>Start Time</th>
-                                                    <th>End Time</th>
-                                                    <th></th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {testDetails.length > 0 ? (
-                                                    testDetails.map((test, index) => (
-                                                        <tr key={test.id}>
-                                                            <td>{index + 1}</td>
-                                                            <td>{test.name}</td>
-                                                            <td>{test.startTime}</td>
-                                                            <td>{test.endTime}</td>
-                                                            <td>
-                                                                <motion.button
-                                                                    whileTap={{ scale: 1.1 }}
-                                                                    className="viewexam-btn-pop"
-                                                                    onClick={() => handleViewExam(test)}>
-                                                                    View
-                                                                </motion.button>
-                                                            </td>
-                                                        </tr>
-                                                    ))
-                                                ) : (
-                                                    <tr>
-                                                        <td colSpan="4" className="text-center">No tests available</td>
-                                                    </tr>
-                                                )}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
+                        <div className="fixed inset-0 flex items-center justify-center top-display-pop">
+                        <div className="top-display-pop-card rounded-sm shadow-lg w-11/12 md:w-3/4 xl:w-1/2">
+                            <div className="flex justify-between items-center mb-4 top-display-pop-title">
+                            <h2 className="font-semibold text-center">Completed Exams</h2>
+                            <motion.button whileTap={{ scale: 1.2 }} className="text-red-500 text-lg" onClick={closeCompletedPopup}>
+                                <img src={closeicon} alt="Close" />
+                            </motion.button>
                             </div>
+                            <div className="flex justify-center rounded-sm">
+                            <table className="pop-up-table">
+                                <thead>
+                                <tr className="bg-gray-200">
+                                    <th>#</th>
+                                    <th>Name</th>
+                                    <th>Start Time</th>
+                                    <th>End Time</th>
+                                    <th></th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {testDetails.length > 0 ? (
+                                    testDetails.map((test, index) => (
+                                    <tr key={test.id}>
+                                        <td>{index + 1}</td>
+                                        <td>{test.name}</td>
+                                        <td>{test.startTime}</td>
+                                        <td>{test.endTime}</td>
+                                        <td>
+                                        <motion.button
+                                            whileTap={{ scale: 1.1 }}
+                                            className="viewexam-btn-pop"
+                                            onClick={() => handleViewExam(test)}>
+                                            View
+                                        </motion.button>
+                                        </td>
+                                    </tr>
+                                    ))
+                                ) : (
+                                    <tr>
+                                    <td colSpan="4" className="text-center">No tests available</td>
+                                    </tr>
+                                )}
+                                </tbody>
+                            </table>
+                            </div>
+                        </div>
+                        </div>
                         )}
                         {showEditPopup && <EditExam onClose={closeEditPopup} examDetails={selectedExam} />}
                     </div>

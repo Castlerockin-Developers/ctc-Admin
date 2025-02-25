@@ -45,7 +45,6 @@
     white-space: nowrap;
 }
 
-
 .viewexam-header h2 {
     color: white;
     font-size: 1.5rem;
@@ -112,8 +111,9 @@ button.viewexam-edit-btn:hover {
 
 .viewexam-viwer-header h2 {
     color: white;
-    font-size: 1.7rem;
+    font-size: 1rem;
     font-family: madina-semibold;
+    
 }
 
 .viewexam-viwer-header p {
@@ -194,4 +194,128 @@ button.viewexam-edit-btn:hover {
 .viewexam-answer-box ul li {
     color: white;
     font-family: madina-regular;
+}
+@media (max-width: 768px) {
+    .viewexam-container {
+        width: calc(100% - 50px); /* Reduced width */
+        height: 85vh; /* Slightly reduced height */
+        padding: 1rem; /* Reduced padding */
+    }
+
+    .viewexam-box {
+        width: 100%;
+        padding-top: 1rem;
+    }
+
+    .viewexam-box h1 {
+        font-size: 2rem; /* Slightly smaller font */
+    }
+
+    .viewexam-box button {
+        font-size: 2.5rem; /* Reduced button size */
+        bottom: 8px;
+        margin-right: 8px;
+    }
+
+    .viewexam-header {
+        height: 6vh; /* Adjusted height */
+        padding: 0.8rem;
+        font-size: 1.2rem;
+    }
+
+    .viewexam-header h2 {
+        font-size: 1.3rem; /* Reduced font size */
+    }
+
+    button.viewexam-del-btn {
+        padding: 4px 12px; /* Adjusted button size */
+    }
+
+    button.viewexam-edit-btn {
+        padding: 4px 12px;
+    }
+
+    .viewexam-header-btn button {
+        font-size: 1rem; /* Reduced button font size */
+        padding: 4px 12px; /* Reduced button padding */
+        margin-top: 15px;
+    }
+
+    .share-icon {
+        font-size: 1.3rem; /* Reduced icon size */
+        top: 2px;
+    }
+
+    .viewexam-body {
+        height: 60vh; /* Adjusted height */
+    }
+
+    .viewexam-viwer {
+        width: 100%;
+        margin-top: 15px;
+    }
+
+    .viewexam-q {
+        margin-top: 10px;
+    }
+
+    .viewexam-viwer-header {
+        height: 5.5vh; /* Adjusted height */
+        padding: 6px 15px 4px;
+    }
+
+    .viewexam-viwer-header h2 {
+        font-size: 0.8rem; /* Reduced font size */
+    }
+
+    .viewexam-viwer-header p {
+        font-size: 1.1rem; /* Reduced paragraph size */
+        margin-top: 3px;
+    }
+
+    .viewexam-viwer-body {
+        width: 100%;
+    }
+
+    .viewexams-container {
+        width: 100%;
+        padding: 0.5rem; /* Reduced padding */
+    }
+
+    .viewexams-container details {
+        margin: 0.8rem 0;
+    }
+
+    .viewexams-container summary {
+        font-size: 1rem; /* Reduced summary font */
+    }
+
+    /* Answer boxes adjustments */
+    .viewexam-answer-boxes {
+        flex-direction: column; /* Stack answer boxes vertically */
+        gap: 0.8rem;
+        margin-top: 0.8rem;
+    }
+
+    .viewexam-answer-box {
+        width: 100%; /* Full width for smaller screens */
+        padding: 0.8rem;
+    }
+
+    .viewexam-answer-box h3 {
+        font-size: 1.2rem;
+        margin: 0.8rem 0 0.4rem;
+    }
+
+    .viewexam-answer-box p {
+        font-size: 0.95rem; /* Slightly reduced paragraph font */
+    }
+
+    .viewexam-answer-box ul {
+        margin-left: 15px;
+    }
+
+    .viewexam-answer-box ul li {
+        font-size: 0.9rem; /* Slightly reduced font */
+    }
 }

@@ -38,7 +38,7 @@
     flex-direction: column;
     justify-content: space-between;
     height: 87vh;
-    width: calc(100% - 0px);
+    width: 100%;
     background-color: #181817;
     padding-top: 2.5rem;
     overflow-y: auto;
@@ -77,7 +77,7 @@
 
 .bottom-sidebar-button {
     padding: 8px 15px;
-    width: calc(80% - 80px);
+    width: calc(90.7% - 80px);
     border: none;
     border-radius: 11px;
     position: relative;
@@ -92,6 +92,7 @@
     color: white;
     font-size: 1.4rem;
     font-family: madina-semibold;
+    width: 100%;
 }
 
 .sidebar-animation {
@@ -162,9 +163,9 @@
     background-color: #282828;
     width: calc(100% - 69px);
     height: 87vh;
-    overflow-y: auto;
     transition: width 0.3s ease-in-out, margin-left 0.3s ease-in-out;
     border-radius: 5px;
+    overflow-y: auto;
 }
 
 .greeting {
@@ -183,15 +184,14 @@
 .top-display {
     max-width: 100%;
     min-width: 130px;
-    height: 15vh;
+    height: auto; /* Adjust height to auto to fit content */
     border-radius: 5px;
     border: 1px solid rgb(201, 201, 201);
     box-shadow: -5px 0px 10px rgba(0, 0, 0, 0.2);
     background-color: #4B4B4B;
     margin: 0rem 0px 0rem;
-    overflow-y: auto;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    text-align: center; /* Align text center */
+    padding: 20px; /* Add padding for inner spacing */
 }
 
 .top-display-clickable {
@@ -210,7 +210,6 @@
     font-size: 2.2rem;
     color: white;
     font-family: madina-semibold;
-    padding: 10px 0px 10px;
     margin-left: 2.8rem;
 }
 
@@ -313,7 +312,7 @@
 .mid-display2 {
     background-color: #4B4B4B;
     width: 100%;
-    height: 24.5vh;
+    height: 23.2vh !important;
     border-radius: 5px;
     margin-bottom: 1rem;
     overflow-y: auto;
@@ -328,11 +327,9 @@
     margin-left: 1.5rem;
     font-size: 1.6rem;
 }
-
 .mid-display2 h4 {
     color: white;
     font-family: madina-regular;
-    padding-top: 1.3rem;
     margin-left: 1.5rem;
     font-size: 1.6rem;
 }
@@ -401,7 +398,7 @@
 /* Exam Container */
 .exam-container {
     background-color: #282828;
-    width: calc(100% - 69px);
+    width: 100%;
     height: 87vh;
     overflow-y: auto;
     transition: width 0.3s ease-in-out, margin-left 0.3s ease-in-out;
@@ -1229,68 +1226,924 @@
     margin-bottom: 10px;
 }
 
-/* Responsive Section */
-@media (min-width:1025px) and (max-width:1440px) {
+html, body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden; /* Hide any overflow */
+    width: 100%;
+    height: 100%;
+    position: relative; /* Ensures no overflow due to child elements */
+}
+.home-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* Manage Result */
+/* Result Container */
+.result-container {
+    background-color: #282828;
+    width: calc(100% - 69px);
+    height: 87vh;
+    overflow-y: auto;
+    transition: width 0.3s ease-in-out, margin-left 0.3s ease-in-out;
+    padding: 1.5rem;
+}
+
+/* Result Header */
+.result-header {
+    width: 92%;
+    padding-top: 1.5rem;
+}
+
+.result-header h1 {
+    font-size: 2.5rem;
+    color: white;
+    font-family: madina-semibold;
+    margin-top: 0.9rem;
+    margin-bottom: 1.5rem;
+}
+@media (min-width: 0px) and (max-width: 426px) {
+    /* Container Adjustments */
+    .result-container,
     .dashboard {
-        width: 95%;
+        width: 96vw;
+        position: relative;
+        left: 0.4rem;
     }
 
-    .sidebar-bottom {
-        width: 100%;
+    .result-header,
+    .greeting {
+        width: 88%;
+    }
+
+    .result-header h1,
+    .greeting h1 {
+        font-size: 1.6rem; /* Adjusted for readability */
+    }
+
+    .search-box input {
+        width: 70px; /* Compact fit */
+    }
+
+    /* Sidebar */
+    .sidebar-container {
+        position: fixed;
+        left: 0;
+        top: 0px;
+        height: 100vh;
+        width: 180px; /* Adjusted for small screens */
+        background-color: #181817;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease-in-out;
+        z-index: 1000;
+    }
+
+    .sidebar-container.open {
+        transform: translateX(0);
     }
 
     .sidebar-button {
-        width: calc(100% - 60px);
+        width: 100%;
     }
 
-    .sidebar-item {
+    .menu-toggle {
+        display: block;
+        position: fixed;
+        top: 15px;
+        left: -5px;
+    }
+
+    /* Top Bar */
+    .topbar {
+        display: flex;
+        justify-content: center;
+    }
+
+    .top-display {
+        max-width: 100%;
+    }
+
+    .top-display h4 {
+        font-size: 1rem;
+    }
+
+    .top-display h2 {
+        font-size: 1.8rem;
+    }
+
+    /* Middle Display */
+    .mid-display h4 {
+        font-size: 1.4rem;
+        margin-left: 1.2rem;
+    }
+
+    .tablee h5 {
+        font-size: 0.9rem;
+    }
+
+    .tablee-content h6 {
+        font-size: 0.75rem;
+    }
+
+    /* Manage Exam Section */
+    .create-btn {
+        font-size: 0.9rem;
+        padding: 7px 12px;
+    }
+
+    .search-box {
+        padding: 4px 4px;
+    }
+
+    .filter-btn img {
+        width: 12px;
+    }
+
+    /* Responsive Table */
+    .m-table-container {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .m-table-container table {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: auto;
+        max-width: 100%;
+    }
+
+    .m-table-container table thead th {
+        font-size: 0.2rem;
+        padding: 5px;
+        text-align: center;
+        white-space: nowrap;
+    }
+
+    .m-table-container table tbody td {
+        font-size: 0.5rem;
+        padding: 5px;
+        text-align: center;
+        word-wrap: break-word;
+        white-space: normal;
+    }
+
+    /* Hide Logo for Mobile */
+    .ctc-logo {
+        display: none !important;
+    }
+
+    /* Responsive Modal Table */
+    .top-display-pop-card {
+        width: 95%;
+        padding: 0.8rem;
+        overflow: hidden;
+    }
+
+    .pop-up-table {
+        width: 100%;
+        font-size: 0.8rem;
+        margin-top: 0.8rem;
+        border-collapse: collapse;
+        table-layout: auto;
+    }
+
+    .pop-up-table thead th {
+        padding: 6px;
+        font-size: 0.8rem;
+        text-align: center;
+        white-space: nowrap;
+    }
+
+    .pop-up-table tbody {
+        max-height: 35vh;
+        overflow-y: auto;
+        width: 100%;
+    }
+
+    .pop-up-table tbody td,
+    .pop-up-table thead th {
+        padding: 6px;
+        font-size: 0.75rem;
+        text-align: center;
+        word-wrap: break-word;
+        white-space: normal;
+    }
+
+    .viewexam-btn-pop {
+        padding: 4px 6px;
+        background-color: #8e5daf;
+        color: white;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        margin-top: 3px;
+    }
+
+    .viewexam-btn-pop:hover {
+        background-color: #7421ac;
+    }
+
+    .top-display-pop-title h2 {
+        font-size: 1.3rem;
+        margin-left: 0.8rem;
+    }
+
+    /* Exam Viewing Section */
+    .viewexam-container {
+        width: calc(100% - 50px);
+        height: 85vh;
+        padding: 1rem;
+    }
+
+    .viewexam-box {
+        width: 100%;
+        padding-top: 1rem;
+    }
+
+    .viewexam-box h1 {
+        font-size: 2rem;
+    }
+
+    .viewexam-box button {
+        font-size: 2.5rem;
+        bottom: 8px;
+        margin-right: 8px;
+    }
+
+    .viewexam-header {
+        height: 6vh;
+        padding: 0.8rem;
         font-size: 1.2rem;
     }
 
-    .bottom-sidebar-button {
-        width: calc(100% - 90px);
+    .viewexam-header h2 {
+        font-size: 1.3rem;
     }
 
-    /* manage exam */
-    .exam-greeting h1 {
-        margin-bottom: 1rem;
+    .viewexam-header-btn button {
+        font-size: 1rem;
+        padding: 4px 12px;
+        margin-top: 15px;
+    }
+
+    .viewexam-body {
+        height: 60vh;
+    }
+
+    .viewexam-viwer {
+        width: 100%;
+        margin-top: 15px;
+    }
+
+    .viewexam-q {
+        margin-top: 10px;
+    }
+
+    .viewexam-viwer-header {
+        height: 5.5vh;
+        padding: 6px 15px 4px;
+    }
+
+    .viewexam-viwer-header h2 {
+        font-size: 1.5rem;
+    }
+
+    .viewexam-viwer-header p {
+        font-size: 1.1rem;
+        margin-top: 3px;
+    }
+
+    /* Exam Answer Box */
+    .viewexam-answer-boxes {
+        flex-direction: column;
+        gap: 0.8rem;
+        margin-top: 0.8rem;
+    }
+
+    .viewexam-answer-box {
+        width: 100%;
+        padding: 0.8rem;
+    }
+
+    .viewexam-answer-box h3 {
+        font-size: 1.2rem;
+        margin: 0.8rem 0 0.4rem;
+    }
+
+    .viewexam-answer-box p {
+        font-size: 0.95rem;
+    }
+
+    .viewexam-answer-box ul {
+        margin-left: 15px;
+    }
+
+    .viewexam-answer-box ul li {
+        font-size: 0.9rem;
+    }
+
+    /* Ensure all tables and text fit properly */
+    .m-table-container table thead th,
+    .m-table-container table tbody td,
+    .pop-up-table thead th,
+    .pop-up-table tbody td {
+        width: auto;
+    }
+    .m-table-container {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .m-table-container table {
+        width: 100%;
+        height: auto;
+        background-color: #393939;
+        border-radius: 10px;
+        border-collapse: collapse;
+        table-layout: auto; /* Allows columns to adjust dynamically */
+    }
+
+    .m-table-container table thead {
+        background-color: #535353;
+        color: white;
+        font-size: 1rem;
+        width: 100%;
+        display: table;
+        table-layout: auto; /* Dynamic layout */
+    }
+
+    .m-table-container table thead th {
+        position: relative;
+        padding: 1px;
+        text-align: center;
+        background-color: #535353;
+        border-bottom: 1px solid #888;
+        font-size: 0.5rem; /* Slightly smaller font */
+        min-width: 80px; /* Prevents columns from shrinking too much */
+        white-space: nowrap; /* Prevents header text from wrapping */
+    }
+
+    /* Create shorter vertical separators */
+    .m-table-container table thead th:not(:last-child)::after {
+        content: "";
+        position: absolute;
+        top: 20%;
+        bottom: 20%;
+        right: 0;
+        width: 1px;
+        background-color: white;
+    }
+
+    /* Responsive Table Body */
+    .m-table-container table tbody {
+        max-height: 50vh; /* Adjusted height */
+        overflow-y: auto;
+        width: 100%;
+        display: block;
+    }
+
+    .m-table-container table tbody tr {
+        display: table;
+        width: 100%;
+        table-layout: auto;
+        height: auto;
+        border-top: 1px solid rgb(133, 133, 133);
+        border-bottom: 1px solid rgb(133, 133, 133);
+    }
+
+    .m-table-container table tbody td {
+        padding: 8px; /* Reduced padding */
+        text-align: center;
+        color: white;
+        font-size: 0.5rem; /* Slightly reduced font size */
+        word-wrap: break-word; /* Allows text wrapping */
+        white-space: normal; /* Ensures text is visible */
+        min-width: 80px; /* Prevents shrinking */
+    }
+
+    /* Ensure the table remains scrollable on small screens */
+    .m-table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    .viewexam-btn {
+        background-color: #8E5DAF;
+        padding: 2px 3px 2px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-family: madina-semibold;
+        white-space: nowrap;
+    }
+    .m-table-container {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .m-table-container table {
+        width: 100%;
+        background-color: #393939;
+        border-radius: 10px;
+        border-collapse: collapse;
+        table-layout: auto; /* Allows columns to adjust dynamically */
+    }
+
+    .m-table-container table thead {
+        background-color: #535353;
+        color: white;
+        font-size: 1rem;
+        width: 100%;
+        display: table;
+        table-layout: auto;
+    }
+
+    .m-table-container table thead th {
+        padding: 8px;
+        text-align: center;
+        background-color: #535353;
+        border-bottom: 1px solid #888;
+        font-size: 0.5rem;
+        min-width: 70px; /* Prevents excessive shrinking */
+        white-space: nowrap; /* Keeps header text in one line */
+    }
+
+    .m-table-container table tbody {
+        max-height: 50vh;
+        overflow-y: auto;
+        width: 100%;
+        display: block;
+    }
+
+    .m-table-container table tbody tr {
+        display: table;
+        width: 100%;
+        table-layout: auto;
+        height: auto;
+        border-top: 1px solid rgb(133, 133, 133);
+        border-bottom: 1px solid rgb(133, 133, 133);
+    }
+
+    .m-table-container table tbody td {
+        padding: 6px;
+        text-align: center;
+        color: white;
+        font-size: 0.5rem;
+        word-wrap: break-word;
+        white-space: normal; /* Ensures text is visible */
+        min-width: 70px;
+    }
+
+    /* Ensure the table remains scrollable on small screens */
+    .m-table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Responsive Filter Popup */
+    .filter-popup {
+        position: fixed;
+        right: 2.5%;
+        top: 12.5%;
+        background: #1e1e1e;
+        padding: 15px;
+        border-radius: 10px;
+        width: 250px;
+        text-align: center;
+        z-index: 1000;
+    }
+
+    .filter-popup h3 {
+        color: white;
+        font-size: 1rem;
+        font-family: madina-semibold;
+    }
+    /* Edit Button */
+.edit-btn {
+   padding: 5px !important;
+   font-size: 10px !important;
+}
+
+.edit-btn .icon {
+    margin-right: 6px;
+}
+.header-wrapper {
+    display: flex
+;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    flex-direction: column;
+}
+.modal-container {
+    background: #1a1a1a;
+    padding: 30px;
+    border-radius: 12px;
+    width: 500px;
+    box-shadow: 0px 0px 10px rgba(255, 255, 255, 0.1);
+}
+}
+
+
+@media (min-width: 426px) and (max-width: 768px) {
+    .result-container {
+        width: 100vw;
+    }
+
+    .result-header {
+        padding-top: 0rem;
+    }
+
+    .result-header h1 {
         margin-top: 0rem;
     }
 
-    .mid-display {
-        height: 50vh;
+    .m-btn-left {
+        gap: 10px;
     }
 
-    .tablee {
-        height: 39vh;
+    .m-btn-left button {
+        font-size: 1rem;
+    }
+
+    .filter-btn {
+        padding: 9px 9px;
+    }
+
+    .create-btn {
+        font-size: 0.9rem;
+        padding: 5px 12px;
+    }
+
+    .search-box {
+        padding: 3px 10px;
+    }
+
+    .search-box input {
+        width: 100px;
+    }
+
+    /* Responsive Table */
+    .m-table-container {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .m-table-container table {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: auto;
+    }
+
+    .m-table-container table thead th {
+        font-size: 0.9rem;
+        white-space: nowrap;
+        padding: 10px;
+    }
+
+    .m-table-container table tbody td {
+        font-size: 0.9rem;
+        padding: 10px;
+        white-space: nowrap;
+    }
+
+    /* Responsive Modal Table */
+    .top-display-pop-card {
+        width: 95%;
+        padding: 1rem;
+        overflow: hidden;
+    }
+
+    .pop-up-table {
+        width: 90%;
+        font-size: 1rem;
+        margin-top: 1rem;
+        border-collapse: collapse;
+        table-layout: auto;
+    }
+
+    .pop-up-table thead th {
+        padding: 12px 10px;
+        font-size: 1.1rem;
+        text-align: left;
+        white-space: nowrap;
+    }
+
+    .pop-up-table tbody {
+        max-height: 50vh;
+        overflow-y: auto;
+        width: 100%;
+    }
+
+    .pop-up-table tbody td,
+    .pop-up-table thead th {
+        padding: 12px 10px;
+        font-size: 1rem;
+        white-space: nowrap;
+        text-align: center;
+    }
+
+    .viewexam-btn-pop {
+        padding: 9px 10px;
+        background-color: #8e5daf;
+        color: white;
+        border-radius: 5px;
+        font-size: 1rem;
+        margin-top: 5px;
+    }
+
+    .viewexam-btn-pop:hover {
+        background-color: #7421ac;
+    }
+
+    .top-display-pop-title h2 {
+        font-size: 1.6rem;
+        margin-left: 1rem;
+    }
+
+    /* Sidebar */
+    .sidebar-container {
+        position: fixed;
+        left: 0;
+        top: 0px;
+        height: 100vh;
+        width: 200px;
+        background-color: #181817;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease-in-out;
+        z-index: 1000;
+    }
+
+    .sidebar-item {
+        font-size: 1.1rem;
+    }
+
+    .greeting {
+        padding-top: 0rem;
+    }
+
+    .greeting h1 {
+        padding-top: 0rem;
+    }
+
+    .mid-display {
+        height: 49vh;
     }
 
     .mid-display2 {
-        height: 23vh;
+        height: 23.3vh;
+    }
+
+    .tablee {
+        height: 38vh;
+    }
+
+    /* Show when sidebar is toggled open */
+    .sidebar-container.open {
+        transform: translateX(0);
+    }
+
+    .bottom-sidebar-button {
+        width: 90%;
+    }
+
+    .sidebar-top {
+        position: relative;
+        top: 40px;
+    }
+
+    .sidebar-button {
+        width: 100%;
+    }
+
+    .menu-toggle {
+        display: block;
+    }
+
+    .dashboard {
+        width: 100vw;
+    }
+
+    /* Exam Management */
+    .exam-container {
+        width: 100vw;
+    }
+
+    .exam-greeting {
+        padding-top: 0rem;
+    }
+
+    .exam-greeting h1 {
+        margin-top: 0rem;
+    }
+
+    .m-btn-left {
+        gap: 10px;
+    }
+
+    .m-btn-left button {
+        font-size: 1rem;
+    }
+
+    .filter-btn {
+        padding: 9px 9px;
+    }
+
+    .create-btn {
+        font-size: 0.9rem;
+        padding: 5px 12px;
+    }
+
+    .search-box {
+        padding: 3px 10px;
+    }
+
+    .search-box input {
+        width: 100px;
+    }
+
+    .m-table-container table thead th,
+    .m-table-container table tbody td {
+        font-size: 0.9rem;
+    }
+
+    .viewexam-btn {
+        font-size: 0.8rem;
+    }
+
+    .top-display-pop-title h2 {
+        font-size: 1.6rem;
+        margin-left: 1rem;
+    }
+
+    .pop-up-table thead th,
+    .pop-up-table tbody td {
+        width: auto;
     }
 
     .edit-container {
-        width: 65vw;
-        position: relative;
-        left: 7rem;
+        width: 78vw;
+        position: fixed;
+        left: 5.5rem;
+    }
+
+    .body-control {
+        width: 90%;
+    }
+
+    .edit-ename-options input {
+        width: 200px;
+        padding: 5px;
+    }
+
+    .exam-creation-edit p {
+        width: 15vw;
+    }
+
+    .edit-ename-options-e-time input {
+        width: 155px;
+        padding: 5px;
     }
 
     .edit-section details {
-        width: 60vw;
+        width: 69vw;
     }
 
-    .MCQ-question-options {
-        margin-left: 19px;
-        width: 85%;
+    .edit-sections-content {
+        width: 68%;
+        font-size: 0.8rem;
+    }
+
+    .edit-sections-buttons button {
+        font-size: 0.9rem;
+    }
+
+    .e-warning-note p {
+        font-size: 0.8rem;
+        width: 45vw;
+    }
+
+    .e-warning-note button {
+        font-size: 0.9rem;
+        padding: 6px 6px 6px;
+    }
+
+    .MCQ-edit-container {
+        width: 90%;
+    }
+
+    .MCQ-edit-container label {
+        width: 8vw;
     }
 
     .MCQ-question input {
-        width: 75%;
+        width: 65vw;
+        margin-left: 15px;
+    }
+
+    .MCQ-question-options {
+        width: 65.2vw;
+        margin-left: 14px;
+    }
+
+    .Coding-question {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .Coding-question input {
+        width: 80%;
+        height: 5vh;
+        margin-left: 1.2rem;
+    }
+
+    .Coding-question-statement {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .ql-container {
+        margin-left: 0.8rem !important;
+    }
+
+    .ql-toolbar {
+        margin-left: 0.8rem;
+    }
+
+    .e-line-top {
+        margin-top: 5rem;
+    }
+
+    .test-case,
+    .test-case-output {
+        flex-direction: column;
+    }
+
+    .test-case label,
+    .test-case-output label {
+        width: 70%;
+    }
+
+    .test-case textarea,
+    .test-case-output textarea {
+        margin-left: 20px;
+        width: 80% !important;
+    }
+
+    .test-case-io {
+        flex-direction: column;
+    }
+
+    .test-casee {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .test-casee label {
+        width: 90%;
+    }
+
+    .test-casee textarea {
+        width: 80%;
+        margin-left: 20px;
+    }
+
+    .delete-btn {
         margin-left: 20px;
     }
 }
 
-@media (min-width:769px) and (max-width:1024px) {
+@media (min-width: 769px) and (max-width: 1024px) {
+    .top-display-pop-card {
+        width: 80%;
+        height: auto;
+        overflow: hidden;
+    }
+    
+      .pop-up-table {
+        font-size: 1rem; /* Adjust the font size */
+        overflow: hidden;
+      }
+    
+      .pop-up-table thead th {
+        padding: 10px;
+        font-size: 1.1rem;
+      }
+    
+      .pop-up-table tbody td, .pop-up-table thead th {
+        padding: 10px;
+        font-size: 0.7rem;
+      }
+    
+      /* Ensure vertical scrolling for the table body */
+      .pop-up-table tbody {
+        max-height: 50vh;
+        overflow-y: auto;
+        width: 100%;
+      }
+      .mid-display2{
+        height: 23.7vh !important;
+    }
     .sidebar-container {
         transform: translateX(0);
         width: 220px;
@@ -1455,473 +2308,65 @@
     }
 }
 
-@media (max-width: 768px) {
-    .sidebar-container {
-        position: fixed;
-        left: 0;
-        top: 0px;
-        height: 100vh;
-        width: 200px;
-        background-color: #181817;
-        transform: translateX(-100%);
-        transition: transform 0.3s ease-in-out;
-        z-index: 1000;
+@media (min-width: 1024px) and (max-width: 1920) {
+    .dashboard {
+        width: 95%;
+    }
+
+    .sidebar-bottom {
+        width: 100%;
+    }
+
+    .sidebar-button {
+        width: calc(100% - 60px);
     }
 
     .sidebar-item {
-        font-size: 1.1rem;
-    }
-
-    .greeting {
-        padding-top: 0rem;
-    }
-
-    .greeting h1 {
-        padding-top: 0rem;
-    }
-
-    .mid-display {
-        height: 49vh;
-    }
-
-    .mid-display2 {
-        height: 23.3vh;
-    }
-
-    .tablee {
-        height: 38vh;
-    }
-
-    /* Show when sidebar is toggled open */
-    .sidebar-container.open {
-        transform: translateX(0);
+        font-size: 1.2rem;
     }
 
     .bottom-sidebar-button {
-        width: 90%;
-    }
-
-    .sidebar-top {
-        position: relative;
-        top: 40px;
-    }
-
-    .sidebar-button {
-        width: 100%;
-    }
-
-    .menu-toggle {
-        display: block;
-    }
-
-    .dashboard {
-        width: 100vw;
-    }
-
-    /* mangae exam */
-    .exam-container {
-        width: 100vw;
-    }
-
-    .exam-greeting {
-        padding-top: 0rem;
-    }
-
-    .exam-greeting h1 {
-        margin-top: 0rem;
-    }
-
-    .m-btn-left {
-        gap: 10px;
-    }
-
-    .m-btn-left button {
-        font-size: 1rem;
-    }
-
-    .filter-btn {
-        padding: 9px 9px;
-    }
-
-    .create-btn {
-        font-size: 0.9rem;
-        padding: 5px 12px;
-    }
-
-    .search-box {
-        padding: 3px 10px;
-    }
-
-    .search-box input {
-        width: 100px;
-    }
-
-    .m-table-container table thead th {
-        font-size: 0.9rem;
-        width: 17vw;
-    }
-
-    .m-table-container table tbody td {
-        font-size: 0.9rem;
-        width: 17vw;
-    }
-
-    .viewexam-btn {
-        font-size: 0.8rem;
-    }
-
-    .top-display-pop-title h2 {
-        font-size: 1.6rem;
-        margin-left: 1rem;
-    }
-
-    .pop-up-table thead th,
-    .pop-up-table tbody td {
-        width: 20vw;
-    }
-
-    .edit-container {
-        width: 78vw;
-        position: fixed;
-        left: 5.5rem;
-    }
-
-    .body-control {
-        width: 90%;
-    }
-
-    .edit-ename-options input {
-        width: 200px;
-        padding: 5px;
-    }
-
-    .exam-creation-edit p {
-        width: 15vw;
-    }
-
-    .edit-ename-options-e-time input {
-        width: 155px;
-        padding: 5px;
-    }
-
-    .edit-section details {
-        width: 69vw;
-    }
-
-    .edit-sections-content {
-        width: 68%;
-        font-size: 0.8rem;
-    }
-
-    .edit-sections-buttons button {
-        font-size: 0.9rem;
-    }
-
-    .e-warning-note p {
-        font-size: 0.8rem;
-        width: 45vw;
-    }
-
-    .e-warning-note button {
-        font-size: 0.9rem;
-        padding: 6px 6px 6px;
-    }
-
-    .MCQ-edit-container {
-        width: 90%;
-    }
-
-    .MCQ-edit-container label {
-        width: 8vw;
-    }
-
-    .MCQ-question input {
-        width: 65vw;
-        margin-left: 15px;
-    }
-
-    .MCQ-question-options {
-        width: 65.2vw;
-        margin-left: 14px;
-    }
-
-    .Coding-question {
-        display: flex;
-        flex-direction: column;
-    }
-
-    .Coding-question input {
-        width: 80%;
-        height: 5vh;
-        margin-left: 1.2rem;
-    }
-
-    .Coding-question-statement {
-        display: flex;
-        flex-direction: column;
-    }
-
-    .ql-container {
-        margin-left: 0.8rem !important;
-    }
-
-    .ql-toolbar {
-        margin-left: 0.8rem;
-    }
-
-    .e-line-top {
-        margin-top: 5rem;
-    }
-
-    .test-case,
-    .test-case-output {
-        flex-direction: column;
-    }
-
-    .test-case label,
-    .test-case-output label {
-        width: 70%;
-    }
-
-    .test-case textarea,
-    .test-case-output textarea {
-        margin-left: 20px;
-        width: 80% !important;
-    }
-
-    .test-case-io {
-        flex-direction: column;
-    }
-
-    .test-casee {
-        display: flex;
-        flex-direction: column;
-    }
-
-    .test-casee label {
-        width: 90%;
-    }
-
-    .test-casee textarea {
-        width: 80%;
-        margin-left: 20px;
-    }
-
-    .delete-btn {
-        margin-left: 20px;
-    }
-
-}
-
-@media (max-width: 425px) {
-    .topbar {
-        display: flex;
-        justify-content: center;
-    }
-
-    .dashboard {
-        width: 96vw;
-        position: relative;
-        left: 0.4rem;
-    }
-
-    .greeting {
-        width: 88%;
-    }
-
-    .greeting h1 {
-        font-size: 2rem;
-    }
-
-    .sidebar-container {
-        position: fixed;
-        left: 0;
-        top: 0px;
-        height: 100vh;
-        width: 200px;
-        background-color: #181817;
-        transform: translateX(-100%);
-        transition: transform 0.3s ease-in-out;
-        z-index: 1000;
-    }
-
-    .ctc-logo {
-        display: none;
-    }
-
-    .sidebar-container.open {
-        transform: translateX(0);
-    }
-
-    .sidebar-button {
-        width: 100%;
-    }
-
-    .top-display {
-        max-width: 38vw;
-    }
-
-    .top-display h4 {
-        font-size: 1.1rem;
-    }
-
-    .top-display h2 {
-        font-size: 2rem;
-    }
-
-    .menu-toggle {
-        display: block;
-        position: fixed;
-        top: 15px;
-        left: -5px;
-    }
-
-    .mid-display h4 {
-        font-size: 1.5rem;
-        margin-left: 1.5rem;
-    }
-
-    .tablee h5 {
-        font-size: 1rem;
-    }
-
-    .tablee-content h6 {
-        font-size: 0.8rem;
+        width: calc(100% - 90px);
     }
 
     /* manage exam */
-    .create-btn {
-        font-size: 1rem;
-        padding: 8px 15px;
-    }
-
-    .search-box {
-        padding: 5px 5px;
-    }
-
-    .filter-btn img {
-        width: 15px;
-    }
-
-    .m-table-container table thead th {
-        width: 30vw;
-    }
-
-    .m-table-container table tbody td {
-        width: 30vw;
-    }
-
-    .pop-up-table thead th,
-    .pop-up-table tbody td {
-        width: 35vw;
-    }
-}
-
-/* Manage Result */
-/* Result Container */
-.result-container {
-    background-color: #282828;
-    width: calc(100% - 69px);
-    height: 87vh;
-    overflow-y: auto;
-    transition: width 0.3s ease-in-out, margin-left 0.3s ease-in-out;
-    padding: 1.5rem;
-}
-
-/* Result Header */
-.result-header {
-    width: 92%;
-    padding-top: 1.5rem;
-}
-
-.result-header h1 {
-    font-size: 2.5rem;
-    color: white;
-    font-family: madina-semibold;
-    margin-top: 0.9rem;
-    margin-bottom: 1.5rem;
-}
-
-/* Responsive Section */
-@media (max-width: 768px) {
-    .result-container {
-        width: 100vw;
-    }
-
-    .result-header {
-        padding-top: 0rem;
-    }
-
-    .result-header h1 {
+    .exam-greeting h1 {
+        margin-bottom: 1rem;
         margin-top: 0rem;
     }
 
-    .m-btn-left {
-        gap: 10px;
+    .mid-display {
+        height: 50vh;
     }
 
-    .m-btn-left button {
-        font-size: 1rem;
+    .tablee {
+        height: 39vh;
     }
 
-    .filter-btn {
-        padding: 9px 9px;
+    .mid-display2 {
+        height: 23vh;
     }
 
-    .create-btn {
-        font-size: 0.9rem;
-        padding: 5px 12px;
-    }
-
-    .search-box {
-        padding: 3px 10px;
-    }
-
-    .search-box input {
-        width: 100px;
-    }
-
-    .m-table-container table thead th {
-        font-size: 0.9rem;
-    }
-
-    .m-table-container table tbody td {
-        font-size: 0.9rem;
-    }
-
-    .viewexam-btn {
-        font-size: 0.8rem;
-    }
-}
-
-@media (max-width: 425px) {
-    .result-container {
-        width: 96vw;
+    .edit-container {
+        width: 65vw;
         position: relative;
-        left: 0.4rem;
+        left: 7rem;
     }
 
-    .result-header {
-        width: 88%;
+    .edit-section details {
+        width: 60vw;
     }
 
-    .result-header h1 {
-        font-size: 2rem;
+    .MCQ-question-options {
+        margin-left: 19px;
+        width: 85%;
     }
 
-    .search-box input {
-        width: 80px;
-    }
-
-    .m-table-container table thead th {
-        font-size: 0.8rem;
-    }
-
-    .m-table-container table tbody td {
-        font-size: 0.8rem;
+    .MCQ-question input {
+        width: 75%;
+        margin-left: 20px;
     }
 }
-
 .m-table-container {
     width: 100%;
     margin-top: 1rem;
@@ -2263,7 +2708,7 @@
     box-shadow: 0 0 8px rgba(36, 36, 36, 0.3);
     border: 1px solid rgb(92, 92, 92);
     border-radius: 5px;
-    overflow-y: auto;
+   
     word-wrap: break-word; /* or */
     overflow-wrap: break-word;
 }
@@ -2291,3 +2736,81 @@
     word-wrap: break-word;
     overflow-wrap: break-word;
 }
+
+/* Responsive Section */
+@media (min-width:1025px) and (max-width:1920px) {
+    .dashboard {
+        width: 90%;
+        height: 85vh;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .sidebar-bottom {
+        width: 100%;
+    }
+
+    .sidebar-button {
+        width: calc(100% - 50px);
+    }
+
+    .sidebar-item {
+        font-size: 1.1rem;
+    }
+
+    .bottom-sidebar-button {
+        width: calc(100% - 80px);
+    }
+
+    /* Manage Exam */
+    .exam-greeting h1 {
+        margin-bottom: 0.8rem;
+        font-size: 1.4rem;
+    }
+
+    .mid-display {
+        height: 45vh;
+    }
+
+    .tablee {
+        height: 35vh;
+    }
+
+    .mid-display2 {
+        height: 20vh;
+    }
+
+    .edit-container {
+        width: 75vw;
+        position: relative;
+        left: 5rem;
+    }
+
+    .edit-section details {
+        width: 70vw;
+    }
+
+    .MCQ-question-options {
+        margin-left: 15px;
+        width: 80%;
+    }
+
+    .MCQ-question input {
+        width: 70%;
+        margin-left: 15px;
+    }
+    
+}
+
+@media (min-width: 1440px){
+    .mid-display2{
+        height: 21.6vh !important;
+    }
+}
+@media (min-width: 2560px){
+    .mid-display2{
+        height: 25vh !important;
+    }
+}
+
+
