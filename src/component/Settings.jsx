@@ -50,24 +50,61 @@ const [confirmPassword, setConfirmPassword] = useState("");
     console.log("hello",user.name);
   };
 
-  // Function to create a new user (Add User modal)
-  const handleCreateUser = () => {
-    const newUser = {
-      id: users.length > 0 ? Math.max(...users.map((u) => u.id)) + 1 : 1,
+ // Function to create a new user (Add User modal) with validation
+ const handleCreateUser = async () => {
+  const errors = {};
+
+    if (!newUserName.trim()) {
+      errors.newUserName = "Name is required.";
+    }
+    if (!newUserEmail.trim()) {
+      errors.newUserEmail = "Email is required.";
+    } else {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(newUserEmail)) {
+        errors.newUserEmail = "Invalid email format.";
+      }
+    }
+    if (!newUserPhone.trim()) {
+      errors.newUserPhone = "Phone number is required.";
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setAddUserErrors(errors);
+      return;
+    }
+
+    const newUserData = {
       name: newUserName,
       email: newUserEmail,
       phone: newUserPhone,
       role: newUserRole,
     };
 
-    setUsers((prev) => [...prev, newUser]);
-    setOpenAddUserModal(false); // Close modal using parent's setter
-    // Clear form fields
-    setNewUserName("");
-    setNewUserEmail("");
-    setNewUserPhone("");
-    setNewUserRole("User");
-  };
+  // The following axios request is commented out because the backend is not ready
+  /*
+  try {
+    const response = await axios.post("http://your-backend-url/api/users", newUserData, {
+      headers: { "Content-Type": "application/json" },
+    });
+    // On success, update your users state as needed:
+    setUsers((prev) => [...prev, response.data]);
+    setOpenAddUserModal(false);
+  } catch (error) {
+    console.error("Error creating user:", error);
+    swal("Error", "Failed to create user. Please try again.", "error");
+  }
+  */
+  // For now, simply log the JSON to the console
+  console.log("New User Data (JSON):", JSON.stringify(newUserData));
+  setOpenAddUserModal(false);
+  // Clear form fields
+  setNewUserName("");
+  setNewUserEmail("");
+  setNewUserPhone("");
+  setNewUserRole("User");
+  setAddUserErrors({});
+};
 
   // Open the Edit User modal and pre-populate fields
   const handleEditUser = (user) => {

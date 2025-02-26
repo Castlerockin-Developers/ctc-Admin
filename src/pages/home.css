@@ -398,7 +398,7 @@
 /* Exam Container */
 .exam-container {
     background-color: #282828;
-    width: 100%;
+    width: 90%;
     height: 87vh;
     overflow-y: auto;
     transition: width 0.3s ease-in-out, margin-left 0.3s ease-in-out;
@@ -2175,7 +2175,7 @@ html, body {
 
     /* manage exam */
     .exam-container {
-        width: 100%;
+        width: 90%;
     }
 
     .exam-greeting h1 {
@@ -2331,7 +2331,7 @@ html, body {
 
     /* manage exam */
     .exam-greeting h1 {
-        margin-bottom: 1rem;
+        margin-bottom: 2.5rem;
         margin-top: 0rem;
     }
 
@@ -2765,7 +2765,7 @@ html, body {
     /* Manage Exam */
     .exam-greeting h1 {
         margin-bottom: 0.8rem;
-        font-size: 1.4rem;
+        font-size: 2.5rem;
     }
 
     .mid-display {
