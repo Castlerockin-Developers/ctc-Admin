@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { FaSearch, FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import filter from "../assets/filter.png";
+import Swal from "sweetalert2";
 import { motion } from "framer-motion";
 import { FaDatabase, FaPen, FaUpload } from "react-icons/fa";
 
@@ -118,6 +119,65 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen }) => {
         ],
     };
 
+    const fetchStudentsData = async() => {
+
+        console.log("Fetch")
+    };
+
+    // Function to handle student deletion
+    const handleDeleteStudent = async (usn) => {
+        Swal.fire({
+            title: "Warning",
+            text: "Are you sure you want to delete this item? ",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Yes",
+            cancelButtonText: "No",
+            background: "#181817",
+            color: "#fff",
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                try {
+                    // Send delete request to backend
+                    const response = await fetch(`http://your-backend-url/api/students/${usn}`, {
+                        method: "DELETE",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                    });
+    
+                    if (!response.ok) {
+                        fetchStudentsData();
+                        throw new Error("Failed to delete student");
+                        
+                    }
+    
+                    // Show success alert
+                    Swal.fire({
+                        title: "Deleted!",
+                        text: "Student has been removed.",
+                        icon: "success",
+                        background: "#181817",
+                        color: "#fff",
+                    });
+    
+                    // Refresh the state by fetching updated data
+                    fetchStudentsData();
+    
+                } catch (error) {
+                    Swal.fire({
+                        title: "Error!",
+                        text: "Failed to delete student. Please try again.",
+                        icon: "error",
+                        background: "#181817",
+                        color: "#fff",
+                    });
+                }
+            }
+        });
+    };
+    
+
     const filteredStudents =
         studentsData[activeTab]?.filter(
             (student) =>
@@ -225,9 +285,11 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen }) => {
                                             <motion.button
                                                 className="delete-btn"
                                                 whileTap={{ scale: 1.1 }}
+                                                onClick={() => handleDeleteStudent(student.usn)}
                                             >
                                                 <FaTrash size={14} className="icon" />
                                             </motion.button>
+                                            
                                         </td>
                                     </tr>
                                 ))
@@ -321,6 +383,7 @@ const AddStudentModal = ({ onClose }) => {
                         </div>
                         <div className="form-group">
                             <label>Name :</label>
+                            
                             <input
                                 type="text"
                                 name="name"
@@ -342,7 +405,7 @@ const AddStudentModal = ({ onClose }) => {
                             />
                         </div>
                         <div className="form-group">
-                            <label>Branch :</label>
+                            <label> Branch :</label>
                             <input
                                 type="text"
                                 name="branch"

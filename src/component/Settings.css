@@ -263,7 +263,6 @@
     font-family: madina-semibold;
 }
 
-/* Modal Styles (unchanged unless noted) */
 .modal-backdrop {
     position: fixed;
     top: 0;
@@ -351,21 +350,21 @@
 
 @media (min-width: 1920px) {
     .settings-container {
-        padding: 1.5rem; /* Increased padding for breathing room */
-        width: calc(100% - 80px); /* Slightly wider to utilize space */
-        height: 90vh; /* Slightly taller to match larger viewport */
+        padding: 1.5rem; 
+        width: calc(100% - 80px); 
+        height: 90vh; 
     }
 
     .settings-box {
-        width: 94%; /* Slightly less than base to center content */
-        padding-top: 2rem; /* More top padding for balance */
+        width: 94%; 
+        padding-top: 2rem; 
     }
 
     .m-password-btn {
-        width: 240px; /* Increased from 185px for larger buttons */
-        margin-right: 60px; /* More spacing */
-        font-size: 4rem; /* Larger text for readability */
-        padding: 0.8rem; /* Adjusted padding */
+        width: 240px; 
+        margin-right: 60px; 
+        font-size: 4rem; 
+        padding: 0.8rem; 
         
     }
 
@@ -375,53 +374,53 @@
     }
 
     .settings-box h1 {
-        font-size: 3rem; /* Larger heading for 4K */
+        font-size: 3rem; 
         margin-top: 1.2rem;
         margin-bottom: 1.5rem;
     }
 
     .profile-card {
-        padding: 1.5rem; /* More padding for larger card */
-        border-radius: 12px; /* Slightly larger radius */
+        padding: 1.5rem; 
+        border-radius: 12px; 
     }
 
     .profile-card h3 {
-        font-size: 2.2rem; /* Increased for scale */
+        font-size: 2.2rem; 
     }
 
     .profile-details-container {
-        gap: 1.5rem; /* More space between columns */
+        gap: 1.5rem; 
     }
 
     .profile-details {
-        width: 68%; /* Slightly wider to utilize space */
+        width: 68%; 
     }
 
     .r-activity-history {
-        width: 30%; /* Adjusted proportionally */
+        width: 30%; 
     }
 
     .profile-img-col {
-        width: 500px; /* Increased from 400px for larger profile image area */
+        width: 500px; 
         margin-left: 30px;
     }
 
     .profile-img-col img {
-        width: 150px; /* Larger image for 4K */
+        width: 150px; 
         height: 150px;
         margin-right: 40px;
-        border-radius: 18px; /* Slightly larger radius */
+        border-radius: 18px; 
     }
 
     .profile-img-col p,
     .profile-d-display p {
-        font-size: 1.4rem; /* Larger text for readability */
+        font-size: 1.4rem; 
         margin-top: 10px;
     }
 
     .activity-history {
-        height: 400px; /* Taller to fit more content */
-        padding: 10px 25px; /* Increased padding */
+        height: 400px; 
+        padding: 10px 25px; 
         border-radius: 12px;
     }
 
@@ -436,7 +435,7 @@
     }
 
     .activity-list {
-        height: 250px; /* Increased height for more visible entries */
+        height: 250px; 
     }
 
     .activity-history button {
@@ -447,8 +446,8 @@
     }
 
     .Account-manager-box {
-        height: 200px; /* Taller box */
-        padding: 2rem; /* More padding */
+        height: 200px; 
+        padding: 2rem;
         margin-top: 30px;
         margin-bottom: 25px;
         border-radius: 18px;
@@ -468,20 +467,20 @@
     }
 
     .manage-table {
-        min-height: 35vh; /* Slightly taller minimum */
-        max-height: 45vh; /* Increased max height */
+        min-height: 35vh; 
+        max-height: 45vh; 
         border-radius: 12px;
         margin-top: 25px;
     }
 
     .manage-table table thead {
-        height: 6vh; /* Taller header */
-        font-size: 2.5rem; /* Larger text */
+        height: 6vh; 
+        font-size: 2.5rem; 
     }
 
     .manage-table table tbody tr {
-        height: 7vh; /* Taller rows */
-        font-size: 2.5rem; /* Larger text */
+        height: 7vh; 
+        font-size: 2.5rem; 
     }
 
     .m-edit-btn {
@@ -500,34 +499,34 @@
     }
 
     .modal-content {
-        width: 600px; /* Wider modal for 4K */
-        padding: 2.5rem; /* More padding */
+        width: 600px; 
+        padding: 2.5rem; 
         border-radius: 10px;
     }
 
     .modal-content h2 {
-        font-size: 1.8rem; /* Larger heading */
+        font-size: 1.8rem; 
         margin-bottom: 1.5rem;
     }
 
     .modal-row {
-        padding: 12px; /* More padding */
+        padding: 12px; 
     }
 
     .modal-row label {
-        width: 25%; /* Adjusted for wider modal */
+        width: 25%; 
         font-size: 1.2rem;
     }
 
     .modal-row select,
     .modal-row input {
-        width: 75%; /* Complementary adjustment */
+        width: 75%; 
         padding: 0.7rem; /* Larger inputs */
         font-size: 1.2rem;
     }
 
     .modal-buttons button {
-        padding: 0.8rem 1.5rem; /* Larger buttons */
+        padding: 0.8rem 1.5rem; 
         font-size: 1.3rem;
     }
 }
@@ -535,8 +534,8 @@
 @media (min-width: 1280px)  {
     .settings-container {
         padding: 1.1rem;
-        height: 87vh; /* Keep height consistent with base */
-        width: calc(100% - 60px); /* Slightly reduced to fit comfortably */
+        height: 87vh; 
+        width: calc(100% - 60px); 
     }
 
     .settings-box {
@@ -545,40 +544,40 @@
     }
 
     .m-password-btn {
-        width: 160px; /* Reduced slightly from 185px for better spacing */
-        margin-right: 40px; /* Adjusted for layout */
-        font-size: 1rem; /* Slightly smaller for proportion */
+        width: 115px; 
+        margin-right: 30px; 
+        font-size: 0.7rem; 
         padding: 0.4rem;
     }
 
     .settings-box h1 {
-        font-size: 2.3rem; /* Slightly smaller than base 2.5rem */
+        font-size: 2.3rem; 
         margin-top: 0.8rem;
         margin-bottom: 0.9rem;
     }
 
     .profile-card {
-        padding: 0.9rem; /* Slightly reduced padding */
+        padding: 0.9rem; 
     }
 
     .profile-card h3 {
-        font-size: 1.8rem; /* Adjusted for screen height */
+        font-size: 1.8rem; 
     }
 
     .profile-details-container {
-        gap: 0.9rem; /* Reduced gap for better fit */
+        gap: 0.9rem; 
     }
 
     .profile-details {
-        width: 62%; /* Adjusted slightly for balance */
+        width: 62%; 
     }
 
     .r-activity-history {
-        width: 35%; /* Adjusted to complement profile-details */
+        width: 35%; 
     }
 
     .profile-img-col {
-        width: 360px; /* Reduced from 400px to fit 1280px width */
+        width: 360px; 
         margin-left: 15px;
     }
 
@@ -590,37 +589,37 @@
 
     .profile-img-col p,
     .profile-d-display p {
-        font-size: 1.15rem; /* Minor tweak for readability */
+        font-size: 1.15rem; 
     }
 
     .activity-history {
-        height: 300px; /* Adjusted from 323px to fit 720px height */
-        padding: 5px 15px; /* Slightly reduced padding */
+        height: 300px; 
+        padding: 5px 15px; 
     }
 
     .activity-list {
-        height: 175px; /* Adjusted for new activity-history height */
+        height: 175px; 
     }
 
     .activity-history h5 {
-        font-size: 1.4rem; /* Slightly smaller */
+        font-size: 1.1rem; 
         margin-top: 12px;
         margin-bottom: 12px;
     }
 
     .activity-history p {
-        font-size: 1.1rem; /* Slightly smaller for fit */
+        font-size: 0.9rem; 
     }
 
     .activity-history button {
         padding: 6px 10px;
-        font-size: 1.1rem;
+        font-size: 0.9rem;
         min-width: 90px;
         margin-top: 8px;
     }
 
     .Account-manager-box {
-        height: 150px; /* Reduced slightly from 160px */
+        height: 150px; 
         padding: 1.2rem;
         margin-top: 20px;
         margin-bottom: 15px;
@@ -640,22 +639,22 @@
     }
 
     .manage-table {
-        max-height: 38vh; /* Adjusted to fit 720px height */
+        max-height: 38vh; 
         margin-top: 18px;
     }
 
     .manage-table table thead {
-        font-size: 1.2rem; /* Slightly smaller */
+        font-size: 1.1rem; 
         height: 4.5vh;
     }
 
     .manage-table table tbody tr {
-        font-size: 1.3rem; /* Adjusted for readability */
+        font-size: 1rem;
         height: 5.5vh;
     }
     .m-edit-btn, .m-delte-btn {
-        padding: 5px 12px;
-        font-size: 0.9rem;
+        padding: 4px 7px;
+        font-size: 0.8rem;
     }
 
     
@@ -666,12 +665,12 @@
     }
 
     .modal-content {
-        width: 480px; /* Slightly reduced from 500px */
+        width: 480px; 
         padding: 1.8rem;
     }
 
     .modal-content h2 {
-        font-size: 0.9rem;
+        font-size: 0.7rem;
     }
 
     .modal-row {
@@ -679,12 +678,12 @@
     }
 
     .modal-row label {
-        width: 28%; /* Adjusted for balance */
+        width: 28%; /
     }
 
     .modal-row select,
     .modal-row input {
-        width: 72%; /* Complementary adjustment */
+        width: 72%; 
         padding: 0.45rem;
     }
 
@@ -699,7 +698,7 @@
     .settings-container {
         width: 100%;
         padding: 1rem;
-        height: auto; /* Allow height to adjust based on content at 768px height */
+        height: auto; 
     }
 
     .sidebar {
@@ -752,7 +751,7 @@
         font-size: 0.85rem;
         min-width: 95px;
         position: relative;
-        top: -35px; /* Adjusted for better fit */
+        top: -35px; 
     }
 
     .manage-table {
@@ -842,7 +841,7 @@
     .settings-container {
         width: 100%;
         padding: 1rem;
-        min-height: 100vh; /* Ensures full screen coverage */
+        min-height: 100vh; 
         box-sizing: border-box;
     }
 
@@ -874,14 +873,14 @@
     }
 
     .profile-img-col img {
-        width: clamp(70px, 20vw, 90px); /* Scales between 70px and 90px */
+        width: clamp(70px, 20vw, 90px); 
         height: clamp(70px, 20vw, 90px);
         object-fit: cover;
-        border-radius: 50%; /* Ensures circular images */
+        border-radius: 50%; 
     }
 
     .settings-box h1 {
-        font-size: clamp(1.5rem, 6vw, 2rem); /* Responsive font sizing */
+        font-size: clamp(1.5rem, 6vw, 2rem); 
         text-align: center;
         margin: 1rem 0;
     }
@@ -894,7 +893,7 @@
 
     .activity-list {
         height: auto;
-        max-height: 40vh; /* Prevents overflow on small screens */
+        max-height: 40vh; 
         overflow-y: auto;
     }
 
@@ -912,7 +911,7 @@
         min-width: clamp(80px, 25vw, 100px);
         margin: 0.5rem auto;
         display: block;
-        position: static; /* Removes awkward positioning */
+        position: static; 
     }
 
     .manage-table {
@@ -925,7 +924,7 @@
 
     .manage-table table {
         width: 100%;
-        min-width: 300px; /* Reasonable minimum for content */
+        min-width: 300px; 
         border-collapse: collapse;
     }
 
