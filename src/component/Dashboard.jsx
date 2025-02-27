@@ -86,10 +86,9 @@ const Dashboard = ({ onCreateExam, onAddStudent, onAddUser, onAddCredits, onMana
     };
  
     const onViewexam = (test) => {
-        // Define the logic for viewing an exam when a test or result is clicked
-        handleViewExam(test);
+        setSelectedExam({ id: test.id, title: test.title });
     };
- 
+    
     const togglePopup = () => setShowPopup((prev) => !prev);
     const closePopup = () => setShowPopup(false);
  
@@ -187,6 +186,7 @@ const Dashboard = ({ onCreateExam, onAddStudent, onAddUser, onAddCredits, onMana
                                     <td>{test.endTime}</td>
                                     <td>
                                         <motion.button
+                                    
                                         whileTap={{ scale: 1.1 }}
                                         className="viewexam-btn-pop"
                                         onClick={() => handleViewExam(test)}>
@@ -266,7 +266,7 @@ const Dashboard = ({ onCreateExam, onAddStudent, onAddUser, onAddCredits, onMana
                             <div className="flex w-full justify-center">
                                 <div className="tablee">
                                     {recentTests.map((test) => (
-                                        <div key={test.id} className="tablee-content" onClick={() => onViewexam(test)}>
+                                        <div key={test.id}  className="tablee-content" onClick={() => onViewexam(test)}>
                                             <h6>{test.title}</h6>
                                         </div>
                                     ))}
