@@ -121,7 +121,7 @@ const Subscription = () => {
                 <h1>Subscription</h1>
                 <div className="subscription-card-container">
                     <h3>Your Plan:</h3>
-                    <div className='flex'>
+                    <div className='flex subs-rows'>
                         <div className="subscribe-card">
                             <img src={subcribebg} alt="background" className="subscribe-bg" />
                             <h3>Premium</h3>
@@ -132,7 +132,7 @@ const Subscription = () => {
                                 <li>Additional Contest Access</li>
                             </ul>
                         </div>
-                        <div className="subscribe-card">
+                        <div className="subscribe-card credits-remains">
                             <h3>Credits</h3>
                             <div className="flex w-full credit-balance">
                                 <div className="flex">
