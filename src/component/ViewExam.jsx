@@ -8,7 +8,7 @@ const ViewExam = ({ exam, onBack }) => {
             <div className='viewexam-box'>
                 <div className='flex'>
                     <button onClick={onBack}>&lt;</button>
-                    <h1>#{exam.id} {exam.name}</h1>
+                    <h1>#{exam.id} {exam.name} {exam.title}</h1>
                 </div>
                 <div className="viewexam-section">
                     <div className="viewexam-header">
