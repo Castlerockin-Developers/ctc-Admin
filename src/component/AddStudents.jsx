@@ -6,57 +6,65 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faRotateLeft, faSearch } from '@fortawesome/free-solid-svg-icons';
 
 const AddStudents = ({ onBack, onSubmit }) => {
-    // Main filter popups for All & Added students
-    const [showFilterAll, setShowFilterAll] = useState(false);
-    const [showFilterAdded, setShowFilterAdded] = useState(false);
-    const filterRefAll = useRef(null);
-    const filterRefAdded = useRef(null);
+    // Single filter popup state for both sections
+    const [showFilter, setShowFilter] = useState(false);
+    const filterRef = useRef(null);
 
     // Student lists
     const [allStudents, setAllStudents] = useState([
         { id: '4NM21EC400', name: 'John Kumar', degree: 'BE', year: '2025', branch: 'CSE' },
-        { id: '4NM21EC401', name: 'Alice Smith', degree: 'BE', year: '2025', branch: 'ISE' }
+        { id: '4NM21EC401', name: 'Alice Smith', degree: 'BE', year: '2024', branch: 'ISE' },
+        { id: '4NM21EC402', name: 'John Kumar', degree: 'BE', year: '2023', branch: 'CSE' },
+        { id: '4NM21EC403', name: 'John Kumar', degree: 'BE', year: '2022', branch: 'CSE' }
     ]);
     const [addedStudents, setAddedStudents] = useState([]);
     const [isAllStudentsVisible, setIsAllStudentsVisible] = useState(true);
 
-    // Sub-popup states for branch (which triggers the Year sub-popup)
+    // Separate filter states for each section
+    const [allSelectedBranchFilter, setAllSelectedBranchFilter] = useState("");
+    const [allSelectedBatchFilter, setAllSelectedBatchFilter] = useState("");
+    const [addedSelectedBranchFilter, setAddedSelectedBranchFilter] = useState("");
+    const [addedSelectedBatchFilter, setAddedSelectedBatchFilter] = useState("");
+
+    // Which section's filter popup is active ("all" or "added")
+    const [activeFilterSection, setActiveFilterSection] = useState("");
+
+    // Sub-popup state for branch hover (to trigger Batch selection)
     const [hoveredBranch, setHoveredBranch] = useState(null);
     const [subPopupPosition, setSubPopupPosition] = useState({ top: 0, left: 0 });
-    // Sub-popup state for year (which triggers the Section sub-popup)
-    const [hoveredYear, setHoveredYear] = useState(null);
-    const [yearPopupPosition, setYearPopupPosition] = useState({ top: 0, left: 0 });
+    const hoverTimeoutRef = useRef(null);
 
-    // Arrays for options
+    // Array for branch options
     const branches = ["CSE", "ISE", "AIML", "CSE AIML", "CSE DS", "EC"];
-    const years = ["1st Year", "2nd Year", "3rd Year", "Final Year"];
-    const sections = ["A", "B", "C", "D"];
 
-    // Toggle functions for filter popups
-    const toggleFilterAll = (event) => {
+    // Compute unique batches for the hovered branch from both student lists
+    const batchesForHoveredBranch = hoveredBranch
+        ? [...new Set([...allStudents, ...addedStudents]
+            .filter(student => student.branch === hoveredBranch)
+            .map(student => student.year)
+        )]
+        : [];
+
+    // Toggle function for the filter popup for each section
+    const toggleFilter = (event, section) => {
         event.stopPropagation();
-        setShowFilterAll((prev) => !prev);
-        setShowFilterAdded(false);
+        if (activeFilterSection === section && showFilter) {
+            setShowFilter(false);
+            setActiveFilterSection("");
+        } else {
+            setActiveFilterSection(section);
+            setShowFilter(true);
+        }
         setHoveredBranch(null);
     };
 
-    const toggleFilterAdded = (event) => {
-        event.stopPropagation();
-        setShowFilterAdded((prev) => !prev);
-        setShowFilterAll(false);
-        setHoveredBranch(null);
-    };
-
-    // Close filter popups when clicking outside
+    // Close filter popup when clicking outside
     useEffect(() => {
         const handleClickOutside = (event) => {
-            if (filterRefAll.current && !filterRefAll.current.contains(event.target)) {
-                setShowFilterAll(false);
+            if (filterRef.current && !filterRef.current.contains(event.target)) {
+                setShowFilter(false);
                 setHoveredBranch(null);
-            }
-            if (filterRefAdded.current && !filterRefAdded.current.contains(event.target)) {
-                setShowFilterAdded(false);
-                setHoveredBranch(null);
+                setActiveFilterSection("");
             }
         };
 
@@ -85,32 +93,76 @@ const AddStudents = ({ onBack, onSubmit }) => {
         setIsAllStudentsVisible(true);
     };
 
-    // Sub-popup handlers
+    // Sub-popup handler for branch hover (to show batch options)
     const handleBranchHover = (e, branch) => {
+        clearTimeout(hoverTimeoutRef.current);
         setHoveredBranch(branch);
         const rect = e.target.getBoundingClientRect();
         setSubPopupPosition({
             top: rect.top + window.scrollY,
-            left: rect.right + 10, // Position to the right of the branch item
+            left: rect.right + 10,
         });
     };
 
-    const handleYearHover = (e, year) => {
-        setHoveredYear(year);
-        const rect = e.target.getBoundingClientRect();
-        setYearPopupPosition({
-            top: rect.top + window.scrollY,
-            left: rect.right + 10, // Position to the right of the year button
-        });
-    };
-
-    // When the mouse leaves a branch or year, we clear the sub-popup states.
+    // When the mouse leaves a branch or the filter popup, delay clearing the sub-popup
     const handleMouseLeave = () => {
-        setHoveredBranch(null);
-        setHoveredYear(null);
+        hoverTimeoutRef.current = setTimeout(() => {
+            setHoveredBranch(null);
+        }, 300);
     };
 
-    // NEW: Handle CreateExam button click using SweetAlert
+    // Cancel the timeout when entering the sub-popup so it remains clickable
+    const handleSubPopupEnter = () => {
+        clearTimeout(hoverTimeoutRef.current);
+    };
+
+    const handleSubPopupLeave = () => {
+        setHoveredBranch(null);
+    };
+
+    // When a batch button is clicked, apply the filter to the active section
+    const handleBatchFilterClick = (batch) => {
+        if (activeFilterSection === "all") {
+            setAllSelectedBranchFilter(hoveredBranch);
+            setAllSelectedBatchFilter(batch);
+        } else if (activeFilterSection === "added") {
+            setAddedSelectedBranchFilter(hoveredBranch);
+            setAddedSelectedBatchFilter(batch);
+        }
+        setShowFilter(false);
+        setHoveredBranch(null);
+        setActiveFilterSection("");
+    };
+
+    // Clear filter function: clears the filter for the active section
+    const clearFilter = () => {
+        if (activeFilterSection === "all") {
+            setAllSelectedBranchFilter("");
+            setAllSelectedBatchFilter("");
+        } else if (activeFilterSection === "added") {
+            setAddedSelectedBranchFilter("");
+            setAddedSelectedBatchFilter("");
+        }
+        setShowFilter(false);
+        setHoveredBranch(null);
+        setActiveFilterSection("");
+    };
+
+    // Compute filtered list for All Students based on applied filters
+    const filteredAllStudents = allStudents.filter(student => {
+        if (allSelectedBranchFilter && student.branch !== allSelectedBranchFilter) return false;
+        if (allSelectedBatchFilter && student.year !== allSelectedBatchFilter) return false;
+        return true;
+    });
+
+    // Compute filtered list for Added Students based on applied filters
+    const filteredAddedStudents = addedStudents.filter(student => {
+        if (addedSelectedBranchFilter && student.branch !== addedSelectedBranchFilter) return false;
+        if (addedSelectedBatchFilter && student.year !== addedSelectedBatchFilter) return false;
+        return true;
+    });
+
+    // Handle CreateExam button click using SweetAlert
     const handleCreateExam = () => {
         if (addedStudents.length === 0) {
             Swal.fire({
@@ -146,12 +198,12 @@ const AddStudents = ({ onBack, onSubmit }) => {
                         <div className='all-s-header flex justify-between'>
                             <h3>All Students</h3>
                             <div className='flex gap-1.5 r-header-search'>
-                                <button onClick={toggleFilterAll}>
+                                <button onClick={(e) => toggleFilter(e, 'all')}>
                                     <img src={filter} alt="filter" />
                                 </button>
                                 <div className='flex relative s-search-container'>
                                     <FontAwesomeIcon icon={faSearch} className='s-icon' />
-                                    <input type="text" />
+                                    <input type="text" placeholder="Search All Students" />
                                 </div>
                             </div>
                         </div>
@@ -170,20 +222,26 @@ const AddStudents = ({ onBack, onSubmit }) => {
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {allStudents.map(student => (
-                                                <tr key={student.id} className='border-1 border-white'>
-                                                    <td>{student.id}</td>
-                                                    <td>{student.name}</td>
-                                                    <td>{student.degree}</td>
-                                                    <td>{student.year}</td>
-                                                    <td>{student.branch}</td>
-                                                    <td>
-                                                        <button onClick={() => handleAddStudent(student)} className='bg-green-500 hover:bg-green-900 rounded adds-btn'>
-                                                            +Add
-                                                        </button>
-                                                    </td>
+                                            {filteredAllStudents.length > 0 ? (
+                                                filteredAllStudents.map(student => (
+                                                    <tr key={student.id} className='border-1 border-white'>
+                                                        <td>{student.id}</td>
+                                                        <td>{student.name}</td>
+                                                        <td>{student.degree}</td>
+                                                        <td>{student.year}</td>
+                                                        <td>{student.branch}</td>
+                                                        <td>
+                                                            <button onClick={() => handleAddStudent(student)} className='bg-green-500 hover:bg-green-900 rounded adds-btn'>
+                                                                +Add
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                ))
+                                            ) : (
+                                                <tr>
+                                                    <td colSpan="6" className="text-center">No students found</td>
                                                 </tr>
-                                            ))}
+                                            )}
                                         </tbody>
                                     </table>
                                 )}
@@ -196,18 +254,18 @@ const AddStudents = ({ onBack, onSubmit }) => {
                         <div className='all-s-header-added flex justify-between'>
                             <h3>Added Students</h3>
                             <div className='flex gap-1.5 r-header-search'>
-                                <button onClick={toggleFilterAdded}>
+                                <button onClick={(e) => toggleFilter(e, 'added')}>
                                     <img src={filter} alt="filter" />
                                 </button>
                                 <div className='flex relative s-search-container'>
                                     <FontAwesomeIcon icon={faSearch} className='s-icon' />
-                                    <input type="text" />
+                                    <input type="text" placeholder="Search Added Students" />
                                 </div>
                             </div>
                         </div>
                         <div className='all-s-body'>
                             <div className="addeds-table-wrapper">
-                                {addedStudents.length === 0 ? (
+                                {filteredAddedStudents.length === 0 ? (
                                     <p className="text-center text-white">No students added yet.</p>
                                 ) : (
                                     <table>
@@ -217,7 +275,7 @@ const AddStudents = ({ onBack, onSubmit }) => {
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {addedStudents.map(student => (
+                                            {filteredAddedStudents.map(student => (
                                                 <tr key={student.id} className='border-1 border-white'>
                                                     <td>{student.id}</td>
                                                     <td className='whitespace-nowrap'>{student.name}</td>
@@ -250,81 +308,52 @@ const AddStudents = ({ onBack, onSubmit }) => {
                     <button className='exam-next-btn' onClick={handleCreateExam}>+ CreateExam</button>
                 </div>
 
-                {/* -------------------------------
-            FILTER POPUP FOR ALL STUDENTS
-        --------------------------------- */}
-                {showFilterAll && (
-                    <div className="inadd-student" ref={filterRefAll}>
-                        <h3>Branch</h3>
-                        <img src={line} alt="line" className="s-filter-line" />
-                        <div className="inadd-student-filter-options">
-                            {branches.map((branch, index) => (
-                                <div key={index}
-                                    className="adds-filter-item"
-                                    onMouseEnter={(e) => handleBranchHover(e, branch)}
-                                    onMouseLeave={handleMouseLeave}>
-                                    {branch}
-                                </div>
-                            ))}
+                {/* Filter Popup */}
+                {showFilter && (
+                    <>
+                        <div className="filter-popup" ref={filterRef}>
+                            <h3>Branch</h3>
+                            <div className="flex justify-center w-full">
+                                <img src={line} alt="line" className="filter-line" />
+                            </div>
+                            <div className="filter-options">
+                                {branches.map((branch, index) => (
+                                    <div
+                                        key={index}
+                                        className={`filter-item ${hoveredBranch === branch ? "active-filter-item" : ""}`}
+                                        onMouseEnter={(e) => handleBranchHover(e, branch)}
+                                        onMouseLeave={handleMouseLeave}
+                                    >
+                                        {branch}
+                                    </div>
+                                ))}
+                            </div>
+                            <button className="apply-btn" onClick={clearFilter}>Clear Filter</button>
                         </div>
-                    </div>
-                )}
-
-                {/* -------------------------------
-            FILTER POPUP FOR ADDED STUDENTS
-        --------------------------------- */}
-                {showFilterAdded && (
-                    <div className="inadded-student" ref={filterRefAdded}>
-                        <h3>Branch</h3>
-                        <img src={line} alt="line" className="s-filter-line" />
-                        <div className="inadd-student-filter-options">
-                            {branches.map((branch, index) => (
-                                <div key={index}
-                                    className="adds-filter-item"
-                                    onMouseEnter={(e) => handleBranchHover(e, branch)}
-                                    onMouseLeave={handleMouseLeave}>
-                                    {branch}
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                )}
-
-                {/* -------------------------------
-            SUB-POPUP: YEAR SELECTION (triggered by hovering a branch)
-        --------------------------------- */}
-                {(showFilterAll || showFilterAdded) && hoveredBranch && (
-                    <div className="sub-popup"
-                        style={{ top: subPopupPosition.top, left: subPopupPosition.left }}
-                        onMouseEnter={() => setHoveredBranch(hoveredBranch)}
-                        onMouseLeave={handleMouseLeave}>
-                        <h4>{hoveredBranch} - Year</h4>
-                        {years.map((year, index) => (
-                            <button key={index}
-                                className="sub-item"
-                                onMouseEnter={(e) => handleYearHover(e, year)}
-                                onMouseLeave={handleMouseLeave}>
-                                {year}
-                            </button>
-                        ))}
-                    </div>
-                )}
-
-                {/* -------------------------------
-            SUB-POPUP: SECTION SELECTION (triggered by hovering a year)
-        --------------------------------- */}
-                {hoveredYear && (
-                    <div className="sub-popup"
-                        style={{ top: yearPopupPosition.top, left: yearPopupPosition.left }}
-                        onMouseEnter={() => setHoveredYear(hoveredYear)}
-                        onMouseLeave={handleMouseLeave}>
-                        <h4>{hoveredYear} - Section</h4>
-                        {sections.map((section, index) => (
-                            <button key={index} className="sub-item">
-                                {section}
-                            </button>
-                        ))}
-                    </div>
+                        {hoveredBranch && (
+                            <div
+                                className="sub-popup"
+                                style={{ top: subPopupPosition.top, left: subPopupPosition.left }}
+                                onMouseEnter={handleSubPopupEnter}
+                                onMouseLeave={handleSubPopupLeave}
+                            >
+                                <h4>{hoveredBranch} - Batch</h4>
+                                {batchesForHoveredBranch.length > 0 ? (
+                                    batchesForHoveredBranch.map((batch, index) => (
+                                        <button 
+                                            key={index} 
+                                            className="sub-item" 
+                                            onClick={() => handleBatchFilterClick(batch)}
+                                        >
+                                            {batch}
+                                        </button>
+                                    ))
+                                ) : (
+                                    <button className="sub-item">No Batch</button>
+                                )}
+                            </div>
+                        )}
+                    </>
                 )}
             </div>
         </div>
