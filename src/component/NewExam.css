@@ -728,7 +728,7 @@
     height: 2px;
 }
 
-/* .add-s-container {} */
+
 
 .all-student,
 .all-student-added {
@@ -851,7 +851,7 @@
     font-family: madina-semibold;
     margin-left: 10px;
     cursor: pointer;
-}
+} 
 
 .all-s-body table tbody {
     background-color: #4D4D4D;
@@ -1062,14 +1062,22 @@
         display: block;
     }
 
-    .all-s-header-added,
-    .all-s-header {
+
+    .all-s-header,
+    .all-s-header-added {
+        padding: 0.4rem;
+        font-size: 0.85rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
         flex-direction: column;
+        gap: 10px;
+
     }
 
-    .all-s-body table {
-        width: 150%;
-    }
+    
+
+   
       /* Responsive Grid Layout for All & Added Students */
     /* Responsive Grid Layout */
     .add-s-container {
@@ -1085,20 +1093,15 @@
         width: 100%;
         padding: 0.4rem;
     }
+
+    
     .addStudent-box {
         width: 93%;
         padding-top: 1.5rem;
     }
+    
 
-    .all-s-header,
-    .all-s-header-added {
-        padding: 0.4rem;
-        font-size: 0.85rem;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-
-    }
+    
 
     .all-s-header h3,
     .all-s-header-added h3 {
@@ -1129,6 +1132,7 @@
     .addeds-table-wrapper {
         width: 100%;
         overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
     }
 
     /* Responsive Table */
@@ -1171,11 +1175,7 @@
     }
 
     /* Ensure Tables are Scrollable on Small Screens */
-    .adds-table-wrapper,
-    .addeds-table-wrapper {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-    }
+    
 
     /* Adjust Body Section */
     .all-s-body {
@@ -1200,6 +1200,9 @@
         overflow: hidden;
         margin: 10px 0px;
     }
+    /* .all-s-body table {
+        width: 150%;
+    } */
 
     .all-s-body table thead tr {
         background-color: #373737;
@@ -1225,20 +1228,14 @@
     .all-s-body table tbody tr {
         border: 1px solid rgb(172, 172, 172);
     }
-    .addStudent-box{
-        padding-top: 0rem;
-    }
+    
 
     .addquestion-box h1,
     .addStudent-box h1{
     margin-bottom: 0.5rem;
     margin-top: 0.5rem;
 }
-    .all-s-header-added,
-    .all-s-header {
-        flex-direction: column;
-        gap: 10px;
-    }
+   
 }
 @media(min-width:426px) and (max-width:768px){
 

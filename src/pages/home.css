@@ -1180,20 +1180,28 @@
     background-color: darkgreen;
 }
 
+/* Delete Button */
 .delete-btn {
-    background-color: red;
-    color: white;
-    border: none;
-    border-radius: 5px;
+    background-color: #E63946;
+    padding: 13px;
     width: 40px;
     height: 40px;
+    border-radius: 5px;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: white;
+    font-weight: 600;
+    border: none;
+    transition: all 0.2s ease-in-out;
 }
 
 .delete-btn:hover {
-    background-color: darkred;
+    background-color: #C72F3A;
 }
+
 
 .test-casee {
     display: flex;
@@ -1361,34 +1369,58 @@ html, body {
     .filter-btn img {
         width: 12px;
     }
-
     /* Responsive Table */
     .m-table-container {
         width: 100%;
         overflow-x: auto;
     }
-
     .m-table-container table {
         width: 100%;
         border-collapse: collapse;
         table-layout: auto;
         max-width: 100%;
-    }
-
+        height: auto;
+       border-radius: 10px;
+       -webkit-overflow-scrolling: touch;/* Ensure the table remains scrollable on small screens */
+       
+    }   
     .m-table-container table thead th {
-        font-size: 0.2rem;
-        padding: 5px;
+        padding: 1px;
         text-align: center;
         white-space: nowrap;
-    }
-
+        position: relative;
+        font-size: 0.5rem;
+    }        
     .m-table-container table tbody td {
         font-size: 0.5rem;
-        padding: 5px;
-        text-align: center;
         word-wrap: break-word;
         white-space: normal;
+        min-width: 70px;
+
     }
+    /* .m-table-container table thead {
+        background-color: #535353;
+        color: white;
+        font-size: 1rem !important;
+        width: 100%;
+        display: table;
+        table-layout: auto;
+    } */
+
+    /* .m-table-container table tbody {
+        max-height: 50vh;
+        overflow-y: auto;
+        width: 100%;
+        display: block;
+    } */
+    /* .m-table-container table tbody tr {
+        display: table;
+        width: 100%;
+        table-layout: auto;
+        height: auto;
+        border-top: 1px solid rgb(133, 133, 133);
+        border-bottom: 1px solid rgb(133, 133, 133);
+    }  */
 
     /* Hide Logo for Mobile */
     .ctc-logo {
@@ -1551,40 +1583,7 @@ html, body {
     .pop-up-table tbody td {
         width: auto;
     }
-    .m-table-container {
-        width: 100%;
-        overflow-x: auto;
-    }
-
-    .m-table-container table {
-        width: 100%;
-        height: auto;
-        background-color: #393939;
-        border-radius: 10px;
-        border-collapse: collapse;
-        table-layout: auto; /* Allows columns to adjust dynamically */
-    }
-
-    .m-table-container table thead {
-        background-color: #535353;
-        color: white;
-        font-size: 1rem;
-        width: 100%;
-        display: table;
-        table-layout: auto; /* Dynamic layout */
-    }
-
-    .m-table-container table thead th {
-        position: relative;
-        padding: 1px;
-        text-align: center;
-        background-color: #535353;
-        border-bottom: 1px solid #888;
-        font-size: 0.5rem; /* Slightly smaller font */
-        min-width: 80px; /* Prevents columns from shrinking too much */
-        white-space: nowrap; /* Prevents header text from wrapping */
-    }
-
+   
     /* Create shorter vertical separators */
     .m-table-container table thead th:not(:last-child)::after {
         content: "";
@@ -1595,39 +1594,6 @@ html, body {
         width: 1px;
         background-color: white;
     }
-
-    /* Responsive Table Body */
-    .m-table-container table tbody {
-        max-height: 50vh; /* Adjusted height */
-        overflow-y: auto;
-        width: 100%;
-        display: block;
-    }
-
-    .m-table-container table tbody tr {
-        display: table;
-        width: 100%;
-        table-layout: auto;
-        height: auto;
-        border-top: 1px solid rgb(133, 133, 133);
-        border-bottom: 1px solid rgb(133, 133, 133);
-    }
-
-    .m-table-container table tbody td {
-        padding: 8px; /* Reduced padding */
-        text-align: center;
-        color: white;
-        font-size: 0.5rem; /* Slightly reduced font size */
-        word-wrap: break-word; /* Allows text wrapping */
-        white-space: normal; /* Ensures text is visible */
-        min-width: 80px; /* Prevents shrinking */
-    }
-
-    /* Ensure the table remains scrollable on small screens */
-    .m-table-container {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-    }
     .viewexam-btn {
         background-color: #8E5DAF;
         padding: 2px 3px 2px;
@@ -1636,70 +1602,6 @@ html, body {
         font-family: madina-semibold;
         white-space: nowrap;
     }
-    .m-table-container {
-        width: 100%;
-        overflow-x: auto;
-    }
-
-    .m-table-container table {
-        width: 100%;
-        background-color: #393939;
-        border-radius: 10px;
-        border-collapse: collapse;
-        table-layout: auto; /* Allows columns to adjust dynamically */
-    }
-
-    .m-table-container table thead {
-        background-color: #535353;
-        color: white;
-        font-size: 1rem;
-        width: 100%;
-        display: table;
-        table-layout: auto;
-    }
-
-    .m-table-container table thead th {
-        padding: 8px;
-        text-align: center;
-        background-color: #535353;
-        border-bottom: 1px solid #888;
-        font-size: 0.5rem;
-        min-width: 70px; /* Prevents excessive shrinking */
-        white-space: nowrap; /* Keeps header text in one line */
-    }
-
-    .m-table-container table tbody {
-        max-height: 50vh;
-        overflow-y: auto;
-        width: 100%;
-        display: block;
-    }
-
-    .m-table-container table tbody tr {
-        display: table;
-        width: 100%;
-        table-layout: auto;
-        height: auto;
-        border-top: 1px solid rgb(133, 133, 133);
-        border-bottom: 1px solid rgb(133, 133, 133);
-    }
-
-    .m-table-container table tbody td {
-        padding: 6px;
-        text-align: center;
-        color: white;
-        font-size: 0.5rem;
-        word-wrap: break-word;
-        white-space: normal; /* Ensures text is visible */
-        min-width: 70px;
-    }
-
-    /* Ensure the table remains scrollable on small screens */
-    .m-table-container {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-    }
-
     /* Responsive Filter Popup */
     .filter-popup {
         position: fixed;
@@ -1712,17 +1614,16 @@ html, body {
         text-align: center;
         z-index: 1000;
     }
-
     .filter-popup h3 {
         color: white;
         font-size: 1rem;
         font-family: madina-semibold;
     }
     /* Edit Button */
-.edit-btn {
+    .edit-btn {
    padding: 5px !important;
    font-size: 10px !important;
-}
+    }
 
 .edit-btn .icon {
     margin-right: 6px;
@@ -1743,7 +1644,6 @@ html, body {
     box-shadow: 0px 0px 10px rgba(255, 255, 255, 0.1);
 }
 }
-
 
 @media (min-width: 426px) and (max-width: 768px) {
     .result-container {
@@ -1841,7 +1741,9 @@ html, body {
         font-size: 1rem;
         white-space: nowrap;
         text-align: center;
-    }
+        width: auto;
+     }
+   
 
     .viewexam-btn-pop {
         padding: 9px 10px;
@@ -1861,6 +1763,7 @@ html, body {
         margin-left: 1rem;
     }
 
+    
     /* Sidebar */
     .sidebar-container {
         position: fixed;
@@ -1936,32 +1839,6 @@ html, body {
     .exam-greeting h1 {
         margin-top: 0rem;
     }
-
-    .m-btn-left {
-        gap: 10px;
-    }
-
-    .m-btn-left button {
-        font-size: 1rem;
-    }
-
-    .filter-btn {
-        padding: 9px 9px;
-    }
-
-    .create-btn {
-        font-size: 0.9rem;
-        padding: 5px 12px;
-    }
-
-    .search-box {
-        padding: 3px 10px;
-    }
-
-    .search-box input {
-        width: 100px;
-    }
-
     .m-table-container table thead th,
     .m-table-container table tbody td {
         font-size: 0.9rem;
@@ -1970,17 +1847,7 @@ html, body {
     .viewexam-btn {
         font-size: 0.8rem;
     }
-
-    .top-display-pop-title h2 {
-        font-size: 1.6rem;
-        margin-left: 1rem;
-    }
-
-    .pop-up-table thead th,
-    .pop-up-table tbody td {
-        width: auto;
-    }
-
+   
     .edit-container {
         width: 78vw;
         position: fixed;
@@ -2129,11 +1996,15 @@ html, body {
         padding: 10px;
         font-size: 1.1rem;
       }
-    
-      .pop-up-table tbody td, .pop-up-table thead th {
+
+      .pop-up-table thead th,
+    .pop-up-table tbody td {
+        font-size: 1.1rem;
+        width: 15vw;
         padding: 10px;
-        font-size: 0.7rem;
-      }
+
+    }
+
     
       /* Ensure vertical scrolling for the table body */
       .pop-up-table tbody {
@@ -2194,10 +2065,6 @@ html, body {
         height: 50vh;
     }
 
-    .mid-display2 {
-        height: 23.3vh;
-    }
-
     .tablee {
         height: 39vh;
     }
@@ -2238,12 +2105,7 @@ html, body {
         margin-left: 1.5rem;
     }
 
-    .pop-up-table thead th,
-    .pop-up-table tbody td {
-        font-size: 1.1rem;
-        width: 15vw;
-    }
-
+    
     .edit-container {
         width: 70vw;
     }
@@ -2367,85 +2229,6 @@ html, body {
         margin-left: 20px;
     }
 }
-.m-table-container {
-    width: 100%;
-    margin-top: 1rem;
-    border-radius: 10px;
-    border: 1px solid rgb(153, 153, 153);
-    overflow-x: hidden;
-}
-
-.m-table-container table {
-    width: 100%;
-    height: 61vh;
-    background-color: #393939;
-    border-radius: 10px;
-    border-collapse: collapse;
-    display: flex;
-    flex-direction: column;
-    overflow-x: auto;
-}
-
-.m-table-container table thead {
-    background-color: #535353;
-    color: white;
-    font-size: 1.1rem;
-    width: 100%;
-    display: table;
-    table-layout: fixed;
-}
-
-.m-table-container table tbody {
-    max-height: 53vh;
-    overflow-y: auto;
-    overflow-x: hidden;
-    width: 100%;
-    display: table;
-    table-layout: fixed;
-}
-
-.m-table-container table tbody tr {
-    display: table;
-    width: 100%;
-    table-layout: fixed;
-    height: 50px;
-    border-top: 1px solid rgb(133, 133, 133);
-    border-bottom: 1px solid rgb(133, 133, 133);
-}
-
-.m-table-container table tbody td {
-    padding: 12px;
-    text-align: center;
-    color: white;
-}
-
-.even-row {
-    background-color: #393939;
-}
-
-.odd-row {
-    background-color: #424242;
-}
-
-/* Buttons */
-.create-btn {
-    background-color: #d90495;
-    color: white;
-    padding: 8px 12px;
-    border-radius: 5px;
-    cursor: pointer;
-    min-width: 175px;
-
-}
-
-.viewexam-btn {
-    background-color: #8E5DAF;
-    padding: 5px;
-    border-radius: 5px;
-    cursor: pointer;
-    white-space: nowrap;
-}
-
 
 /* Action Buttons */
 .action-buttons {
@@ -2479,25 +2262,6 @@ html, body {
     background-color: #7B4DA1;
 }
 
-/* Delete Button */
-.delete-btn {
-    background-color: #E63946;
-    padding: 13px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 0.85rem;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    color: white;
-    font-weight: 600;
-    border: none;
-    transition: all 0.2s ease-in-out;
-}
-
-.delete-btn:hover {
-    background-color: #C72F3A;
-}
 
 /* Header Wrapper - Align title & Total Students */
 .header-wrapper {
@@ -2658,8 +2422,6 @@ html, body {
     width: 60%;
     /* Adjust width for better layout */
 }
-
-
 /* MODAL BUTTONS */
 .modal-buttons {
     display: flex;
@@ -2685,7 +2447,7 @@ html, body {
 
 /* CREATE BUTTON (MAGENTA) */
 .create-btn-student {
-    background: #D90495;
+    background: #B30275;
     color: white;
     padding: 8px 16px;
     border-radius: 6px;
@@ -2694,11 +2456,6 @@ html, body {
     font-size: 1rem;
     font-weight: bold;
 }
-
-.create-btn-student {
-    background: #B30275;
-}
-
 /*notification-table*/
 .notification-table{
     width: 90%;

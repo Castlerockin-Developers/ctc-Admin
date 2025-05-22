@@ -57,6 +57,7 @@
     object-fit: contain;
 }
 
+
 .subscribe-card ul {
     color: white;
     list-style: disc;
@@ -136,24 +137,35 @@
     border-bottom: 3px solid #FF0099;
 }
 
+
 .buy-item {
-    width: 95%;
     display: flex;
-    justify-content: end;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 1rem;
+    margin-right: 2rem;
+    width: 95%;
 }
 
 .bug-icon {
+    font-size: 1.2rem;
     margin-right: 10px;
 }
 
+
 .buy-item button {
-    color: white;
-    padding: 5px 20px 5px;
+    color: #fff;
+    padding: 0.6rem 1.5rem;
     background-color: #8E5DAF;
     border-radius: 5px;
-    font-size: 1.2rem;
-    margin-left: 15px;
+    font-size: 1.1rem;
     cursor: pointer;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-left: 15px;
+
 }
 
 .buy-item button:hover {
@@ -161,10 +173,11 @@
 }
 
 .buy-item p {
-    color: white;
+    color: #fff;
     font-size: 1.2rem;
     font-family: madina-semibold;
     margin-top: 2px;
+
 }
 
 
@@ -439,45 +452,10 @@
 }
 
 
-.buy-item {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    gap: 1rem;
-    margin-right: 2rem;
-}
-
-.buy-item p {
-    color: #fff;
-    font-size: 1.2rem;
-    font-family: madina-semibold;
-}
-
-.buy-item button {
-    color: #fff;
-    padding: 0.6rem 1.5rem;
-    background-color: #8E5DAF;
-    border-radius: 5px;
-    font-size: 1.1rem;
-    cursor: pointer;
-    border: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.buy-item button:hover {
-    background-color: #6200a3;
-}
-
-.bug-icon {
-    font-size: 1.2rem;
-}
-
 .add-credit-btn {
     display: inline-flex;
     align-items: center;
-    border: 2px solid #8F8F8F;
+    border: 2px solid #006D72;
     border-radius: 6px;
     overflow: hidden;
 }
@@ -494,13 +472,7 @@
     justify-content: center;
 }
 
-.add-credit-btn {
-    display: inline-flex;
-    align-items: center;
-    border: 2px solid #006D72;
-    border-radius: 6px;
-    overflow: hidden;
-}
+
 
 .add-credit-btn button {
     background-color: #557d7f;
@@ -515,14 +487,15 @@
 }
 
 .quantity-input {
-    width: 500px;
+    width: 70px;
     height: 40px;
-    background-color: #999;
-    color: #FFFFFF;
+    background-color: #6d6b6b;
+    color: #fff;
     text-align: center;
     border: none;
-    outline: none;
     font-size: 1.2rem;
+    outline: none;
+    font-weight: bold;
 }
 
 
@@ -536,17 +509,7 @@
     -moz-appearance: textfield;
 }
 
-.quantity-input {
-    width: 70px;
-    height: 40px;
-    background-color: #6d6b6b;
-    color: #fff;
-    text-align: center;
-    border: none;
-    font-size: 1.2rem;
-    outline: none;
-    font-weight: bold;
-}
+
 
 .tooltip-icon {
     position: relative;
@@ -656,13 +619,19 @@
     .subscription-card-container h3 {
         font-size: 1.3rem;
     }
-    .credits-remains h3 {
-        font-size: 1.1rem;
-    }
 
     .credits-remain-text {
         font-size: 0.9rem !important; 
         line-height: 90%;
+        margin: 0;
+
+    }
+
+    .credits-remains h3 {
+        margin: 0; 
+        font-size: 1.1rem;
+        color: white;
+        font-family: madina-semibold;
     }
 
     .subscribe-bg {
@@ -687,13 +656,7 @@
         align-items: flex-start; 
     }
 
-    .subscribe-bg {
-        position: absolute;
-        top: 0;          
-        left: 0;         
-        width: 100%;     
-        height: 100%;    
-        object-fit: cover; }
+
 
     .subscribe-card ul {
         margin-left: 15px;
@@ -708,19 +671,7 @@
         gap: 0.5rem; 
     }
 
-    .credits-remains h3 {
-        margin: 0; 
-        font-size: 1.1rem;
-        color: white;
-        font-family: madina-semibold;
-    }
-
-    .credits-remain-text {
-        margin: 0;
-        font-size: 0.9rem;
-        color: white;
-        font-family: madina-regular;
-    }
+ 
 
     .subscribe-bottom {
         flex-direction: column;
@@ -973,14 +924,19 @@
     }
 
     .buy-item button {
-        padding: 8px 30px;
-        font-size: 1.5rem;
+        /* padding: 8px 30px;
+        font-size: 1.5rem; */
+        border-radius: 5px;
         margin-left: 20px;
+        padding: 0.8rem 2rem;
+        font-size: 2.3rem;
     }
 
     .buy-item p {
         font-size: 2rem;
     }
+
+    
 
     .subcribe-table,
     .subcribe-history-table {
@@ -1020,10 +976,7 @@
         font-size: 1.2rem;
     }
 
-    .buy-item button {
-        padding: 0.8rem 2rem;
-        font-size: 1.7rem;
-    }
+    
 
     .quantity-input {
         width: 100px; 
@@ -1041,19 +994,6 @@
         max-width: 600px; /* Larger modal for 4K */
         padding: 30px;
     }
-    .buy-item button {
-        padding: 10px 25px 15px;
-        border-radius: 5px;
-        font-size: 2.5rem;
-    }
+   
 }
 
-
-.subscribe-bg {
-    position: absolute;
-    top: -40px;
-    left: 120px;
-    width: 30vw;
-    height: 28.5vh;
-    object-fit: contain;
-}
