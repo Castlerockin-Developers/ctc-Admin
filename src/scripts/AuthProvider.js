@@ -1,5 +1,5 @@
-export const baseUrl = 'https://7eea-106-51-110-44.ngrok-free.app/api';
-export const staticUrl = 'https://7eea-106-51-110-44.ngrok-free.app';
+export const baseUrl = 'https://ac12-106-51-110-44.ngrok-free.app/api';
+export const staticUrl = 'https://ac12-106-51-110-44.ngrok-free.app';
 export async function authFetch(url, options) {
   let accessToken = localStorage.getItem('access'); // Declare `let` to allow reassignment
   const refreshToken = localStorage.getItem('refresh');
@@ -99,3 +99,62 @@ export function useAuth() {
   const refreshToken = localStorage.getItem('refresh');
   return [!!refreshToken];
 }
+
+export async function authFetchPayload(path, payload,method) {
+  let accessToken = localStorage.getItem('access');
+  const refreshToken = localStorage.getItem('refresh');
+ 
+ 
+  const options = {
+    method: method,
+    headers: {
+      'Authorization': 'Bearer ' + accessToken,
+    },
+    body: payload instanceof FormData ? payload : JSON.stringify(payload)
+  };
+ 
+  // Fetch request
+  const response = await fetch(baseUrl + path, options);
+ 
+  if (response.status === 401) {
+    // If the response is 401 (Unauthorized), attempt to refresh the access token
+    const refreshOptions = {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + refreshToken,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ refresh: refreshToken }) // Sending refresh token in the body with key "refresh"
+    };
+ 
+    const refreshResponse = await fetch(baseUrl + '/auth/token/refresh/', refreshOptions);
+    if (refreshResponse.ok) {
+      const data = await refreshResponse.json();
+      accessToken = data.access;
+      localStorage.setItem('access', accessToken); // Update the access token in localStorage
+      options.headers['Authorization'] = 'Bearer ' + accessToken; // Update headers with new access token
+      // Retry original request with the new access token
+      return fetch(baseUrl + path, options)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          return response;
+        })
+        .catch(error => {
+          console.error('There was a problem with the fetch operation:', error);
+          throw error; // Propagate the error to the caller
+        });
+    } else {
+      throw new Error('Failed to refresh access token');
+    }
+  }else if (response.status === 400) {
+    const errorData = await response.json();
+    throw JSON.stringify(errorData);
+  } else if (!response.ok) {
+    throw new Error('Network response was not ok');
+  }
+ 
+  return response;
+}
+ 
