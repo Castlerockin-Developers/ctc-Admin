@@ -49,3 +49,106 @@ body::-webkit-scrollbar-thumb {
     border-radius: 10px;
     border: 1px solid #2D2D2D;
 }
+
+/* Branch Tabs Horizontal Scroll Container */
+.branch-tabs-container {
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+    position: relative;
+  }
+  
+  .branch-tabs-scroll {
+    display: flex;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-behavior: smooth;
+    gap: 8px;
+    padding: 4px 0;
+    /* Webkit scrollbar styling for minimal appearance */
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+  }
+  
+  /* Webkit browsers scrollbar styling */
+  .branch-tabs-scroll::-webkit-scrollbar {
+    height: 3px;
+  }
+  
+  .branch-tabs-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .branch-tabs-scroll::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 2px;
+  }
+  
+  .branch-tabs-scroll::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+  }
+  
+  /* Individual branch tab styling */
+  .branch-tab {
+    flex: 0 0 auto; /* Don't grow or shrink, maintain auto width */
+    white-space: nowrap;
+    padding: 8px 16px;
+    margin: 0;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: fit-content;
+  }
+  
+  .branch-tab:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+    color: rgba(255, 255, 255, 0.9);
+  }
+  
+  .branch-tab.m-active {
+    background: #e91e63;
+    border-color: #e91e63;
+    color: white;
+    font-weight: 600;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .branch-tabs-container {
+      margin-bottom: 16px;
+    }
+    
+    .branch-tab {
+      padding: 6px 12px;
+      font-size: 12px;
+      min-width: 80px;
+    }
+  }
+  
+  /* Optional: Add fade effect at edges to indicate scrollability */
+  .branch-tabs-container::before,
+  .branch-tabs-container::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 20px;
+    pointer-events: none;
+    z-index: 1;
+  }
+  
+  .branch-tabs-container::before {
+    left: 0;
+    background: linear-gradient(to right, rgba(24, 24, 23, 1), transparent);
+  }
+  
+  .branch-tabs-container::after {
+    right: 0;
+    background: linear-gradient(to left, rgba(24, 24, 23, 1), transparent);
+  }

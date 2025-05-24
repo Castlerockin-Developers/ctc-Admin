@@ -19,6 +19,8 @@ function App() {
 
           {/* Subscription page route */}
           <Route path="/subcription" element={<SubcriptionPage />} />
+
+          <Route path="/login" element={<LoginPage />} />
         </Routes>
       </div>
     </Router>
