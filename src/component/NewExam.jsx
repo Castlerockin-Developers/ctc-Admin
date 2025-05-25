@@ -204,14 +204,14 @@ const NewExam = ({ onBack, onNext }) => {
                     {/* Login Window */}
                     <div className='createexam-col1 flex'>
                         <h4 className='flex justify-between'>
-                            Login Window 
+                            Login Window
                             <div className="tooltip-icon">
                                 <FontAwesomeIcon
-                                icon={faInfoCircle}
-                                style={{ marginLeft: "8px", color: "#888", cursor: "pointer" }}
+                                    icon={faInfoCircle}
+                                    style={{ marginLeft: "8px", color: "#888", cursor: "pointer" }}
                                 />
                                 <span className="tooltiptext">
-                                This is some information about CTC Credits.
+                                    This is some information about CTC Credits.
                                 </span>
                             </div> <span>:</span>
                         </h4>
@@ -266,7 +266,7 @@ const NewExam = ({ onBack, onNext }) => {
                         )}
                     </div>
                 </div>
-
+                <br />
                 <img src={line} alt="line" className='w-full h-0.5' />
 
                 <div className='newexam-entry1'>

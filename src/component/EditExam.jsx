@@ -236,7 +236,7 @@ const EditExam = ({ onClose, examDetails }) => {
                     <div className='body-control'>
                         <div className='exam-creation-edit'>
                             <div className='flex desc'>
-                                <p className='xl:text-2xl lg:text-xl md:text-lg'>Exam Name:</p>
+                                <p className='text-2xl lg:text-xl md:text-lg'>Exam Name:</p>
                                 <div className='flex edit-ename-options'>
                                     <input type="text" className='w-lg' placeholder='Enter Descriptions' />
                                     <button className='bg-blue-500 hover:bg-blue-800 rounded-lg'>Save</button>
@@ -308,7 +308,7 @@ const EditExam = ({ onClose, examDetails }) => {
                                 </div>
                             </div>
                             <div className='flex desc'>
-                                <p className='xl:text-2xl lg:text-xl md:text-lg'>End Time:</p>
+                                <p className='text-2xl lg:text-xl md:text-lg'>End Time:</p>
                                 <div className="flex ">
                                     <div className="flex items-center rounded-lg shadow-md">
                                         {/* Date Picker */}

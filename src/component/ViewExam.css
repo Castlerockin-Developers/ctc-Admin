@@ -8,7 +8,7 @@
 }
 
 .viewexam-box {
-    width: 95%;
+    width: 100%;
     padding-top: 1.5rem;
 }
 
@@ -33,16 +33,14 @@
 
 .viewexam-header {
     width: 100%;
-    height: 6.5vh;
-    padding: 1rem;
+    padding: 0.7rem;
     background-color: #5A5A5A;
-    border-top-left-radius: 5px;
-    border-top-right-radius: 5px;
     border: 1px solid rgb(177, 177, 177);
+    border-radius: 5px 5px 0 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    white-space: nowrap;
+    /* THIS centers both the <h2> and the whole button group */
 }
 
 .viewexam-header h2 {
@@ -67,12 +65,16 @@ button.viewexam-edit-btn:hover {
     background-color: #0098a3;
 }
 
+.viewexam-header-btn {
+    display: flex;
+    align-items: center;
+}
+
 .viewexam-header-btn button {
     color: white;
     font-family: madina-semibold;
     font-size: 1.2rem;
     padding: 5px 15px 5px;
-    margin-top: 20px;
     border-radius: 5px;
 }
 
@@ -107,19 +109,13 @@ button.viewexam-edit-btn:hover {
     border-top-left-radius: 5px;
     border-top-right-radius: 5px;
     padding: 7px 20px 5px;
-}
-
-.viewexam-viwer-header h2 {
     color: white;
-    font-size: 1rem;
     font-family: madina-semibold;
-    
 }
 
 .viewexam-viwer-header p {
     color: white;
     font-size: 1.3rem;
-    margin-top: 4px;
     font-family: madina-regular;
 }
 
@@ -194,128 +190,4 @@ button.viewexam-edit-btn:hover {
 .viewexam-answer-box ul li {
     color: white;
     font-family: madina-regular;
-}
-@media (max-width: 768px) {
-    .viewexam-container {
-        width: calc(100% - 50px); /* Reduced width */
-        height: 85vh; /* Slightly reduced height */
-        padding: 1rem; /* Reduced padding */
-    }
-
-    .viewexam-box {
-        width: 100%;
-        padding-top: 1rem;
-    }
-
-    .viewexam-box h1 {
-        font-size: 2rem; /* Slightly smaller font */
-    }
-
-    .viewexam-box button {
-        font-size: 2.5rem; /* Reduced button size */
-        bottom: 8px;
-        margin-right: 8px;
-    }
-
-    .viewexam-header {
-        height: 6vh; /* Adjusted height */
-        padding: 0.8rem;
-        font-size: 1.2rem;
-    }
-
-    .viewexam-header h2 {
-        font-size: 1.3rem; /* Reduced font size */
-    }
-
-    button.viewexam-del-btn {
-        padding: 4px 12px; /* Adjusted button size */
-    }
-
-    button.viewexam-edit-btn {
-        padding: 4px 12px;
-    }
-
-    .viewexam-header-btn button {
-        font-size: 1rem; /* Reduced button font size */
-        padding: 4px 12px; /* Reduced button padding */
-        margin-top: 15px;
-    }
-
-    .share-icon {
-        font-size: 1.3rem; /* Reduced icon size */
-        top: 2px;
-    }
-
-    .viewexam-body {
-        height: 60vh; /* Adjusted height */
-    }
-
-    .viewexam-viwer {
-        width: 100%;
-        margin-top: 15px;
-    }
-
-    .viewexam-q {
-        margin-top: 10px;
-    }
-
-    .viewexam-viwer-header {
-        height: 5.5vh; /* Adjusted height */
-        padding: 6px 15px 4px;
-    }
-
-    .viewexam-viwer-header h2 {
-        font-size: 0.8rem; /* Reduced font size */
-    }
-
-    .viewexam-viwer-header p {
-        font-size: 1.1rem; /* Reduced paragraph size */
-        margin-top: 3px;
-    }
-
-    .viewexam-viwer-body {
-        width: 100%;
-    }
-
-    .viewexams-container {
-        width: 100%;
-        padding: 0.5rem; /* Reduced padding */
-    }
-
-    .viewexams-container details {
-        margin: 0.8rem 0;
-    }
-
-    .viewexams-container summary {
-        font-size: 1rem; /* Reduced summary font */
-    }
-
-    /* Answer boxes adjustments */
-    .viewexam-answer-boxes {
-        flex-direction: column; /* Stack answer boxes vertically */
-        gap: 0.8rem;
-        margin-top: 0.8rem;
-    }
-
-    .viewexam-answer-box {
-        width: 100%; /* Full width for smaller screens */
-        padding: 0.8rem;
-    }
-
-    .viewexam-answer-box h3 {
-        font-size: 1.2rem;
-        margin: 0.8rem 0 0.4rem;
-    }
-
-    .viewexam-answer-box p {
-        font-size: 0.95rem; /* Slightly reduced paragraph font */
-    }
-
-    .viewexam-answer-box ul {
-        margin-left: 15px;
-    }
-
-    .viewexam-answer-box ul li {
-        font-size: 0.9rem; /* Slightly reduced font */
-    }
 }

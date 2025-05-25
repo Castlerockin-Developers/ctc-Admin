@@ -374,7 +374,7 @@ const ManageResult = () => {
           {/* Filter Pop-up */}
           {showFilter && (
             <>
-              <div className="filter-popup" ref={filterRef}>
+              <div className="filter-popup resultfilter" ref={filterRef}>
                 <h3>Branch</h3>
                 <div className="flex justify-center w-full">
                   <img src={line} alt="line" className="filter-line" />
@@ -384,9 +384,8 @@ const ManageResult = () => {
                     (branch, index) => (
                       <div
                         key={index}
-                        className={`filter-item ${
-                          hoveredBranch === branch ? "active-filter-item" : ""
-                        }`}
+                        className={`filter-item ${hoveredBranch === branch ? "active-filter-item" : ""
+                          }`}
                         onMouseEnter={(e) => handleHover(e, branch)}
                         onMouseLeave={handleMouseLeave}
                       >

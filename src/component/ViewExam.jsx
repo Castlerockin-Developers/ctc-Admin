@@ -54,9 +54,11 @@ const ViewExam = ({ exam, onBack }) => {
                     <div className="viewexam-body flex flex-col items-center justify-start">
                         <div className="viewexam-viwer">
                             <div className='viewexam-q'>
-                                <div className="viewexam-viwer-header flex justify-between">
-                                    <p className='text-xl text-bold text-white leading-loose'>MCQ</p>
-                                    <p>{examDetails?.alloted_sections?.length || 0}</p>
+
+                                <div className="viewexam-viwer-header flex justify-between items-center">
+                                    <h2 className='text-xl'>MCQ</h2>
+                                    <p>10</p>
+
                                 </div>
                                 <div className="viewexam-viwer-body flex justify-center">
                                     <div className="viewexams-container pb-2">
@@ -76,9 +78,10 @@ const ViewExam = ({ exam, onBack }) => {
                                 </div>
                             </div>
                             <div className='viewexam-q'>
-                                <div className="viewexam-viwer-header flex justify-between">
-                                    <p className='text-xl font-bold text-white leading-loose'>Coding</p>
-                                    <p className='pb-0'>{examDetails.selected_coding_questions?.length || 0}</p>
+                                <div className="viewexam-viwer-header flex justify-between items-center">
+                                    <h2 className='text-xl'>Coding</h2>
+                                    <p>2</p>
+
                                 </div>
                                 <div className="viewexam-viwer-body flex justify-center">
                                     <div className="viewexams-container pb-2">

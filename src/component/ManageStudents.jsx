@@ -5,6 +5,7 @@ import line from "../assets/Line.png";
 import Swal from "sweetalert2";
 import { motion } from "framer-motion";
 import { FaDatabase, FaPen, FaUpload } from "react-icons/fa";
+
 import { authFetch, authFetchPayload } from '../scripts/AuthProvider';
 
 
@@ -13,6 +14,7 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen }) => {
   const userCount = useRef(0); // to track total students count
   const totalAllowedStudents = useRef(0); // to track max students count
   const [showFilter, setShowFilter] = useState(false);
+
   const [activeTab, setActiveTab] = useState(""); // default to first branch after load
   const [branchFilter, setBranchFilter] = useState(""); // unused? you can keep or remove
   const [studentsData, setStudentsData] = useState({}); // expect object with branch keys
@@ -113,6 +115,61 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen }) => {
       });
     }
   }
+
+  // Moved fetchStudentsData and handleDeleteStudent outside of JSX
+  const fetchStudentsData = async () => {
+    console.log("Fetch");
+  };
+
+  const handleDeleteStudent = async (usn) => {
+    Swal.fire({
+      title: "Warning",
+      text: "Are you sure you want to delete this item? ",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes",
+      cancelButtonText: "No",
+      background: "#181817",
+      color: "#fff",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          // Send delete request to backend
+          const response = await fetch(`http://your-backend-url/api/students/${usn}`, {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
+
+          if (!response.ok) {
+            fetchStudentsData();
+            throw new Error("Failed to delete student");
+          }
+
+          // Show success alert
+          Swal.fire({
+            title: "Deleted!",
+            text: "Student has been removed.",
+            icon: "success",
+            background: "#181817",
+            color: "#fff",
+          });
+
+          // Refresh the state by fetching updated data
+          fetchStudentsData();
+        } catch (error) {
+          Swal.fire({
+            title: "Error!",
+            text: "Failed to delete student. Please try again.",
+            icon: "error",
+            background: "#181817",
+            color: "#fff",
+          });
+        }
+      }
+    });
+  };
 
   return (
     <div className="lg:w-3xl justify-center flex flex-wrap result-container">
@@ -645,7 +702,6 @@ const AddStudentModal = ({ onClose, groups }) => {
             <FaPen className="icon" /> Add Manually
           </motion.button>
         </div>
-
         {/* Dataset (Excel Upload) Section */}
         {activeTab === "dataset" && (
           <div className="upload-section">
@@ -689,6 +745,7 @@ const AddStudentModal = ({ onClose, groups }) => {
                 onChange={handleChange}
               />
               {errors.lastName && <span className="error-text">{errors.lastName}</span>}
+
             </div>
 
             <div className="form-group">
@@ -701,6 +758,7 @@ const AddStudentModal = ({ onClose, groups }) => {
                 value={student.email}
                 onChange={handleChange}
               />
+
               {errors.email && <span className="error-text">{errors.email}</span>}
             </div>
 

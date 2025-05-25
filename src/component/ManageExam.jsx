@@ -16,7 +16,9 @@ const ManageExam = ({ onCreateNewExam, onNext }) => {
     const filterRef = useRef(null);
     const subPopupRef = useRef(null);
     let hoverTimeout = useRef(null);
+
     const [tableData, setTableData] = useState([]);
+
 
     // Toggle filter pop-up
     const toggleFilter = () => {
@@ -160,7 +162,7 @@ const ManageExam = ({ onCreateNewExam, onNext }) => {
                             <button className="filter-btn" onClick={toggleFilter}>
                                 <img src={filter} alt="Filter" />
                             </button>
-                            <div className="search-box flex items-center w-full sm:w-auto">
+                            <div className="search-box flex items-center w-full">
                                 <FaSearch className="search-icon" />
                                 <input
                                     type="text"

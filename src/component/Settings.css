@@ -315,13 +315,13 @@
     font-family: madina-light;
 }
 
-.modal-buttons {
+.setting-modal-buttons {
     display: flex;
     justify-content: flex-end;
     gap: 1rem;
 }
 
-.modal-buttons button {
+.setting-modal-buttons button {
     background-color: #E91E63;
     border: none;
     padding: 0.6rem 1.2rem;
@@ -331,15 +331,15 @@
     font-weight: 500;
 }
 
-.modal-buttons button:hover {
+.setting-modal-buttons button:hover {
     background-color: #d81b60;
 }
 
-.modal-buttons button:first-child {
+.setting-modal-buttons button:first-child {
     background-color: #666;
 }
 
-.modal-buttons button:first-child:hover {
+.setting-modal-buttons button:first-child:hover {
     background-color: #555;
 }
 
@@ -348,460 +348,26 @@
 }
 
 
-@media (min-width: 1920px) {
-    .settings-container {
-        padding: 1.5rem; 
-        width: calc(100% - 80px); 
-        height: 90vh; 
-    }
-
-    .settings-box {
-        width: 94%; 
-        padding-top: 2rem; 
-    }
-
-    .m-password-btn {
-        width: 240px; 
-        margin-right: 60px; 
-        font-size: 4rem; 
-        padding: 0.8rem; 
-        
-    }
-
-    .m-password-btn:hover {
-        background-color: #10459b;
-        border: 2px solid #10459b;
-    }
-
-    .settings-box h1 {
-        font-size: 3rem; 
-        margin-top: 1.2rem;
-        margin-bottom: 1.5rem;
-    }
-
-    .profile-card {
-        padding: 1.5rem; 
-        border-radius: 12px; 
-    }
-
-    .profile-card h3 {
-        font-size: 2.2rem; 
-    }
-
-    .profile-details-container {
-        gap: 1.5rem; 
-    }
-
-    .profile-details {
-        width: 68%; 
-    }
-
-    .r-activity-history {
-        width: 30%; 
-    }
-
-    .profile-img-col {
-        width: 500px; 
-        margin-left: 30px;
-    }
-
-    .profile-img-col img {
-        width: 150px; 
-        height: 150px;
-        margin-right: 40px;
-        border-radius: 18px; 
-    }
-
-    .profile-img-col p,
-    .profile-d-display p {
-        font-size: 1.4rem; 
-        margin-top: 10px;
-    }
-
-    .activity-history {
-        height: 400px; 
-        padding: 10px 25px; 
-        border-radius: 12px;
-    }
-
-    .activity-history h5 {
-        font-size: 2.5rem; /* Larger heading */
-        margin-top: 20px;
-        margin-bottom: 20px;
-    }
-
-    .activity-history p {
-        font-size: 3rem; /* Larger text */
-    }
-
-    .activity-list {
-        height: 250px; 
-    }
-
-    .activity-history button {
-        padding: 8px 16px; /* Larger button */
-        font-size: 1.8rem;
-        min-width: 120px;
-        margin-top: 15px;
-    }
-
-    .Account-manager-box {
-        height: 200px; 
-        padding: 2rem;
-        margin-top: 30px;
-        margin-bottom: 25px;
-        border-radius: 18px;
-    }
-
-    .Account-manager-box h5 {
-        font-size: 1.8rem;
-    }
-
-    .Account-manager-box p {
-        font-size: 1.3rem;
-        margin-top: 12px;
-    }
-
-    .manage-table-container {
-        margin-top: 30px;
-    }
-
-    .manage-table {
-        min-height: 35vh; 
-        max-height: 45vh; 
-        border-radius: 12px;
-        margin-top: 25px;
-    }
-
-    .manage-table table thead {
-        height: 6vh; 
-        font-size: 2.5rem; 
-    }
-
-    .manage-table table tbody tr {
-        height: 7vh; 
-        font-size: 2.5rem; 
-    }
-
-    .m-edit-btn {
-        padding: 8px 30px; /* Larger button */
-        font-size: 1.3rem;
-    }
-
-    .m-delte-btn {
-        padding: 8px 20px; /* Larger button */
-        font-size: 1.5rem;
-    }
-
-    .manage-create-btn {
-        padding: 10px 20px; /* Larger button */
-        font-size: 1.5rem;
-    }
-
-    .modal-content {
-        width: 600px; 
-        padding: 2.5rem; 
-        border-radius: 10px;
-    }
-
-    .modal-content h2 {
-        font-size: 1.8rem; 
-        margin-bottom: 1.5rem;
-    }
-
-    .modal-row {
-        padding: 12px; 
-    }
-
-    .modal-row label {
-        width: 25%; 
-        font-size: 1.2rem;
-    }
-
-    .modal-row select,
-    .modal-row input {
-        width: 75%; 
-        padding: 0.7rem; /* Larger inputs */
-        font-size: 1.2rem;
-    }
-
-    .modal-buttons button {
-        padding: 0.8rem 1.5rem; 
-        font-size: 1.3rem;
-    }
-}
-/* Specific Adjustments for 1280×720 */
-@media (min-width: 1280px)  {
-    .settings-container {
-        padding: 1.1rem;
-        height: 87vh; 
-        width: calc(100% - 60px); 
-    }
-
-    .settings-box {
-        width: 96%; /* Slight adjustment for better fit */
-        padding-top: 1.3rem;
-    }
-
-    .m-password-btn {
-        width: 115px; 
-        margin-right: 30px; 
-        font-size: 0.7rem; 
-        padding: 0.4rem;
-    }
-
-    .settings-box h1 {
-        font-size: 2.3rem; 
-        margin-top: 0.8rem;
-        margin-bottom: 0.9rem;
-    }
-
-    .profile-card {
-        padding: 0.9rem; 
-    }
-
-    .profile-card h3 {
-        font-size: 1.8rem; 
-    }
-
-    .profile-details-container {
-        gap: 0.9rem; 
-    }
-
-    .profile-details {
-        width: 62%; 
-    }
-
-    .r-activity-history {
-        width: 35%; 
-    }
-
-    .profile-img-col {
-        width: 360px; 
-        margin-left: 15px;
-    }
-
-    .profile-img-col img {
-        width: 110px; /* Slightly smaller than 120px */
-        height: 110px;
-        margin-right: 25px;
-    }
-
-    .profile-img-col p,
-    .profile-d-display p {
-        font-size: 1.15rem; 
-    }
-
-    .activity-history {
-        height: 300px; 
-        padding: 5px 15px; 
-    }
-
-    .activity-list {
-        height: 175px; 
-    }
-
-    .activity-history h5 {
-        font-size: 1.1rem; 
-        margin-top: 12px;
-        margin-bottom: 12px;
-    }
-
-    .activity-history p {
-        font-size: 0.9rem; 
-    }
-
-    .activity-history button {
-        padding: 6px 10px;
-        font-size: 0.9rem;
-        min-width: 90px;
-        margin-top: 8px;
-    }
-
-    .Account-manager-box {
-        height: 150px; 
-        padding: 1.2rem;
-        margin-top: 20px;
-        margin-bottom: 15px;
-    }
-
-    .Account-manager-box h5 {
-        font-size: 1.4rem;
-    }
-
-    .Account-manager-box p {
-        font-size: 1.1rem;
-        margin-top: 8px;
-    }
-
-    .manage-table-container {
-        margin-top: 20px;
-    }
-
-    .manage-table {
-        max-height: 38vh; 
-        margin-top: 18px;
-    }
-
-    .manage-table table thead {
-        font-size: 1.1rem; 
-        height: 4.5vh;
-    }
-
-    .manage-table table tbody tr {
-        font-size: 1rem;
-        height: 5.5vh;
-    }
-    .m-edit-btn, .m-delte-btn {
-        padding: 4px 7px;
-        font-size: 0.8rem;
-    }
-
-    
-
-    .manage-create-btn {
-        padding: 7px 12px;
-        font-size: 0.95rem;
-    }
-
-    .modal-content {
-        width: 480px; 
-        padding: 1.8rem;
-    }
-
-    .modal-content h2 {
-        font-size: 0.7rem;
-    }
-
-    .modal-row {
-        padding: 8px;
-    }
-
-    .modal-row label {
-        width: 28%; /
-    }
-
-    .modal-row select,
-    .modal-row input {
-        width: 72%; 
-        padding: 0.45rem;
-    }
-
-    .modal-buttons button {
-        padding: 0.55rem 1.1rem;
-        font-size: 0.95rem;
-    }
-}
-
-/* Tablet Landscape (768px - 1023px, excluding 1024×768) */
-@media (min-width: 768px) and (max-width: 1023px) {
-    .settings-container {
-        width: 100%;
-        padding: 1rem;
-        height: auto; 
-    }
-
-    .sidebar {
-        display: block;
-    }
-
-    .profile-details-container {
-        flex-direction: column;
-        gap: 1rem;
-    }
-
-    .profile-details,
-    .r-activity-history {
-        width: 100%;
-    }
-
-    .profile-img-col {
-        width: 100%;
-        margin-left: 0;
-        display: flex;
-        align-items: center;
-        gap: 20px;
-    }
-
-    .profile-img-col img {
-        width: 90px;
-        height: 90px;
-    }
-
-    .settings-box h1 {
-        font-size: 2.2rem;
-    }
-
-    .activity-history {
-        height: 250px;
-    }
-
-    .activity-list {
-        height: 150px;
-    }
-
-    .m-password-btn {
-        width: 135px;
-        margin-right: 10px;
-        font-size: 0.7rem;
-    }
-
-    .activity-history button {
-        padding: 8px 12px;
-        font-size: 0.85rem;
-        min-width: 95px;
-        position: relative;
-        top: -35px; 
-    }
-
-    .manage-table {
-        width: 100%;
-        max-width: 100%;
-        overflow-x: auto;
-        margin-top: 20px;
-    }
-
-    .manage-table table {
-        width: 100%;
-        min-width: 700px;
-    }
-
-    .manage-table table thead {
-        font-size: 0.9rem;
-    }
-
-    .manage-table table tbody tr {
-        font-size: 1rem;
-        height: 6vh;
-    }
-
-    .m-edit-btn, .m-delte-btn {
-        padding: 5px 12px;
-        font-size: 0.65rem;
-    }
-
-    .manage-create-btn {
-        padding: 6px 12px;
-        font-size: 1rem;
-    }
-}
-
 /* Tablet Portrait/Phone Landscape (426px - 767px) */
 @media (min-width: 426px) and (max-width: 767px) {
     .settings-container {
         width: 100%;
         padding: 0.8rem;
     }
+
     .settings-box h1 {
         font-size: 2rem;
     }
+
     .profile-details-container {
         flex-direction: column;
     }
+
     .profile-details,
     .r-activity-history {
         width: 100%;
     }
+
     .profile-img-col {
         width: 100%;
         margin-left: 0;
@@ -809,26 +375,33 @@
         align-items: center;
         gap: 15px;
     }
+
     .profile-img-col img {
         width: 80px;
         height: 80px;
     }
+
     .activity-history {
         height: 200px;
     }
+
     .activity-list {
         height: 120px;
     }
+
     .manage-table {
         overflow-x: auto;
     }
+
     .manage-table table {
         min-width: 600px;
     }
+
     .m-password-btn {
         width: 140px;
         margin-right: 10px;
     }
+
     .activity-history button {
         padding: 4px 8px;
         font-size: 0.8rem;
@@ -841,7 +414,7 @@
     .settings-container {
         width: 100%;
         padding: 1rem;
-        min-height: 100vh; 
+        min-height: 100vh;
         box-sizing: border-box;
     }
 
@@ -873,14 +446,14 @@
     }
 
     .profile-img-col img {
-        width: clamp(70px, 20vw, 90px); 
+        width: clamp(70px, 20vw, 90px);
         height: clamp(70px, 20vw, 90px);
         object-fit: cover;
-        border-radius: 50%; 
+        border-radius: 50%;
     }
 
     .settings-box h1 {
-        font-size: clamp(1.5rem, 6vw, 2rem); 
+        font-size: clamp(1.5rem, 6vw, 2rem);
         text-align: center;
         margin: 1rem 0;
     }
@@ -893,7 +466,7 @@
 
     .activity-list {
         height: auto;
-        max-height: 40vh; 
+        max-height: 40vh;
         overflow-y: auto;
     }
 
@@ -911,7 +484,7 @@
         min-width: clamp(80px, 25vw, 100px);
         margin: 0.5rem auto;
         display: block;
-        position: static; 
+        position: static;
     }
 
     .manage-table {
@@ -919,12 +492,13 @@
         max-width: 100%;
         overflow-x: auto;
         padding: 0.5rem 0;
-        -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+        -webkit-overflow-scrolling: touch;
+        /* Smooth scrolling on iOS */
     }
 
     .manage-table table {
         width: 100%;
-        min-width: 300px; 
+        min-width: 300px;
         border-collapse: collapse;
     }
 
@@ -932,7 +506,7 @@
         font-size: clamp(0.8rem, 2.5vw, 0.9rem);
         position: sticky;
         top: 0;
-    
+
     }
 
     .manage-table table tbody tr {
@@ -941,7 +515,8 @@
         padding: 0.5rem 0;
     }
 
-    .m-edit-btn, .m-delte-btn {
+    .m-edit-btn,
+    .m-delte-btn {
         padding: 0.4rem 0.8rem;
         font-size: clamp(0.6rem, 2vw, 0.75rem);
         margin: 0.2rem;
@@ -980,145 +555,146 @@
     }
 
     .activity-list {
-        max-height: 35vh;}
-
- @media (min-width: 768px) and (max-width: 1024px) {
-    .settings-container {
-        width: 100%;
-        padding: 1rem;
-        height: auto;
+        max-height: 35vh;
     }
 
-    .sidebar {
-        display: none;
-    }
+    @media (min-width: 768px) and (max-width: 1024px) {
+        .settings-container {
+            width: 100%;
+            padding: 1rem;
+            height: auto;
+        }
 
-    .profile-details-container {
-        flex-direction: column;
-        gap: 1.2rem;
-    }
+        .sidebar {
+            display: none;
+        }
 
-    .profile-details,
-    .r-activity-history {
-        width: 100%;
-    }
+        .profile-details-container {
+            flex-direction: column;
+            gap: 1.2rem;
+        }
 
-    .profile-img-col {
-        width: 100%;
-        margin-left: 0;
-        display: flex;
-        align-items: center;
-        gap: 20px;
-    }
+        .profile-details,
+        .r-activity-history {
+            width: 100%;
+        }
 
-    .profile-img-col img {
-        width: 100px;
-        height: 100px;
-        border-radius: 15px;
-    }
+        .profile-img-col {
+            width: 100%;
+            margin-left: 0;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
 
-    .settings-box h1 {
-        font-size: 2.2rem;
-        margin: 1rem 0;
-    }
+        .profile-img-col img {
+            width: 100px;
+            height: 100px;
+            border-radius: 15px;
+        }
 
-    .activity-history {
-        height: 250px;
-        padding: 1rem 2rem;
-    }
+        .settings-box h1 {
+            font-size: 2.2rem;
+            margin: 1rem 0;
+        }
 
-    .activity-list {
-        height: 150px;
-        overflow-y: auto;
-    }
+        .activity-history {
+            height: 250px;
+            padding: 1rem 2rem;
+        }
 
-    .m-password-btn {
-        width: 150px;
-        margin-right: 15px;
-        padding: 0.6rem 1.2rem;
-        font-size: 1rem;
-        top
-    }
+        .activity-list {
+            height: 150px;
+            overflow-y: auto;
+        }
 
-    .m-password-btn {
-        width: 150px;
-        margin-right: 15px;
-        padding: 0.6rem 1.2rem;
-        font-size: 1rem;
-        position: relative; 
-        top: -30px; 
-    }
+        .m-password-btn {
+            width: 150px;
+            margin-right: 15px;
+            padding: 0.6rem 1.2rem;
+            font-size: 1rem;
+            top
+        }
 
-    .manage-table {
-        width: 100%;
-        max-width: 100%;
-        overflow-x: auto;
-        margin-top: 1.5rem;
-        background-color: #393939;
-    }
+        .m-password-btn {
+            width: 150px;
+            margin-right: 15px;
+            padding: 0.6rem 1.2rem;
+            font-size: 1rem;
+            position: relative;
+            top: -30px;
+        }
 
-    .manage-table table {
-        width: 100%;
-        min-width: 800px;
-    }
+        .manage-table {
+            width: 100%;
+            max-width: 100%;
+            overflow-x: auto;
+            margin-top: 1.5rem;
+            background-color: #393939;
+        }
 
-    .manage-table table thead {
-        height: 5vh;
-        font-size: 1.2rem;
-        background-color: #535353;
-    }
+        .manage-table table {
+            width: 100%;
+            min-width: 800px;
+        }
 
-    .manage-table table tbody tr {
-        height: 6vh;
-        font-size: 1.1rem;
-        background-color: #424242;
-        color: white;
-        border-bottom: 1px solid white;
-    }
+        .manage-table table thead {
+            height: 5vh;
+            font-size: 1.2rem;
+            background-color: #535353;
+        }
 
-    .m-edit-btn,
-    .m-delte-btn {
-        padding: 0.6rem 1.2rem;
-        font-size: 0.9rem;
-    }
+        .manage-table table tbody tr {
+            height: 6vh;
+            font-size: 1.1rem;
+            background-color: #424242;
+            color: white;
+            border-bottom: 1px solid white;
+        }
 
-    .manage-create-btn {
-        padding: 0.8rem 1.5rem;
-        font-size: 1.1rem;
-    }
+        .m-edit-btn,
+        .m-delte-btn {
+            padding: 0.6rem 1.2rem;
+            font-size: 0.9rem;
+        }
 
-    .modal-content {
-        width: 80%;
-        padding: 2rem;
-        border-radius: 8px;
-    }
+        .manage-create-btn {
+            padding: 0.8rem 1.5rem;
+            font-size: 1.1rem;
+        }
 
-    .modal-content h2 {
-        font-size: 1.5rem;
-        margin-bottom: 1.2rem;
-    }
+        .modal-content {
+            width: 80%;
+            padding: 2rem;
+            border-radius: 8px;
+        }
 
-    .modal-row {
-        padding: 1rem;
-    }
+        .modal-content h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1.2rem;
+        }
 
-    .modal-row label {
-        width: 30%;
-        font-size: 1.1rem;
-    }
+        .modal-row {
+            padding: 1rem;
+        }
 
-    .modal-row select,
-    .modal-row input {
-        width: 70%;
-        padding: 0.6rem;
-        font-size: 1.1rem;
-    }
+        .modal-row label {
+            width: 30%;
+            font-size: 1.1rem;
+        }
 
-    .modal-buttons button {
-        padding: 0.7rem 1.3rem;
-        font-size: 1.1rem;
+        .modal-row select,
+        .modal-row input {
+            width: 70%;
+            padding: 0.6rem;
+            font-size: 1.1rem;
+        }
+
+        .modal-buttons button {
+            padding: 0.7rem 1.3rem;
+            font-size: 1.1rem;
+        }
     }
-}
 
 
 

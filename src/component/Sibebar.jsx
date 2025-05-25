@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { FaMoneyBillWave, FaCog } from "react-icons/fa";
+import { FaMoneyBillWave, FaCog, FaSignOutAlt } from "react-icons/fa";
 import { motion } from "motion/react";
 import "../pages/home.css";
-import logo from '../assets/logo.png';
+import logo from '../assets/ctc-logo.png';
 
 const Sidebar = ({ activeComponent, setActiveComponent }) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -37,7 +37,7 @@ const Sidebar = ({ activeComponent, setActiveComponent }) => {
                 <motion.button
                     className="menu-toggle"
                     onClick={() => setIsOpen(!isOpen)}
-                    animate={{ left: isOpen ? "150px" : "0px" }}
+                    animate={{ left: isOpen ? "200px" : "0px" }}
                     transition={{ duration: 0.3 }}
                 >
                     <motion.svg
@@ -144,6 +144,14 @@ const Sidebar = ({ activeComponent, setActiveComponent }) => {
                     >
                         <FaCog className="sidebar-icon" />
                         <h6 className="sidebar-item">Settings</h6>
+                    </button>
+                    <button
+                        type="button"
+                        className={`bottom-sidebar-button ${currentActive === "settings" ? "side-active" : ""}`}
+                        onClick={() => handleNavigation("settings")}
+                    >
+                        <FaSignOutAlt className="sidebar-icon" />
+                        <h6 className="sidebar-item">Logout</h6>
                     </button>
                 </div>
             </div>
