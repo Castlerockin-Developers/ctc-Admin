@@ -26,6 +26,7 @@
 
 .createexam-col1 {
     width: 90%;
+    margin-top: 20px;
 }
 
 .createexam-col1 h4 {
@@ -136,26 +137,11 @@
     margin-left: 0px !important;
 }
 
-.ql-container,
-.ql-toolbar {
-    width: 121%;
-    border: 1px solid rgb(141, 141, 141) !important;
-    margin-left: 33px;
-}
-
-.ql-container {
-    height: 80%;
-}
-
-.ql-toolbar {
-    margin-top: 15px;
-}
-
 .bottom-btns {
     width: 18%;
     display: flex;
     justify-content: space-between;
-    margin-top: -10px;
+    margin-top: 80px;
 }
 
 .back-btn-create {
@@ -181,13 +167,13 @@
     color: white;
     padding: 10px 20px;
     border-radius: 5px;
-    background-color: #9B005D;
+    background-color: #8E5DAF;
     font-family: madina-semibold;
     cursor: pointer;
 }
 
 .next-btn:hover {
-    background-color: #df0086;
+    background-color: #6f1ba7;
 }
 
 .addq-container {
@@ -225,6 +211,139 @@
 
 .question-bank {
     margin-top: 6px;
+}
+
+.MCQ-edit-container {
+    background-color: #1F1F1F;
+    border: 1px solid rgb(124, 124, 124);
+    width: 60%;
+    height: 80%;
+    overflow-y: auto;
+    padding: 20px 30px;
+}
+
+.MCQ-edit-container h2 {
+    margin: 15px 0px;
+    font-family: madina-semibold;
+    font-size: 1.8rem;
+}
+
+.MCQ-edit-container label {
+    width: 4.2vw;
+    margin: 8px 0px;
+    font-size: 1.1rem;
+    font-family: madina-regular;
+}
+
+.MCQ-edit-container textarea {
+    width: 70%;
+    height: 18vh;
+    padding: 5px;
+    background-color: #424242;
+    font-family: madina-regular;
+}
+
+.Coding-edit-container {
+    background-color: #1F1F1F;
+    border: 1px solid rgb(124, 124, 124);
+    width: 60%;
+    height: 70vh;
+    overflow-y: auto;
+    padding: 8px;
+}
+
+.Coding-question-statement {
+    margin-bottom: 15px;
+}
+
+.Coding-edit-container h2 {
+    margin: 15px 20px;
+    font-family: madina-semibold;
+    font-size: 1.8rem;
+}
+
+.Coding-edit-container label {
+    margin: 8px 20px;
+    font-size: 1.1rem;
+    font-family: madina-regular;
+}
+
+.Coding-edit-container textarea {
+    width: 80%;
+    margin-left: 20px;
+    padding: 10px;
+}
+
+.add-btn {
+    background-color: green;
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 20px;
+    margin-left: 18px;
+}
+
+.add-btn:hover {
+    background-color: darkgreen;
+}
+
+.delete-btn {
+    background-color: red;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 10px 10px;
+
+}
+
+.delete-btn:hover {
+    background-color: darkred;
+}
+
+.save-cancel button {
+    padding: 10px;
+}
+
+.ql-container {
+    color: white !important;
+    background-color: #4B4B4B !important;
+    border-bottom-right-radius: 5px;
+    border-bottom-left-radius: 5px;
+    width: 180%;
+    position: relative;
+    left: 5px;
+    margin-left: 33px;
+}
+
+.ql-toolbar {
+    background: #303030 !important;
+    border-radius: 8px 8px 0 0;
+    color: white !important;
+    width: 180%;
+    position: relative;
+    left: 5px;
+    margin-left: 33px;
+}
+
+.ql-editor {
+    min-height: 150px;
+    color: white !important;
+}
+
+.add-option {
+    padding: 8px 10px;
+    margin-top: 9px;
+    cursor: pointer;
+}
+
+.eq-button button {
+    padding: 8px 10px;
+    cursor: pointer;
 }
 
 .question-bank-head {
@@ -363,7 +482,8 @@
 .question details summary button:hover {
     background-color: #056308;
 }
-.default-btn{
+
+.default-btn {
     font-size: 0.9rem;
     font-family: madina-medium;
     padding: 4px 10px 5px;
@@ -374,36 +494,37 @@
     margin: 30px;
 }
 
-.randomize-head{
-    margin: auto ;
+.randomize-head {
+    margin: auto;
     margin-top: 10px;
     position: relative;
+    margin-bottom: 10px;
 }
 
-.randomize-head img{
+.randomize-head img {
     position: relative;
 }
 
 .question details p {
     margin-top: 10px;
 }
- 
-.random-data{
+
+.random-data {
     display: flex;
     flex-direction: column;
     gap: 40px;
     padding: 5px 40px 5px;
 }
- 
-.random-data label{
+
+.random-data label {
     width: 13vw;
 }
- 
-.random-data input{
+
+.random-data input {
     margin-left: 20px;
 }
- 
- 
+
+
 
 .addedquestion-bank-head {
     width: 100%;
@@ -520,14 +641,15 @@
     border-radius: 5px;
     cursor: pointer;
 }
-.edit-button{
+
+.edit-button {
     padding: 10px;
-    background: rgb(120, 120, 120)!important;
+    background: rgb(120, 120, 120) !important;
     font-size: 0.9rem;
     border-radius: 5px;
     margin-right: 10px;
 }
- 
+
 
 .addedquestion-bank-head button:hover {
     background-color: #a30062;
@@ -677,14 +799,14 @@
     color: white;
     padding: 10px 20px 10px;
     border-radius: 5px;
-    background-color: #9B005D;
+    background-color: #8E5DAF;
     margin-right: 20px;
     font-family: madina-semibold;
     cursor: pointer;
 }
 
 .exam-next-btn:hover {
-    background-color: #ff0099;
+    background-color: #6f1ba7;
 }
 
 .MCQ-question-score {
@@ -974,7 +1096,8 @@
 .sub-item:hover {
     background: #4A4A4A;
 }
-@media(min-width:0px) and (max-width:426px){
+
+@media(min-width:0px) and (max-width:426px) {
     .newexam-container {
         width: 100%;
     }
@@ -1040,8 +1163,8 @@
     }
 
     .bottom-btns {
-        width: 55%;
-        margin-top: 60px;
+        width: 70%;
+        margin-top: 112px;
     }
 
     .addq-container,
@@ -1070,7 +1193,8 @@
     .all-s-body table {
         width: 150%;
     }
-      /* Responsive Grid Layout for All & Added Students */
+
+    /* Responsive Grid Layout for All & Added Students */
     /* Responsive Grid Layout */
     .add-s-container {
         display: flex;
@@ -1085,6 +1209,7 @@
         width: 100%;
         padding: 0.4rem;
     }
+
     .addStudent-box {
         width: 93%;
         padding-top: 1.5rem;
@@ -1225,22 +1350,25 @@
     .all-s-body table tbody tr {
         border: 1px solid rgb(172, 172, 172);
     }
-    .addStudent-box{
+
+    .addStudent-box {
         padding-top: 0rem;
     }
 
     .addquestion-box h1,
-    .addStudent-box h1{
-    margin-bottom: 0.5rem;
-    margin-top: 0.5rem;
-}
+    .addStudent-box h1 {
+        margin-bottom: 0.5rem;
+        margin-top: 0.5rem;
+    }
+
     .all-s-header-added,
     .all-s-header {
         flex-direction: column;
         gap: 10px;
     }
 }
-@media(min-width:426px) and (max-width:768px){
+
+@media(min-width:426px) and (max-width:768px) {
 
     .newexam-container,
     .addq-container,
@@ -1337,7 +1465,13 @@
         top: 30%;
     }
 }
-@media(min-width:769px) and (max-width:1024px){
+
+@media(min-width:769px) and (max-width:1024px) {
+
+    .newexam-container,
+    .addq-container {
+        width: 100%;
+    }
 
     .newexam-box h1,
     .addquestion-box h1 {
@@ -1380,11 +1514,11 @@
 
     .ql-container,
     .ql-toolbar {
-        width: 90%;
+        width: 100%;
     }
 
     .bottom-btns {
-        margin-top: 50px;
+        margin-top: 100px;
         width: 30%;
     }
 
@@ -1411,6 +1545,19 @@
 
     .addedquestion-bank-head input {
         display: none;
+    }
+
+    .question-bank-head button {
+        padding: 0.8rem;
+        font-size: 1rem;
+    }
+
+    .toggle-buttons {
+        margin-left: 23px;
+    }
+
+    .random-data label {
+        width: 20vw;
     }
 
     .randomize-btn {
@@ -1458,7 +1605,8 @@
         width: 150%;
     }
 }
-@media(min-width:1025px) and (max-width:1920px) {
+
+/* @media(min-width:1025px) and (max-width:1920px) {
 
     .newexam-box h1,
     .addStudent-box h1 {
@@ -1511,4 +1659,4 @@
         padding: 4px 6px 4px;
     }
 
-}
+} */

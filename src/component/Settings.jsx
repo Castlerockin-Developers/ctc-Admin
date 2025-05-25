@@ -7,24 +7,24 @@ import "./Settings.css";
 const Settings = ({ openAddUserModal, setOpenAddUserModal }) => {
   // Search query state
   const [searchQuery, setSearchQuery] = useState("");
-  
+
 
   // Modal visibility states for editing and adding users
   const [showEditUserModal, setShowEditUserModal] = useState(false);
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
 
   // User list state (dummy data)
-  const user = { role: "Admin", email: "admin@example.com", phone_number: "987654321", profile_img: "https://i.pravatar.cc/120?img=3" };
+  const user = { role: "Admin", email: "admin@example.com", phone_number: "1234 5678", profile_img: "https://ui-avatars.com/api/?name=John+Doe&background=0D8ABC&color=fff&size=120" };
   const [users, setUsers] = useState([
-    { id: 1, name: "Alice", email: "alice@example.com", phone: "987654321", role: "Admin" },
-    { id: 2, name: "Bob", email: "bob@example.com", phone: "987654321", role: "User" },
-    { id: 3, name: "Charlie", email: "charlie@example.com", phone: "987654321", role: "User" },
+    { id: 1, name: "John Doe", email: "alice@example.com", phone: "1234 5678", role: "Admin" },
+    { id: 2, name: "Bob", email: "bob@example.com", phone: "1234 5678", role: "User" },
+    { id: 3, name: "Charlie", email: "charlie@example.com", phone: "1234 5678", role: "User" },
   ]);
-  const relations = { name: "XYZ", email: "panel@example.com", phone_number: "987654321" };
+  const relations = { name: "Alice", email: "Alice@example.com", phone_number: "9876 4321" };
   const activityHistory = [
-    { id: 1, action: "Created assessment by XYZ", time: "22:11 01/02/2025" },
-    { id: 2, action: "Created assessment by XYZ", time: "22:11 01/02/2025" },
-    { id: 3, action: "Created assessment by XYZ", time: "22:11 01/02/" },
+    { id: 1, action: "Created assessment by Alice", time: "22:11 01/02/2025" },
+    { id: 2, action: "Created assessment by Bob", time: "22:11 10/02/2025" },
+    { id: 3, action: "Created assessment by Charlie", time: "22:11 20/02/" },
   ];
 
   // States for the Add User form
@@ -40,19 +40,19 @@ const Settings = ({ openAddUserModal, setOpenAddUserModal }) => {
   const [editPhone, setEditPhone] = useState("");
   const [editRole, setEditRole] = useState("");
 
-// States for the Change Password form
-const [oldPassword, setOldPassword] = useState("");
-const [newPassword, setNewPassword] = useState("");
-const [confirmPassword, setConfirmPassword] = useState("");
+  // States for the Change Password form
+  const [oldPassword, setOldPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   // Function to handle change password action (for both admin and user)
   const handleChangePasswordForUser = (user) => {
-    console.log("hello",user.name);
+    console.log("hello", user.name);
   };
 
- // Function to create a new user (Add User modal) with validation
- const handleCreateUser = async () => {
-  const errors = {};
+  // Function to create a new user (Add User modal) with validation
+  const handleCreateUser = async () => {
+    const errors = {};
 
     if (!newUserName.trim()) {
       errors.newUserName = "Name is required.";
@@ -81,30 +81,30 @@ const [confirmPassword, setConfirmPassword] = useState("");
       role: newUserRole,
     };
 
-  // The following axios request is commented out because the backend is not ready
-  /*
-  try {
-    const response = await axios.post("http://your-backend-url/api/users", newUserData, {
-      headers: { "Content-Type": "application/json" },
-    });
-    // On success, update your users state as needed:
-    setUsers((prev) => [...prev, response.data]);
+    // The following axios request is commented out because the backend is not ready
+    /*
+    try {
+      const response = await axios.post("http://your-backend-url/api/users", newUserData, {
+        headers: { "Content-Type": "application/json" },
+      });
+      // On success, update your users state as needed:
+      setUsers((prev) => [...prev, response.data]);
+      setOpenAddUserModal(false);
+    } catch (error) {
+      console.error("Error creating user:", error);
+      swal("Error", "Failed to create user. Please try again.", "error");
+    }
+    */
+    // For now, simply log the JSON to the console
+    console.log("New User Data (JSON):", JSON.stringify(newUserData));
     setOpenAddUserModal(false);
-  } catch (error) {
-    console.error("Error creating user:", error);
-    swal("Error", "Failed to create user. Please try again.", "error");
-  }
-  */
-  // For now, simply log the JSON to the console
-  console.log("New User Data (JSON):", JSON.stringify(newUserData));
-  setOpenAddUserModal(false);
-  // Clear form fields
-  setNewUserName("");
-  setNewUserEmail("");
-  setNewUserPhone("");
-  setNewUserRole("User");
-  setAddUserErrors({});
-};
+    // Clear form fields
+    setNewUserName("");
+    setNewUserEmail("");
+    setNewUserPhone("");
+    setNewUserRole("User");
+    setAddUserErrors({});
+  };
 
   // Open the Edit User modal and pre-populate fields
   const handleEditUser = (user) => {
@@ -146,8 +146,8 @@ const [confirmPassword, setConfirmPassword] = useState("");
 
   const handleChangePassword = () => {
     if (newPassword !== confirmPassword) {
-        swal("Error", "New password and confirm password do not match", "error");
-        return;
+      swal("Error", "New password and confirm password do not match", "error");
+      return;
     }
     swal("Success", "Password changed successfully", "success");
     // Clear password fields and close modal
@@ -155,7 +155,7 @@ const [confirmPassword, setConfirmPassword] = useState("");
     setNewPassword("");
     setConfirmPassword("");
     setShowChangePasswordModal(false);
-};
+  };
 
 
   // Filter users based on search query
@@ -179,7 +179,7 @@ const [confirmPassword, setConfirmPassword] = useState("");
                 <div className="flex profile-img-col">
                   <img src={user.profile_img} alt="Profile Avatar" />
                   <div>
-                    <p>Name:</p>
+                    <p>Role:</p>
                     <p>Email:</p>
                     <p>Phone Number:</p>
                   </div>
@@ -313,7 +313,7 @@ const [confirmPassword, setConfirmPassword] = useState("");
               )}
             </tbody>
           </table>
-        </div>  
+        </div>
 
         {/* Add User Modal */}
         {openAddUserModal && (
@@ -354,7 +354,7 @@ const [confirmPassword, setConfirmPassword] = useState("");
                   <option value="User">User</option>
                 </select>
               </div>
-              <div className="modal-buttons">
+              <div className="setting-modal-buttons">
                 <button onClick={() => setOpenAddUserModal(false)}>Back</button>
                 <button onClick={handleCreateUser} className="create-btn">
                   Create
@@ -410,47 +410,47 @@ const [confirmPassword, setConfirmPassword] = useState("");
           </div>
         )}
         {showChangePasswordModal && (
-                    <div className="modal-backdrop">
-                        <div className="modal-content">
-                            <h2>Change Password</h2>
-                            <div className="modal-row">
-                                <label>Old Password:</label>
-                                <input
-                                    type="password"
-                                    value={oldPassword}
-                                    onChange={(e) => setOldPassword(e.target.value)}
-                                    placeholder="Enter old password"
-                                />
-                            </div>
-                            <div className="modal-row">
-                                <label>New Password:</label>
-                                <input
-                                    type="password"
-                                    value={newPassword}
-                                    onChange={(e) => setNewPassword(e.target.value)}
-                                    placeholder="Enter new password"
-                                />
-                            </div>
-                            <div className="modal-row">
-                                <label>Confirm Password:</label>
-                                <input
-                                    type="password"
-                                    value={confirmPassword}
-                                    onChange={(e) => setConfirmPassword(e.target.value)}
-                                    placeholder="Confirm new password"
-                                />
-                            </div>
-                            <div className="modal-buttons">
-                                <button onClick={() => setShowChangePasswordModal(false)}>
-                                    Back
-                                </button>
-                                <button onClick={handleChangePassword} className="create-btn">
-                                    Update Password
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )}
+          <div className="modal-backdrop">
+            <div className="modal-content">
+              <h2>Change Password</h2>
+              <div className="modal-row">
+                <label>Old Password:</label>
+                <input
+                  type="password"
+                  value={oldPassword}
+                  onChange={(e) => setOldPassword(e.target.value)}
+                  placeholder="Enter old password"
+                />
+              </div>
+              <div className="modal-row">
+                <label>New Password:</label>
+                <input
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="Enter new password"
+                />
+              </div>
+              <div className="modal-row">
+                <label>Confirm Password:</label>
+                <input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Confirm new password"
+                />
+              </div>
+              <div className="setting-modal-buttons">
+                <button onClick={() => setShowChangePasswordModal(false)}>
+                  Back
+                </button>
+                <button onClick={handleChangePassword} className="create-btn">
+                  Update Password
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

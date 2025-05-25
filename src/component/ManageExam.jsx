@@ -15,7 +15,7 @@ const ManageExam = ({ onCreateNewExam, onNext }) => {
     const filterRef = useRef(null);
     const subPopupRef = useRef(null);
     let hoverTimeout = useRef(null);
-     // // Fetch exams from backend
+    // // Fetch exams from backend
     // const fetchExams = async () => {
     //     try {
     //         let url = `${API_BASE_URL}`;
@@ -159,7 +159,7 @@ const ManageExam = ({ onCreateNewExam, onNext }) => {
                             <button className="filter-btn" onClick={toggleFilter}>
                                 <img src={filter} alt="Filter" />
                             </button>
-                            <div className="search-box flex items-center w-full sm:w-auto">
+                            <div className="search-box flex items-center w-full">
                                 <FaSearch className="search-icon" />
                                 <input
                                     type="text"
@@ -170,8 +170,8 @@ const ManageExam = ({ onCreateNewExam, onNext }) => {
                                 />
                             </div>
                             <motion.button whileTap={{ scale: 1.2 }} className="create-btn w-full sm:w-auto" onClick={onCreateNewExam}>
-                            <FaPlus className="icon" /> Create New Exam
-                        </motion.button>
+                                <FaPlus className="icon" /> Create New Exam
+                            </motion.button>
                         </div>
                     </div>
                     {showFilter && (
@@ -254,85 +254,85 @@ const ManageExam = ({ onCreateNewExam, onNext }) => {
 
 
 
-    // return (
-    //     <div className="lg:w-3xl justify-center flex flex-wrap exam-container">
-    //         <div className="exam-greeting">
-    //             <h1>Exams</h1>
-    //             <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-    //                 {/* Left Button Group */}
-    //                 <div className="m-btn-left flex flex-wrap justify-center sm:justify-start gap-2">
-    //                     <motion.button whileTap={{ scale: 1.1 }} className={activeButton === "all" ? "m-active" : ""} onClick={() => setActiveButton("all")}>
-    //                         All Exams
-    //                     </motion.button>
-    //                     <motion.button whileTap={{ scale: 1.1 }} className={activeButton === "active" ? "m-active" : ""} onClick={() => setActiveButton("active")}>
-    //                         Active
-    //                     </motion.button>
-    //                     <motion.button whileTap={{ scale: 1.1 }} className={activeButton === "completed" ? "m-active" : ""} onClick={() => setActiveButton("completed")}>
-    //                         Completed
-    //                     </motion.button>
-    //                 </div>
-    
-    //                 {/* Right Side: Filter Button, Search Bar, Create Exam Button */}
-    //                 <div className="m-btn-right flex flex-wrap items-center justify-center sm:justify-end gap-2 w-full sm:w-auto">
-    //                     <button className="filter-btn" onClick={() => setShowFilter(!showFilter)}>
-    //                         <img src={filter} alt="Filter" />
-    //                     </button>
-    
-    //                     {/* Search Bar */}
-    //                     <div className="search-box flex items-center w-full sm:w-auto">
-    //                         <FaSearch className="search-icon" />
-    //                         <input
-    //                             type="text"
-    //                             placeholder="Search exams..."
-    //                             value={searchQuery}
-    //                             onChange={(e) => handleSearch(e.target.value)}
-    //                             className="w-full sm:w-auto"
-    //                         />
-    //                     </div>
-    
-    //                     <motion.button whileTap={{ scale: 1.2 }} className="create-btn w-full sm:w-auto" onClick={onCreateNewExam}>
-    //                         <FaPlus className="icon" /> Create New Exam
-    //                     </motion.button>
-    //                 </div>
-    //             </div>
-    
-    //             {/* Table */}
-    //             <div className="m-table-container">
-    //                 <table>
-    //                     <thead>
-    //                         <tr>
-    //                             <th>#ID</th>
-    //                             <th>Name</th>
-    //                             <th>Start Time</th>
-    //                             <th>End Time</th>
-    //                             <th>Analytics</th>
-    //                             <th>Status</th>
-    //                         </tr>
-    //                     </thead>
-    //                     <tbody>
-    //                         {exams.length > 0 ? (
-    //                             exams.map((exam) => (
-    //                                 <tr key={exam.id}>
-    //                                     <td>{exam.id}</td>
-    //                                     <td>{exam.name}</td>
-    //                                     <td>{exam.start_time}</td>
-    //                                     <td>{exam.end_time}</td>
-    //                                     <td>{exam.analytics}</td>
-    //                                     <td>{exam.status}</td>
-    //                                 </tr>
-    //                             ))
-    //                         ) : (
-    //                             <tr>
-    //                                 <td colSpan="6" className="no-data">No exams found</td>
-    //                             </tr>
-    //                         )}
-    //                     </tbody>
-    //                 </table>
-    //             </div>
-    //         </div>
-    //     </div>
-    // );
-    // };
+// return (
+//     <div className="lg:w-3xl justify-center flex flex-wrap exam-container">
+//         <div className="exam-greeting">
+//             <h1>Exams</h1>
+//             <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+//                 {/* Left Button Group */}
+//                 <div className="m-btn-left flex flex-wrap justify-center sm:justify-start gap-2">
+//                     <motion.button whileTap={{ scale: 1.1 }} className={activeButton === "all" ? "m-active" : ""} onClick={() => setActiveButton("all")}>
+//                         All Exams
+//                     </motion.button>
+//                     <motion.button whileTap={{ scale: 1.1 }} className={activeButton === "active" ? "m-active" : ""} onClick={() => setActiveButton("active")}>
+//                         Active
+//                     </motion.button>
+//                     <motion.button whileTap={{ scale: 1.1 }} className={activeButton === "completed" ? "m-active" : ""} onClick={() => setActiveButton("completed")}>
+//                         Completed
+//                     </motion.button>
+//                 </div>
+
+//                 {/* Right Side: Filter Button, Search Bar, Create Exam Button */}
+//                 <div className="m-btn-right flex flex-wrap items-center justify-center sm:justify-end gap-2 w-full sm:w-auto">
+//                     <button className="filter-btn" onClick={() => setShowFilter(!showFilter)}>
+//                         <img src={filter} alt="Filter" />
+//                     </button>
+
+//                     {/* Search Bar */}
+//                     <div className="search-box flex items-center w-full sm:w-auto">
+//                         <FaSearch className="search-icon" />
+//                         <input
+//                             type="text"
+//                             placeholder="Search exams..."
+//                             value={searchQuery}
+//                             onChange={(e) => handleSearch(e.target.value)}
+//                             className="w-full sm:w-auto"
+//                         />
+//                     </div>
+
+//                     <motion.button whileTap={{ scale: 1.2 }} className="create-btn w-full sm:w-auto" onClick={onCreateNewExam}>
+//                         <FaPlus className="icon" /> Create New Exam
+//                     </motion.button>
+//                 </div>
+//             </div>
+
+//             {/* Table */}
+//             <div className="m-table-container">
+//                 <table>
+//                     <thead>
+//                         <tr>
+//                             <th>#ID</th>
+//                             <th>Name</th>
+//                             <th>Start Time</th>
+//                             <th>End Time</th>
+//                             <th>Analytics</th>
+//                             <th>Status</th>
+//                         </tr>
+//                     </thead>
+//                     <tbody>
+//                         {exams.length > 0 ? (
+//                             exams.map((exam) => (
+//                                 <tr key={exam.id}>
+//                                     <td>{exam.id}</td>
+//                                     <td>{exam.name}</td>
+//                                     <td>{exam.start_time}</td>
+//                                     <td>{exam.end_time}</td>
+//                                     <td>{exam.analytics}</td>
+//                                     <td>{exam.status}</td>
+//                                 </tr>
+//                             ))
+//                         ) : (
+//                             <tr>
+//                                 <td colSpan="6" className="no-data">No exams found</td>
+//                             </tr>
+//                         )}
+//                     </tbody>
+//                 </table>
+//             </div>
+//         </div>
+//     </div>
+// );
+// };
 
 export default ManageExam;
 

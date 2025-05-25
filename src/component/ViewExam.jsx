@@ -21,8 +21,8 @@ const ViewExam = ({ exam, onBack }) => {
                     <div className="viewexam-body flex flex-col items-center justify-start">
                         <div className="viewexam-viwer">
                             <div className='viewexam-q'>
-                                <div className="viewexam-viwer-header flex justify-between">
-                                    <h2>MCQ</h2>
+                                <div className="viewexam-viwer-header flex justify-between items-center">
+                                    <h2 className='text-xl'>MCQ</h2>
                                     <p>10</p>
                                 </div>
                                 <div className="viewexam-viwer-body flex justify-center">
@@ -65,8 +65,8 @@ const ViewExam = ({ exam, onBack }) => {
                                 </div>
                             </div>
                             <div className='viewexam-q'>
-                                <div className="viewexam-viwer-header flex justify-between">
-                                    <h2>Coding</h2>
+                                <div className="viewexam-viwer-header flex justify-between items-center">
+                                    <h2 className='text-xl'>Coding</h2>
                                     <p>2</p>
                                 </div>
                                 <div className="viewexam-viwer-body flex justify-center">

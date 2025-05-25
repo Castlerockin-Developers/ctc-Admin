@@ -13,29 +13,29 @@
 
 /* Modal Container */
 .receipt-modal-container {
-    background-color: #181817; /* Light background for clarity */
+    background-color: #181817;
+    /* Light background for clarity */
     width: 90%;
     max-width: 1000px;
-    height: 90vh; /* Almost full-screen */
+    height: 90vh;
+    /* Almost full-screen */
     border-radius: 8px;
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    border: 3px solid rgb(177, 177, 177); /* Border added */
+    border: 3px solid rgb(177, 177, 177);
+    /* Border added */
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
 }
 
 /* Modal Title */
-.modal-title {
+.student-modal-title {
     text-align: center;
-    font-size: 40px;
     font-weight: bold;
     padding: 10px;
-    background-color: #181817; /* Matches border color */
     color: white;
     font-family: madina-semibold;
-    font-size: 2.8rem;
-    margin-top: 0.9rem;
+    font-size: 2rem;
     margin-bottom: 1rem;
 }
 
@@ -51,12 +51,11 @@
     display: flex;
     justify-content: space-between;
     padding: 10px 20px;
-    background-color: #181817;Matching background
+    background-color: #181817;
 }
 
 /* Button Styles */
-.back-btn
-.download-btn {
+.back-btn .download-btn {
     text-align: center;
     padding: 10px 15px;
     border: none;

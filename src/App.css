@@ -9,7 +9,7 @@
     height: 100vh;
     box-sizing: border-box;
     background-color: #181817;
-    overflow-y: auto;
+    overflow-y: hidden;
 }
 
 .madina {

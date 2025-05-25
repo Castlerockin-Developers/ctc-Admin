@@ -75,8 +75,8 @@ const AddQuestion = ({ onBack, onNexts }) => {
     const [showEditCodingPopup, setShowEditCodingPopup] = useState(false);
     const [showTimerPopup, setShowTimerPopup] = useState(false);
 
-//   Import Question Bank Popup
-    const [showImportPopup,setShowImportPopup] = useState(false)
+    //   Import Question Bank Popup
+    const [showImportPopup, setShowImportPopup] = useState(false)
 
     const [options, setOptions] = useState([{ text: "", isCorrect: false }]);
     const [question, setQuestion] = useState("");
@@ -108,7 +108,7 @@ const AddQuestion = ({ onBack, onNexts }) => {
     //  Track editing of scores
     const [isEditingScoreMCQ, setIsEditingScoreMCQ] = useState(false);
     const [isEditingScoreCoding, setIsEditingScoreCoding] = useState(false);
-   
+
     const [mcqQuestions, setMcqQuestions] = useState([]);
     const [codingQuestions, setCodingQuestions] = useState([]);
     const [isQuestionBankVisible, setIsQuestionBankVisible] = useState(true);
@@ -117,7 +117,7 @@ const AddQuestion = ({ onBack, onNexts }) => {
     const toggleImportPopup = () => setShowImportPopup((prev) => !prev);
     const closeImportPopup = () => setShowImportPopup(false);
     const [file, setFile] = useState(null);
- 
+
     const [showRandomizePopup, setShowRandomizePopup] = useState(false);
     const [selectedDifficulty, setSelectedDifficulty] = useState('medium');
     const [selectedNumberOfQuestions, setSelectedNumberOfQuestions] = useState(1);
@@ -328,7 +328,7 @@ const AddQuestion = ({ onBack, onNexts }) => {
         setShowTimerPopup(prev => !prev);
     };
 
-//     Drop questionbank dataset logic
+    //     Drop questionbank dataset logic
     const onDrop = (acceptedFiles) => {
         setFile(acceptedFiles[0]);
     };
@@ -406,7 +406,7 @@ const AddQuestion = ({ onBack, onNexts }) => {
             </style>
             <div className='addquestion-box'>
                 <h1>Add Questions</h1>
-                <div className='grid lg:grid-cols-2 md:grid-cols-1 add-q-container gap-1.5'>
+                <div className='grid xl:grid-cols-2 lg:grid-cols-1 md:grid-cols-1 add-q-container xl:gap-1.5 lg:gap-10 gap-14'>
                     <div className='questionbank-container'>
                         <div className='question-bank'>
                             <div className='question-bank-head flex justify-between'>
@@ -584,23 +584,23 @@ const AddQuestion = ({ onBack, onNexts }) => {
                                             {windowWidth <= 1024
                                                 ? truncateTitle(question.title, 3)
                                                 : question.title}
-                                                <div className="flex items-center gap-4">
-                                                    <input
-                                                        type="number"
-                                                        max={10}
-                                                        value={question.score ?? 0}
-                                                        disabled={!isEditingScoreMCQ}
-                                                        onChange={(e) => handleScoreChangeMCQ(question.id, e.target.value)}
-                                                        className={`${isEditingScoreMCQ ? 'w-16' : 'w-8'} mr-2 text-black rounded-sm text-white text-center ${isEditingScoreMCQ ? '[background-color:oklch(0.42_0_0)]' : ''}`}
-                                                    />
-                                                    {!isEditingScoreMCQ && <span className="ml-1">score</span>}
+                                            <div className="flex items-center gap-4">
+                                                <input
+                                                    type="number"
+                                                    max={10}
+                                                    value={question.score ?? 0}
+                                                    disabled={!isEditingScoreMCQ}
+                                                    onChange={(e) => handleScoreChangeMCQ(question.id, e.target.value)}
+                                                    className={`${isEditingScoreMCQ ? 'w-16' : 'w-8'} mr-2 text-black rounded-sm text-white text-center ${isEditingScoreMCQ ? '[background-color:oklch(0.42_0_0)]' : ''}`}
+                                                />
+                                                {!isEditingScoreMCQ && <span className="ml-1">score</span>}
                                                 <button
                                                     onClick={() => handleReturnQuestion(question)}
                                                     className="bg-red-500 hover:bg-red-700 px-2 py-1 rounded"
                                                 >
                                                     Remove
                                                 </button>
-                                                </div>
+                                            </div>
                                         </summary>
                                         <p>{question.content}</p>
                                     </details>
@@ -608,84 +608,84 @@ const AddQuestion = ({ onBack, onNexts }) => {
                             </div>
                         </div>
 
-                {/* Coding Section */}
-                    <div className='question-bank'>
-                        <div className='addedquestion-bank-head flex justify-between'>
-                            <h3>Coding</h3>
-                            <div className='flex relative'>
-                                <div className='section-timer-desktop'>
-                                    <span>Section timer: </span>
-                                    <input type="number" placeholder='In minutes' />
-                                </div>
-                                {/* Filter button for mobile */}
-                                <div className='r-filter-btn' onClick={toggleFilterDropdownCoding}>
-                                    <img src={filter} alt="filter-options" />
-                                    {showFilterDropdownCoding && (
-                                        <div className="filter-dropdown2">
-                                            <div className="dropdown-item" onClick={handleSectionTimerClick}>
-                                                Section Timer
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                                {/* Edit Score Button */}
-                                <button className='edit-button' onClick={handleEditScoreCoding}>
-                                    {isEditingScoreCoding ? "Save Changes" : "Edit Score"}
-                                </button>
-                                <button onClick={handleCodingEdit}>Create</button>
-                            </div>
-                        </div>
-
-                        {/* Timer Popup Modal (same global modal as above) */}
-                        {showTimerPopup && (
-                            <div className="timer-popup-overlay" onClick={toggleTimerPopup}>
-                                <div
-                                    className="timer-popup-content"
-                                    onClick={(e) => e.stopPropagation()}
-                                >
-                                    <button className="close-btn" onClick={toggleTimerPopup}>X</button>
-                                    <div>
+                        {/* Coding Section */}
+                        <div className='question-bank'>
+                            <div className='addedquestion-bank-head flex justify-between'>
+                                <h3>Coding</h3>
+                                <div className='flex relative'>
+                                    <div className='section-timer-desktop'>
                                         <span>Section timer: </span>
                                         <input type="number" placeholder='In minutes' />
                                     </div>
+                                    {/* Filter button for mobile */}
+                                    <div className='r-filter-btn' onClick={toggleFilterDropdownCoding}>
+                                        <img src={filter} alt="filter-options" />
+                                        {showFilterDropdownCoding && (
+                                            <div className="filter-dropdown2">
+                                                <div className="dropdown-item" onClick={handleSectionTimerClick}>
+                                                    Section Timer
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                    {/* Edit Score Button */}
+                                    <button className='edit-button' onClick={handleEditScoreCoding}>
+                                        {isEditingScoreCoding ? "Save Changes" : "Edit Score"}
+                                    </button>
+                                    <button onClick={handleCodingEdit}>Create</button>
                                 </div>
                             </div>
-                        )}
 
-                        <div
-                            className='addedquestion-bank-body'
-                            onDragOver={handleDragOver}
-                            onDrop={(e) => handleDrop(e, 'coding')}
-                        >
-                            {codingQuestions.map(question => (
-                                <details key={question.id}>
-                                    <summary className='flex justify-between'>
-                                        {windowWidth <= 1024
-                                            ? truncateTitle(question.title, 3)
-                                            : question.title}
-                                        <div className="flex items-center gap-4">
-                                            <input
-                                                type="number"
-                                                value={question.score ?? 0}
-                                                disabled={!isEditingScoreCoding}
-                                                onChange={(e) => handleScoreChangeCoding(question.id, e.target.value)}
-                                                className={`${isEditingScoreCoding ? 'w-16' : 'w-8'} mr-2 text-black rounded-sm text-white text-center ${isEditingScoreCoding ? '[background-color:oklch(0.42_0_0)]' : ''}`}
-                                            />
-                                            {!isEditingScoreCoding && <span className="ml-1">score</span>}
-                                            <button
-                                                onClick={() => handleReturnQuestion(question)}
-                                                className="bg-red-500 hover:bg-red-700 px-2 py-1 rounded"
-                                            >
-                                                Remove
-                                            </button>
+                            {/* Timer Popup Modal (same global modal as above) */}
+                            {showTimerPopup && (
+                                <div className="timer-popup-overlay" onClick={toggleTimerPopup}>
+                                    <div
+                                        className="timer-popup-content"
+                                        onClick={(e) => e.stopPropagation()}
+                                    >
+                                        <button className="close-btn" onClick={toggleTimerPopup}>X</button>
+                                        <div>
+                                            <span>Section timer: </span>
+                                            <input type="number" placeholder='In minutes' />
                                         </div>
-                                    </summary>
-                                    <p>{question.content}</p>
-                                </details>
-                            ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            <div
+                                className='addedquestion-bank-body'
+                                onDragOver={handleDragOver}
+                                onDrop={(e) => handleDrop(e, 'coding')}
+                            >
+                                {codingQuestions.map(question => (
+                                    <details key={question.id}>
+                                        <summary className='flex justify-between'>
+                                            {windowWidth <= 1024
+                                                ? truncateTitle(question.title, 3)
+                                                : question.title}
+                                            <div className="flex items-center gap-4">
+                                                <input
+                                                    type="number"
+                                                    value={question.score ?? 0}
+                                                    disabled={!isEditingScoreCoding}
+                                                    onChange={(e) => handleScoreChangeCoding(question.id, e.target.value)}
+                                                    className={`${isEditingScoreCoding ? 'w-16' : 'w-8'} mr-2 text-black rounded-sm text-white text-center ${isEditingScoreCoding ? '[background-color:oklch(0.42_0_0)]' : ''}`}
+                                                />
+                                                {!isEditingScoreCoding && <span className="ml-1">score</span>}
+                                                <button
+                                                    onClick={() => handleReturnQuestion(question)}
+                                                    className="bg-red-500 hover:bg-red-700 px-2 py-1 rounded"
+                                                >
+                                                    Remove
+                                                </button>
+                                            </div>
+                                        </summary>
+                                        <p>{question.content}</p>
+                                    </details>
+                                ))}
+                            </div>
                         </div>
                     </div>
-                </div>
 
                 </div>
                 <div className='flex justify-center'>
@@ -707,45 +707,45 @@ const AddQuestion = ({ onBack, onNexts }) => {
                             <motion.button whileTap={{ scale: 1.2 }} className="text-red-500 text-lg" onClick={closeImportPopup}>
                                 <img src={closeicon} alt="Close" />
                             </motion.button>
-                           
+
                         </div>
-                       
+
                         <div>
-                        <div
-                            {...getRootProps()}
-                            className="border-2 border-dashed border-gray-500 p-6 rounded-lg text-center cursor-pointer hover:border-gray-300 transition"
-                        >
-                            <input {...getInputProps()} />
-                            <div className="flex flex-col items-center">
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                className="w-12 h-12 text-gray-400"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
+                            <div
+                                {...getRootProps()}
+                                className="border-2 border-dashed border-gray-500 p-6 rounded-lg text-center cursor-pointer hover:border-gray-300 transition"
                             >
-                                <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="2"
-                                d="M12 16v-4m0 0V8m0 4h4m-4 0H8m12 4v4H4v-4M4 16l8-8 8 8"
-                                />
-                            </svg>
-                            <h2  className="mt-2 text-white text-3xl">Drag the dataset</h2>
-                            <p className="text-sm text-gray-400 text-3xl">or <span className="text-blue-400 cursor-pointer">upload from device</span></p>
+                                <input {...getInputProps()} />
+                                <div className="flex flex-col items-center">
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        className="w-12 h-12 text-gray-400"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth="2"
+                                            d="M12 16v-4m0 0V8m0 4h4m-4 0H8m12 4v4H4v-4M4 16l8-8 8 8"
+                                        />
+                                    </svg>
+                                    <h2 className="mt-2 text-white text-3xl">Drag the dataset</h2>
+                                    <p className="text-sm text-gray-400 text-3xl">or <span className="text-blue-400 cursor-pointer">upload from device</span></p>
+                                </div>
                             </div>
+                            {file && (
+                                <p className="mt-3 text-sm text-green-400">Selected: {file.name}</p>
+                            )}
+
                         </div>
-                        {file && (
-                            <p className="mt-3 text-sm text-green-400">Selected: {file.name}</p>
-                        )}
-                       
-                        </div>
-                       
+
                     </div>
                 </div>
-               
+
             )}
-           
+
             {showEditMCQPopup && (
                 <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
                     <div className="MCQ-edit-container text-white p-8 rounded-lg shadow-lg w-[600px]">
@@ -810,11 +810,11 @@ const AddQuestion = ({ onBack, onNexts }) => {
                         ))}
                         <button
                             onClick={handleAddOption}
-                            className="bg-blue-500 hover:bg-blue-800 text-white rounded-md px-4 py-2"
+                            className="bg-blue-500 hover:bg-blue-800 text-white rounded-md add-option"
                         >
                             <span>+</span> Add Option
                         </button>
-                        <div className="flex justify-end space-x-4 mt-6">
+                        <div className="flex justify-end gap-3 mt-6 eq-button">
                             <button
                                 onClick={handleCloseEditPopup}
                                 className="bg-gray-600 hover:bg-gray-800 text-white px-4 py-2 rounded-md"
@@ -839,13 +839,13 @@ const AddQuestion = ({ onBack, onNexts }) => {
                         <h2 className="text-2xl font-semibold mb-6">Coding Question</h2>
                         <div className='mb-6'>
                             <label className="block text-sm font-medium mb-2">Question:</label>
-                            <input
-                                type="text"
+                            <textarea
                                 value={question}
+                                rows={6}
                                 onChange={(e) => setQuestion(e.target.value)}
                                 className="rounded-md w-full border border-gray-600 p-2 bg-[#333] text-white"
                                 placeholder="Enter your question"
-                            />
+                            ></textarea>
                         </div>
                         <div className='mb-6'>
                             <label className="block text-sm font-medium mb-2">Statement:</label>
@@ -855,6 +855,7 @@ const AddQuestion = ({ onBack, onNexts }) => {
                             <label className="block text-sm font-medium mb-2">Sample Test Case:</label>
                             <textarea
                                 value={question}
+                                rows={6}
                                 onChange={(e) => setQuestion(e.target.value)}
                                 className="rounded-md w-full border border-gray-600 p-2 bg-[#333] text-white"
                                 placeholder="Enter your question"
@@ -864,10 +865,11 @@ const AddQuestion = ({ onBack, onNexts }) => {
                             <label className="block text-sm font-medium mb-2">Sample Test Case Output:</label>
                             <textarea
                                 value={question}
+                                rows={6}
                                 onChange={(e) => setQuestion(e.target.value)}
-                            //     className="rounded-md mt-1 mb-3 border border-gray-600"
-                            //     placeholder="Enter sample output"
-                            // />
+                                //     className="rounded-md mt-1 mb-3 border border-gray-600"
+                                //     placeholder="Enter sample output"
+                                // />
                                 className="rounded-md w-full border border-gray-600 p-2 bg-[#333] text-white"
                                 placeholder="Enter your question"
                             ></textarea>
@@ -879,6 +881,7 @@ const AddQuestion = ({ onBack, onNexts }) => {
                                     <label className="block text-sm font-medium mb-2">Test Case Input:</label>
                                     <textarea
                                         value={testCase.input}
+                                        rows={6}
                                         onChange={(e) => handleChange(index, "input", e.target.value)}
                                         className="rounded-md w-full border border-gray-600 p-2 bg-[#333] text-white"
                                         placeholder="Enter test case input"
@@ -888,16 +891,20 @@ const AddQuestion = ({ onBack, onNexts }) => {
                                     <label className="block text-sm font-medium mb-2">Test Case Output:</label>
                                     <textarea
                                         value={testCase.output}
+                                        rows={6}
                                         onChange={(e) => handleChange(index, "output", e.target.value)}
                                         className="rounded-md w-full border border-gray-600 p-2 bg-[#333] text-white"
                                         placeholder="Enter test case output"
                                     ></textarea>
+                                    <button className="" onClick={() => removeTestCase(index)}>🗑️</button>
+
                                 </div>
-                                <button className="delete-btn" onClick={() => removeTestCase(index)}>🗑️</button>
                             </div>
                         ))}
-                        <button className="add-btn" onClick={addTestCase}>➕ Add Test Case</button>
-                        <div className="flex justify-end space-x-4 mt-6">
+                        <div className=''>
+                            <button className="add-btn" onClick={addTestCase}>➕ Add Test Case</button>
+                        </div>
+                        <div className="flex justify-end space-x-4 mt-6 save-cancel">
                             <button
                                 onClick={handleCloseEditPopup}
                                 className="bg-gray-600 hover:bg-gray-800 text-white px-4 py-2 rounded-md"
@@ -916,8 +923,8 @@ const AddQuestion = ({ onBack, onNexts }) => {
             )}
             {showRandomizePopup && (
                 <div className="fixed inset-0 flex items-center justify-center top-display-pop">
-                   <div className="rounded-sm shadow-lg w-[700px]  flex flex-col bg-[#1e1e1e] text-white">
-                        <div className="flex justify-between gap-52 items-center top-display-pop-title randomize-head">
+                    <div className="rounded-sm shadow-lg w-[700px]  flex flex-col bg-[#1e1e1e] text-white">
+                        <div className="flex justify-between gap-55 items-center top-display-pop-title randomize-head">
                             <h2 className="font-semibold text-2xl text-center text-white">Randomize Questions</h2>
                             <motion.button whileTap={{ scale: 1.2 }} className="text-red-500 text-2xl" onClick={handleRandomizePopupClose}>
                                 <img src={closeicon} alt="Close" />
@@ -926,8 +933,8 @@ const AddQuestion = ({ onBack, onNexts }) => {
 
                         <div className="flex flex-col justify-center random-data form-content">
                             <div className="flex">
-                                <div className= "flex">
-                                <label className="block text-xl font-medium mb-6 text-white">Number of Questions </label><span>:</span>
+                                <div className="flex">
+                                    <label className="block text-xl font-medium mb-6 text-white">Number of Questions </label><span>:</span>
                                 </div>
                                 <input
                                     type="number"
@@ -940,50 +947,50 @@ const AddQuestion = ({ onBack, onNexts }) => {
                             </div>
                             <div className="flex-grow">
                                 <div className="flex">
-                                <label className="block text-xl font-medium mb-6 text-white">Question Type:</label>
-                                <div className="flex flex-col space-y-4">
-                                    <div className="toggle-buttons flex space-x-4">
-                                        <motion.button
-                                            className={`toggle-btn ${selectedQuestionType === "mcq" ? "active" : ""}`}
-                                            onClick={() => setSelectedQuestionType("mcq")}
-                                        >
-                                            <FontAwesomeIcon icon={faListCheck} className="icon" /> MCQ
-                                        </motion.button>
-                                        <motion.button
-                                            className={`toggle-btn ${selectedQuestionType === "coding" ? "active" : ""}`}
-                                            onClick={() => setSelectedQuestionType("coding")}
-                                        >
-                                            <FontAwesomeIcon icon={faCode} className="icon" /> Coding
-                                        </motion.button>
+                                    <label className="block text-xl font-medium mb-6 text-white">Question Type:</label>
+                                    <div className="flex flex-col space-y-4">
+                                        <div className="toggle-buttons flex space-x-4">
+                                            <motion.button
+                                                className={`toggle-btn ${selectedQuestionType === "mcq" ? "active" : ""}`}
+                                                onClick={() => setSelectedQuestionType("mcq")}
+                                            >
+                                                <FontAwesomeIcon icon={faListCheck} className="icon" /> MCQ
+                                            </motion.button>
+                                            <motion.button
+                                                className={`toggle-btn ${selectedQuestionType === "coding" ? "active" : ""}`}
+                                                onClick={() => setSelectedQuestionType("coding")}
+                                            >
+                                                <FontAwesomeIcon icon={faCode} className="icon" /> Coding
+                                            </motion.button>
+                                        </div>
                                     </div>
-                                </div>
                                 </div>
                             </div>
                             <div className="flex-grow">
                                 <div className="flex">
-                                <label className="block text-xl font-medium mb-6 text-white">Difficulty Level:</label>
-                                <div className="flex flex-col space-y-4">
-                                    <div className="toggle-buttons flex space-x-4 mt-4">
-                                        <motion.button
-                                            className={`toggle-btn ${selectedDifficulty === "easy" ? "active" : ""}`}
-                                            onClick={() => setSelectedDifficulty("easy")}
-                                        >
-                                            Easy
-                                        </motion.button>
-                                        <motion.button
-                                            className={`toggle-btn ${selectedDifficulty === "medium" ? "active" : ""}`}
-                                            onClick={() => setSelectedDifficulty("medium")}
-                                        >
-                                            Medium
-                                        </motion.button>
-                                        <motion.button
-                                            className={`toggle-btn ${selectedDifficulty === "hard" ? "active" : ""}`}
-                                            onClick={() => setSelectedDifficulty("hard")}
-                                        >
-                                            Hard
-                                        </motion.button>
+                                    <label className="block text-xl font-medium mb-6 text-white">Difficulty Level:</label>
+                                    <div className="flex flex-col space-y-4">
+                                        <div className="toggle-buttons flex space-x-4 mt-4">
+                                            <motion.button
+                                                className={`toggle-btn ${selectedDifficulty === "easy" ? "active" : ""}`}
+                                                onClick={() => setSelectedDifficulty("easy")}
+                                            >
+                                                Easy
+                                            </motion.button>
+                                            <motion.button
+                                                className={`toggle-btn ${selectedDifficulty === "medium" ? "active" : ""}`}
+                                                onClick={() => setSelectedDifficulty("medium")}
+                                            >
+                                                Medium
+                                            </motion.button>
+                                            <motion.button
+                                                className={`toggle-btn ${selectedDifficulty === "hard" ? "active" : ""}`}
+                                                onClick={() => setSelectedDifficulty("hard")}
+                                            >
+                                                Hard
+                                            </motion.button>
+                                        </div>
                                     </div>
-                                </div>
                                 </div>
                             </div>
                         </div>

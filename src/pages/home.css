@@ -48,9 +48,9 @@
 }
 
 .sidebar-logo {
-    width: 100px;
+    width: 160px;
     position: absolute;
-    top: 10px;
+    top: 15px;
 }
 
 .sidebar-top {
@@ -66,6 +66,7 @@
     border-bottom-left-radius: 9px;
     position: relative;
     display: flex;
+    text-align: left;
     align-items: center;
     cursor: pointer;
     margin-bottom: 15px;
@@ -83,20 +84,21 @@
     position: relative;
     display: flex;
     align-items: center;
-    text-align: center;
     cursor: pointer;
     margin-bottom: 10px;
+    text-align: center;
 }
 
 .sidebar-item {
+    margin-left: 10px;
+    font-size: 1.5rem;
     color: white;
-    font-size: 1.4rem;
     font-family: madina-semibold;
     width: 100%;
 }
 
 .sidebar-animation {
-    height: 48px;
+    height: 51px;
     width: 7px;
     border-top-right-radius: 8px;
     border-bottom-left-radius: 8px;
@@ -124,8 +126,8 @@
 /* Sidebar Icons */
 .sidebar-icon {
     color: white;
-    font-size: 1.2rem;
-    margin-right: 10px;
+    font-size: 2rem;
+    margin-right: 5px;
 }
 
 /* Hover Effect */
@@ -148,7 +150,6 @@
     justify-content: center;
     position: fixed;
     top: 20px;
-    left: 0px;
     width: 50px;
     height: 50px;
     border: none;
@@ -184,17 +185,13 @@
 .top-display {
     max-width: 100%;
     min-width: 130px;
-    height: auto; /* Adjust height to auto to fit content */
+    height: auto;
     border-radius: 5px;
     border: 1px solid rgb(201, 201, 201);
     box-shadow: -5px 0px 10px rgba(0, 0, 0, 0.2);
     background-color: #4B4B4B;
-    margin: 0rem 0px 0rem;
-    text-align: center; /* Align text center */
-    padding: 20px; /* Add padding for inner spacing */
-}
-
-.top-display-clickable {
+    text-align: left;
+    padding: 10px 5px 30px;
     cursor: pointer;
 }
 
@@ -312,9 +309,22 @@
 .mid-display2 {
     background-color: #4B4B4B;
     width: 100%;
-    height: 23.2vh !important;
+    height: 20vh;
     border-radius: 5px;
     margin-bottom: 1rem;
+    padding: 20px 0px;
+    overflow-y: auto;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.mid-display3 {
+    background-color: #4B4B4B;
+    width: 100%;
+    height: 29.5vh;
+    border-radius: 5px;
+    margin-bottom: 1rem;
+    padding: 20px 0px;
     overflow-y: auto;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -327,7 +337,9 @@
     margin-left: 1.5rem;
     font-size: 1.6rem;
 }
-.mid-display2 h4 {
+
+.mid-display2 h4,
+.mid-display3 h4 {
     color: white;
     font-family: madina-regular;
     margin-left: 1.5rem;
@@ -342,6 +354,7 @@
     color: white;
     font-family: madina-light;
     font-size: 1rem;
+    width: fit-content;
     text-decoration: underline;
     cursor: pointer;
 }
@@ -352,23 +365,25 @@
     height: 40vh;
     margin-top: 1rem;
     border-collapse: collapse;
-    border: 1px solid #656565;      /* Subtle border */
+    border: 1px solid #656565;
+    /* Subtle border */
     border-radius: 5px;
-    background-color: #4B4B4B;      /* Outer background color */
+    background-color: #4B4B4B;
+    /* Outer background color */
     box-shadow: 0 0 8px rgba(36, 36, 36, 0.3);
     overflow-y: auto;
-  }
-  
-  .tablee h5 {
+}
+
+.tablee h5 {
     color: #fff;
     font-family: madina-regular;
     font-size: 1rem;
     padding: 10px 25px 5px;
     border-bottom: 1px solid #656565;
-  }
-  
-  /* Inside rows are #656565 by default */
-  .tablee-content {
+}
+
+/* Inside rows are #656565 by default */
+.tablee-content {
     background-color: #4B4B4B;
     padding: 7px 25px;
     border-bottom: 1px solid #656565;
@@ -376,29 +391,31 @@
     white-space: nowrap;
     display: block;
     max-width: 100%;
-    cursor: pointer; /* Pointer on hover */
-  }
-  
-  .tablee-content h6 {
-    color: #fff;                   /* White text by default */
+    cursor: pointer;
+    /* Pointer on hover */
+}
+
+.tablee-content h6 {
+    color: #fff;
+    /* White text by default */
     font-family: madina-regular;
     font-size: 1rem;
     transition: color 0.3s ease;
-  }
-  
-  .tablee-content:hover {
+}
+
+.tablee-content:hover {
     background-color: #656565;
-  }
-  
-  .tablee-content:hover h6 {
+}
+
+.tablee-content:hover h6 {
     color: #fff;
-  }
-    
+}
+
 /* Manage Exam */
 /* Exam Container */
 .exam-container {
     background-color: #282828;
-    width: 90%;
+    width: calc(100% - 69px);
     height: 87vh;
     overflow-y: auto;
     transition: width 0.3s ease-in-out, margin-left 0.3s ease-in-out;
@@ -531,7 +548,7 @@
 /* Filter Popup */
 .filter-popup {
     position: fixed;
-    right: 32.3%;
+    right: 31.5%;
     top: 28%;
     background: #1e1e1e;
     padding: 20px;
@@ -655,12 +672,11 @@
 
 .m-table-container table {
     width: 100%;
-    height: 61vh;
+    height: auto;
+    max-height: 61vh;
     background-color: #393939;
     border-radius: 10px;
     border-collapse: collapse;
-    display: flex;
-    flex-direction: column;
     overflow-x: auto;
 }
 
@@ -965,26 +981,6 @@
     font-weight: bold;
 }
 
-.MCQ-edit-container {
-    background-color: #1F1F1F;
-    border: 1px solid rgb(124, 124, 124);
-    width: 60%;
-    padding-bottom: 15px;
-}
-
-.MCQ-edit-container h2 {
-    margin: 15px 20px;
-    font-family: madina-semibold;
-    font-size: 1.8rem;
-}
-
-.MCQ-edit-container label {
-    width: 4.2vw;
-    margin: 8px 20px;
-    font-size: 1.1rem;
-    font-family: madina-regular;
-}
-
 .MCQ-question input {
     width: 81.8%;
     background-color: #424242;
@@ -1000,13 +996,6 @@
     padding: 0px 20px;
     color: white;
     font-family: madina-light;
-}
-
-.MCQ-edit-container textarea {
-    width: 70%;
-    height: 18vh;
-    background-color: #424242;
-    font-family: madina-regular;
 }
 
 .MCQ-question {
@@ -1065,56 +1054,6 @@
     cursor: pointer;
 }
 
-.ql-container {
-    color: white !important;
-    background-color: #4B4B4B !important;
-    border-bottom-right-radius: 5px;
-    border-bottom-left-radius: 5px;
-    width: 93.8%;
-    position: relative;
-    left: 5px;
-}
-
-.ql-toolbar {
-    background: #303030 !important;
-    border-radius: 8px 8px 0 0;
-    color: white !important;
-    width: 93.8%;
-    position: relative;
-    left: 5px;
-}
-
-.ql-editor {
-    min-height: 150px;
-    color: white !important;
-}
-
-.Coding-edit-container {
-    background-color: #1F1F1F;
-    border: 1px solid rgb(124, 124, 124);
-    width: 60%;
-    padding-bottom: 15px;
-    height: 70vh;
-    overflow-y: auto;
-}
-
-.Coding-question-statement {
-    margin-bottom: 15px;
-}
-
-.Coding-edit-container h2 {
-    margin: 15px 20px;
-    font-family: madina-semibold;
-    font-size: 1.8rem;
-}
-
-.Coding-edit-container label {
-    width: 8vw;
-    margin: 8px 20px;
-    font-size: 1.1rem;
-    font-family: madina-regular;
-}
-
 .Coding-question {
     margin-bottom: 15px;
 }
@@ -1163,38 +1102,6 @@
     border: 1px solid gray;
 }
 
-.add-btn {
-    display: block;
-    width: 100%;
-    background-color: green;
-    color: white;
-    padding: 10px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
-    margin-top: 20px;
-}
-
-.add-btn:hover {
-    background-color: darkgreen;
-}
-
-.delete-btn {
-    background-color: red;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    width: 40px;
-    height: 40px;
-    cursor: pointer;
-    font-size: 14px;
-}
-
-.delete-btn:hover {
-    background-color: darkred;
-}
-
 .test-casee {
     display: flex;
     margin-bottom: 15px;
@@ -1226,22 +1133,24 @@
     margin-bottom: 10px;
 }
 
-html, body {
+html,
+body {
     margin: 0;
     padding: 0;
-    overflow: hidden; /* Hide any overflow */
+    overflow: hidden;
+    /* Hide any overflow */
     width: 100%;
     height: 100%;
-    position: relative; /* Ensures no overflow due to child elements */
+    position: relative;
+    /* Ensures no overflow due to child elements */
 }
+
 .home-container {
     display: flex;
     flex-direction: column;
     height: 100vh;
-    overflow: hidden;
 }
 
-/* Manage Result */
 /* Result Container */
 .result-container {
     background-color: #282828;
@@ -1254,7 +1163,7 @@ html, body {
 
 /* Result Header */
 .result-header {
-    width: 92%;
+    width: 95%;
     padding-top: 1.5rem;
 }
 
@@ -1265,1187 +1174,6 @@ html, body {
     margin-top: 0.9rem;
     margin-bottom: 1.5rem;
 }
-@media (min-width: 0px) and (max-width: 426px) {
-    /* Container Adjustments */
-    .result-container,
-    .dashboard {
-        width: 96vw;
-        position: relative;
-        left: 0.4rem;
-    }
-
-    .result-header,
-    .greeting {
-        width: 88%;
-    }
-
-    .result-header h1,
-    .greeting h1 {
-        font-size: 1.6rem; /* Adjusted for readability */
-    }
-
-    .search-box input {
-        width: 70px; /* Compact fit */
-    }
-
-    /* Sidebar */
-    .sidebar-container {
-        position: fixed;
-        left: 0;
-        top: 0px;
-        height: 100vh;
-        width: 180px; /* Adjusted for small screens */
-        background-color: #181817;
-        transform: translateX(-100%);
-        transition: transform 0.3s ease-in-out;
-        z-index: 1000;
-    }
-
-    .sidebar-container.open {
-        transform: translateX(0);
-    }
-
-    .sidebar-button {
-        width: 100%;
-    }
-
-    .menu-toggle {
-        display: block;
-        position: fixed;
-        top: 15px;
-        left: -5px;
-    }
-
-    /* Top Bar */
-    .topbar {
-        display: flex;
-        justify-content: center;
-    }
-
-    .top-display {
-        max-width: 100%;
-    }
-
-    .top-display h4 {
-        font-size: 1rem;
-    }
-
-    .top-display h2 {
-        font-size: 1.8rem;
-    }
-
-    /* Middle Display */
-    .mid-display h4 {
-        font-size: 1.4rem;
-        margin-left: 1.2rem;
-    }
-
-    .tablee h5 {
-        font-size: 0.9rem;
-    }
-
-    .tablee-content h6 {
-        font-size: 0.75rem;
-    }
-
-    /* Manage Exam Section */
-    .create-btn {
-        font-size: 0.9rem;
-        padding: 7px 12px;
-    }
-
-    .search-box {
-        padding: 4px 4px;
-    }
-
-    .filter-btn img {
-        width: 12px;
-    }
-
-    /* Responsive Table */
-    .m-table-container {
-        width: 100%;
-        overflow-x: auto;
-    }
-
-    .m-table-container table {
-        width: 100%;
-        border-collapse: collapse;
-        table-layout: auto;
-        max-width: 100%;
-    }
-
-    .m-table-container table thead th {
-        font-size: 0.2rem;
-        padding: 5px;
-        text-align: center;
-        white-space: nowrap;
-    }
-
-    .m-table-container table tbody td {
-        font-size: 0.5rem;
-        padding: 5px;
-        text-align: center;
-        word-wrap: break-word;
-        white-space: normal;
-    }
-
-    /* Hide Logo for Mobile */
-    .ctc-logo {
-        display: none !important;
-    }
-
-    /* Responsive Modal Table */
-    .top-display-pop-card {
-        width: 95%;
-        padding: 0.8rem;
-        overflow: hidden;
-    }
-
-    .pop-up-table {
-        width: 100%;
-        font-size: 0.8rem;
-        margin-top: 0.8rem;
-        border-collapse: collapse;
-        table-layout: auto;
-    }
-
-    .pop-up-table thead th {
-        padding: 6px;
-        font-size: 0.8rem;
-        text-align: center;
-        white-space: nowrap;
-    }
-
-    .pop-up-table tbody {
-        max-height: 35vh;
-        overflow-y: auto;
-        width: 100%;
-    }
-
-    .pop-up-table tbody td,
-    .pop-up-table thead th {
-        padding: 6px;
-        font-size: 0.75rem;
-        text-align: center;
-        word-wrap: break-word;
-        white-space: normal;
-    }
-
-    .viewexam-btn-pop {
-        padding: 4px 6px;
-        background-color: #8e5daf;
-        color: white;
-        border-radius: 4px;
-        font-size: 0.8rem;
-        margin-top: 3px;
-    }
-
-    .viewexam-btn-pop:hover {
-        background-color: #7421ac;
-    }
-
-    .top-display-pop-title h2 {
-        font-size: 1.3rem;
-        margin-left: 0.8rem;
-    }
-
-    /* Exam Viewing Section */
-    .viewexam-container {
-        width: calc(100% - 50px);
-        height: 85vh;
-        padding: 1rem;
-    }
-
-    .viewexam-box {
-        width: 100%;
-        padding-top: 1rem;
-    }
-
-    .viewexam-box h1 {
-        font-size: 2rem;
-    }
-
-    .viewexam-box button {
-        font-size: 2.5rem;
-        bottom: 8px;
-        margin-right: 8px;
-    }
-
-    .viewexam-header {
-        height: 6vh;
-        padding: 0.8rem;
-        font-size: 1.2rem;
-    }
-
-    .viewexam-header h2 {
-        font-size: 1.3rem;
-    }
-
-    .viewexam-header-btn button {
-        font-size: 1rem;
-        padding: 4px 12px;
-        margin-top: 15px;
-    }
-
-    .viewexam-body {
-        height: 60vh;
-    }
-
-    .viewexam-viwer {
-        width: 100%;
-        margin-top: 15px;
-    }
-
-    .viewexam-q {
-        margin-top: 10px;
-    }
-
-    .viewexam-viwer-header {
-        height: 5.5vh;
-        padding: 6px 15px 4px;
-    }
-
-    .viewexam-viwer-header h2 {
-        font-size: 1.5rem;
-    }
-
-    .viewexam-viwer-header p {
-        font-size: 1.1rem;
-        margin-top: 3px;
-    }
-
-    /* Exam Answer Box */
-    .viewexam-answer-boxes {
-        flex-direction: column;
-        gap: 0.8rem;
-        margin-top: 0.8rem;
-    }
-
-    .viewexam-answer-box {
-        width: 100%;
-        padding: 0.8rem;
-    }
-
-    .viewexam-answer-box h3 {
-        font-size: 1.2rem;
-        margin: 0.8rem 0 0.4rem;
-    }
-
-    .viewexam-answer-box p {
-        font-size: 0.95rem;
-    }
-
-    .viewexam-answer-box ul {
-        margin-left: 15px;
-    }
-
-    .viewexam-answer-box ul li {
-        font-size: 0.9rem;
-    }
-
-    /* Ensure all tables and text fit properly */
-    .m-table-container table thead th,
-    .m-table-container table tbody td,
-    .pop-up-table thead th,
-    .pop-up-table tbody td {
-        width: auto;
-    }
-    .m-table-container {
-        width: 100%;
-        overflow-x: auto;
-    }
-
-    .m-table-container table {
-        width: 100%;
-        height: auto;
-        background-color: #393939;
-        border-radius: 10px;
-        border-collapse: collapse;
-        table-layout: auto; /* Allows columns to adjust dynamically */
-    }
-
-    .m-table-container table thead {
-        background-color: #535353;
-        color: white;
-        font-size: 1rem;
-        width: 100%;
-        display: table;
-        table-layout: auto; /* Dynamic layout */
-    }
-
-    .m-table-container table thead th {
-        position: relative;
-        padding: 1px;
-        text-align: center;
-        background-color: #535353;
-        border-bottom: 1px solid #888;
-        font-size: 0.5rem; /* Slightly smaller font */
-        min-width: 80px; /* Prevents columns from shrinking too much */
-        white-space: nowrap; /* Prevents header text from wrapping */
-    }
-
-    /* Create shorter vertical separators */
-    .m-table-container table thead th:not(:last-child)::after {
-        content: "";
-        position: absolute;
-        top: 20%;
-        bottom: 20%;
-        right: 0;
-        width: 1px;
-        background-color: white;
-    }
-
-    /* Responsive Table Body */
-    .m-table-container table tbody {
-        max-height: 50vh; /* Adjusted height */
-        overflow-y: auto;
-        width: 100%;
-        display: block;
-    }
-
-    .m-table-container table tbody tr {
-        display: table;
-        width: 100%;
-        table-layout: auto;
-        height: auto;
-        border-top: 1px solid rgb(133, 133, 133);
-        border-bottom: 1px solid rgb(133, 133, 133);
-    }
-
-    .m-table-container table tbody td {
-        padding: 8px; /* Reduced padding */
-        text-align: center;
-        color: white;
-        font-size: 0.5rem; /* Slightly reduced font size */
-        word-wrap: break-word; /* Allows text wrapping */
-        white-space: normal; /* Ensures text is visible */
-        min-width: 80px; /* Prevents shrinking */
-    }
-
-    /* Ensure the table remains scrollable on small screens */
-    .m-table-container {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-    }
-    .viewexam-btn {
-        background-color: #8E5DAF;
-        padding: 2px 3px 2px;
-        border-radius: 5px;
-        cursor: pointer;
-        font-family: madina-semibold;
-        white-space: nowrap;
-    }
-    .m-table-container {
-        width: 100%;
-        overflow-x: auto;
-    }
-
-    .m-table-container table {
-        width: 100%;
-        background-color: #393939;
-        border-radius: 10px;
-        border-collapse: collapse;
-        table-layout: auto; /* Allows columns to adjust dynamically */
-    }
-
-    .m-table-container table thead {
-        background-color: #535353;
-        color: white;
-        font-size: 1rem;
-        width: 100%;
-        display: table;
-        table-layout: auto;
-    }
-
-    .m-table-container table thead th {
-        padding: 8px;
-        text-align: center;
-        background-color: #535353;
-        border-bottom: 1px solid #888;
-        font-size: 0.5rem;
-        min-width: 70px; /* Prevents excessive shrinking */
-        white-space: nowrap; /* Keeps header text in one line */
-    }
-
-    .m-table-container table tbody {
-        max-height: 50vh;
-        overflow-y: auto;
-        width: 100%;
-        display: block;
-    }
-
-    .m-table-container table tbody tr {
-        display: table;
-        width: 100%;
-        table-layout: auto;
-        height: auto;
-        border-top: 1px solid rgb(133, 133, 133);
-        border-bottom: 1px solid rgb(133, 133, 133);
-    }
-
-    .m-table-container table tbody td {
-        padding: 6px;
-        text-align: center;
-        color: white;
-        font-size: 0.5rem;
-        word-wrap: break-word;
-        white-space: normal; /* Ensures text is visible */
-        min-width: 70px;
-    }
-
-    /* Ensure the table remains scrollable on small screens */
-    .m-table-container {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-    }
-
-    /* Responsive Filter Popup */
-    .filter-popup {
-        position: fixed;
-        right: 2.5%;
-        top: 12.5%;
-        background: #1e1e1e;
-        padding: 15px;
-        border-radius: 10px;
-        width: 250px;
-        text-align: center;
-        z-index: 1000;
-    }
-
-    .filter-popup h3 {
-        color: white;
-        font-size: 1rem;
-        font-family: madina-semibold;
-    }
-    /* Edit Button */
-.edit-btn {
-   padding: 5px !important;
-   font-size: 10px !important;
-}
-
-.edit-btn .icon {
-    margin-right: 6px;
-}
-.header-wrapper {
-    display: flex
-;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    flex-direction: column;
-}
-.modal-container {
-    background: #1a1a1a;
-    padding: 30px;
-    border-radius: 12px;
-    width: 500px;
-    box-shadow: 0px 0px 10px rgba(255, 255, 255, 0.1);
-}
-}
-
-
-@media (min-width: 426px) and (max-width: 768px) {
-    .result-container {
-        width: 100vw;
-    }
-
-    .result-header {
-        padding-top: 0rem;
-    }
-
-    .result-header h1 {
-        margin-top: 0rem;
-    }
-
-    .m-btn-left {
-        gap: 10px;
-    }
-
-    .m-btn-left button {
-        font-size: 1rem;
-    }
-
-    .filter-btn {
-        padding: 9px 9px;
-    }
-
-    .create-btn {
-        font-size: 0.9rem;
-        padding: 5px 12px;
-    }
-
-    .search-box {
-        padding: 3px 10px;
-    }
-
-    .search-box input {
-        width: 100px;
-    }
-
-    /* Responsive Table */
-    .m-table-container {
-        width: 100%;
-        overflow-x: auto;
-    }
-
-    .m-table-container table {
-        width: 100%;
-        border-collapse: collapse;
-        table-layout: auto;
-    }
-
-    .m-table-container table thead th {
-        font-size: 0.9rem;
-        white-space: nowrap;
-        padding: 10px;
-    }
-
-    .m-table-container table tbody td {
-        font-size: 0.9rem;
-        padding: 10px;
-        white-space: nowrap;
-    }
-
-    /* Responsive Modal Table */
-    .top-display-pop-card {
-        width: 95%;
-        padding: 1rem;
-        overflow: hidden;
-    }
-
-    .pop-up-table {
-        width: 90%;
-        font-size: 1rem;
-        margin-top: 1rem;
-        border-collapse: collapse;
-        table-layout: auto;
-    }
-
-    .pop-up-table thead th {
-        padding: 12px 10px;
-        font-size: 1.1rem;
-        text-align: left;
-        white-space: nowrap;
-    }
-
-    .pop-up-table tbody {
-        max-height: 50vh;
-        overflow-y: auto;
-        width: 100%;
-    }
-
-    .pop-up-table tbody td,
-    .pop-up-table thead th {
-        padding: 12px 10px;
-        font-size: 1rem;
-        white-space: nowrap;
-        text-align: center;
-    }
-
-    .viewexam-btn-pop {
-        padding: 9px 10px;
-        background-color: #8e5daf;
-        color: white;
-        border-radius: 5px;
-        font-size: 1rem;
-        margin-top: 5px;
-    }
-
-    .viewexam-btn-pop:hover {
-        background-color: #7421ac;
-    }
-
-    .top-display-pop-title h2 {
-        font-size: 1.6rem;
-        margin-left: 1rem;
-    }
-
-    /* Sidebar */
-    .sidebar-container {
-        position: fixed;
-        left: 0;
-        top: 0px;
-        height: 100vh;
-        width: 200px;
-        background-color: #181817;
-        transform: translateX(-100%);
-        transition: transform 0.3s ease-in-out;
-        z-index: 1000;
-    }
-
-    .sidebar-item {
-        font-size: 1.1rem;
-    }
-
-    .greeting {
-        padding-top: 0rem;
-    }
-
-    .greeting h1 {
-        padding-top: 0rem;
-    }
-
-    .mid-display {
-        height: 49vh;
-    }
-
-    .mid-display2 {
-        height: 23.3vh;
-    }
-
-    .tablee {
-        height: 38vh;
-    }
-
-    /* Show when sidebar is toggled open */
-    .sidebar-container.open {
-        transform: translateX(0);
-    }
-
-    .bottom-sidebar-button {
-        width: 90%;
-    }
-
-    .sidebar-top {
-        position: relative;
-        top: 40px;
-    }
-
-    .sidebar-button {
-        width: 100%;
-    }
-
-    .menu-toggle {
-        display: block;
-    }
-
-    .dashboard {
-        width: 100vw;
-    }
-
-    /* Exam Management */
-    .exam-container {
-        width: 100vw;
-    }
-
-    .exam-greeting {
-        padding-top: 0rem;
-    }
-
-    .exam-greeting h1 {
-        margin-top: 0rem;
-    }
-
-    .m-btn-left {
-        gap: 10px;
-    }
-
-    .m-btn-left button {
-        font-size: 1rem;
-    }
-
-    .filter-btn {
-        padding: 9px 9px;
-    }
-
-    .create-btn {
-        font-size: 0.9rem;
-        padding: 5px 12px;
-    }
-
-    .search-box {
-        padding: 3px 10px;
-    }
-
-    .search-box input {
-        width: 100px;
-    }
-
-    .m-table-container table thead th,
-    .m-table-container table tbody td {
-        font-size: 0.9rem;
-    }
-
-    .viewexam-btn {
-        font-size: 0.8rem;
-    }
-
-    .top-display-pop-title h2 {
-        font-size: 1.6rem;
-        margin-left: 1rem;
-    }
-
-    .pop-up-table thead th,
-    .pop-up-table tbody td {
-        width: auto;
-    }
-
-    .edit-container {
-        width: 78vw;
-        position: fixed;
-        left: 5.5rem;
-    }
-
-    .body-control {
-        width: 90%;
-    }
-
-    .edit-ename-options input {
-        width: 200px;
-        padding: 5px;
-    }
-
-    .exam-creation-edit p {
-        width: 15vw;
-    }
-
-    .edit-ename-options-e-time input {
-        width: 155px;
-        padding: 5px;
-    }
-
-    .edit-section details {
-        width: 69vw;
-    }
-
-    .edit-sections-content {
-        width: 68%;
-        font-size: 0.8rem;
-    }
-
-    .edit-sections-buttons button {
-        font-size: 0.9rem;
-    }
-
-    .e-warning-note p {
-        font-size: 0.8rem;
-        width: 45vw;
-    }
-
-    .e-warning-note button {
-        font-size: 0.9rem;
-        padding: 6px 6px 6px;
-    }
-
-    .MCQ-edit-container {
-        width: 90%;
-    }
-
-    .MCQ-edit-container label {
-        width: 8vw;
-    }
-
-    .MCQ-question input {
-        width: 65vw;
-        margin-left: 15px;
-    }
-
-    .MCQ-question-options {
-        width: 65.2vw;
-        margin-left: 14px;
-    }
-
-    .Coding-question {
-        display: flex;
-        flex-direction: column;
-    }
-
-    .Coding-question input {
-        width: 80%;
-        height: 5vh;
-        margin-left: 1.2rem;
-    }
-
-    .Coding-question-statement {
-        display: flex;
-        flex-direction: column;
-    }
-
-    .ql-container {
-        margin-left: 0.8rem !important;
-    }
-
-    .ql-toolbar {
-        margin-left: 0.8rem;
-    }
-
-    .e-line-top {
-        margin-top: 5rem;
-    }
-
-    .test-case,
-    .test-case-output {
-        flex-direction: column;
-    }
-
-    .test-case label,
-    .test-case-output label {
-        width: 70%;
-    }
-
-    .test-case textarea,
-    .test-case-output textarea {
-        margin-left: 20px;
-        width: 80% !important;
-    }
-
-    .test-case-io {
-        flex-direction: column;
-    }
-
-    .test-casee {
-        display: flex;
-        flex-direction: column;
-    }
-
-    .test-casee label {
-        width: 90%;
-    }
-
-    .test-casee textarea {
-        width: 80%;
-        margin-left: 20px;
-    }
-
-    .delete-btn {
-        margin-left: 20px;
-    }
-}
-
-@media (min-width: 769px) and (max-width: 1024px) {
-    .top-display-pop-card {
-        width: 80%;
-        height: auto;
-        overflow: hidden;
-    }
-    
-      .pop-up-table {
-        font-size: 1rem; /* Adjust the font size */
-        overflow: hidden;
-      }
-    
-      .pop-up-table thead th {
-        padding: 10px;
-        font-size: 1.1rem;
-      }
-    
-      .pop-up-table tbody td, .pop-up-table thead th {
-        padding: 10px;
-        font-size: 0.7rem;
-      }
-    
-      /* Ensure vertical scrolling for the table body */
-      .pop-up-table tbody {
-        max-height: 50vh;
-        overflow-y: auto;
-        width: 100%;
-      }
-      .mid-display2{
-        height: 23.7vh !important;
-    }
-    .sidebar-container {
-        transform: translateX(0);
-        width: 220px;
-    }
-
-    .sidebar-button {
-        width: calc(100% - 20px);
-    }
-
-    .sidebar-item {
-        font-size: 1rem;
-    }
-
-    .bottom-sidebar-button {
-        width: calc(100% - 40px);
-    }
-
-    .sidebar-animation {
-        height: 42px;
-    }
-
-    .menu-toggle {
-        display: none;
-    }
-
-    .dashboard {
-        width: calc(100%);
-    }
-
-    /* manage exam */
-    .exam-container {
-        width: 90%;
-    }
-
-    .exam-greeting h1 {
-        margin-bottom: 0.5rem;
-    }
-
-    .m-btn-left {
-        gap: 13px;
-    }
-
-    .m-btn-left button {
-        font-size: 1rem;
-    }
-
-    .mid-display {
-        height: 50vh;
-    }
-
-    .mid-display2 {
-        height: 23.3vh;
-    }
-
-    .tablee {
-        height: 39vh;
-    }
-
-    .filter-btn {
-        padding: 12px 13px;
-    }
-
-    .search-box {
-        padding: 5px 5px;
-    }
-
-    .search-box input {
-        width: 130px;
-    }
-
-    .create-btn {
-        font-size: 0.9rem;
-        padding: 8px 15px;
-    }
-
-    .filter-popup {
-        top: 33%;
-        right: 35.5%;
-        width: 250px;
-    }
-
-    .m-table-container table thead {
-        font-size: 1rem;
-    }
-
-    .viewexam-btn {
-        font-size: 0.7rem;
-    }
-
-    .top-display-pop-title h2 {
-        font-size: 2rem;
-        margin-left: 1.5rem;
-    }
-
-    .pop-up-table thead th,
-    .pop-up-table tbody td {
-        font-size: 1.1rem;
-        width: 15vw;
-    }
-
-    .edit-container {
-        width: 70vw;
-    }
-
-    .body-control {
-        width: 90%;
-    }
-
-    .edit-ename-options input {
-        width: 280px;
-    }
-
-    .exam-creation-edit p {
-        width: 12vw;
-    }
-
-    .edit-ename-options-e-time input {
-        width: 155px;
-    }
-
-    .edit-section details {
-        width: 62.3vw;
-    }
-
-    .e-warning-note p {
-        font-size: 0.9rem;
-    }
-
-    .edit-sections-content {
-        width: 70%;
-    }
-
-    .edit-sections-content p {
-        font-size: 1rem;
-    }
-
-    .edit-sections-buttons button {
-        font-size: 1rem;
-    }
-
-    .MCQ-question-options {
-        margin-left: 10px;
-        width: 80%;
-    }
-
-    .MCQ-edit-container label {
-        width: 6vw;
-    }
-
-    .MCQ-question input {
-        width: 66.6%;
-        margin-left: 11px;
-    }
-
-    .add_options {
-        font-size: 0.9rem;
-        padding: 3px 12px;
-    }
-
-    .add_options span {
-        font-size: 0.9rem;
-    }
-}
-
-@media (min-width: 1024px) and (max-width: 1920) {
-    .dashboard {
-        width: 95%;
-    }
-
-    .sidebar-bottom {
-        width: 100%;
-    }
-
-    .sidebar-button {
-        width: calc(100% - 60px);
-    }
-
-    .sidebar-item {
-        font-size: 1.2rem;
-    }
-
-    .bottom-sidebar-button {
-        width: calc(100% - 90px);
-    }
-
-    /* manage exam */
-    .exam-greeting h1 {
-        margin-bottom: 2.5rem;
-        margin-top: 0rem;
-    }
-
-    .mid-display {
-        height: 50vh;
-    }
-
-    .tablee {
-        height: 39vh;
-    }
-
-    .mid-display2 {
-        height: 23vh;
-    }
-
-    .edit-container {
-        width: 65vw;
-        position: relative;
-        left: 7rem;
-    }
-
-    .edit-section details {
-        width: 60vw;
-    }
-
-    .MCQ-question-options {
-        margin-left: 19px;
-        width: 85%;
-    }
-
-    .MCQ-question input {
-        width: 75%;
-        margin-left: 20px;
-    }
-}
-.m-table-container {
-    width: 100%;
-    margin-top: 1rem;
-    border-radius: 10px;
-    border: 1px solid rgb(153, 153, 153);
-    overflow-x: hidden;
-}
-
-.m-table-container table {
-    width: 100%;
-    height: 61vh;
-    background-color: #393939;
-    border-radius: 10px;
-    border-collapse: collapse;
-    display: flex;
-    flex-direction: column;
-    overflow-x: auto;
-}
-
-.m-table-container table thead {
-    background-color: #535353;
-    color: white;
-    font-size: 1.1rem;
-    width: 100%;
-    display: table;
-    table-layout: fixed;
-}
-
-.m-table-container table tbody {
-    max-height: 53vh;
-    overflow-y: auto;
-    overflow-x: hidden;
-    width: 100%;
-    display: table;
-    table-layout: fixed;
-}
-
-.m-table-container table tbody tr {
-    display: table;
-    width: 100%;
-    table-layout: fixed;
-    height: 50px;
-    border-top: 1px solid rgb(133, 133, 133);
-    border-bottom: 1px solid rgb(133, 133, 133);
-}
-
-.m-table-container table tbody td {
-    padding: 12px;
-    text-align: center;
-    color: white;
-}
-
-.even-row {
-    background-color: #393939;
-}
-
-.odd-row {
-    background-color: #424242;
-}
-
-/* Buttons */
-.create-btn {
-    background-color: #d90495;
-    color: white;
-    padding: 8px 12px;
-    border-radius: 5px;
-    cursor: pointer;
-    min-width: 175px;
-
-}
-
-.viewexam-btn {
-    background-color: #8E5DAF;
-    padding: 5px;
-    border-radius: 5px;
-    cursor: pointer;
-    white-space: nowrap;
-}
-
 
 /* Action Buttons */
 .action-buttons {
@@ -2479,24 +1207,8 @@ html, body {
     background-color: #7B4DA1;
 }
 
-/* Delete Button */
-.delete-btn {
-    background-color: #E63946;
-    padding: 13px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 0.85rem;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    color: white;
-    font-weight: 600;
-    border: none;
-    transition: all 0.2s ease-in-out;
-}
-
-.delete-btn:hover {
-    background-color: #C72F3A;
+.resultfilter {
+    right: 21.7%;
 }
 
 /* Header Wrapper - Align title & Total Students */
@@ -2505,7 +1217,6 @@ html, body {
     justify-content: space-between;
     align-items: center;
     width: 100%;
-
 }
 
 /* Manage Students Title */
@@ -2661,7 +1372,7 @@ html, body {
 
 
 /* MODAL BUTTONS */
-.modal-buttons {
+.student-modal-buttons {
     display: flex;
     justify-content: center;
     gap: 10px;
@@ -2695,12 +1406,8 @@ html, body {
     font-weight: bold;
 }
 
-.create-btn-student {
-    background: #B30275;
-}
-
 /*notification-table*/
-.notification-table{
+.notification-table {
     width: 90%;
     height: 40vh;
     margin-top: 1rem;
@@ -2708,10 +1415,10 @@ html, body {
     box-shadow: 0 0 8px rgba(36, 36, 36, 0.3);
     border: 1px solid rgb(92, 92, 92);
     border-radius: 5px;
-   
-    word-wrap: break-word; /* or */
+    word-wrap: break-word;
     overflow-wrap: break-word;
 }
+
 .tablee-new {
     background-color: #656565;
     padding: 7px 25px;
@@ -2719,9 +1426,7 @@ html, body {
     overflow-x: auto;
     display: block;
     max-width: 100%;
-    
-    /* Ensuring text wraps */
-    white-space: normal; 
+    white-space: normal;
     word-wrap: break-word;
     overflow-wrap: break-word;
 }
@@ -2730,28 +1435,775 @@ html, body {
     color: white;
     font-family: madina-regular;
     font-size: 1rem;
-    
+
     /* Ensuring text wraps */
-    white-space: normal; 
+    white-space: normal;
     word-wrap: break-word;
     overflow-wrap: break-word;
 }
 
-/* Responsive Section */
-@media (min-width:1025px) and (max-width:1920px) {
-    .dashboard {
-        width: 90%;
-        height: 85vh;
-        overflow: hidden;
+/* Mobile view */
+@media (max-width: 425px) {
+
+    /* Container Adjustments */
+    .result-container,
+    .dashboard,
+    .exam-container {
+        width: 96vw;
         position: relative;
+        left: 0.4rem;
+        top: 8px;
     }
 
-    .sidebar-bottom {
+    .result-header,
+    .greeting {
+        width: 88%;
+    }
+
+    .result-header h1,
+    .greeting h1 {
+        font-size: 1.6rem;
+        /* Adjusted for readability */
+    }
+
+    .search-box input {
         width: 100%;
+        /* Compact fit */
+    }
+
+    /* Sidebar */
+    .sidebar-container {
+        position: fixed;
+        left: 0;
+        top: 0px;
+        height: 100vh;
+        width: 250px;
+        background-color: #181817;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease-in-out;
+        z-index: 1000;
+    }
+
+    .sidebar-top {
+        position: relative;
+        top: 40px;
+    }
+
+    .sidebar-item {
+        font-size: 1.3rem;
+    }
+
+    .sidebar-container.open {
+        transform: translateX(0);
     }
 
     .sidebar-button {
+        width: 100%;
+    }
+
+    .bottom-sidebar-button {
+        width: 100%;
+        border-radius: 0px;
+    }
+
+    .menu-toggle {
+        display: block;
+        position: fixed;
+        top: 15px;
+        left: -5px;
+    }
+
+    /* Top Bar */
+    .topbar {
+        display: flex;
+        justify-content: center;
+    }
+
+    .top-display {
+        max-width: 100%;
+    }
+
+    .top-display h4 {
+        font-size: 1.2rem;
+    }
+
+    .top-display h2 {
+        font-size: 2.7rem;
+    }
+
+    /* Middle Display */
+    .mid-display h4 {
+        font-size: 1.8rem;
+        margin-left: 1.2rem;
+    }
+
+    .tablee h5 {
+        font-size: 0.9rem;
+    }
+
+    .tablee-content h6 {
+        font-size: 0.75rem;
+    }
+
+    /* Manage Exam Section */
+
+
+    /* Hide Logo for Mobile */
+    .ctc-logo {
+        display: none !important;
+    }
+
+    /* Responsive Modal Table */
+    .top-display-pop-card {
+        width: 95%;
+        padding: 0.8rem;
+        overflow: hidden;
+    }
+
+    .top-display-pop-title button img {
+        margin-right: 0px;
+    }
+
+    .pop-up-table {
+        width: 140%;
+        font-size: 0.8rem;
+        margin-top: 0.8rem;
+        border-collapse: collapse;
+        table-layout: auto;
+        overflow-y: auto;
+    }
+
+    .pop-up-table thead th {
+        padding: 6px;
+        font-size: 0.8rem;
+        text-align: center;
+        white-space: nowrap;
+    }
+
+    .pop-up-table tbody {
+        max-height: 35vh;
+        overflow-y: auto;
+        width: 100%;
+    }
+
+    .pop-up-table tbody td,
+    .pop-up-table thead th {
+        padding: 6px;
+        font-size: 0.75rem;
+        text-align: center;
+        word-wrap: break-word;
+        white-space: normal;
+    }
+
+    .viewexam-btn-pop {
+        padding: 4px 6px;
+        background-color: #8e5daf;
+        color: white;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        margin-top: 3px;
+    }
+
+    .viewexam-btn-pop:hover {
+        background-color: #7421ac;
+    }
+
+    .top-display-pop-title h2 {
+        font-size: 1.3rem;
+        margin-left: 0.8rem;
+    }
+
+    /* Exam Viewing Section */
+    .viewexam-container {
         width: calc(100% - 50px);
+        height: 85vh;
+        padding: 1rem;
+    }
+
+    .viewexam-box {
+        width: 100%;
+        padding-top: 1rem;
+    }
+
+    .viewexam-box h1 {
+        font-size: 2rem;
+    }
+
+    .viewexam-box button {
+        font-size: 2.5rem;
+        bottom: 8px;
+        margin-right: 8px;
+    }
+
+    .viewexam-header {
+        height: 6vh;
+        padding: 0.8rem;
+        font-size: 1.2rem;
+    }
+
+    .viewexam-header h2 {
+        font-size: 1.3rem;
+    }
+
+    .viewexam-header-btn button {
+        font-size: 1rem;
+        padding: 4px 12px;
+        margin-top: 15px;
+    }
+
+    .viewexam-body {
+        height: 60vh;
+    }
+
+    .viewexam-viwer {
+        width: 100%;
+        margin-top: 15px;
+    }
+
+    .viewexam-q {
+        margin-top: 10px;
+    }
+
+    .viewexam-viwer-header {
+        height: 5.5vh;
+        padding: 6px 15px 4px;
+    }
+
+    .viewexam-viwer-header h2 {
+        font-size: 1.5rem;
+    }
+
+    .viewexam-viwer-header p {
+        font-size: 1.1rem;
+        margin-top: 3px;
+    }
+
+    /* Exam Answer Box */
+    .viewexam-answer-boxes {
+        flex-direction: column;
+        gap: 0.8rem;
+        margin-top: 0.8rem;
+    }
+
+    .viewexam-answer-box {
+        width: 100%;
+        padding: 0.8rem;
+    }
+
+    .viewexam-answer-box h3 {
+        font-size: 1.2rem;
+        margin: 0.8rem 0 0.4rem;
+    }
+
+    .viewexam-answer-box p {
+        font-size: 0.95rem;
+    }
+
+    .viewexam-answer-box ul {
+        margin-left: 15px;
+    }
+
+    .viewexam-answer-box ul li {
+        font-size: 0.9rem;
+    }
+
+    /* Ensure all tables and text fit properly */
+    .m-table-container table thead th,
+    .m-table-container table tbody td,
+    .pop-up-table thead th,
+    .pop-up-table tbody td {
+        width: auto;
+    }
+
+    .m-table-container {
+        overflow-x: auto;
+    }
+
+    .m-table-container table {
+        width: 280%;
+        max-height: 58vh;
+    }
+
+    .m-table-container table tbody td {
+        font-size: 0.8rem;
+    }
+
+    .m-table-container table thead th {
+        font-size: 0.8rem;
+    }
+
+    /* Responsive Table Body */
+
+    .viewexam-btn {
+        padding: 5px 5px 5px;
+        font-size: 0.8rem;
+    }
+
+    /* Responsive Filter Popup */
+    .filter-popup {
+        position: fixed;
+        right: 11.5%;
+        top: 44.5%;
+        padding: 15px;
+        border-radius: 10px;
+        width: 250px;
+        z-index: 1000;
+    }
+
+    .filter-popup h3 {
+        color: white;
+        font-size: 1rem;
+        font-family: madina-semibold;
+    }
+
+    /* Edit Button */
+    .edit-btn {
+        padding: 5px !important;
+        font-size: 10px !important;
+    }
+
+    .edit-btn .icon {
+        margin-right: 6px;
+    }
+
+    .header-wrapper {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        flex-direction: column;
+    }
+
+    .modal-container {
+        background: #1a1a1a;
+        padding: 30px;
+        border-radius: 12px;
+        width: 500px;
+        box-shadow: 0px 0px 10px rgba(255, 255, 255, 0.1);
+    }
+}
+
+/* Table view */
+@media (min-width: 426px) and (max-width: 1023px) {
+    .result-container {
+        width: 100vw;
+    }
+
+    .result-header {
+        padding-top: 0rem;
+    }
+
+    .result-header h1 {
+        margin-top: 0rem;
+    }
+
+    .m-btn-left {
+        gap: 10px;
+    }
+
+    .m-btn-left button {
+        font-size: 1rem;
+    }
+
+    .filter-btn {
+        padding: 9px 9px;
+    }
+
+    .create-btn {
+        font-size: 0.9rem;
+        padding: 5px 12px;
+    }
+
+    .search-box {
+        padding: 3px 10px;
+    }
+
+    .search-box input {
+        width: 100px;
+    }
+
+    /* Responsive Table */
+    .m-table-container {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .m-table-container table {
+        width: 177%;
+        border-collapse: collapse;
+        table-layout: auto;
+    }
+
+    .m-table-container table thead th {
+        font-size: 0.9rem;
+        white-space: nowrap;
+        padding: 10px;
+    }
+
+    .m-table-container table tbody td {
+        font-size: 0.9rem;
+        padding: 10px;
+        white-space: nowrap;
+    }
+
+    /* Responsive Modal Table */
+    .top-display-pop-card {
+        width: 95%;
+        padding: 1rem;
+        overflow: hidden;
+    }
+
+    .pop-up-table {
+        width: 90%;
+        font-size: 1rem;
+        margin-top: 1rem;
+        border-collapse: collapse;
+        table-layout: auto;
+    }
+
+    .pop-up-table thead th {
+        padding: 12px 10px;
+        font-size: 1.1rem;
+        text-align: left;
+        white-space: nowrap;
+    }
+
+    .pop-up-table tbody {
+        max-height: 50vh;
+        overflow-y: auto;
+        width: 100%;
+    }
+
+    .pop-up-table tbody td,
+    .pop-up-table thead th {
+        padding: 12px 10px;
+        font-size: 1rem;
+        white-space: nowrap;
+        text-align: center;
+    }
+
+    .viewexam-btn-pop {
+        padding: 9px 10px;
+        background-color: #8e5daf;
+        color: white;
+        border-radius: 5px;
+        font-size: 1rem;
+        margin-top: 5px;
+    }
+
+    .viewexam-btn-pop:hover {
+        background-color: #7421ac;
+    }
+
+    .top-display-pop-title h2 {
+        font-size: 1.6rem;
+        margin-left: 1rem;
+    }
+
+    /* Sidebar */
+    .sidebar-container {
+        position: fixed;
+        left: 0;
+        top: 0px;
+        height: 100vh;
+        width: 250px;
+        background-color: #181817;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease-in-out;
+        z-index: 1000;
+    }
+
+    .sidebar-item {
+        font-size: 1.1rem;
+    }
+
+    .greeting {
+        padding-top: 0rem;
+    }
+
+    .greeting h1 {
+        padding-top: 0rem;
+    }
+
+    .mid-display {
+        height: 49vh;
+    }
+
+    .mid-display h4 {
+        font-size: 1.3rem;
+        margin-left: 0.8rem;
+    }
+
+    .mid-display2 h4 {
+        font-size: 1.3rem;
+    }
+
+    .mid-display2 {
+        height: 18vh;
+        padding: 10px 0px;
+    }
+
+    .mid-display3 {
+        padding: 10px 0px;
+    }
+
+    .mid-display3 h4 {
+        font-size: 1.3rem;
+        margin-left: 0.8rem;
+    }
+
+    .tablee-new {
+        padding: 7px 5px;
+    }
+
+    .tablee {
+        height: 38vh;
+    }
+
+    /* Show when sidebar is toggled open */
+    .sidebar-container.open {
+        transform: translateX(0);
+    }
+
+    .bottom-sidebar-button {
+        width: 90%;
+    }
+
+    .sidebar-top {
+        position: relative;
+        top: 40px;
+    }
+
+    .sidebar-button {
+        width: calc(95% - 20px);
+    }
+
+    .sidebar-animation {
+        height: 42px;
+    }
+
+    .menu-toggle {
+        display: block;
+    }
+
+    .dashboard {
+        width: 100vw;
+    }
+
+    /* Exam Management */
+    .exam-container {
+        width: 100vw;
+    }
+
+    .exam-greeting {
+        padding-top: 0rem;
+    }
+
+    .exam-greeting h1 {
+        margin-top: 0rem;
+    }
+
+    .m-table-container table thead th,
+    .m-table-container table tbody td {
+        font-size: 0.9rem;
+    }
+
+    .viewexam-btn {
+        font-size: 0.8rem;
+    }
+
+    .edit-container {
+        width: 78vw;
+        position: fixed;
+        left: 5.5rem;
+    }
+
+    .body-control {
+        width: 90%;
+    }
+
+    .edit-ename-options input {
+        width: 200px;
+        padding: 5px;
+    }
+
+    .exam-creation-edit p {
+        width: 15vw;
+    }
+
+    .edit-ename-options-e-time input {
+        width: 155px;
+        padding: 5px;
+    }
+
+    .edit-section details {
+        width: 69vw;
+    }
+
+    .edit-sections-content {
+        width: 68%;
+        font-size: 0.8rem;
+    }
+
+    .edit-sections-buttons button {
+        font-size: 0.9rem;
+    }
+
+    .e-warning-note p {
+        font-size: 0.8rem;
+        width: 45vw;
+    }
+
+    .e-warning-note button {
+        font-size: 0.9rem;
+        padding: 6px 6px 6px;
+    }
+
+    .MCQ-edit-container {
+        width: 90%;
+    }
+
+    .MCQ-edit-container label {
+        width: 8vw;
+    }
+
+    .MCQ-question input {
+        width: 65vw;
+        margin-left: 15px;
+    }
+
+    .MCQ-question-options {
+        width: 65.2vw;
+        margin-left: 14px;
+    }
+
+    .Coding-question {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .Coding-question input {
+        width: 80%;
+        height: 5vh;
+        margin-left: 1.2rem;
+    }
+
+    .Coding-question-statement {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .ql-container {
+        margin-left: 0.8rem !important;
+    }
+
+    .ql-toolbar {
+        margin-left: 0.8rem;
+    }
+
+    .e-line-top {
+        margin-top: 5rem;
+    }
+
+    .test-case,
+    .test-case-output {
+        flex-direction: column;
+    }
+
+    .test-case label,
+    .test-case-output label {
+        width: 70%;
+    }
+
+    .test-case textarea,
+    .test-case-output textarea {
+        margin-left: 20px;
+        width: 80% !important;
+    }
+
+    .test-case-io {
+        flex-direction: column;
+    }
+
+    .test-casee {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .test-casee label {
+        width: 90%;
+    }
+
+    .test-casee textarea {
+        width: 80%;
+        margin-left: 20px;
+    }
+
+    .delete-btn {
+        margin-left: 20px;
+    }
+}
+
+@media (min-width: 1024px) and (max-width:1152px) {
+    .top-display-pop-card {
+        width: 80%;
+        height: auto;
+        overflow: hidden;
+    }
+
+    .pop-up-table {
+        font-size: 1rem;
+        /* Adjust the font size */
+        overflow: hidden;
+    }
+
+    .pop-up-table thead th {
+        padding: 10px;
+        font-size: 1.1rem;
+    }
+
+    .pop-up-table tbody td {
+        padding: 10px;
+        font-size: 1rem;
+    }
+
+    /* Ensure vertical scrolling for the table body */
+    .pop-up-table tbody {
+        max-height: 50vh;
+        overflow-y: auto;
+        width: 100%;
+    }
+
+    .mid-display h4 {
+        font-size: 1.5rem;
+        margin-left: 0.7rem;
+        margin-top: 0.6rem;
+    }
+
+    .mid-display2 {
+        height: 20vh;
+        padding: 10px 0px;
+    }
+
+    .mid-display3 {
+        height: 28.1vh;
+    }
+
+    .tablee-new {
+        padding: 7px 13px;
+    }
+
+    .sidebar-container {
+        transform: translateX(0);
+        width: 220px;
+    }
+
+    .sidebar-button {
+        width: calc(95% - 10px);
+    }
+
+    .sidebar-icon {
+        font-size: 1.5rem;
     }
 
     .sidebar-item {
@@ -2759,58 +2211,184 @@ html, body {
     }
 
     .bottom-sidebar-button {
-        width: calc(100% - 80px);
+        width: calc(100% - 40px);
     }
 
-    /* Manage Exam */
+    .sidebar-animation {
+        height: 42px;
+    }
+
+    .menu-toggle {
+        display: none;
+    }
+
+    .dashboard {
+        width: calc(100%);
+    }
+
+    /* manage exam */
+    .exam-container,
+    .result-container {
+        width: 100%;
+    }
+
     .exam-greeting h1 {
-        margin-bottom: 0.8rem;
-        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .result-header,
+    .exam-greeting {
+        padding-top: 0rem;
+    }
+
+    .m-btn-left {
+        gap: 13px;
+    }
+
+    .m-btn-left button {
+        font-size: 1rem;
     }
 
     .mid-display {
-        height: 45vh;
+        height: 50vh;
     }
 
     .tablee {
-        height: 35vh;
+        height: 39vh;
     }
 
-    .mid-display2 {
-        height: 20vh;
+    .filter-btn {
+        padding: 12px 13px;
+    }
+
+    .search-box {
+        padding: 5px 5px;
+    }
+
+    .search-box input {
+        width: 130px;
+    }
+
+    .create-btn {
+        font-size: 0.9rem;
+        padding: 8px 15px;
+    }
+
+    .filter-popup {
+        top: 33%;
+        right: 35.5%;
+        width: 250px;
+    }
+
+    .m-table-container {
+        width: 100%;
+        overflow: auto;
+    }
+
+    .m-table-container table {
+        width: 150%;
+    }
+
+    .m-table-container table thead {
+        font-size: 1rem;
+    }
+
+    .viewexam-box {
+        padding-top: 0rem;
+    }
+
+    .viewexam-container {
+        width: 100%;
+    }
+
+    .viewexam-btn {
+        font-size: 1rem;
+    }
+
+    .top-display-pop-title h2 {
+        font-size: 2rem;
+        margin-left: 1.5rem;
     }
 
     .edit-container {
-        width: 75vw;
-        position: relative;
-        left: 5rem;
-    }
-
-    .edit-section details {
         width: 70vw;
     }
 
+    .body-control {
+        width: 90%;
+    }
+
+    .edit-ename-options input {
+        width: 280px;
+    }
+
+    .exam-creation-edit p {
+        width: 12vw;
+    }
+
+    .edit-ename-options-e-time input {
+        width: 155px;
+    }
+
+    .edit-section details {
+        width: 62.3vw;
+    }
+
+    .e-warning-note p {
+        font-size: 0.9rem;
+    }
+
+    .edit-sections-content {
+        width: 70%;
+    }
+
+    .edit-sections-content p {
+        font-size: 1rem;
+    }
+
+    .edit-sections-buttons button {
+        font-size: 1rem;
+    }
+
     .MCQ-question-options {
-        margin-left: 15px;
+        margin-left: 10px;
         width: 80%;
     }
 
+    .MCQ-edit-container label {
+        width: 6vw;
+    }
+
     .MCQ-question input {
-        width: 70%;
-        margin-left: 15px;
+        width: 66.6%;
+        margin-left: 11px;
     }
-    
-}
 
-@media (min-width: 1440px){
-    .mid-display2{
-        height: 21.6vh !important;
+    .add_options {
+        font-size: 0.9rem;
+        padding: 3px 12px;
     }
-}
-@media (min-width: 2560px){
-    .mid-display2{
-        height: 25vh !important;
+
+    .add_options span {
+        font-size: 0.9rem;
     }
 }
 
+@media (min-width:1200px) and (max-width:1440px) {
+    .sidebar-button {
+        width: calc(95% - 50px);
+    }
 
+    .sidebar-item {
+        font-size: 1.3rem;
+        margin-left: 5px;
+    }
+
+    .sidebar-animation {
+        height: 46px;
+    }
+
+    .bottom-sidebar-button {
+        width: calc(90.7% - 50px);
+    }
+}
