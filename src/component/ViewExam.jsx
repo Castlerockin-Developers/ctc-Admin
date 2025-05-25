@@ -1,14 +1,47 @@
-import React from 'react';
+import { useEffect, useState } from 'react';
 import './ViewExam.css';
 import { FaShareSquare } from 'react-icons/fa';
+import { authFetch } from '../scripts/AuthProvider'
 
 const ViewExam = ({ exam, onBack }) => {
+    const [examDetails, setExamDetails] = useState(null);  // <-- new state for detailed exam data
+
+    const handleViewExam = async (exam) => {
+        try {
+            const response = await authFetch(`/admin/exams/${exam.id}/`, { method: "GET" });
+            if (!response.ok) {
+                throw new Error("Failed to fetch exam details");
+            }
+            const data = await response.json();
+            console.log("Exam details:", data);
+            setExamDetails(data);  // set detailed data here
+        } catch (error) {
+            console.error("Error fetching exam details:", error);
+            alert("Failed to load exam details");
+        }
+    };
+
+    useEffect(() => {
+        if (exam && !examDetails) {
+            handleViewExam(exam);
+        }
+    }
+        , [exam, examDetails]);
+
+    if (!examDetails) {
+        return (
+            <div className="viewexam-container justify-center flex flex-wrap">
+                <h1>Loading exam details...</h1>
+            </div>
+        );
+    }
+
     return (
         <div className='viewexam-container justify-center flex flex-wrap'>
             <div className='viewexam-box'>
                 <div className='flex'>
                     <button onClick={onBack}>&lt;</button>
-                    <h1>#{exam.id} {exam.name} {exam.title}</h1>
+                    <h1>#{examDetails.id} {examDetails.name}</h1>
                 </div>
                 <div className="viewexam-section">
                     <div className="viewexam-header">
@@ -21,46 +54,26 @@ const ViewExam = ({ exam, onBack }) => {
                     <div className="viewexam-body flex flex-col items-center justify-start">
                         <div className="viewexam-viwer">
                             <div className='viewexam-q'>
+
                                 <div className="viewexam-viwer-header flex justify-between items-center">
                                     <h2 className='text-xl'>MCQ</h2>
                                     <p>10</p>
+
                                 </div>
                                 <div className="viewexam-viwer-body flex justify-center">
-                                    <div className="viewexams-container">
-                                        <details>
-                                            <summary>
-                                                <div className="flex justify-between items-center w-full">
-                                                    <p>1. Sample Question</p>
-                                                </div>
-                                            </summary>
-                                            <div className="viewexam-answer-boxes">
-                                                <div className="viewexam-answer-box">
-                                                    <ul>
-                                                        <li>option1</li>
-                                                        <li>option2</li>
-                                                        <li>option3</li>
-                                                        <li>option4</li>
-                                                    </ul>
+                                    <div className="viewexams-container pb-2">
+                                        {examDetails?.alloted_sections?.map((section, index) => (
+                                            <div key={section.id || index} className="question-block my-2">
+                                                <div className="flex justify-between items-center w-full text-xl py-2">
+                                                    <p className='text-white'>
+                                                        {index + 1}. {section.section_name || "Sample Question"}
+                                                    </p>
+                                                    <p className="text-sm text-white whitespace-nowrap">
+                                                        Timed: {section.is_timed ? "Yes" : "No"} {section.is_timed && `| Time: ${section.section_time} min`} | Total: {section.no_of_question}
+                                                    </p>
                                                 </div>
                                             </div>
-                                        </details>
-                                        <details>
-                                            <summary>
-                                                <div className="flex justify-between items-center w-full">
-                                                    <p>2. Sample Question</p>
-                                                </div>
-                                            </summary>
-                                            <div className="viewexam-answer-boxes">
-                                                <div className="viewexam-answer-box">
-                                                    <ul>
-                                                        <li>option1</li>
-                                                        <li>option2</li>
-                                                        <li>option3</li>
-                                                        <li>option4</li>
-                                                    </ul>
-                                                </div>
-                                            </div>
-                                        </details>
+                                        ))}
                                     </div>
                                 </div>
                             </div>
@@ -68,50 +81,21 @@ const ViewExam = ({ exam, onBack }) => {
                                 <div className="viewexam-viwer-header flex justify-between items-center">
                                     <h2 className='text-xl'>Coding</h2>
                                     <p>2</p>
+
                                 </div>
                                 <div className="viewexam-viwer-body flex justify-center">
-                                    <div className="viewexams-container">
-                                        <details>
-                                            <summary>
-                                                <div className="flex justify-between items-center w-full">
-                                                    <p>1. Lorem ipsum dolor sit amet consectetur adipisicing elit. Nobis quo quaerat fuga laborum ducimus error voluptas quidem libero sunt aliquam!</p>
-                                                </div>
-                                            </summary>
-                                            <div className="viewexam-answer-boxes">
-                                                <div className="viewexam-answer-box">
-                                                    <h3>Test Case</h3>
-                                                    <p>This is where your answer would appear.</p>
-                                                </div>
-                                                <div className="viewexam-answer-box">
-                                                    <h3>Sample Input</h3>
-                                                    <p>This is where the correct answer would appear.</p>
-                                                    <h3>Sample Output</h3>
-                                                    <p>This is where the correct answer would appear.</p>
+                                    <div className="viewexams-container pb-2">
+                                        {examDetails.selected_coding_questions?.map(({ id, question_name }, index) => (
+                                            <div key={id} className="question-block my-2">
+                                                <div className="flex justify-between items-center w-full py-2 text-xl">
+                                                    <p className='text-white text-md'>{index + 1}. {question_name}</p>
                                                 </div>
                                             </div>
-                                        </details>
-                                        <details>
-                                            <summary>
-                                                <div className="flex justify-between items-center w-full">
-                                                    <p>2. Sample Question</p>
-                                                </div>
-                                            </summary>
-                                            <div className="viewexam-answer-boxes">
-                                                <div className="viewexam-answer-box">
-                                                    <h3>Test Case</h3>
-                                                    <p>This is where your answer would appear.</p>
-                                                </div>
-                                                <div className="viewexam-answer-box">
-                                                    <h3>Sample Input</h3>
-                                                    <p>This is where the correct answer would appear.</p>
-                                                    <h3>Sample Output</h3>
-                                                    <p>This is where the correct answer would appear.</p>
-                                                </div>
-                                            </div>
-                                        </details>
+                                        ))}
                                     </div>
                                 </div>
                             </div>
+
                         </div>
                     </div>
                 </div>

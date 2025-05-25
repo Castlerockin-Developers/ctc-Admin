@@ -4,6 +4,7 @@ import Dashboard from './component/Dashboard'; // Import the Dashboard component
 import SubcriptionPage from './component/Subcription'; // Import the SubscriptionPage component
 import Home from './pages/Home'; // Import Home page component
 import './App.css'; // Import your CSS file
+import LoginPage from './pages/login';
 
 function App() {
   return (
@@ -18,6 +19,8 @@ function App() {
 
           {/* Subscription page route */}
           <Route path="/subcription" element={<SubcriptionPage />} />
+
+          <Route path="/login" element={<LoginPage />} />
         </Routes>
       </div>
     </Router>
