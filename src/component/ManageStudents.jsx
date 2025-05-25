@@ -116,61 +116,6 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen }) => {
     }
   }
 
-  // Moved fetchStudentsData and handleDeleteStudent outside of JSX
-  const fetchStudentsData = async () => {
-    console.log("Fetch");
-  };
-
-  const handleDeleteStudent = async (usn) => {
-    Swal.fire({
-      title: "Warning",
-      text: "Are you sure you want to delete this item? ",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Yes",
-      cancelButtonText: "No",
-      background: "#181817",
-      color: "#fff",
-    }).then(async (result) => {
-      if (result.isConfirmed) {
-        try {
-          // Send delete request to backend
-          const response = await fetch(`http://your-backend-url/api/students/${usn}`, {
-            method: "DELETE",
-            headers: {
-              "Content-Type": "application/json",
-            },
-          });
-
-          if (!response.ok) {
-            fetchStudentsData();
-            throw new Error("Failed to delete student");
-          }
-
-          // Show success alert
-          Swal.fire({
-            title: "Deleted!",
-            text: "Student has been removed.",
-            icon: "success",
-            background: "#181817",
-            color: "#fff",
-          });
-
-          // Refresh the state by fetching updated data
-          fetchStudentsData();
-        } catch (error) {
-          Swal.fire({
-            title: "Error!",
-            text: "Failed to delete student. Please try again.",
-            icon: "error",
-            background: "#181817",
-            color: "#fff",
-          });
-        }
-      }
-    });
-  };
-
   return (
     <div className="lg:w-3xl justify-center flex flex-wrap result-container">
       <div className="result-header">

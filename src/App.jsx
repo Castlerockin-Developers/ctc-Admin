@@ -12,15 +12,13 @@ function App() {
       <div className='app-background'>
         <Routes>
           {/* Home page route */}
-          <Route path="/" element={<Home />} />
-
+          <Route path="/" element={<LoginPage />} />
+          <Route path="/home" element={<Home />} />
           {/* Dashboard page route */}
           <Route path="/dashboard" element={<Dashboard />} />
 
           {/* Subscription page route */}
           <Route path="/subcription" element={<SubcriptionPage />} />
-
-          <Route path="/login" element={<LoginPage />} />
         </Routes>
       </div>
     </Router>
