@@ -150,34 +150,12 @@
     margin-right: 10px;
 }
 
-
-.buy-item button {
-    color: #fff;
-    padding: 0.6rem 1.5rem;
-    background-color: #8E5DAF;
-    border-radius: 5px;
-    font-size: 1.1rem;
-    cursor: pointer;
-    border: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-left: 15px;
-
-}
-
-.buy-item button:hover {
-    background-color: #6200a3;
-}
-
 .buy-item p {
     color: #fff;
     font-size: 1.2rem;
     font-family: madina-semibold;
     margin-top: 2px;
-
 }
-
 
 .subcribe-table,
 .subcribe-history-table {
@@ -440,19 +418,6 @@
 
 
 /* The bottom section with total & Buy button */
-.buy-item {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    gap: 1rem;
-    margin-right: 2rem;
-}
-
-.buy-item p {
-    color: #fff;
-    font-size: 1.2rem;
-    font-family: madina-semibold;
-}
 
 .buy-item button {
     color: #fff;
@@ -465,14 +430,11 @@
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
+    margin-left: 15px;
 }
 
 .buy-item button:hover {
     background-color: #6200a3;
-}
-
-.bug-icon {
-    font-size: 1.2rem;
 }
 
 /* 
@@ -480,22 +442,7 @@
    STYLING FOR THE PLUS/MINUS BUTTONS & CENTER
   ─────────────────────────────────────────────
 */
-
-
-.add-credit-btn {
-    display: inline-flex;
-    align-items: center;
-    /* A teal-ish border to match the minus/plus buttons */
-    border: 2px solid #8F8F8F;
-
-    border-radius: 6px;
-    overflow: hidden;
-    /* keeps the children clipped to rounded corners */
-}
-
 /* Minus and plus buttons */
-
-
 /* Center value container */
 .quantity-value {
     width: 400px;
@@ -514,6 +461,7 @@
 .add-credit-btn {
     display: inline-flex;
     align-items: center;
+    /* A teal-ish border to match the minus/plus buttons */
     border: 2px solid #006D72;
     /* teal outline */
     border-radius: 6px;
@@ -534,21 +482,6 @@
     outline: none;
 }
 
-/* Middle Input Field */
-.quantity-input {
-    width: 70px;
-    height: 40px;
-    background-color: #999;
-    /* gray center */
-    color: #FFFFFF;
-
-    text-align: center;
-    border: none;
-    font-size: 1.2rem;
-    outline: none;
-    font-weight: bold;
-}
-
 /* Remove spinners in Chrome, Safari, Edge, Opera */
 .quantity-input::-webkit-outer-spin-button,
 .quantity-input::-webkit-inner-spin-button {
@@ -558,9 +491,9 @@
 
 /* Remove spinners in Firefox */
 .quantity-input[type=number] {
+    appearance: textfield;
     -moz-appearance: textfield;
 }
-
 
 .quantity-input {
     width: 70px;
@@ -575,7 +508,6 @@
     font-weight: bold;
     /* <-- make the text bold */
 }
-
 
 /* Tooltip container */
 .tooltip-icon {
@@ -615,6 +547,4 @@
 .tooltip-icon:hover .tooltiptext {
     visibility: visible;
     opacity: 1;
-
 }
-
