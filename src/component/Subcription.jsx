@@ -6,6 +6,7 @@ import ReceiptModal from "./ReceiptModal"; // Import the ReceiptModal component
 import "./subscription.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faInfoCircle, faShoppingBag } from "@fortawesome/free-solid-svg-icons";
+import { authFetch } from "../scripts/AuthProvider"
 
 const Subscription = () => {
     // State for credit quantity
@@ -17,22 +18,33 @@ const Subscription = () => {
 
     const [activeTab, setActiveTab] = useState("buy");
 
-    const [expiryDate, setExpiryDate] = useState("35 days");
+    const [expiryDate, setExpiryDate] = useState("0 days");
+    const [credits, setCredits] = useState(0);
     const [message, setMessage] = useState("");
     const [showModal, setShowModal] = useState(false);
     const [billingHistory, setBillingHistory] = useState([]);
-    // Uncomment the code below when your backend endpoint is ready
-    /*
-    useEffect(() => {
-        fetch('/api/subscription')
-          .then((res) => res.json())
-          .then((data) => {
-              // Assuming your backend returns an object with an expiresIn property.
-              setExpiryDate(data.expiresIn + " days");
-          })
-          .catch((err) => console.error("Error fetching subscription data:", err));
-    }, []);
-    */
+    const [plan_name,setPlan] = useState("Premium");
+
+    const fetchSubscriptionDetails = async () => {
+        const response = authFetch('/admin/subscribtion',{ method: 'GET' });
+        response.then((res) => res.json())
+            .then((data) => {
+                setExpiryDate((data.expires_in || "0") + " days");
+                setCredits(data.credits);
+                setPlan(data.current_plan);
+                const billingData = data.billing_history.map((bill) => ({
+                    id: bill.transaction_id, 
+                    particular: bill.plan_name, 
+                    date: new Date(bill.purchase_date).toDateString(), 
+                    credits: bill.credits, 
+                    cost: bill.cost, 
+                    status: bill.status 
+                }
+                ));
+                setBillingHistory(billingData);
+            }
+        ).catch((err) => console.error("Error fetching subscription data:", err));
+    };
 
 
     // State for receipt modal visibility
@@ -92,26 +104,11 @@ const Subscription = () => {
         window.location.href = "https://castlerockin.com";
     };
 
-    const fetchBillingHistory = async () => {
-        // Mock API call to fetch billing history
-        // Replace this with an actual API call when the backend is ready
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                resolve([
-                    { id: 56161, particular: "DSA Crash Course", date: "1/7/2025", placeholder1: "Placeholder", placeholder2: "Placeholder", status: "Status" }
-                ]);
-            }, 500);
-        });
-    };
-
     useEffect(() => {
-        const getBillingHistory = async () => {
-            const history = await fetchBillingHistory();
-            setBillingHistory(history);
-        };
+        fetchSubscriptionDetails();
 
         if (activeTab === "history") {
-            getBillingHistory();
+            fetchSubscriptionDetails();
         }
     }, [activeTab]);
 
@@ -124,7 +121,7 @@ const Subscription = () => {
                     <div className='flex'>
                         <div className="subscribe-card">
                             <img src={subcribebg} alt="background" className="subscribe-bg" />
-                            <h3>Premium</h3>
+                            <h3>{plan_name}</h3>
                             <ul>
                                 <li>Full Language Learning Access</li>
                                 <li>10 Assessment Included Annually</li>
@@ -136,7 +133,7 @@ const Subscription = () => {
                             <h3>Credits</h3>
                             <div className="flex w-full credit-balance">
                                 <div className="flex">
-                                    <h2 className='credits-remain-text'>Credits remaining: <span>4000</span></h2>
+                                    <h2 className='credits-remain-text'>Credits remaining: <span>{credits}</span></h2>
                                     <img src={coin} alt="coin" className="ctc-coin" />
                                 </div>
                             </div>
@@ -258,26 +255,32 @@ const Subscription = () => {
                                 <th>#ID</th>
                                 <th>Particular</th>
                                 <th>Date</th>
-                                <th>Placeholder</th>
-                                <th>Placeholder</th>
+                                <th>Credits</th>
+                                <th>Cost</th>
                                 <th>Status</th>
                                 <th></th>
                             </tr>
                         </thead>
                         <tbody>
-                            {billingHistory.map((item) => (
-                                <tr key={item.id}>
-                                    <td>{item.id}</td>
-                                    <td>{item.particular}</td>
-                                    <td>{item.date}</td>
-                                    <td>{item.placeholder1}</td>
-                                    <td>{item.placeholder2}</td>
-                                    <td>{item.status}</td>
-                                    <td>
-                                        <button className='reciept-btn' onClick={() => setShowReceipt(true)}>Get Receipt</button>
-                                    </td>
+                            {billingHistory.length === 0 ? (
+                                <tr>
+                                    <td colSpan="7" className="text-center">No billing history available.</td>
                                 </tr>
-                            ))}
+                            ) : (
+                                billingHistory.map((item) => (
+                                    <tr key={item.id}>
+                                        <td>{item.id}</td>
+                                        <td>{item.particular}</td>
+                                        <td>{item.date}</td>
+                                        <td>{item.credits}</td>
+                                        <td>{item.cost}</td>
+                                        <td>{item.status}</td>
+                                        <td>
+                                            <button className='reciept-btn' onClick={() => setShowReceipt(true)}>Get Receipt</button>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
                         </tbody>
                     </table>
                 </div>

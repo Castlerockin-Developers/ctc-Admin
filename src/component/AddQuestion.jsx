@@ -9,67 +9,91 @@ import filter from '../assets/filter.png';
 import { motion } from "motion/react";
 import closeicon from '../assets/close.png';
 import { useDropzone } from "react-dropzone";
+import { authFetch } from '../scripts/AuthProvider';
 
 
 const AddQuestion = ({ onBack, onNexts }) => {
     const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+    const [sourceQuestions, setSourceQuestions] = useState([]);
     useEffect(() => {
+        const fetchQuestions = async () => {
+            try {
+                const response = await authFetch('/admin/sections',{method: 'GET'});
+                if (response.ok) {
+                    const data = await response.json();
+                    const questions = data.map(question => ({
+                        id: question.id,
+                        title: question.title,
+                        content: question.content,
+                        type: question.type,
+                        dataset: question.dataset
+                    }));
+                    setSourceQuestions(questions || []);
+                } else {
+                    console.error("Failed to fetch questions:", response.statusText);
+                }
+            } catch (error) {
+                console.error("Error fetching questions:", error);
+            }
+        };
+        fetchQuestions();
         const handleResize = () => setWindowWidth(window.innerWidth);
         window.addEventListener("resize", handleResize);
+
         return () => window.removeEventListener("resize", handleResize);
     }, []);
 
-    const [sourceQuestions, setSourceQuestions] = useState([
-        {
-            id: 1,
-            title: "Question Title - Medium Difficulty",
-            content: "It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is",
-            type: "mcq",
-            dataset: "google"
-        },
-        {
-            id: 2,
-            title: "Question Title - Medium Difficulty",
-            content: "It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is",
-            type: "coding",
-            dataset: "google"
-        },
-        {
-            id: 3,
-            title: "Question Title - Medium Difficulty",
-            content: "It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is",
-            type: "mcq",
-            dataset: "microsoft"
-        },
-        {
-            id: 4,
-            title: "Question Title - Internals Exam",
-            content: "This is a sample question for internals exam.",
-            type: "mcq",
-            dataset: "internals exams"
-        },
-        {
-            id: 5,
-            title: "Coding Question - Internals Exam",
-            content: "This is a sample coding question for internals exam.",
-            type: "coding",
-            dataset: "internals exams"
-        },
-        {
-            id: 6,
-            title: "Final Exam MCQ",
-            content: "This is a sample MCQ for the final exam.",
-            type: "mcq",
-            dataset: "final exams"
-        },
-        {
-            id: 7,
-            title: "Final Exam Coding",
-            content: "This is a sample coding question for the final exam.",
-            type: "coding",
-            dataset: "final exams"
-        }
-    ]);
+    // const [sourceQuestions, setSourceQuestions] = useState([
+    //     {
+    //         id: 1,
+    //         title: "Question Title - Medium Difficulty",
+    //         content: "It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is",
+    //         type: "mcq",
+    //         dataset: "google"
+    //     },
+    //     {
+    //         id: 2,
+    //         title: "Question Title - Medium Difficulty",
+    //         content: "It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is",
+    //         type: "coding",
+    //         dataset: "google"
+    //     },
+    //     {
+    //         id: 3,
+    //         title: "Question Title - Medium Difficulty",
+    //         content: "It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is",
+    //         type: "mcq",
+    //         dataset: "microsoft"
+    //     },
+    //     {
+    //         id: 4,
+    //         title: "Question Title - Internals Exam",
+    //         content: "This is a sample question for internals exam.",
+    //         type: "mcq",
+    //         dataset: "internals exams"
+    //     },
+    //     {
+    //         id: 5,
+    //         title: "Coding Question - Internals Exam",
+    //         content: "This is a sample coding question for internals exam.",
+    //         type: "coding",
+    //         dataset: "internals exams"
+    //     },
+    //     {
+    //         id: 6,
+    //         title: "Final Exam MCQ",
+    //         content: "This is a sample MCQ for the final exam.",
+    //         type: "mcq",
+    //         dataset: "final exams"
+    //     },
+    //     {
+    //         id: 7,
+    //         title: "Final Exam Coding",
+    //         content: "This is a sample coding question for the final exam.",
+    //         type: "coding",
+    //         dataset: "final exams"
+    //     }
+    // ]);
     // Popup states
     const [showEditMCQPopup, setShowEditMCQPopup] = useState(false);
     const [showEditCodingPopup, setShowEditCodingPopup] = useState(false);
@@ -427,7 +451,7 @@ const AddQuestion = ({ onBack, onNexts }) => {
                                                 <div className='dataset-section card-gap'>
                                                     <div className='question-templet-wrapper'>
                                                         <div className='question-templet-header flex justify-between'>
-                                                            <p>{dataset.charAt(0).toUpperCase() + dataset.slice(1)} - MCQ</p>
+                                                            <p>- MCQ</p>
                                                             <div className='flex'>
                                                                 <span>{sourceQuestions.filter(q => q.dataset === dataset && q.type === 'mcq').length} MCQ</span>
                                                                 <button
@@ -477,7 +501,7 @@ const AddQuestion = ({ onBack, onNexts }) => {
                                                 <div className='dataset-section card-gap'>
                                                     <div className='question-templet-wrapper'>
                                                         <div className='question-templet-header flex justify-between'>
-                                                            <p>{dataset.charAt(0).toUpperCase() + dataset.slice(1)} - Coding</p>
+                                                            <p> - Coding</p>
                                                             <div className='flex'>
                                                                 <span>{sourceQuestions.filter(q => q.dataset === dataset && q.type === 'coding').length} Coding</span>
                                                                 <button

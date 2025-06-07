@@ -3,6 +3,7 @@ import "./ViewResult.css";
 import { FaSearch } from "react-icons/fa";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
+import { authFetch } from "../scripts/AuthProvider"
 
 const ViewResult = ({ result, onBack, onNext }) => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -11,53 +12,47 @@ const ViewResult = ({ result, onBack, onNext }) => {
     return <div>No result selected</div>;
   }
 
+  const viewExam = async (student) => {
+    const response = await authFetch('/admin/results/individual-results/' + student.attempt_id + "/",{
+      method: "GET",
+    });
+    if (response.ok) {
+      const data = await response.json();
+      const examData = {...student, 
+        sections : data.reportData.sections.map(section => ({
+          name: section.sectionName,
+          obtainedMarks: section.obtainedMarks,
+          totalMarks: section.maxMarks,
+          questions: section.questionsAttempted.map(question => ({
+            question: question.question,
+            yourAnswer: question.selectedAnswer,
+            actualAnswer: question.correctAnswer,
+            marks: question.correctAnswer === question.selectedAnswer ? 1 : 0,
+            status: question.correctAnswer === question.selectedAnswer ? "Correct" : "Incorrect",
+          })),
+        })),
+      };
+      console.log("Exam Data:", examData);
+      onNext(examData);
+    } else {
+      console.error("Failed to fetch exam data:", response.statusText);
+      alert("Failed to fetch exam data. Please try again later.");
+    }
+  };
+
   // Function to export student data to Excel with conditional formatting
-  const handleExportToExcel = () => {
-    const studentData = result.students.map((student) => ({
-      USN: student.usn,
-      Name: student.name,
-      "Start Time": student.startTime,
-      "End Time": student.endTime,
-      Score: student.score,
-      "Trust Score": student.trustScore,
-      "MCQ Marks": student.mcqMarks || "N/A",
-      "Coding Marks": student.codingMarks || "N/A",
-    }));
-
-    // Create a new worksheet
-    const worksheet = XLSX.utils.json_to_sheet(studentData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Student Results");
-
-    // Define the style for cells with Trust Score < 50
-    const redFill = {
-      patternType: "solid",
-      fgColor: { rgb: "FFFF0000" }, // Red color
-    };
-
-    // Apply conditional formatting for Trust Score
-    const trustScoreColumn = XLSX.utils.sheet_to_json(worksheet, { header: "Trust Score" });
-    trustScoreColumn.forEach((row, index) => {
-      if (row["Trust Score"] < 50) {
-        const cellAddress = XLSX.utils.encode_cell({ r: index + 1, c: 5 }); // Column F (Trust Score)
-        if (!worksheet[cellAddress]) worksheet[cellAddress] = {};
-        worksheet[cellAddress].s = {
-          fill: redFill,
-        };
-      }
+  const handleExportToExcel = async (result) => {
+    const response = await authFetch('/admin/results/full-report/' + result.id + "/", {
+      method: "GET",
     });
-
-    // Create an Excel file and trigger download
-    const excelBuffer = XLSX.write(workbook, {
-      bookType: "xlsx",
-      type: "array",
-    });
-
-    const data = new Blob([excelBuffer], {
-      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8",
-    });
-
-    saveAs(data, `Student_Results_${result.id}.xlsx`);
+    if (!response.ok) {
+      console.error("Failed to fetch data for export:", response.statusText);
+      alert("Failed to export data. Please try again later.");
+      return;
+    }
+    const blob = await response.blob();
+    const fileName = `result_${result.id}.xlsx`;
+    saveAs(blob, fileName);
   };
 
   return (
@@ -118,7 +113,7 @@ const ViewResult = ({ result, onBack, onNext }) => {
 
               {/* Export Button */}
               <button
-                onClick={handleExportToExcel}
+                onClick={() => handleExportToExcel(result)}
                 className="flex items-center gap-2 bg-[#9B005D] text-white px-4 py-2 rounded-lg shadow-md
                             hover:bg-[#8A004A] hover:scale-105 transition-transform duration-200 ease-in-out cursor-pointer"
               >
@@ -153,7 +148,7 @@ const ViewResult = ({ result, onBack, onNext }) => {
                       <td>{student.score}</td>
                       <td>{student.trustScore}</td>
                       <td>
-                        <button className="viewexam-btn" onClick={() => onNext(student)}>
+                        <button className="viewexam-btn" onClick={() => viewExam(student)}>
                           View
                         </button>
                       </td>

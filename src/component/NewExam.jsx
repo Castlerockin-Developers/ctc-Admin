@@ -51,17 +51,6 @@ const NewExam = ({ onBack, onNext ,createExamRequest, setCreateExamRequest }) =>
             });
             return;
         }
-        if (selectedOption === "") {
-            Swal.fire({
-                title: "Missing Selection",
-                text: "Please select a Login Window option.",
-                icon: "warning",
-                confirmButtonText: "OK",
-                background: "#181817",
-                color: "#fff"
-            });
-            return;
-        }
         if (selectedOption === "custom" && !customTime) {
             Swal.fire({
                 title: "Missing Custom Time",
@@ -112,7 +101,19 @@ const NewExam = ({ onBack, onNext ,createExamRequest, setCreateExamRequest }) =>
     };
 
     const handleSubmit = async () => {
-        onNext();
+        setCreateExamRequest({"exam":{
+            testName,
+            examStartDate,
+            examEndDate,
+            startTime,
+            endTime,
+            customTime,
+            timedTest,
+            timer,
+            attemptsAllowed,
+            instructions
+        }})
+        handleNext()
     };
 
     return (
