@@ -19,7 +19,7 @@ const LoginPage = () => {
     try {
       const response = await login(username, password);
       if (response) {
-        navigate("/");
+        navigate("/home");
       }
     } catch (err) {
       // Show error message from backend or fallback
@@ -29,9 +29,7 @@ const LoginPage = () => {
     }
   };
 
-  const showHome = () => {
-    navigate("/home"); // Change to "/home" or desired route
-  };
+
 
   return (
     <div className="login-container">
@@ -65,7 +63,7 @@ const LoginPage = () => {
                 onChange={e => setPassword(e.target.value)}
               />
             </div>
-            <button type="submit" className="login-button" onClick={showHome} disabled={loading}>
+            <button type="submit" className="login-button"   disabled={loading}>
               {loading ? (
                 <span className="loader" style={{display:'inline-block', marginRight:'8px'}}>
                   <svg width="16" height="16" viewBox="0 0 38 38" xmlns="http://www.w3.org/2000/svg" stroke="#fff">
