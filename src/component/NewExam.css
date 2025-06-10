@@ -369,7 +369,7 @@
 }
 
 .question-bank-head button {
-    background-color: #FF0099;
+    background-color: #A294F9;
     padding: 5px 20px 5px;
     color: white;
     font-size: 1.2rem;
@@ -379,7 +379,7 @@
 }
 
 .question-bank-head button:hover {
-    background-color: #8b0054;
+    background-color: #8E5DAF;
 }
 
 .question-bank-body {
@@ -488,7 +488,7 @@
     font-family: madina-medium;
     padding: 4px 10px 5px;
     color: white;
-    background-color: #FF0099;
+    background-color: #A294F9;
     border-radius: 5px;
     cursor: pointer;
     margin: 30px;
@@ -637,7 +637,7 @@
     font-family: madina-medium;
     padding: 4px 10px 5px;
     color: white;
-    background-color: #FF0099;
+    background-color: #A294F9;
     border-radius: 5px;
     cursor: pointer;
 }
@@ -652,7 +652,7 @@
 
 
 .addedquestion-bank-head button:hover {
-    background-color: #a30062;
+    background-color: #8E5DAF;
 }
 
 .addedquestion-bank-head span {
@@ -799,14 +799,14 @@
     color: white;
     padding: 10px 20px 10px;
     border-radius: 5px;
-    background-color: #8E5DAF;
+    background-color: #A294F9;
     margin-right: 20px;
     font-family: madina-semibold;
     cursor: pointer;
 }
 
 .exam-next-btn:hover {
-    background-color: #6f1ba7;
+    background-color: #8E5DAF;
 }
 
 .MCQ-question-score {
@@ -1588,14 +1588,14 @@
   color: #fff;
   padding: 10px 20px;
   border-radius: 5px;
-  background-color: #8E5DAF;
+  background-color: #A294F9;
   font-family: 'madina-semibold', sans-serif;
   cursor: pointer;
 }
 
 .next-btn:hover,
 .exam-next-btn:hover {
-  background-color: #6f1ba7;
+  background-color: #8E5DAF;
 }
 
 .back-btn-create,

@@ -91,7 +91,7 @@
   padding: 16px;
   border: none;
   border-radius: 10px;
-  background-color: white;
+  background-color:#A294F9;
   color: black;
   font-size: 20px;
   cursor: pointer;
@@ -101,8 +101,8 @@
 }
 
 .login-button:hover {
-  background-color: gray;
-  color: white;
+  background-color: #c1bbe8;
+  color:#black;;
 }
 
 /* Forgot Password Link */

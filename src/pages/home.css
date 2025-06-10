@@ -526,7 +526,7 @@
 
 /* Create New Exam Button */
 .create-btn {
-    background: #ff0099;
+    background: #A294F9;
     color: white;
     border: none;
     padding: 8px 15px;
@@ -542,7 +542,7 @@
 }
 
 .create-btn:hover {
-    background-color: #8c0054;
+    background-color: #8e5daf;
 }
 
 /* Filter Popup */
@@ -1185,7 +1185,7 @@ body {
 
 /* Edit Button */
 .edit-btn {
-    background-color: #8E5DAF;
+    background-color: #A294F9;
     padding: 8px 16px;
     border-radius: 5px;
     cursor: pointer;
@@ -1204,7 +1204,7 @@ body {
 }
 
 .edit-btn:hover {
-    background-color: #7B4DA1;
+    background-color: #8e5daf;
 }
 
 .resultfilter {
@@ -1396,7 +1396,7 @@ body {
 
 /* CREATE BUTTON (MAGENTA) */
 .create-btn-student {
-    background: #D90495;
+    background: #A294F9;
     color: white;
     padding: 8px 16px;
     border-radius: 6px;
@@ -1622,7 +1622,7 @@ body {
 
     .viewexam-btn-pop {
         padding: 4px 6px;
-        background-color: #8e5daf;
+        background-color: #A294F9;
         color: white;
         border-radius: 4px;
         font-size: 0.8rem;
@@ -1630,7 +1630,7 @@ body {
     }
 
     .viewexam-btn-pop:hover {
-        background-color: #7421ac;
+        background-color: #8e5daf;
     }
 
     .top-display-pop-title h2 {
