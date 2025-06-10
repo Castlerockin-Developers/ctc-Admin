@@ -1,34 +1,34 @@
 @font-face {
     font-family: 'madina-light';
-    src: url('/public/fonts/Madani\ Arabic\ Light.ttf') format('truetype');
+    src: url('/public/fonts/Madani_Arabic_Light.ttf') format('truetype');
     font-weight: 300;
     font-style: normal;
 }
 
 @font-face {
     font-family: 'madina-medium';
-    src: url('/public/fonts/Madani\ Arabic\ Medium.ttf') format('truetype');
+    src: url('/public/fonts/Madani_Arabic_Medium.ttf') format('truetype');
     font-weight: 400;
     font-style: normal;
 }
 
 @font-face {
     font-family: 'madina-regular';
-    src: url('/public/fonts/Madani\ Arabic\ Regular.ttf') format('truetype');
+    src: url('/public/fonts/Madani_Arabic_Regular.ttf') format('truetype');
     font-weight: 400;
     font-style: normal;
 }
 
 @font-face {
     font-family: 'madina-semibold';
-    src: url('/public/fonts/Madani\ Arabic\ Semi\ Bold.ttf') format('truetype');
+    src: url('/public/fonts/Madani_Arabic_Semi_Bold.ttf') format('truetype');
     font-weight: 600;
     font-style: normal;
 }
 
 @font-face {
     font-family: 'madina';
-    src: url('/public/fonts/Madani\ Arabic\ Variable.ttf') format('truetype');
+    src: url('/public/fonts/Madani_Arabic_Variable.ttf') format('truetype');
     font-weight: 400;
     font-style: normal;
 }
