@@ -2,7 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Dashboard from './component/Dashboard'; // Import the Dashboard component
 import SubcriptionPage from './component/Subcription'; // Import the SubscriptionPage component
-import Home from './pages/Home'; // Import Home page component
+import Home from './pages/home'; // Import Home page component
 import './App.css'; // Import your CSS file
 import LoginPage from './pages/login';
 
