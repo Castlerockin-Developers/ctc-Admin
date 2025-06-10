@@ -128,7 +128,7 @@
 
 .activity-history button {
     padding: 5px 12px;
-    background-color: #5B7091;
+    background-color: #A294F9;
     color: white;
     font-family: madina-semibold;
     font-size: 0.9rem;
@@ -141,7 +141,7 @@
 }
 
 .activity-history button:hover {
-    background-color: #10459b;
+    background-color: #8979f6;
 }
 
 .Account-manager-box {
@@ -182,7 +182,7 @@
 .manage-active {
     font-family: madina-semibold;
     text-decoration: underline;
-    text-decoration-color: #ff0099;
+    text-decoration-color: #A294F9;
     text-decoration-thickness: 4px;
     text-underline-offset: 5px;
     color: white !important;
@@ -232,7 +232,7 @@
 }
 
 .m-edit-btn {
-    background-color: #8E5DAF;
+    background-color: #A294F9;
     padding: 5px 25px;
     font-size: 1.1rem;
     font-family: madina-semibold;
@@ -241,7 +241,7 @@
 
 .manage-create-btn {
     font-family: madina-semibold;
-    background: #ff0099;
+    background: #A294F9;
     color: white;
     border: none;
     padding: 8px 15px;
@@ -250,7 +250,7 @@
 }
 
 .manage-create-btn:hover {
-    background: #9b005d;
+    background: #8979f6;
 }
 
 .icon-pen {
@@ -322,7 +322,7 @@
 }
 
 .setting-modal-buttons button {
-    background-color: #E91E63;
+    background-color: #A294F9;
     border: none;
     padding: 0.6rem 1.2rem;
     border-radius: 4px;
@@ -332,7 +332,7 @@
 }
 
 .setting-modal-buttons button:hover {
-    background-color: #d81b60;
+    background-color: #8e5daf;
 }
 
 .setting-modal-buttons button:first-child {
@@ -344,7 +344,7 @@
 }
 
 .create-btn {
-    background-color: #E91E63;
+    background-color: #A294F9;
 }
 
 
