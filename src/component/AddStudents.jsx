@@ -4,19 +4,16 @@ import line from '../assets/Line.png';
 import filter from '../assets/filter.png';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faRotateLeft, faSearch } from '@fortawesome/free-solid-svg-icons';
+import { authFetch } from '../scripts/AuthProvider';
 
-const AddStudents = ({ onBack, onSubmit }) => {
+const AddStudents = ({ onBack, onSubmit, createExamRequest, setCreateExamRequest }) => {
     // Single filter popup state for both sections
     const [showFilter, setShowFilter] = useState(false);
     const filterRef = useRef(null);
 
     // Student lists
-    const [allStudents, setAllStudents] = useState([
-        { id: '4NM21EC400', name: 'John Kumar', degree: 'BE', year: '2025', branch: 'CSE' },
-        { id: '4NM21EC401', name: 'Alice Smith', degree: 'BE', year: '2024', branch: 'ISE' },
-        { id: '4NM21EC402', name: 'John Kumar', degree: 'BE', year: '2023', branch: 'CSE' },
-        { id: '4NM21EC403', name: 'John Kumar', degree: 'BE', year: '2022', branch: 'CSE' }
-    ]);
+
+    const [allStudents, setAllStudents] = useState([]);
     const [addedStudents, setAddedStudents] = useState([]);
     const [isAllStudentsVisible, setIsAllStudentsVisible] = useState(true);
 
@@ -60,6 +57,31 @@ const AddStudents = ({ onBack, onSubmit }) => {
 
     // Close filter popup when clicking outside
     useEffect(() => {
+        const fetchStudents = async () => {
+            try {
+            const response = await authFetch('/admin/students/', { method: 'GET' });
+            const data = await response.json();
+            const formattedData = Object.keys(data.data).map(branch => {
+                return data.data[branch]
+                .filter(student => student.usn)
+                .map(student => ({
+                    studentId: student.id,
+                    id: student.usn,
+                    name: student.name,
+                    degree: student.degree || '',
+                    year: student.year || '',
+                    branch: branch
+                }));
+            }).flat();
+            setAllStudents(formattedData);
+            } catch (error) {
+            console.error("Error fetching students:", error);
+            }
+        };
+        fetchStudents();
+                
+
+
         const handleClickOutside = (event) => {
             if (filterRef.current && !filterRef.current.contains(event.target)) {
                 setShowFilter(false);
@@ -163,11 +185,35 @@ const AddStudents = ({ onBack, onSubmit }) => {
     });
 
     // Handle CreateExam button click using SweetAlert
-    const handleCreateExam = () => {
+    const handleCreateExam =async () => {
         if (addedStudents.length === 0) {
             Swal.fire({
                 title: "No Students Added",
                 text: "Please add at least one student before creating the exam.",
+                icon: "error",
+                confirmButtonText: "OK",
+                background: "#181817",
+                color: "#fff"
+            });
+            return;
+        }
+        const examData = {
+            ...createExamRequest,
+            students: addedStudents.map(student => (
+                student.studentId)),
+        };
+        const response = await authFetch('/admin/exams/create-exam/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(examData),
+        });
+        if (!response.ok) {
+            const errorData = await response.json();
+            Swal.fire({
+                title: "Error",
+                text: errorData.message || "Failed to create exam.",
                 icon: "error",
                 confirmButtonText: "OK",
                 background: "#181817",
@@ -213,8 +259,8 @@ const AddStudents = ({ onBack, onSubmit }) => {
                                     <table>
                                         <thead>
                                             <tr>
-                                                <td colSpan={3} align='left'>All Students</td>
-                                                <td colSpan={3} align='right'>
+                                                <td colSpan={2} align='left'>All Students</td>
+                                                <td colSpan={2} align='right'>
                                                     <button onClick={handleAddBatch} className='bg-green-500 rounded hover:bg-green-900 adds-branch'>
                                                         + Add Batch
                                                     </button>
@@ -227,8 +273,6 @@ const AddStudents = ({ onBack, onSubmit }) => {
                                                     <tr key={student.id} className='border-1 border-white'>
                                                         <td>{student.id}</td>
                                                         <td>{student.name}</td>
-                                                        <td>{student.degree}</td>
-                                                        <td>{student.year}</td>
                                                         <td>{student.branch}</td>
                                                         <td>
                                                             <button onClick={() => handleAddStudent(student)} className='bg-green-500 hover:bg-green-900 rounded adds-btn'>

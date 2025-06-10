@@ -19,6 +19,31 @@ const Home = () => {
     const [activeComponent, setActiveComponent] = useState("dashboard");
     const [isStudentModalOpen, setStudentModalOpen] = useState(false);
     const [openAddUserModal, setOpenAddUserModal] = useState(false);
+    const [createExamRequest, setCreateExamRequest] = useState([]);
+
+    const handleSubmitExam = async () => {
+    
+            try {
+                const response = await authFetch("/admin/exams/create-exam/", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(createExamRequest),
+                });
+    
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    console.error("Failed:", errorData);
+                    Swal.fire("Error", "Exam creation failed", "error");
+                    return;
+                }
+    
+                Swal.fire("Success", "Exam created successfully", "success");
+                onNext();
+            } catch (error) {
+                console.error("Error:", error);
+                Swal.fire("Error", "Something went wrong", "error");
+            }
+        };
 
     // Function to handle exam creation alert
     const handleCreateExam = () => {
@@ -113,18 +138,24 @@ const Home = () => {
                         <NewExam
                             onBack={() => setActiveComponent("manageExam")}
                             onNext={() => setActiveComponent("addQuestion")}
+                            createExamRequest={createExamRequest}
+                            setCreateExamRequest={setCreateExamRequest}
                         />
                     )}
                     {activeComponent === "addQuestion" && (
                         <AddQuestion
                             onBack={() => setActiveComponent("newExam")}
                             onNexts={() => setActiveComponent("addStudents")}
+                            createExamRequest={createExamRequest}
+                            setCreateExamRequest={setCreateExamRequest}
                         />
                     )}
                     {activeComponent === "addStudents" && (
                         <AddStudents
                             onBack={() => setActiveComponent("addQuestion")}
                             onSubmit={handleCreateExam}
+                            createExamRequest={createExamRequest}
+                            setCreateExamRequest={setCreateExamRequest}
                         />
                     )}
                 </div>

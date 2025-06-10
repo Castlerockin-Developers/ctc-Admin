@@ -3,10 +3,13 @@ import { FaMoneyBillWave, FaCog, FaSignOutAlt } from "react-icons/fa";
 import { motion } from "motion/react";
 import "../pages/home.css";
 import logo from '../assets/ctc-logo.png';
+import { logout } from "../scripts/AuthProvider";
+import { Navigate, useNavigate } from "react-router-dom";
 
 const Sidebar = ({ activeComponent, setActiveComponent }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 1024);
+    const navigate = useNavigate();
 
     // Map "newExam" to "manageExam" if needed
     const currentActive = activeComponent === "newExam" ? "manageExam" : activeComponent;
@@ -29,6 +32,10 @@ const Sidebar = ({ activeComponent, setActiveComponent }) => {
         if (isMobile) {
             setIsOpen(false);
         }
+    };
+    const handleLogout = () => {
+        logout();
+        navigate("/");
     };
 
     return (
@@ -148,7 +155,7 @@ const Sidebar = ({ activeComponent, setActiveComponent }) => {
                     <button
                         type="button"
                         className={`bottom-sidebar-button ${currentActive === "settings" ? "side-active" : ""}`}
-                        onClick={() => handleNavigation("settings")}
+                        onClick={() => handleLogout()}
                     >
                         <FaSignOutAlt className="sidebar-icon" />
                         <h6 className="sidebar-item">Logout</h6>

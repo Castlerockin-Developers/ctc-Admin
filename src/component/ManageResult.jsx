@@ -5,7 +5,7 @@ import line from "../assets/Line.png";
 import { motion } from "framer-motion";
 import ViewResult from "./ViewResult";
 import ParticularResult from "./PerticularResult";
-//import axios from 'axios';
+import { authFetch } from "../scripts/AuthProvider"
 
 const ManageResult = () => {
   const [activeTab, setActiveTab] = useState("all");
@@ -88,13 +88,157 @@ const ManageResult = () => {
   useEffect(() => {
     const fetchResults = async () => {
       try {
-        // Uncomment and update the endpoint once your backend is ready
-        // const response = await axios.get('https://api.example.com/results');
-        // setResultsData(response.data);
+        const response = await authFetch("/admin/results", {
+          method: "GET",
+        });
+        if (!response.ok) {
+          throw new Error("Failed to fetch results data");
+        }
+        const data = await response.json();
+        const results = data.map((res) => ({
+          id: res.id,
+          category: !res.is_result_declared ? "Active" : "Completed",
+          name: res.name,
+          startTime: new Date(res.start_time).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true,
+          }),
+          endTime: new Date(res.end_time).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true,
+          }),
+          analytics: res.attempts_allowed + " Attempts Allowed",
+          status: res.is_result_declared ? "Completed" : "Active",
+          studentsAttempted: res.user.length,
+        }));
+        // Sort results by start time in descending order
+        results.sort((a, b) => new Date(b.startTime) - new Date(a.startTime));
 
-        // Mock data for now
-        const mockData = [
-          {
+        setResultsData(results);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching results data", error);
+        setError("Failed to load data. Please try again later.");
+        setLoading(false);
+      }
+    };
+
+    fetchResults();
+  }, []);
+
+  if (loading) {
+    return <p className="text-center text-lg">Loading data...</p>;
+  }
+
+  if (error) {
+    return <p className="text-center text-lg text-red-500">{error}</p>;
+  }
+
+  // Filtering Results based on Tab Selection & Search Query
+  const filteredResults = resultsData
+    .filter(
+      (row) => activeTab === "all" || row.category.toLowerCase() === activeTab
+    )
+    .filter(
+      (row) =>
+        searchQuery === "" ||
+        row.id.toString().includes(searchQuery) ||
+        row.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        row.startTime.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        row.endTime.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        row.analytics.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        row.status.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+  const handleViewResult = async (result) => {
+    try {
+      const response = await authFetch(`/admin/results/${result.id}/`, {
+        method: "GET",
+      });
+      if (!response.ok) {
+        throw new Error("Failed to fetch result details");
+      }
+      const data = await response.json();
+      const resultDetails = {
+        id: result.id,
+        category: result.category,
+        name: result.name,
+        startTime: result.startTime,
+        endTime: result.endTime,
+        analytics: result.analytics,
+        status: result.status,
+        studentsAttempted: data.users_attempted_count,
+        studentsUnattempted: data.users_unattempted_count,
+        malpractice: data.malpractice_recorded_count,
+        averageScore: data.users_average_score,
+        students:data.attempts.map((student) => ({
+          attempt_id: student.id,
+          usn: student.usn,
+          name: student.user_name,
+          startTime: new Date(student.start_time).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true,
+          }),
+          endTime: new Date(student.end_time).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true,
+          }),
+          score: student.score,
+          trustScore: student.trust_score,
+          // mcqMarks: 8,
+          // codingMarks: 15,
+          // totalMcqMarks: 10,
+          // totalCodingMarks: 20,
+          // mcqDetails: [
+          //   {
+          //     question: "What is the time complexity of binary search?",
+          //     status: "Correct",
+          //     marks: 2,
+          //     yourAnswer: "O(log n)",
+          //     actualAnswer: "O(log n)",
+          //   },
+          //   {
+          //     question:
+          //       "Which sorting algorithm has the best average-case time complexity?",
+          //     status: "Correct",
+          //     marks: 2,
+          //     yourAnswer: "Quick Sort",
+          //     actualAnswer: "Quick Sort",
+          //   },
+          // ],
+          // codingDetails: [
+          //   {
+          //     question: "Write a function to reverse a linked list.",
+          //     status: "Correct",
+          //     marks: 14,
+          //     yourAnswer: "function reverseLinkedList(head) {...}",
+          //     actualAnswer: "function reverseLinkedList(head) {...}",
+          //   },
+          //   {
+          //     question: "Implement a binary search tree.",
+          //     status: "Incorrect",
+          //     marks: 0,
+          //     yourAnswer: "class BST {...}",
+          //     actualAnswer: "class BST {...}",
+          //   },
+          // ],
+        })),
+        
+      }
+      console.log("Result Details:", resultDetails);
+      setSelectedResult(resultDetails);
+      setSelectedStudent(null);
+    } catch (error) {
+      console.error("Error fetching result details", error);
+    }
+    
+  };
+
+  const mock = {
             id: 1,
             category: "Active",
             name: "DSA Crash Course",
@@ -198,109 +342,7 @@ const ManageResult = () => {
                 ],
               },
             ],
-          },
-          {
-            id: 2,
-            category: "Completed",
-            name: "Python Basics",
-            startTime: "12:00 PM",
-            endTime: "1:30 PM",
-            analytics: "80% Attempted",
-            status: "Completed",
-            studentsAttempted: 20,
-            studentsUnattempted: 5,
-            malpractice: 10,
-            averageScore: 650,
-            students: [
-              {
-                usn: "4NM20EC409",
-                name: "John Doe",
-                startTime: "12:00 PM",
-                endTime: "1:30 PM",
-                mcqMarks: 10,
-                codingMarks: 14,
-                score: 90,
-                trustScore: 98,
-                totalMcqMarks: 10,
-                totalCodingMarks: 20,
-                mcqDetails: [
-                  {
-                    question: "What is the output of print(2 + 3)?",
-                    status: "Correct",
-                    marks: 2,
-                    yourAnswer: "5",
-                    actualAnswer: "5",
-                  },
-                  {
-                    question: "How do you define a function in Python?",
-                    status: "Correct",
-                    marks: 2,
-                    yourAnswer: "def function_name():",
-                    actualAnswer: "def function_name():",
-                  },
-                ],
-                codingDetails: [
-                  {
-                    question:
-                      "Write a Python function to check if a number is prime.",
-                    status: "Correct",
-                    marks: 14,
-                    yourAnswer: "def is_prime(n): ...",
-                    actualAnswer: "def is_prime(n): ...",
-                  },
-                  {
-                    question: "Implement a Python class for a stack.",
-                    status: "Correct",
-                    marks: 14,
-                    yourAnswer: "class Stack: ...",
-                    actualAnswer: "class Stack: ...",
-                  },
-                ],
-              },
-            ],
-          },
-        ];
-
-        setResultsData(mockData);
-        setLoading(false);
-      } catch (error) {
-        console.error("Error fetching results data", error);
-        setError("Failed to load data. Please try again later.");
-        setLoading(false);
-      }
-    };
-
-    fetchResults();
-  }, []);
-
-  if (loading) {
-    return <p className="text-center text-lg">Loading data...</p>;
-  }
-
-  if (error) {
-    return <p className="text-center text-lg text-red-500">{error}</p>;
-  }
-
-  // Filtering Results based on Tab Selection & Search Query
-  const filteredResults = resultsData
-    .filter(
-      (row) => activeTab === "all" || row.category.toLowerCase() === activeTab
-    )
-    .filter(
-      (row) =>
-        searchQuery === "" ||
-        row.id.toString().includes(searchQuery) ||
-        row.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        row.startTime.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        row.endTime.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        row.analytics.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        row.status.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-
-  const handleViewResult = (result) => {
-    setSelectedResult(result);
-    setSelectedStudent(null);
-  };
+          }
 
   const handleBack = () => {
     setSelectedResult(null);
