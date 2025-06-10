@@ -106,7 +106,7 @@
 }
 
 .subscribe-bottom button {
-    background-color: #FF0099;
+    background-color: #A294F9;
     padding: 10px 10px 10px;
     border-radius: 5px;
     font-family: madina-semibold;
@@ -114,7 +114,7 @@
 }
 
 .subscribe-bottom button:hover {
-    background-color: #97005b;
+    background-color: #8c7bfc;
 }
 
 .credit-history {
@@ -132,7 +132,7 @@
 
 .credit-history p.active {
     font-weight: bold;
-    border-bottom: 2px solid #FF0099;
+    border-bottom: 2px solid #A294F9;
 }
 
 
@@ -422,7 +422,7 @@
 .buy-item button {
     color: #fff;
     padding: 0.6rem 1.5rem;
-    background-color: #8E5DAF;
+    background-color: #A294F9;
     border-radius: 5px;
     font-size: 1.1rem;
     cursor: pointer;
@@ -434,7 +434,7 @@
 }
 
 .buy-item button:hover {
-    background-color: #6200a3;
+    background-color: #8977fb;
 }
 
 /* 
@@ -462,7 +462,7 @@
     display: inline-flex;
     align-items: center;
     /* A teal-ish border to match the minus/plus buttons */
-    border: 2px solid #006D72;
+    border: 2px solid #745ffb;
     /* teal outline */
     border-radius: 6px;
     overflow: hidden;
@@ -470,7 +470,7 @@
 
 /* Minus/Plus Buttons */
 .add-credit-btn button {
-    background-color: #557d7f;
+    background-color: #A294F9;
     /* teal */
     color: #FFFFFF;
     border: none;
