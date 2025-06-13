@@ -79,7 +79,6 @@ const Dashboard = ({ onCreateExam, onAddStudent, onAddUser, onAddCredits, onMana
                     liveContest: raesponseData.completed_exams_count,
                     credit: raesponseData.credits,   
                     totalStudents: raesponseData.total_users});
-                console.log(dashboardData)
                 
                 setTestDetails(raesponseData.active_exams);
                 setRecentTests(raesponseData.recent_exams);
@@ -257,8 +256,8 @@ const Dashboard = ({ onCreateExam, onAddStudent, onAddUser, onAddCredits, onMana
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                {testDetails.length > 0 ? (
-                                                    testDetails.map((test, index) => (
+                                                {completedResults.length > 0 ? (
+                                                    completedResults.map((test, index) => (
                                                         <tr key={test.id}>
                                                             <td>{index + 1}</td>
                                                             <td>{test.name}</td>
