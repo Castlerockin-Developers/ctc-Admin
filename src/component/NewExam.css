@@ -321,7 +321,7 @@
 }
 
 .ql-toolbar {
-    background: #303030 !important;
+    background: #000000 !important;
     border-radius: 8px 8px 0 0;
     color: white !important;
     width: 180%;
@@ -1096,8 +1096,22 @@
 .sub-item:hover {
     background: #4A4A4A;
 }
+.error-message {
+    color: #ff4d4f; /* A common vibrant red */
+    font-size: 0.85em; /* Slightly smaller text */
+    margin-top: 5px; /* Some spacing above the message */
+    margin-left: 10px; /* Indent slightly for better alignment */
+    /* You might want to adjust font-weight or other properties */
+    width:100%;
+}
 
-@media(min-width:0px) and (max-width:426px) {
+/* Optional: Add a subtle border to invalid inputs */
+input:invalid,
+input.error-border { /* Use .error-border if :invalid isn't enough for date types */
+    border-color: #ff4d4f !important; /* Make border red */
+}
+
+@media(min-width:0px) and (max-width:425px) {
     .newexam-container {
         width: 100%;
     }
@@ -1369,31 +1383,37 @@
         margin-top: 0rem;
         font-size: 2.2rem;
     }
-
+    
     .createexam-col1 h4 {
         font-size: 1.2rem;
-        width: 20vw;
+        width: 25vh;
     }
 
     .timer-h4 {
-        width: 20vw !important;
+        width: 30vw !important;
     }
 
     .timer-input {
         width: 27vw !important;
     }
-
-    .createexam-col1 input {
-        width: 70%;
+    .newexam-container {
+        width: 98%;
+        margin-left: 10px;
     }
-
+    .ql-toolbar.ql-snow {
+    border: 1px;
+    width: 128%;
+}
+        .createexam-col1 input {
+        width: 55%;
+    }
     .custom-input {
         width: 42% !important;
     }
 
     .ql-container,
     .ql-toolbar {
-        width: 113%;
+        width: 128%;
     }
 
     .ql-container {
@@ -1405,10 +1425,14 @@
         left: 40px;
     }
 
-    .bottom-btns {
-        margin-top: 30px;
+     .bottom-btns {
+        margin-top: 73px;
         width: 30%;
     }
+    .error-message {
+    margin-top: 5px;
+    margin-left: 151px;
+}
 
     .bottom-btns button,
     p {
@@ -1452,6 +1476,10 @@
 
 @media(min-width:769px) and (max-width:1024px) {
 
+    .ql-toolbar.ql-snow + .ql-container.ql-snow {
+    border-top: 0px;
+    width: 92%;
+}
     .newexam-container,
     .addq-container {
         width: 100%;
@@ -1677,17 +1705,16 @@ body {
 
 /* Container Styles */
 
-.newexam-container,
-.addq-container,
-.adds-container {
-  background-color: #282828;
-  width: calc(100% - 69px);
-  height: 87vh;
-  overflow-y: auto;
-  transition: width 0.3s ease-in-out, margin-left 0.3s ease-in-out;
-  padding: 1.2rem;
-  border-radius: 5px;
-}
+.newexam-container, .addq-container, .adds-container {
+        background-color: #282828;
+        width: calc(100% - 22px);
+        height: 87vh;
+        overflow-y: auto;
+        transition: width 0.3s ease-in-out, margin-left 0.3s ease-in-out;
+        padding: 1.2rem;
+        border-radius: 5px;
+        margin-left: 13px;
+    }
 
 /* Box Styles */
 
@@ -1770,14 +1797,10 @@ body {
 }
 /* Responsive Design */
 
-@media (min-width: 0px) and (max-width: 426px) {
+@media (min-width: 0px) and (max-width: 425px) {
   /* Mobile Styles */
 }
-
-@media (min-width: 426px) and (max-width: 768px) {
-  /* Tablet Styles */
-}
-
+@media(min-width:426px)
 @media (min-width: 769px) and (max-width: 1024px) {
   /* Desktop Styles */
 } 
@@ -1785,9 +1808,14 @@ body {
    {
     width:60%;
    }
+    .error-message {
+    color: #ff4d4f;
+    font-size: 0.85em;
+    margin-top: 5px;
+    margin-left: 20px;
 }
-
-/* @media(min-width:1025px) and (max-width:1920px) {
+}
+ /* @media(min-width:1025px) and (max-width:1920px) {
 
     .newexam-box h1,
     .addStudent-box h1 {
@@ -1829,4 +1857,105 @@ body {
     .adds-branch {
         padding: 4px 6px 4px;
     }
-} */
+}  */
+
+
+@media(min-width:1025px) and (max-width:1399px)
+{
+    .newexam-container,
+    .addq-container {
+        width: 98%;
+    } 
+
+    .newexam-box h1,
+    .addquestion-box h1 {
+        font-size: 2.1rem;
+        margin-top: 0rem;
+        margin-bottom: 0.3rem;
+    }
+
+    .ql-toolbar {
+    width: 92%;
+}
+.ql-container {
+    width: 92%;
+}
+.timer-h4 {
+    width: 12vw !important;
+}
+}
+@media(min-width:1400px) and (max-width:1599px) {
+ .ql-toolbar {
+    width: 145%;
+}
+.ql-container {
+    width: 145%;
+}
+.sidebar-bottom {
+    display: flex;
+    width: 106%;
+}
+}
+@media(min-width:1600px) and (max-width:1919px) {
+       .ql-toolbar {
+        width: 180%;
+    }
+    .ql-container {
+    width: 180%;
+}
+.ql-toolbar.ql-snow {
+    font-weight: bold;
+    font-size: 2rem;
+}
+.ql-editor {
+    font-size: 1.2rem;
+}
+.createexam-col1 input {
+    font-size: 1.1rem;
+}
+.sidebar-item {
+    text-align: left;
+}
+}
+@media(min-width:1920px) and (max-width:2099px)
+{
+    
+.ql-editor {
+    font-size: 1.3rem;
+}
+}
+@media(min-width:2100px) and (max-width:3456px)
+{
+    
+.ql-editor {
+    font-size: 1.7rem;
+}
+.ql-toolbar {
+        width: 217%;
+        height: 51px;
+        font-size: 2.1rem;
+    }
+    .ql-container {
+    width: 217%;
+}
+.createexam-col1 h4 {
+    font-size: 1.7rem;
+    
+}
+.createexam-col1 input {
+    font-size: 1.7rem;
+}
+.bottom-btns {
+    width: 12%;
+    font-size: 1.8rem;
+    margin-top: 208px;
+}
+.back-btn-create {
+    font-size: 1.8rem;
+}
+.ctc-logo {
+        width: 200px;
+        height: 67px;
+        margin-left: -25px;
+    }
+}

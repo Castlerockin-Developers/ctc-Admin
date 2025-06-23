@@ -1,40 +1,40 @@
 import React, { useState, useEffect, useRef } from "react";
 import { FaSearch, FaPlus } from "react-icons/fa";
-import filter from '../assets/filter.png';
-import line from '../assets/Line.png';
-import { motion } from "motion/react";
+import filter from '../assets/filter.png'; // Assuming these assets exist
+import line from '../assets/Line.png'; // Assuming these assets exist
+import { motion } from "framer-motion";
 import { authFetch } from "../scripts/AuthProvider";
 import Swal from "sweetalert2";
+import './ManageExam.css';
+
 
 const ManageExam = ({ onCreateNewExam, onNext }) => {
     const [activeButton, setActiveButton] = useState("all");
     const [searchQuery, setSearchQuery] = useState("");
     const [showFilter, setShowFilter] = useState(false);
-    const [hoveredBranch, setHoveredBranch] = useState(null);
-    const [subMenuPosition, setSubMenuPosition] = useState({ top: 0, left: 0 });
+    // Removed hoveredBranch and subMenuPosition states as they are related to the branch filter
     const [selectedExam, setSelectedExam] = useState(null);
     const filterRef = useRef(null);
-    const subPopupRef = useRef(null);
-    let hoverTimeout = useRef(null);
+    // Removed subPopupRef and hoverTimeout refs as they are related to the branch filter
 
     const [tableData, setTableData] = useState([]);
 
+    // Pagination states
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage] = useState(10); // You can make this configurable
 
     // Toggle filter pop-up
     const toggleFilter = () => {
         setShowFilter(!showFilter);
-        setHoveredBranch(null);
+        // Removed setHoveredBranch(null) as it's for the branch filter
     };
 
     useEffect(() => {
         const handleClickOutside = (event) => {
-            if (
-                filterRef.current &&
-                !filterRef.current.contains(event.target) &&
-                (!subPopupRef.current || !subPopupRef.current.contains(event.target))
-            ) {
+            // Only check the main filter popup, as branch-related logic is removed
+            if (filterRef.current && !filterRef.current.contains(event.target)) {
                 setShowFilter(false);
-                setHoveredBranch(null);
+                // Removed setHoveredBranch(null) as it's for the branch filter
             }
         };
 
@@ -49,65 +49,55 @@ const ManageExam = ({ onCreateNewExam, onNext }) => {
         };
     }, [showFilter]);
 
-    const handleHover = (event, branch) => {
-        clearTimeout(hoverTimeout.current);
-        hoverTimeout.current = setTimeout(() => {
-            const rect = event.target.getBoundingClientRect();
-            const subMenuWidth = 180;
-            const screenWidth = window.innerWidth;
-            const screenHeight = window.innerHeight;
-
-            let left = rect.right + 10;
-            if (left + subMenuWidth > screenWidth) {
-                left = rect.left - subMenuWidth - 10;
-            }
-
-            let top = rect.top;
-            if (top + 180 > screenHeight) {
-                top = rect.bottom - 180;
-            }
-
-            setHoveredBranch(branch);
-            setSubMenuPosition({ top, left });
-        }, 200);
-    };
-
-    const handleMouseLeave = () => {
-        hoverTimeout.current = setTimeout(() => {
-            setHoveredBranch(null);
-        }, 300);
-    };
-
-    const handleSubMenuEnter = () => {
-        clearTimeout(hoverTimeout.current);
-    };
+    // Removed handleHover, handleMouseLeave, handleSubMenuEnter functions as they are related to the branch filter
 
     const fetchExams = async () => {
         try {
             const response = await authFetch('/admin/exams/', { method: "GET" });
             const data = await response.json();
-            // Assuming the response data is an array of exam objects
             setExams(data);
         } catch (error) {
             console.error("Error fetching exams:", error);
+            Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: "Failed to fetch exams.",
+            });
         }
     };
+
     useEffect(() => {
         fetchExams();
     }, []);
 
     const setExams = (data) => {
-        // Assuming data is an array of exam objects
+        const exams = data.map((exam) => {
+            const startTime = new Date(exam.start_time);
+            const endTime = new Date(exam.end_time);
+            const now = new Date();
 
-        const exams = data.map((exam) => ({
-            id: exam.id,
-            name: exam.name,
-            startTime: new Date(exam.start_time).toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short', hour12: true }),
-            endTime: new Date(exam.end_time).toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short', hour12: true }),
-            attemptsAllowed: exam.attempts_allowed,
-            status: new Date(exam.start_time) > new Date() ? "Upcoming" : exam.is_result_declared ? "Results Declared" : new Date(exam.end_time) > new Date() ? "Ongoing" : "Completed",
-        }));
+            let status;
+            if (startTime > now) {
+                status = "Upcoming";
+            } else if (endTime > now) {
+                status = "Ongoing";
+            } else if (exam.is_result_declared) {
+                status = "Results Declared";
+            } else {
+                status = "Completed"; // Exam ended, but results not declared
+            }
+
+            return {
+                id: exam.id,
+                name: exam.name,
+                startTime: startTime.toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short', hour12: true }),
+                endTime: endTime.toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short', hour12: true }),
+                attemptsAllowed: exam.attempts_allowed,
+                status: status,
+            };
+        });
         setTableData(exams);
+        setCurrentPage(1); // Reset to first page when data changes
     };
 
     const filteredTableData = tableData
@@ -128,12 +118,23 @@ const ManageExam = ({ onCreateNewExam, onNext }) => {
             row.status.toLowerCase().includes(searchQuery.toLowerCase())
         );
 
+    // Pagination calculations
+    const totalPages = Math.ceil(filteredTableData.length / itemsPerPage);
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentTableData = filteredTableData.slice(indexOfFirstItem, indexOfLastItem);
+
     const handleViewExam = (exam) => {
         setSelectedExam(exam);
     };
 
     const handleBack = () => {
         setSelectedExam(null);
+        fetchExams(); // Re-fetch exams to ensure updated data after potential edit
+    };
+
+    const handlePageChange = (pageNumber) => {
+        setCurrentPage(pageNumber);
     };
 
     return (
@@ -144,31 +145,20 @@ const ManageExam = ({ onCreateNewExam, onNext }) => {
                 <div className="exam-greeting">
                     <h1>Exams</h1>
                     <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-                        <div className="m-btn-left flex flex-wrap justify-center sm:justify-start gap-2">
-                            <motion.button whileTap={{ scale: 1.1 }} className={activeButton === "all" ? "m-active" : ""} onClick={() => setActiveButton("all")}>
-                                All Exams
-                            </motion.button>
-                            <motion.button whileTap={{ scale: 1.1 }} className={activeButton === "active" ? "m-active" : ""} onClick={() => setActiveButton("active")}>
-                                Active
-                            </motion.button>
-                            <motion.button whileTap={{ scale: 1.1 }} className={activeButton === "upcoming" ? "m-active" : ""} onClick={() => setActiveButton("upcoming")}>
-                                Upcoming
-                            </motion.button>
-                            <motion.button whileTap={{ scale: 1.1 }} className={activeButton === "completed" ? "m-active" : ""} onClick={() => setActiveButton("completed")}>
-                                Completed
-                            </motion.button>
-                        </div>
-                        <div className="m-btn-right flex flex-wrap items-center justify-center sm:justify-end gap-2 w-full sm:w-auto">
+                        {/* Removed the m-btn-left div entirely */}
+                        <div className="m-btn-right flex sm:justify-end gap-2 w-full sm:w-auto ml-auto">
+                            {/* New Filter Button */}
                             <button className="filter-btn" onClick={toggleFilter}>
                                 <img src={filter} alt="Filter" />
                             </button>
-                            <div className="search-box flex items-center w-full">
+
+                            <div className="search-box flex">
                                 <FaSearch className="search-icon" />
                                 <input
                                     type="text"
                                     placeholder="Search exams..."
                                     value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }} // Reset page on search
                                     className="w-full sm:w-auto"
                                 />
                             </div>
@@ -177,44 +167,45 @@ const ManageExam = ({ onCreateNewExam, onNext }) => {
                             </motion.button>
                         </div>
                     </div>
+
+                    {/* Filter Pop-up */}
                     {showFilter && (
-                        <>
-                            <div className="filter-popup" ref={filterRef}>
-                                <h3>Branch</h3>
-                                <div className="flex justify-center w-full">
-                                    <img src={line} alt="line" className="filter-line" />
-                                </div>
-                                <div className="filter-options">
-                                    {["CSE", "ISE", "AIML", "CSE AIML", "CSE DS", "EC"].map((branch, index) => (
-                                        <div
-                                            key={index}
-                                            className={`filter-item ${hoveredBranch === branch ? "active-filter-item" : ""}`}
-                                            onMouseEnter={(e) => handleHover(e, branch)}
-                                            onMouseLeave={handleMouseLeave}
-                                        >
-                                            {branch}
-                                        </div>
-                                    ))}
-                                </div>
-                                <button className="apply-btn">Add Branch</button>
+                        <div className="filter-popup resultfilter" ref={filterRef}>
+                            {/* Exam Status Filter Section (now the only filter in this popup) */}
+                            <h3>Exam Status</h3>
+                            <div className="flex justify-center w-full">
+                                <img src={line} alt="line" className="filter-line" />
                             </div>
-                            {hoveredBranch && (
+                            <div className="filter-options status-options">
                                 <div
-                                    className="sub-popup"
-                                    ref={subPopupRef}
-                                    style={{ top: subMenuPosition.top, left: subMenuPosition.left }}
-                                    onMouseEnter={handleSubMenuEnter}
-                                    onMouseLeave={handleMouseLeave}
+                                    className={`filter-item ${activeButton === "all" ? "active-filter-item" : ""}`}
+                                    onClick={() => { setActiveButton("all"); setCurrentPage(1); setShowFilter(false); }}
                                 >
-                                    <h4>{hoveredBranch} - Year</h4>
-                                    <button className="sub-item">1st Year</button>
-                                    <button className="sub-item">2nd Year</button>
-                                    <button className="sub-item">3rd Year</button>
-                                    <button className="sub-item">Final Year</button>
+                                    All Exams
                                 </div>
-                            )}
-                        </>
+                                <div
+                                    className={`filter-item ${activeButton === "active" ? "active-filter-item" : ""}`}
+                                    onClick={() => { setActiveButton("active"); setCurrentPage(1); setShowFilter(false); }}
+                                >
+                                    Active
+                                </div>
+                                <div
+                                    className={`filter-item ${activeButton === "upcoming" ? "active-filter-item" : ""}`}
+                                    onClick={() => { setActiveButton("upcoming"); setCurrentPage(1); setShowFilter(false); }}
+                                >
+                                    Upcoming
+                                </div>
+                                <div
+                                    className={`filter-item ${activeButton === "completed" ? "active-filter-item" : ""}`}
+                                    onClick={() => { setActiveButton("completed"); setCurrentPage(1); setShowFilter(false); }}
+                                >
+                                    Completed
+                                </div>
+                            </div>
+                            {/* Removed "Apply Filter" button as status filters apply immediately */}
+                        </div>
                     )}
+
                     <div className="m-table-container">
                         <table>
                             <thead>
@@ -229,8 +220,8 @@ const ManageExam = ({ onCreateNewExam, onNext }) => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {filteredTableData.length > 0 ? (
-                                    filteredTableData.map((row, index) => (
+                                {currentTableData.length > 0 ? (
+                                    currentTableData.map((row, index) => (
                                         <tr key={row.id} className={index % 2 === 0 ? "even-row" : "odd-row"}>
                                             <td>{row.id}</td>
                                             <td>{row.name}</td>
@@ -243,21 +234,42 @@ const ManageExam = ({ onCreateNewExam, onNext }) => {
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan="6" className="no-data">No exams found</td>
+                                        <td colSpan="7" className="no-data">No exams found</td>
                                     </tr>
                                 )}
                             </tbody>
                         </table>
                     </div>
+                    {/* Pagination Controls */}
+                    {filteredTableData.length > 0 && (
+                        <div className="pagination-controls flex justify-between items-center mt-4">
+                            <motion.button
+                                whileTap={{ scale: 1.1 }}
+                                onClick={() => handlePageChange(currentPage - 1)}
+                                disabled={currentPage === 1}
+                                className="pagination-btn"
+                            >
+                                Previous
+                            </motion.button>
+                            <span>Page {currentPage} of {totalPages}</span>
+                            <motion.button
+                                whileTap={{ scale: 1.1 }}
+                                onClick={() => handlePageChange(currentPage + 1)}
+                                disabled={currentPage === totalPages}
+                                className="pagination-btn"
+                            >
+                                Next
+                            </motion.button>
+                        </div>
+                    )}
                 </div>
             )}
         </div>
     );
 };
 
-
 const ViewExam = ({ exam, onBack }) => {
-    const [examDetails, setExamDetails] = useState(null);  // <-- new state for detailed exam data
+    const [examDetails, setExamDetails] = useState(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
     const handleEditClick = () => {
@@ -266,29 +278,33 @@ const ViewExam = ({ exam, onBack }) => {
 
     const handleCloseModal = () => {
         setIsEditModalOpen(false);
+        // Re-fetch exam details after closing the edit modal to show updated data
+        handleViewExam(exam);
     };
 
-    const handleViewExam = async (exam) => {
+    const handleViewExam = async (examToFetch) => {
         try {
-            const response = await authFetch(`/admin/exams/${exam.id}/`, { method: "GET" });
+            const response = await authFetch(`/admin/exams/${examToFetch.id}/`, { method: "GET" });
             if (!response.ok) {
                 throw new Error("Failed to fetch exam details");
             }
             const data = await response.json();
-            console.log("Exam details:", data);
-            setExamDetails(data);  // set detailed data here
+            setExamDetails(data);
         } catch (error) {
             console.error("Error fetching exam details:", error);
-            alert("Failed to load exam details");
+            Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: "Failed to load exam details.",
+            });
         }
     };
 
     useEffect(() => {
-        if (exam && !examDetails) {
+        if (exam) {
             handleViewExam(exam);
         }
-    }
-        , [exam, examDetails]);
+    }, [exam]);
 
     if (!examDetails) {
         return (
@@ -302,15 +318,15 @@ const ViewExam = ({ exam, onBack }) => {
         <div className='viewexam-container justify-center flex flex-wrap'>
             <div className='viewexam-box'>
                 <div className='flex'>
-                    <button onClick={onBack}>&lt;</button>
+                    <motion.button whileTap={{ scale: 1.1 }} onClick={onBack} className="back-to-exams-btn">&lt; Back to Exams</motion.button>
                     <h1>#{examDetails.id} {examDetails.name}</h1>
                 </div>
                 <div className="viewexam-section">
                     <div className="viewexam-header">
                         <h2>Exam Section</h2>
                         <div className='viewexam-header-btn'>
-                            <button className='viewexam-del-btn'>Delete</button>
-                            <button className="viewexam-edit-btn" onClick={handleEditClick}>Edit</button>
+                            {/* <button className='viewexam-del-btn'>Delete</button> */}
+                            <motion.button whileTap={{ scale: 1.1 }} className="viewexam-edit-btn" onClick={handleEditClick}>Edit</motion.button>
                         </div>
                     </div>
                     <div className="viewexam-body flex flex-col items-center justify-start">
@@ -354,7 +370,6 @@ const ViewExam = ({ exam, onBack }) => {
                                     </div>
                                 </div>
                             </div>
-
                         </div>
                     </div>
                 </div>
@@ -382,7 +397,7 @@ const EditExamModal = ({ onClose, examID }) => {
     useEffect(() => {
         const fetchExamData = async () => {
             try {
-                const response = await authFetch(`/admin/exams/${examID}`, { method: "GET" });
+                const response = await authFetch(`/admin/exams/${examID}/`, { method: "GET" });
                 if (response.ok) {
                     const data = await response.json();
                     setExam({
@@ -416,11 +431,38 @@ const EditExamModal = ({ onClose, examID }) => {
 
     const validate = () => {
         const newErrors = {};
+
         if (!exam.name) newErrors.name = "Exam name is required.";
-        if (!exam.start_time) newErrors.start_time = "Start time is required.";
-        if (!exam.end_time) newErrors.end_time = "End time is required.";
+
+        if (!exam.start_time) {
+            newErrors.start_time = "Start time is required.";
+        } else {
+            const startTime = new Date(exam.start_time);
+            if (startTime <= new Date(Date.now() - 60 * 1000)) {
+                newErrors.start_time = "Start time must be in the future.";
+            }
+        }
+
+        if (!exam.end_time) {
+            newErrors.end_time = "End time is required.";
+        } else {
+            const endTime = new Date(exam.end_time);
+            if (endTime <= new Date(Date.now() - 60 * 1000)) {
+                newErrors.end_time = "End time must be in the future.";
+            }
+        }
+
+        if (exam.start_time && exam.end_time) {
+            const startTime = new Date(exam.start_time);
+            const endTime = new Date(exam.end_time);
+            if (endTime <= startTime) {
+                newErrors.end_time = "End time must be after start time.";
+            }
+        }
+
         if (!exam.attempts_allowed || isNaN(Number(exam.attempts_allowed)) || Number(exam.attempts_allowed) < 1)
             newErrors.attempts_allowed = "Attempts allowed must be a positive number.";
+
         return newErrors;
     };
 
@@ -504,6 +546,7 @@ const EditExamModal = ({ onClose, examID }) => {
                         type="datetime-local"
                         name="start_time"
                         className="form-input"
+                        placeholder="Select start time"
                         value={exam.start_time}
                         onChange={handleChange}
                     />
@@ -516,6 +559,7 @@ const EditExamModal = ({ onClose, examID }) => {
                         type="datetime-local"
                         name="end_time"
                         className="form-input"
+                        placeholder="Select end time"
                         value={exam.end_time}
                         onChange={handleChange}
                     />
@@ -559,10 +603,10 @@ const EditExamModal = ({ onClose, examID }) => {
                 </div>
 
                 <div className="modal-buttons">
-                    <motion.button className="back-btn" onClick={onClose}>
+                    <motion.button whileTap={{ scale: 1.1 }} className="back-btn" onClick={onClose}>
                         ↩ Back
                     </motion.button>
-                    <motion.button className="create-btn-student" onClick={handleEditExam}>
+                    <motion.button whileTap={{ scale: 1.1 }} className="create-btn-student" onClick={handleEditExam}>
                         Update
                     </motion.button>
                 </div>
@@ -571,5 +615,5 @@ const EditExamModal = ({ onClose, examID }) => {
     );
 };
 
-export default ManageExam;
 
+export default ManageExam;

@@ -1,0 +1,604 @@
+/* Result Container */
+.result-container {
+    background-color: #282828;
+    width: calc(100% - 69px);
+    height: 87vh;
+    overflow-y: auto;
+    transition: width 0.3s ease-in-out, margin-left 0.3s ease-in-out;
+    padding: 1.5rem;
+}
+
+/* Result Header */
+.result-header {
+    width: 95%;
+    padding-top: 1.5rem;
+}
+
+.result-header h1 {
+    font-size: 2.5rem;
+    color: white;
+    font-family: madina-semibold;
+    margin-top: 0.9rem;
+    margin-bottom: 1.5rem;
+}
+.sort-icon {
+    margin-left: 176px;
+    position:absolute;
+    font-size: 2.5em;
+    vertical-align: middle;
+    color: #A294F9;
+}
+
+/* MODAL CONTAINER */
+.modal-container {
+    background: #1a1a1a;
+    padding: 30px;
+    border-radius: 12px;
+    width: 500px;
+    box-shadow: 0px 0px 10px rgba(255, 255, 255, 0.1);
+    overflow-y: auto; /* Allows scrolling if content overflows */
+    height: 85vh; /* Set a max height for the modal */
+}
+
+/* MODAL TITLE */
+.modal-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: white;
+    margin-bottom: 20px;
+}
+
+/* TOGGLE BUTTONS */
+.toggle-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.toggle-btn {
+    background: #2A2A2A;
+    padding: 10px 15px;
+    border-radius: 8px;
+    color: white;
+    font-size: 1rem;
+    cursor: pointer;
+    border: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.toggle-btn.active {
+    background: #4A4A4A;
+}
+
+/* EXCEL UPLOAD SECTION */
+.upload-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: #2A2A2A;
+    padding: 15px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.upload-label {
+    color: white;
+    font-size: 1rem;
+    margin-bottom: 10px;
+}
+
+.file-input {
+    display: block;
+    padding: 10px;
+    background: #333;
+    border-radius: 8px;
+    color: white;
+    border: none;
+}
+
+.upload-icon {
+    color: white;
+    font-size: 1.2rem;
+    margin-top: 10px;
+} 
+ 
+ .m-table-container {
+        overflow-x: auto;
+ }
+    .m-table-container table {
+        width: 100%;
+        max-height: 58vh;
+    }
+    .m-table-container table tbody td {
+        font-size: 0.8rem;
+    }
+ 
+    .m-table-container table thead th {
+        font-size: 0.8rem;
+    }
+ 
+/* Edit Button */
+.edit-btn {
+    background-color: #A294F9;
+    padding: 8px 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: white;
+    font-weight: 600;
+    border: none;
+    transition: all 0.2s ease-in-out;
+}
+
+.edit-btn .icon {
+    margin-right: 6px;
+}
+
+.edit-btn:hover {
+    background-color: #8e5daf;
+}
+
+.delete-btn {
+    background-color: red;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 10px 10px;
+}
+
+.filter-and-actions-wrapper {
+  display: flex;
+  flex-wrap: wrap; /* Allows items to wrap on smaller screens */
+  justify-content: flex-end; /* Pushes content to the right */
+  align-items: center; /* Vertically aligns items */
+  gap: 15px; /* Space between filter and search/add group */
+  width: 100%; /* Ensure it takes full width to justify content */
+  margin-bottom: 25px; /* Add some space below this row */
+}
+
+
+.m-btn-right {
+  display: flex; /* Keep this to arrange search and add button */
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px; /* Adjust gap between search and add button */
+  /* Remove width: auto / w-full if using Tailwind in JSX, or adjust as needed */
+}
+
+/* Pagination Styles (already set to flex-end, which is good) */
+.pagination {
+  display: flex;
+  justify-content: flex-end; /* Align items to the right */
+  align-items: center;
+  gap: 15px;
+  margin-top: 25px;
+  padding: 10px 0;
+  width: 100%;
+}
+
+.pagination-btn {
+  background-color: #A294F9;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.2s ease-in-out, transform 0.1s ease;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background-color: #8E5DAF;
+}
+
+.pagination-btn:disabled {
+  background-color: #A294F9;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.page-info {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #FFF;
+}
+
+.header-wrapper{
+    display: flex;
+}
+
+
+/* Branch Filter Select Styles (as before, but ensuring it plays well with the new wrapper) */
+.branch-filter-select {
+  background: #424242;
+  border: 1px solid white;
+  border-radius: 5px;
+  color: #fff;
+  padding: 8px 15px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 1rem;
+  transition: background-color 0.2s ease-in-out;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url('../assets/filter.png'); /* Adjust path as needed */
+  background-repeat: no-repeat;
+  background-position: right 10px center; /* Position the icon */
+  background-size: 20px 20px;
+  padding-right: 45px;
+  /* Make sure it's a flex item to align correctly within .filter-and-actions-wrapper */
+  flex-shrink: 0; /* Prevent it from shrinking too much */
+}
+
+.branch-filter-select:hover {
+  background-color: #323232;
+}
+
+
+@media(max-width:425px) and (min-width:320px)
+{
+
+  .result-container{
+     width: 100vw;
+        position: relative;
+        left: 0rem;
+        top: 8px;
+  }
+.pagination {
+display: flex;
+justify-content: space-between; 
+}
+.sort-icon {
+    margin-left: 85px;
+    margin-bottom: 10px;
+    vertical-align: middle;
+    color: #A294F9;
+}
+
+.pagination-btn {
+background-color: #A294F9;
+color: white;
+padding: 8px 12px;
+transition: background-color 0.2s ease-in-out, transform 0.1s ease;
+}
+
+.pagination-btn:hover:not(:disabled) {
+background-color: #8E5DAF;
+}
+
+.pagination-btn:disabled {
+background-color: #cccccc;
+cursor: not-allowed;
+opacity: 0.7;
+}
+
+.page-info {
+font-size: 0.9rem; 
+font-weight: 600;
+white-space: nowrap; /*Prevent text from wrapping */
+}
+
+  /* Ensure the table itself can scroll if necessary for the 5 columns */
+  .m-table-container table {
+    min-width: 600px; /* Min-width for the 5-column layout at 320px. Adjust as needed! */
+  }
+
+  .m-table-container th,
+  .m-table-container td {
+    padding: 6px 4px; /* Tighter padding for cells at 320px */
+    font-size: 0.78rem; /* Smaller font size for readability */
+  }
+
+  /* --- Action Buttons specific for 320px (stacked for compactness) --- */
+  .m-table-container .mobile-actions-col.action-buttons { /* Target both classes for specificity */
+    flex-direction: column; /* Stack buttons vertically */
+    gap: 1px; /* Minimal gap between stacked buttons */
+    justify-content: center; /* Center the stack */
+    align-items: center; /* Center items in the column */
+    min-width: unset; /* Remove min-width if stacking, let content dictate width */
+    width: 100%; /* Make the action cell take its full calculated width */
+  }
+
+  .m-table-container .mobile-actions-col .edit-btn,
+   {
+    padding: 3px 5px; /* Minimal padding for stacked buttons */
+    font-size: 0.7rem; /* Absolute smallest font size for button text */
+    gap: 1px; /* Minimal gap between icon and text */
+    width: 70%; /* Make buttons take full width when stacked */
+    justify-content: center; /* Center icon/text within stacked button */
+  }
+  .m-table-container .mobile-actions-col .delete-btn
+  {
+    padding: 3px 5px; /* Minimal padding for stacked buttons */
+    font-size: 0.7rem; /* Absolute smallest font size for button text */
+    gap: 1px; /* Minimal gap between icon and text */
+    width: 30%; /* Make buttons take full width when stacked */
+    justify-content: center; /* Center icon/text within stacked button */
+    
+  }
+  
+  .edit-btn
+  {
+    padding: 3px 5px; /* Minimal padding for stacked buttons */
+    font-size: 0.7rem; /* Absolute smallest font size for button text */
+    gap: 1px; /* Minimal gap between icon and text */
+    width: 64%; /* Make buttons take full width when stacked */
+    
+  } 
+
+  .modal-container {
+        
+        padding: 30px;
+        border-radius: 12px;
+        width: 500px;
+        overflow-y: scroll;
+        height:85vh;
+    }
+  
+    .toggle-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-left: 16px;
+            margin-bottom: 25px;
+            margin-top: 14px;
+        }
+}
+
+@media(max-width:768px) and (min-width:426px)
+{
+   .result-container {
+    background-color: #282828;
+    width: calc(100% - 69px);
+    height: 87vh;
+    overflow-x: scroll;
+    transition: width 0.3s ease-in-out, margin-left 0.3s ease-in-out;
+    padding: 1.5rem;
+    margin-left: 37px;
+}
+.m-table-container table
+{
+    width:100%;
+    overflow-x: scroll;
+}
+
+.pagination-btn:hover:not(:disabled) {
+background-color: #cccccc;
+}
+
+.pagination-btn:disabled {
+background-color: #cccccc;
+cursor: not-allowed;
+opacity: 0.7;
+}
+
+.page-info {
+font-size: 0.9rem; 
+font-weight: 600;
+white-space: nowrap; /*Prevent text from wrapping */
+}
+
+.pagination {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 10px;
+    margin-top: 25px;
+    padding: 10px 157px;
+    width: 100%;
+}
+.m-table-container table {
+    min-width: 800px;
+  }
+
+  .m-table-container th,
+  .m-table-container td {
+    padding: 6px 4px; /* Tighter padding for cells at 320px */
+    font-size: 0.78rem; /* Smaller font size for readability */
+  }
+
+  /* --- Action Buttons specific for 320px (stacked for compactness) --- */
+  .m-table-container .mobile-actions-col.action-buttons { /* Target both classes for specificity */
+    flex-direction: column; /* Stack buttons vertically */
+    gap: 1px; /* Minimal gap between stacked buttons */
+    justify-content: center; /* Center the stack */
+    align-items: center; /* Center items in the column */
+    min-width: unset; /* Remove min-width if stacking, let content dictate width */
+    width: 100%; /* Make the action cell take its full calculated width */
+  }
+
+.result-container {
+        width: calc(100% - 25px);
+        overflow-x: hidden;
+    }
+
+.m-table-container table thead th {
+    padding: 0px;
+}
+.pagination button {
+    padding: 8px 18px;
+}
+.m-table-container {
+    width: 84%;
+}
+.m-btn-right {
+    width: 84%;
+}
+.total-students-card {
+    margin-right: 104px;
+}
+.result-header h1 {
+    font-size: 2.1rem;
+    margin-top: -0.9rem;
+}
+.app-background {
+    overflow-x: hidden;
+}
+
+}
+@media(max-width:999px) and (min-width:769px)
+{
+  .m-table-container table {
+    min-width: 1000px; 
+  }
+
+  .m-table-container th,
+  .m-table-container td {
+    padding: 6px 4px; 
+    font-size: 0.78rem; 
+  }
+  
+  .m-table-container .mobile-actions-col.action-buttons { 
+    flex-direction: column; 
+    gap: 1px; 
+    justify-content: center; 
+    align-items: center; 
+    min-width: unset; 
+    width: 100%; 
+  }
+  .result-header h1 {
+        font-size: 2.1rem;
+        margin-bottom: 1.5rem;
+        margin-right: 500px;
+        margin-top: -20px;
+        width: 100%;
+    }
+.sort-icon {
+    margin-left: 155px;
+    font-size: 2.6em;
+    margin-top:-13%;
+}
+.m-table-container table thead th {
+    font-size: 0.8rem;
+    padding:1%;
+}
+.result-container {
+    overflow-x: hidden;
+    width: calc(100% - 15px);
+}
+.total-students-card {
+    margin-left: -163px;
+}
+}
+
+@media(max-width:1399px) and (min-width:1000px)
+{
+.m-table-container table tbody td {
+    padding: 12px 0px;
+    text-align: center;
+    color: white;
+}
+.sort-icon {
+    margin-left: 123px;
+    position: absolute;
+    font-size: 1.9rem;
+    margin-top: -21px;
+}
+
+  .m-table-container th,
+  .m-table-container td {
+    padding: 6px 4px; 
+    font-size: 0.78rem; 
+  }
+  
+  .m-table-container .mobile-actions-col.action-buttons { 
+    flex-direction: column; 
+    gap: 1px; 
+    justify-content: center; 
+    align-items: center; 
+    min-width: unset; 
+    width: 100%; 
+  }
+      .sidebar-bottom {
+        display: flex;
+        width: 109%;
+    }
+}
+
+
+
+
+
+/* @media(max-width: 1199px) and (min-width: 728px) {
+    .result-header h1 {
+        font-size: 2.3rem;
+        margin-bottom: 1.5rem;
+        margin-right: 500px;
+        margin-top: -20px;
+        width:100%;
+    }
+    .total-students-card {
+        margin-bottom: 41px;
+        margin-left: 413px;
+        margin-top: -82px;
+    }
+    
+  .m-table-container table {
+    min-width: 1300px; 
+  }
+
+  .m-table-container th,
+  .m-table-container td {
+    padding: 6px 4px; 
+    font-size: 0.78rem; 
+  }
+  
+  .m-table-container .mobile-actions-col.action-buttons { 
+    flex-direction: column; 
+    gap: 1px; 
+    justify-content: center; 
+    align-items: center; 
+    min-width: unset; 
+    width: 100%; 
+  }
+
+  /* Sidebar */
+    /* .sidebar-container {
+        position: fixed;
+        left: 0;
+        top: 0px;
+        height: 100vh;
+        width: 250px;
+        transform: translateX(-100%);
+    }
+ 
+    .sidebar-top {
+        position: relative;
+        top: 40px;
+    }
+     .modal-container {
+        background: #1a1a1a;
+        padding: 30px;
+        border-radius: 12px;
+        width: 500px;
+        box-shadow: 0px 0px 10px rgba(255, 255, 255, 0.1);
+    }
+    .sidebar-animation
+        {
+            left:7px;
+        }
+    .sidebar-logo {
+    left: 19px;
+}
+.result-container {
+   
+    width: calc(100% - 25px);
+   
+}
+    .topbar {
+        display: flex
+;
+        justify-content: center;
+    }
+}   */

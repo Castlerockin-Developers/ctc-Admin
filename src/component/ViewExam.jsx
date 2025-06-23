@@ -2,10 +2,10 @@ import { useEffect, useState } from 'react';
 import './ViewExam.css';
 import { FaShareSquare } from 'react-icons/fa';
 import { authFetch } from '../scripts/AuthProvider'
-
+ 
 const ViewExam = ({ exam, onBack }) => {
     const [examDetails, setExamDetails] = useState(null);  // <-- new state for detailed exam data
-
+ 
     const handleViewExam = async (exam) => {
         try {
             const response = await authFetch(`/admin/exams/${exam.id}/`, { method: "GET" });
@@ -20,14 +20,14 @@ const ViewExam = ({ exam, onBack }) => {
             alert("Failed to load exam details");
         }
     };
-
+ 
     useEffect(() => {
         if (exam && !examDetails) {
             handleViewExam(exam);
         }
     }
         , [exam, examDetails]);
-
+ 
     if (!examDetails) {
         return (
             <div className="viewexam-container justify-center flex flex-wrap">
@@ -35,7 +35,7 @@ const ViewExam = ({ exam, onBack }) => {
             </div>
         );
     }
-
+ 
     return (
         <div className='viewexam-container justify-center flex flex-wrap'>
             <div className='viewexam-box'>
@@ -54,11 +54,11 @@ const ViewExam = ({ exam, onBack }) => {
                     <div className="viewexam-body flex flex-col items-center justify-start">
                         <div className="viewexam-viwer">
                             <div className='viewexam-q'>
-
+ 
                                 <div className="viewexam-viwer-header flex justify-between items-center">
                                     <h2 className='text-xl'>MCQ</h2>
                                     <p>10</p>
-
+ 
                                 </div>
                                 <div className="viewexam-viwer-body flex justify-center">
                                     <div className="viewexams-container pb-2">
@@ -81,7 +81,7 @@ const ViewExam = ({ exam, onBack }) => {
                                 <div className="viewexam-viwer-header flex justify-between items-center">
                                     <h2 className='text-xl'>Coding</h2>
                                     <p>2</p>
-
+ 
                                 </div>
                                 <div className="viewexam-viwer-body flex justify-center">
                                     <div className="viewexams-container pb-2">
@@ -95,7 +95,6 @@ const ViewExam = ({ exam, onBack }) => {
                                     </div>
                                 </div>
                             </div>
-
                         </div>
                     </div>
                 </div>
@@ -103,6 +102,5 @@ const ViewExam = ({ exam, onBack }) => {
         </div>
     );
 };
-
+ 
 export default ViewExam;
-

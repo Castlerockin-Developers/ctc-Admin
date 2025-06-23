@@ -5,7 +5,8 @@ import line from "../assets/Line.png";
 import { motion } from "framer-motion";
 import ViewResult from "./ViewResult";
 import ParticularResult from "./PerticularResult";
-import { authFetch } from "../scripts/AuthProvider"
+import { authFetch } from "../scripts/AuthProvider";
+import "./ManageResult.css"; // Ensure you have the correct CSS file for styling
 
 const ManageResult = () => {
   const [activeTab, setActiveTab] = useState("all");
@@ -23,6 +24,10 @@ const ManageResult = () => {
   const filterRef = useRef(null);
   const subPopupRef = useRef(null);
   const hoverTimeout = useRef(null);
+
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [resultsPerPage] = useState(10); // Number of results to display per page
 
   const toggleFilter = () => {
     setShowFilter(!showFilter);
@@ -118,6 +123,7 @@ const ManageResult = () => {
 
         setResultsData(results);
         setLoading(false);
+        setCurrentPage(1); // Reset to first page on new data fetch
       } catch (error) {
         console.error("Error fetching results data", error);
         setError("Failed to load data. Please try again later.");
@@ -152,6 +158,30 @@ const ManageResult = () => {
         row.status.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
+  // Pagination Logic
+  const indexOfLastResult = currentPage * resultsPerPage;
+  const indexOfFirstResult = indexOfLastResult - resultsPerPage;
+  const currentResults = filteredResults.slice(
+    indexOfFirstResult,
+    indexOfLastResult
+  );
+
+  const totalPages = Math.ceil(filteredResults.length / resultsPerPage);
+
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+  const goToNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const goToPrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
   const handleViewResult = async (result) => {
     try {
       const response = await authFetch(`/admin/results/${result.id}/`, {
@@ -173,7 +203,7 @@ const ManageResult = () => {
         studentsUnattempted: data.users_unattempted_count,
         malpractice: data.malpractice_recorded_count,
         averageScore: data.users_average_score,
-        students:data.attempts.map((student) => ({
+        students: data.attempts.map((student) => ({
           attempt_id: student.id,
           usn: student.usn,
           name: student.user_name,
@@ -189,160 +219,131 @@ const ManageResult = () => {
           }),
           score: student.score,
           trustScore: student.trust_score,
-          // mcqMarks: 8,
-          // codingMarks: 15,
-          // totalMcqMarks: 10,
-          // totalCodingMarks: 20,
-          // mcqDetails: [
-          //   {
-          //     question: "What is the time complexity of binary search?",
-          //     status: "Correct",
-          //     marks: 2,
-          //     yourAnswer: "O(log n)",
-          //     actualAnswer: "O(log n)",
-          //   },
-          //   {
-          //     question:
-          //       "Which sorting algorithm has the best average-case time complexity?",
-          //     status: "Correct",
-          //     marks: 2,
-          //     yourAnswer: "Quick Sort",
-          //     actualAnswer: "Quick Sort",
-          //   },
-          // ],
-          // codingDetails: [
-          //   {
-          //     question: "Write a function to reverse a linked list.",
-          //     status: "Correct",
-          //     marks: 14,
-          //     yourAnswer: "function reverseLinkedList(head) {...}",
-          //     actualAnswer: "function reverseLinkedList(head) {...}",
-          //   },
-          //   {
-          //     question: "Implement a binary search tree.",
-          //     status: "Incorrect",
-          //     marks: 0,
-          //     yourAnswer: "class BST {...}",
-          //     actualAnswer: "class BST {...}",
-          //   },
-          // ],
+          // Placeholder for mcqMarks, codingMarks, totalMcqMarks, totalCodingMarks, mcqDetails, codingDetails
+          // These fields were present in your mock data but not in the actual API response for now.
+          // You'll need to adjust this mapping if your API provides them.
+          mcqMarks: 0,
+          codingMarks: 0,
+          totalMcqMarks: 0,
+          totalCodingMarks: 0,
+          mcqDetails: [],
+          codingDetails: [],
         })),
-        
-      }
+      };
       console.log("Result Details:", resultDetails);
       setSelectedResult(resultDetails);
       setSelectedStudent(null);
     } catch (error) {
       console.error("Error fetching result details", error);
     }
-    
   };
 
+  // Mock data (kept for reference, but actual data comes from API)
   const mock = {
-            id: 1,
-            category: "Active",
-            name: "DSA Crash Course",
-            startTime: "10:00 AM",
-            endTime: "11:30 AM",
-            analytics: "25% Attempted",
-            status: "Expired",
-            studentsAttempted: 15,
-            studentsUnattempted: 2,
-            malpractice: 90,
-            averageScore: 572,
-            students: [
-              {
-                usn: "4NM20EC408",
-                name: "Manish Naik",
-                startTime: "10:00 AM",
-                endTime: "11:30 AM",
-                mcqMarks: 8,
-                codingMarks: 15,
-                score: 85,
-                trustScore: 15,
-                totalMcqMarks: 10,
-                totalCodingMarks: 20,
-                mcqDetails: [
-                  {
-                    question: "What is the time complexity of binary search?",
-                    status: "Correct",
-                    marks: 2,
-                    yourAnswer: "O(log n)",
-                    actualAnswer: "O(log n)",
-                  },
-                  {
-                    question:
-                      "Which sorting algorithm has the best average-case time complexity?",
-                    status: "Incorrect",
-                    marks: 0,
-                    yourAnswer: "Bubble Sort",
-                    actualAnswer: "Quick Sort",
-                  },
-                ],
-                codingDetails: [
-                  {
-                    question: "Write a function to reverse a linked list.",
-                    status: "Correct",
-                    marks: 15,
-                    yourAnswer: "function reverseLinkedList(head) {...}",
-                    actualAnswer: "function reverseLinkedList(head) {...}",
-                  },
-                  {
-                    question: "Implement a binary search tree.",
-                    status: "Partially Correct",
-                    marks: 10,
-                    yourAnswer: "class BST {...}",
-                    actualAnswer: "class BST {...}",
-                  },
-                ],
-              },
-              {
-                usn: "1AM22CI088",
-                name: "Sanath Naik",
-                startTime: "10:00 AM",
-                endTime: "11:00 AM",
-                mcqMarks: 10,
-                codingMarks: 14,
-                score: 75,
-                trustScore: 75,
-                totalMcqMarks: 10,
-                totalCodingMarks: 20,
-                mcqDetails: [
-                  {
-                    question: "What is the time complexity of binary search?",
-                    status: "Correct",
-                    marks: 2,
-                    yourAnswer: "O(log n)",
-                    actualAnswer: "O(log n)",
-                  },
-                  {
-                    question:
-                      "Which sorting algorithm has the best average-case time complexity?",
-                    status: "Correct",
-                    marks: 2,
-                    yourAnswer: "Quick Sort",
-                    actualAnswer: "Quick Sort",
-                  },
-                ],
-                codingDetails: [
-                  {
-                    question: "Write a function to reverse a linked list.",
-                    status: "Correct",
-                    marks: 14,
-                    yourAnswer: "function reverseLinkedList(head) {...}",
-                    actualAnswer: "function reverseLinkedList(head) {...}",
-                  },
-                  {
-                    question: "Implement a binary search tree.",
-                    status: "Incorrect",
-                    marks: 0,
-                    yourAnswer: "class BST {...}",
-                    actualAnswer: "class BST {...}",
-                  },
-                ],
-              },
-            ],
-          }
+    id: 1,
+    category: "Active",
+    name: "DSA Crash Course",
+    startTime: "10:00 AM",
+    endTime: "11:30 AM",
+    analytics: "25% Attempted",
+    status: "Expired",
+    studentsAttempted: 15,
+    studentsUnattempted: 2,
+    malpractice: 90,
+    averageScore: 572,
+    students: [
+      {
+        usn: "4NM20EC408",
+        name: "Manish Naik",
+        startTime: "10:00 AM",
+        endTime: "11:30 AM",
+        mcqMarks: 8,
+        codingMarks: 15,
+        score: 85,
+        trustScore: 15,
+        totalMcqMarks: 10,
+        totalCodingMarks: 20,
+        mcqDetails: [
+          {
+            question: "What is the time complexity of binary search?",
+            status: "Correct",
+            marks: 2,
+            yourAnswer: "O(log n)",
+            actualAnswer: "O(log n)",
+          },
+          {
+            question:
+              "Which sorting algorithm has the best average-case time complexity?",
+            status: "Incorrect",
+            marks: 0,
+            yourAnswer: "Bubble Sort",
+            actualAnswer: "Quick Sort",
+          },
+        ],
+        codingDetails: [
+          {
+            question: "Write a function to reverse a linked list.",
+            status: "Correct",
+            marks: 15,
+            yourAnswer: "function reverseLinkedList(head) {...}",
+            actualAnswer: "function reverseLinkedList(head) {...}",
+          },
+          {
+            question: "Implement a binary search tree.",
+            status: "Partially Correct",
+            marks: 10,
+            yourAnswer: "class BST {...}",
+            actualAnswer: "class BST {...}",
+          },
+        ],
+      },
+      {
+        usn: "1AM22CI088",
+        name: "Sanath Naik",
+        startTime: "10:00 AM",
+        endTime: "11:00 AM",
+        mcqMarks: 10,
+        codingMarks: 14,
+        score: 75,
+        trustScore: 75,
+        totalMcqMarks: 10,
+        totalCodingMarks: 20,
+        mcqDetails: [
+          {
+            question: "What is the time complexity of binary search?",
+            status: "Correct",
+            marks: 2,
+            yourAnswer: "O(log n)",
+            actualAnswer: "O(log n)",
+          },
+          {
+            question:
+              "Which sorting algorithm has the best average-case time complexity?",
+            status: "Correct",
+            marks: 2,
+            yourAnswer: "Quick Sort",
+            actualAnswer: "Quick Sort",
+          },
+        ],
+        codingDetails: [
+          {
+            question: "Write a function to reverse a linked list.",
+            status: "Correct",
+            marks: 14,
+            yourAnswer: "function reverseLinkedList(head) {...}",
+            actualAnswer: "function reverseLinkedList(head) {...}",
+          },
+          {
+            question: "Implement a binary search tree.",
+            status: "Incorrect",
+            marks: 0,
+            yourAnswer: "class BST {...}",
+            actualAnswer: "class BST {...}",
+          },
+        ],
+      },
+    ],
+  };
 
   const handleBack = () => {
     setSelectedResult(null);
@@ -373,21 +374,30 @@ const ManageResult = () => {
               <motion.button
                 whileTap={{ scale: 1.1 }}
                 className={activeTab === "all" ? "m-active" : ""}
-                onClick={() => setActiveTab("all")}
+                onClick={() => {
+                  setActiveTab("all");
+                  setCurrentPage(1); // Reset page on tab change
+                }}
               >
                 All Exams
               </motion.button>
               <motion.button
                 whileTap={{ scale: 1.1 }}
                 className={activeTab === "active" ? "m-active" : ""}
-                onClick={() => setActiveTab("active")}
+                onClick={() => {
+                  setActiveTab("active");
+                  setCurrentPage(1); // Reset page on tab change
+                }}
               >
                 Active
               </motion.button>
               <motion.button
                 whileTap={{ scale: 1.1 }}
                 className={activeTab === "completed" ? "m-active" : ""}
-                onClick={() => setActiveTab("completed")}
+                onClick={() => {
+                  setActiveTab("completed");
+                  setCurrentPage(1); // Reset page on tab change
+                }}
               >
                 Completed
               </motion.button>
@@ -406,7 +416,10 @@ const ManageResult = () => {
                   type="text"
                   placeholder="Search results..."
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setCurrentPage(1); // Reset page on search
+                  }}
                   className="w-full sm:w-auto"
                 />
               </div>
@@ -426,8 +439,9 @@ const ManageResult = () => {
                     (branch, index) => (
                       <div
                         key={index}
-                        className={`filter-item ${hoveredBranch === branch ? "active-filter-item" : ""
-                          }`}
+                        className={`filter-item ${
+                          hoveredBranch === branch ? "active-filter-item" : ""
+                        }`}
                         onMouseEnter={(e) => handleHover(e, branch)}
                         onMouseLeave={handleMouseLeave}
                       >
@@ -471,8 +485,8 @@ const ManageResult = () => {
                 </tr>
               </thead>
               <tbody>
-                {filteredResults.length > 0 ? (
-                  filteredResults.map((row, index) => (
+                {currentResults.length > 0 ? (
+                  currentResults.map((row, index) => (
                     <tr
                       key={row.id}
                       className={index % 2 === 0 ? "even-row" : "odd-row"}
@@ -510,6 +524,34 @@ const ManageResult = () => {
               </tbody>
             </table>
           </div>
+
+          {/* Pagination Controls */}
+          {filteredResults.length > resultsPerPage && (
+            <div className="pagination">
+              <motion.button
+                whileTap={{ scale: 0.95 }}
+                onClick={goToPrevPage}
+                disabled={currentPage === 1}
+                className="pagination-btn"
+              >
+                Previous
+              </motion.button>
+
+              
+              <span className="page-info">
+                Page {currentPage} of {totalPages}
+              </span>
+
+              <motion.button
+                whileTap={{ scale: 0.95 }}
+                onClick={goToNextPage}
+                disabled={currentPage === totalPages}
+                className="pagination-btn"
+              >
+                Next
+              </motion.button>
+            </div>
+          )}
         </div>
       )}
     </div>

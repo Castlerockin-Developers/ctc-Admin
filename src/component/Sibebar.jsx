@@ -1,49 +1,91 @@
 import React, { useState, useEffect } from "react";
 import { FaMoneyBillWave, FaCog, FaSignOutAlt } from "react-icons/fa";
-import { motion } from "motion/react";
-import "../pages/home.css";
-import logo from '../assets/ctc-logo.png';
-import { logout } from "../scripts/AuthProvider";
-import { Navigate, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion"; // Assuming "motion/react" is framer-motion
+import "../pages/home.css"; // Ensure this path is correct for your CSS
+import logo from '../assets/ctc-logo.png'; // Ensure this path is correct for your logo
+import { logout } from "../scripts/AuthProvider"; // Ensure this path is correct for your logout function
+import { useNavigate } from "react-router-dom"; // Correct import for useNavigate
+import Swal from 'sweetalert2'; // Import SweetAlert2
 
 const Sidebar = ({ activeComponent, setActiveComponent }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 1024);
-    const navigate = useNavigate();
+    const navigate = useNavigate(); // Initialize useNavigate hook
 
-    // Map "newExam" to "manageExam" if needed
+    // Map "newExam" to "manageExam" if needed for active state
     const currentActive = activeComponent === "newExam" ? "manageExam" : activeComponent;
 
+    // Effect for handling window resize and mobile sidebar behavior
     useEffect(() => {
         const handleResize = () => {
             const isNowMobile = window.innerWidth <= 1024;
             setIsMobile(isNowMobile);
+            // If not mobile and sidebar is open, close it
             if (!isNowMobile && isOpen) {
                 setIsOpen(false);
             }
         };
 
         window.addEventListener("resize", handleResize);
+        // Clean up the event listener on component unmount
         return () => window.removeEventListener("resize", handleResize);
-    }, [isOpen]);
+    }, [isOpen]); // Depend on isOpen to re-evaluate on sidebar state change
 
+    // Handler for sidebar navigation clicks
     const handleNavigation = (componentName) => {
-        setActiveComponent(componentName);
+        setActiveComponent(componentName); // Update the active component
         if (isMobile) {
-            setIsOpen(false);
+            setIsOpen(false); // Close sidebar on mobile after navigation
         }
     };
+
+    // Handler for logout with SweetAlert2 confirmation and redirection
     const handleLogout = () => {
-        logout();
-        navigate("/");
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "You will be logged out from your account.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#a294f9', // Example: Blue for confirm
+            cancelButtonColor: '#d33',   // Example: Red for cancel
+            confirmButtonText: 'Yes, log me out!',
+            
+            // Apply custom CSS class for the warning icon
+            customClass: {
+                icon: 'swal2-warning-custom'
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // User clicked "Yes, log me out!"
+                console.log("User confirmed logout. Initiating logout process...");
+                
+                // Call your actual logout function (e.g., clear tokens, session)
+                logout(); 
+
+                // Show a success message to the user
+                Swal.fire(
+                    'Logged Out!',
+                    'You have been successfully logged out.',
+                    'success'
+                ).then(() => {
+                    // Redirect to the login page AFTER the success message is dismissed
+                    navigate('/');
+                });
+            } else {
+                // User clicked "Cancel" or dismissed the dialog
+                console.log("Logout cancelled by user.");
+            }
+        });
     };
 
     return (
         <>
+            {/* Mobile Menu Toggle Button */}
             {isMobile && (
                 <motion.button
                     className="menu-toggle"
                     onClick={() => setIsOpen(!isOpen)}
+                    // Framer Motion animations for toggle button position
                     animate={{ left: isOpen ? "200px" : "0px" }}
                     transition={{ duration: 0.3 }}
                 >
@@ -54,7 +96,7 @@ const Sidebar = ({ activeComponent, setActiveComponent }) => {
                         fill="none"
                         xmlns="http://www.w3.org/2000/svg"
                     >
-                        {/* Top Bar */}
+                        {/* Top Bar animation */}
                         <motion.line
                             x1="10"
                             y1="15"
@@ -66,7 +108,7 @@ const Sidebar = ({ activeComponent, setActiveComponent }) => {
                             animate={{ rotate: isOpen ? 45 : 0, translateY: isOpen ? 10 : 0 }}
                             transition={{ duration: 0.3 }}
                         />
-                        {/* Middle Bar */}
+                        {/* Middle Bar animation */}
                         <motion.line
                             x1="10"
                             y1="25"
@@ -78,7 +120,7 @@ const Sidebar = ({ activeComponent, setActiveComponent }) => {
                             animate={{ opacity: isOpen ? 0 : 1 }}
                             transition={{ duration: 0.2 }}
                         />
-                        {/* Bottom Bar */}
+                        {/* Bottom Bar animation */}
                         <motion.line
                             x1="10"
                             y1="35"
@@ -94,8 +136,11 @@ const Sidebar = ({ activeComponent, setActiveComponent }) => {
                 </motion.button>
             )}
 
+            {/* Main Sidebar Container */}
             <div className={`sidebar-container ${isOpen && isMobile ? "open" : ""}`}>
                 <img src={logo} alt="logo" className="sidebar-logo lg:hidden" />
+                
+                {/* Top Menu Items */}
                 <div className="sidebar-top">
                     <button
                         type="button"
@@ -134,7 +179,7 @@ const Sidebar = ({ activeComponent, setActiveComponent }) => {
                     </button>
                 </div>
 
-                {/* Bottom Menu */}
+                {/* Bottom Menu Items */}
                 <div className="sidebar-bottom">
                     <button
                         type="button"
@@ -154,8 +199,8 @@ const Sidebar = ({ activeComponent, setActiveComponent }) => {
                     </button>
                     <button
                         type="button"
-                        className={`bottom-sidebar-button ${currentActive === "settings" ? "side-active" : ""}`}
-                        onClick={() => handleLogout()}
+                        className={`bottom-sidebar-button ${currentActive === "logout" ? "side-active" : ""}`}
+                        onClick={handleLogout} 
                     >
                         <FaSignOutAlt className="sidebar-icon" />
                         <h6 className="sidebar-item">Logout</h6>
@@ -165,5 +210,4 @@ const Sidebar = ({ activeComponent, setActiveComponent }) => {
         </>
     );
 };
-
 export default Sidebar;

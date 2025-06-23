@@ -1,0 +1,59 @@
+.viewexam-btn-pop {
+    background-color: #A294F9;
+    padding: 5px 15px 5px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: madina-semibold;
+    white-space: nowrap;
+}
+.viewexam-btn-pop:hover {
+    background-color: #8E5DAF;
+}
+/* ManageExam.css */
+
+/* ... existing styles ... */
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+    gap: 8px; /* Space between page number buttons */
+}
+
+.pagination button {
+    background-color: #A294F9;
+    border: 1px solid #A294F9;
+    padding: 8px 12px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+}
+
+.pagination button:hover {
+    background-color: #e0e0e0;
+}
+
+.pagination button.active-page {
+    background-color: #8E5DAF; /* Or your primary accent color */
+    color: white;
+    border-color: #8E5DAF;
+}
+@media(max-width:425px) 
+{
+        .viewexam-container {
+        width: calc(103% - -5px);
+        height: 85vh;
+        padding: 1rem;
+    }
+    .viewexam-header {
+        height: 6vh;
+        padding: 0.8rem;
+        font-size: 1.2rem;
+        width:123%;
+    }
+    
+}
+
+
+
+

@@ -91,7 +91,7 @@
     cursor: pointer;
     background-color: transparent;
     font-weight: bold;
-    border-bottom: 2px solid #FF0099;
+    border-bottom: 2px solid #A294F9;
     height: 31px;
 }
 
@@ -102,7 +102,7 @@
 
 .middle-view button {
     padding: 0.5rem;
-    background-color: #FF0099;
+    background-color: #A294F9;
     border-radius: 5px;
     color: white;
     margin-left: 20px;
@@ -256,7 +256,7 @@
 
 .p-result-header button {
     color: white;
-    background-color: #FF0099;
+    background-color: #A294F9;
     padding: 0.5rem;
     font-size: 1.2rem;
     font-family: madina-semibold;
@@ -265,7 +265,7 @@
 }
 
 .p-result-header button:hover {
-    background-color: #920058;
+    background-color: #8E5DAF;
 }
 
 .share-icon {
@@ -460,7 +460,7 @@
     }
 }
 
-@media (max-width: 768px) {
+/* @media (max-width: 768px) {
     .viewresult-container {
         width: 100%;
     }
@@ -489,4 +489,48 @@
     .view-r-cards p {
         font-size: 1.1rem;
     }
+} */
+
+
+@media(min-width:426px) and (max-width: 768px) {
+    .viewexam-box button {
+        font-size: 2rem;
+        bottom: 8px;
+        margin-right: 8px;
+        }
 }
+
+
+/* In ViewResult.css */
+
+.pagination-container {
+  display: flex;
+  margin-top: 1.5rem; /* Adjust as needed */
+}
+
+.pagination-button {
+  background-color: #A294F9; /* A shade of purple */
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  margin: 0 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out;
+}
+
+.pagination-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.page-info {
+  font-size: 1.125rem; /* Equivalent to text-lg */
+  font-weight: 500; /* Equivalent to font-medium */
+}
+
+
+
+
+
+
+
