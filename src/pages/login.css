@@ -102,7 +102,7 @@
 
 .login-button:hover {
   background-color: #c1bbe8;
-  color:#black;;
+  color:black;
 }
 
 /* Forgot Password Link */
@@ -261,3 +261,5 @@
 .popup-close:hover {
   background-color: #8c0054;
 }
+
+

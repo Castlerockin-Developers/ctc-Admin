@@ -46,10 +46,11 @@ const Sidebar = ({ activeComponent, setActiveComponent }) => {
             text: "You will be logged out from your account.",
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#a294f9', // Example: Blue for confirm
+            confirmButtonColor: '#a294f9', 
             cancelButtonColor: '#d33',   // Example: Red for cancel
             confirmButtonText: 'Yes, log me out!',
-            
+            background: '#181817', 
+            color: '#FFFFFF',           
             // Apply custom CSS class for the warning icon
             customClass: {
                 icon: 'swal2-warning-custom'
@@ -63,10 +64,13 @@ const Sidebar = ({ activeComponent, setActiveComponent }) => {
                 logout(); 
 
                 // Show a success message to the user
-                Swal.fire(
-                    'Logged Out!',
-                    'You have been successfully logged out.',
-                    'success'
+                Swal.fire({
+                    title: 'Logged Out!',
+                    text: 'You have been successfully logged out.',
+                    icon: 'success',
+                    background: '#181817', // Apply the same dark background
+                    color: '#FFFFFF'       // Apply white text color
+                }
                 ).then(() => {
                     // Redirect to the login page AFTER the success message is dismissed
                     navigate('/');

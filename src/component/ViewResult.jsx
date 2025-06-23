@@ -4,6 +4,7 @@ import { FaSearch } from "react-icons/fa";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import { authFetch } from "../scripts/AuthProvider";
+import './ViewResult.css';
 
 const ViewResult = ({ result, onBack, onNext }) => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -186,19 +187,19 @@ const ViewResult = ({ result, onBack, onNext }) => {
               </table>
             </div>
             {/* Pagination Controls */}
-            <div className="flex justify-center items-center mt-4">
+            <div className="pagination-button">
               <button
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage === 1}
-                className="bg-purple-600 text-white px-4 py-2 rounded-lg mr-2 disabled:opacity-50"
+                className="pagination-button"
               >
                 Previous
               </button>
-              <span className="text-lg font-medium">Page {currentPage} of {totalPages}</span>
+              <span className="page-info">Page {currentPage} of {totalPages}</span>
               <button
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={currentPage === totalPages || totalPages === 0}
-                className="bg-purple-600 text-white px-4 py-2 rounded-lg ml-2 disabled:opacity-50"
+                className="pagination-button"
               >
                 Next
               </button>

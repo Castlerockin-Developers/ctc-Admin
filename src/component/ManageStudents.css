@@ -200,10 +200,11 @@
 }
 
 .pagination-btn:disabled {
-  background-color: #A294F9;
+  background-color: #cccccc;
   cursor: not-allowed;
   opacity: 0.7;
 }
+
 
 .page-info {
   font-size: 1.1rem;

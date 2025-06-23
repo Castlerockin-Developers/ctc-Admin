@@ -212,11 +212,7 @@
         font-size: 2.5rem;
     }
  
-        .viewexam-box button {
-        font-size: 2rem;
-        bottom: 8px;
-        margin-right: 8px;
-        }
+        
  
     .viewexam-header {
         height: 6vh;
@@ -382,6 +378,9 @@
 }
 .view-r-cards {
     width: 247px;
+}
+.view-table-container table {
+    height: 42vh;
 }
 
 }
@@ -559,3 +558,19 @@ font-medium text-lg
     text-align: center;
 }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,5 +1,5 @@
-export const baseUrl = 'https://4899-106-51-110-44.ngrok-free.app/api';
-export const staticUrl = 'https://4899-106-51-110-44.ngrok-free.app';
+export const baseUrl = 'http://localhost/api';
+export const staticUrl = 'http://localhost';
 export async function authFetch(url, options) {
   let accessToken = localStorage.getItem('access'); // Declare `let` to allow reassignment
   const refreshToken = localStorage.getItem('refresh');

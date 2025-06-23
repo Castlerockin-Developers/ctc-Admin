@@ -4,32 +4,32 @@
     height: 87vh;
     padding: 1.2rem;
 }
-
+ 
 .viewreult-box {
     width: 95%;
     padding-top: 1.5rem;
     height: 70%;
 }
-
+ 
 .top-viewresult {
     width: 90%;
 }
-
+ 
 .top-viewresult p {
     color: white;
     font-family: madina-regular;
 }
-
+ 
 .top-viewresult p span {
     text-decoration: underline;
 }
-
+ 
 .top-viewresult h4 {
     color: white;
     font-size: 1.5rem;
     font-family: madina-regular;
 }
-
+ 
 .top-viewresult button {
     color: white;
     font-size: 3rem;
@@ -38,24 +38,24 @@
     margin-right: 10px;
     cursor: pointer;
 }
-
+ 
 .top-viewresult h1 {
     color: white;
     font-size: 2.3rem;
     font-family: madina-semibold;
 }
-
+ 
 .view-time {
     width: 35%;
     margin-top: 10px;
 }
-
+ 
 .view-time p {
     color: white;
     font-family: madina-regular;
     font-size: 1rem;
 }
-
+ 
 .view-r-cards {
     width: 300px;
     height: 150px;
@@ -64,12 +64,12 @@
     border: 1px solid rgb(168, 168, 168);
     padding: 1rem;
 }
-
+ 
 .view-r-cards p {
     color: white;
     font-family: madina-regular;
 }
-
+ 
 .view-r-cards h4 {
     color: white;
     text-align: center;
@@ -77,11 +77,11 @@
     margin-top: 12px;
     font-family: madina-semibold;
 }
-
+ 
 .middle-view {
     margin-top: 20px;
 }
-
+ 
 .students {
     color: white;
     margin-right: 10px;
@@ -91,23 +91,23 @@
     cursor: pointer;
     background-color: transparent;
     font-weight: bold;
-    border-bottom: 2px solid #A294F9;
+    border-bottom: 2px solid #FF0099;
     height: 31px;
 }
-
+ 
 .icon-export {
     position: relative;
     top: 5px;
 }
-
+ 
 .middle-view button {
     padding: 0.5rem;
-    background-color: #A294F9;
+    background-color: #FF0099;
     border-radius: 5px;
     color: white;
     margin-left: 20px;
 }
-
+ 
 .view-table-container {
     width: 100%;
     margin-top: 1rem;
@@ -115,7 +115,7 @@
     border: 1px solid rgb(153, 153, 153);
     overflow-x: auto;
 }
-
+ 
 .view-table-container table {
     width: 100%;
     height: 48vh;
@@ -126,7 +126,7 @@
     flex-direction: column;
     overflow-x: auto;
 }
-
+ 
 .view-table-container table thead {
     background-color: #535353;
     color: white;
@@ -135,7 +135,7 @@
     display: table;
     table-layout: fixed;
 }
-
+ 
 .view-table-container table thead th {
     position: relative;
     padding: 12px;
@@ -143,7 +143,7 @@
     background-color: #535353;
     border-bottom: 1px solid #888;
 }
-
+ 
 /* Create shorter vertical separators */
 .view-table-container table thead th:not(:last-child)::after {
     content: "";
@@ -154,7 +154,7 @@
     width: 2px;
     background-color: white;
 }
-
+ 
 /* Fixed tbody height and scroll */
 .view-table-container table tbody {
     max-height: 53vh;
@@ -164,7 +164,7 @@
     display: table;
     table-layout: fixed;
 }
-
+ 
 /* Ensure rows stay aligned */
 .view-table-container table tbody tr {
     display: table;
@@ -174,23 +174,23 @@
     border-top: 1px solid rgb(133, 133, 133);
     border-bottom: 1px solid rgb(133, 133, 133);
 }
-
+ 
 /* Ensure td matches header width */
 .view-table-container table tbody td {
     padding: 12px;
     text-align: center;
     color: white;
 }
-
+ 
 /* Alternate row colors */
 .even-row {
     background-color: #393939;
 }
-
+ 
 .odd-row {
     background-color: #424242;
 }
-
+ 
 .viewexam-btn {
     background-color: #8E5DAF;
     padding: 5px 15px 5px;
@@ -199,11 +199,11 @@
     font-family: madina-semibold;
     white-space: nowrap;
 }
-
+ 
 .viewexam-btn:hover {
     background-color: #7421ac;
 }
-
+ 
 .marks-r-cards {
     width: 250px;
     height: 120px;
@@ -212,29 +212,32 @@
     border: 1px solid rgb(168, 168, 168);
     padding: 0.8rem;
 }
-
+ 
 .marks-r-cards p {
     color: white;
     font-family: madina-light;
 }
-
+ 
 .marks-r-cards h4 {
     font-size: 2.5rem;
     text-align: center;
 }
-
+ 
 .marks-r-cards-container {
     position: relative;
     left: 200px;
 }
-
+ 
 .p-result-section {
-    width: 100%;
-    margin-top: 30px;
+    width: 102%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    margin: 30px 40px;
 }
-
+ 
 .p-result-header {
-    width: 105%;
+    width: 100%;
     height: 6.5vh;
     padding: 1rem;
     background-color: #5A5A5A;
@@ -246,86 +249,98 @@
     align-items: center;
     white-space: nowrap;
 }
-
-
+ 
+ 
 .p-result-header h2 {
     color: white;
     font-size: 1.5rem;
     font-family: madina-medium;
 }
-
+ 
 .p-result-header button {
     color: white;
-    background-color: #A294F9;
+    background-color: #7421ac;
     padding: 0.5rem;
     font-size: 1.2rem;
     font-family: madina-semibold;
     border-radius: 5px;
     cursor: pointer;
 }
-
+ 
 .p-result-header button:hover {
-    background-color: #8E5DAF;
+    background-color: #920058;
 }
-
+ 
 .share-icon {
     position: relative;
     top: 3px;
     font-size: 1.5rem;
 }
-
-.p-result-body {
-    width: 105%;
+ 
+.p-result-body-container {
+    width: 100%;
     height: 57vh;
     background-color: #4B4B4B;
     border-bottom-right-radius: 5px;
     border-bottom-left-radius: 5px;
     overflow-y: auto;
 }
-
+ 
+.p-result-body {
+    width: 95%;
+    margin-top: 10px;
+    border-radius: 10px;
+}
+ 
+.p-result-body table {
+    margin-top: 10px;
+}
+ 
 .p-result-viwer {
     width: 97%;
     margin-top: 20px;
 }
-
+ 
 .p-reult-viwer-header {
-    width: 100%;
-    height: 6vh;
     background-color: #303030;
     border-top-left-radius: 5px;
     border-top-right-radius: 5px;
-    padding: 7px 20px 5px;
+    color: white;
+    font-size: 1.5rem;
+    font-family: madina-semibold;
 }
-
+ 
 .p-reult-viwer-header h2 {
     color: white;
     font-size: 1.7rem;
     font-family: madina-semibold;
 }
-
+ 
 .p-reult-viwer-header p {
     color: white;
     font-size: 1.3rem;
     margin-top: 4px;
     font-family: madina-regular;
 }
-
+ 
 .p-result-viwer-body {
     width: 100%;
     height: auto;
     background-color: #3A3A3A;
     border-bottom-right-radius: 5px;
     border-bottom-left-radius: 5px;
+    color: white;
+    font-family: madina-light;
 }
-
+ 
 .presult-container {
     width: 95%;
 }
-
+ 
 .presult-container details {
     margin: 1rem 0;
 }
-
+ 
 .presult-container summary {
     cursor: pointer;
     font-family: madina-light;
@@ -334,18 +349,18 @@
     color: white;
     list-style: none;
 }
-
+ 
 .presult-container summary .status-correct {
     color: green;
     font-family: madina-semibold;
 }
-
+ 
 /* Wrong status: red */
 .presult-container summary .status-wrong {
     color: red;
     font-family: madina-semibold;
 }
-
+ 
 /* This creates an underline-like separator when details is opened */
 .presult-container details[open] summary::after {
     content: "";
@@ -355,14 +370,14 @@
     background-color: #ccc;
     margin: 0.5rem 0;
 }
-
+ 
 /* Answer boxes container */
 .answer-boxes {
     display: flex;
     gap: 1rem;
     margin-top: 1rem;
 }
-
+ 
 /* Individual box styling */
 .answer-box {
     flex: 1;
@@ -370,19 +385,53 @@
     border-radius: 4px;
     background-color: #303030;
 }
-
+ 
 .answer-box h3 {
     color: white;
     margin: 0 0 0.5rem;
     font-size: 1.3rem;
     font-family: madina-medium;
 }
-
+ 
 .answer-box p {
     color: white;
     font-family: madina-light;
     font-size: 1rem;
 }
+.pagination-container {
+  display: flex;
+    justify-content: center;
+    margin-top: 20px;
+    gap: 12px; /* Space between page number buttons */
+}
+
+.pagination-button {
+  /* A shade of purple */
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  align-content: flex-end;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out;
+}
+
+.pagination-button:disabled {
+    background-color: #cccccc;
+    color: #fff;
+    cursor: not-allowed;
+    border-color: #cccccc;
+}
+pagination-button.active-page {
+    background-color: #a294f9; /* Or your primary accent color */
+    color: white;
+    border-color: #a294f9;
+}
+.page-info {
+  font-size: 1.125rem; /* Equivalent to text-lg */
+  font-weight: 500; /* Equivalent to font-medium */
+  margin-top: 8px;
+}
+
 
 @media (min-width:1025px) and (max-width:1440px) {
     .view-r-card-container {
@@ -392,6 +441,7 @@
     .marks-r-cards-container {
         left: 150px;
     }
+    
 }
 
 @media (min-width:769px) and (max-width:1024px) {
@@ -502,35 +552,4 @@
 
 
 /* In ViewResult.css */
-
-.pagination-container {
-  display: flex;
-  margin-top: 1.5rem; /* Adjust as needed */
-}
-
-.pagination-button {
-  background-color: #A294F9; /* A shade of purple */
-  color: white;
-  padding: 0.5rem 1rem;
-  border-radius: 0.5rem;
-  margin: 0 0.5rem;
-  cursor: pointer;
-  transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out;
-}
-
-.pagination-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.page-info {
-  font-size: 1.125rem; /* Equivalent to text-lg */
-  font-weight: 500; /* Equivalent to font-medium */
-}
-
-
-
-
-
-
 
