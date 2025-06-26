@@ -95,7 +95,6 @@ const ViewExam = ({ exam, onBack }) => {
                                     </div>
                                 </div>
                             </div>
-
                         </div>
                     </div>
                 </div>

@@ -1,25 +1,29 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./ViewResult.css";
 import { FaSearch } from "react-icons/fa";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
-import { authFetch } from "../scripts/AuthProvider"
+import { authFetch } from "../scripts/AuthProvider";
+import './ViewResult.css';
 
 const ViewResult = ({ result, onBack, onNext }) => {
   const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10; // You can adjust this number as needed
 
   if (!result) {
     return <div>No result selected</div>;
   }
 
   const viewExam = async (student) => {
-    const response = await authFetch('/admin/results/individual-results/' + student.attempt_id + "/",{
+    const response = await authFetch('/admin/results/individual-results/' + student.attempt_id + "/", {
       method: "GET",
     });
     if (response.ok) {
       const data = await response.json();
-      const examData = {...student, 
-        sections : data.reportData.sections.map(section => ({
+      const examData = {
+        ...student,
+        sections: data.reportData.sections.map(section => ({
           name: section.sectionName,
           obtainedMarks: section.obtainedMarks,
           totalMarks: section.maxMarks,
@@ -54,6 +58,31 @@ const ViewResult = ({ result, onBack, onNext }) => {
     const fileName = `result_${result.id}.xlsx`;
     saveAs(blob, fileName);
   };
+
+  // Filter students based on search query
+  const filteredStudents = result.students.filter(student =>
+    student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    student.usn.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  // Calculate total pages
+  const totalPages = Math.ceil(filteredStudents.length / itemsPerPage);
+
+  // Get current students for the page
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentStudents = filteredStudents.slice(indexOfFirstItem, indexOfLastItem);
+
+  // Handle page change
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
+  // Reset page to 1 when search query changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
+
 
   return (
     <div className="justify-center flex flex-wrap viewresult-container">
@@ -115,7 +144,7 @@ const ViewResult = ({ result, onBack, onNext }) => {
               <button
                 onClick={() => handleExportToExcel(result)}
                 className="flex items-center gap-2 bg-[#9B005D] text-white px-4 py-2 rounded-lg shadow-md
-                            hover:bg-[#8A004A] hover:scale-105 transition-transform duration-200 ease-in-out cursor-pointer"
+                                hover:bg-[#8A004A] hover:scale-105 transition-transform duration-200 ease-in-out cursor-pointer"
               >
                 <img src="src/assets/excel.png" alt="Excel Icon" className="w-6 h-6" />
                 <span className="font-medium text-lg">Export</span>
@@ -139,7 +168,7 @@ const ViewResult = ({ result, onBack, onNext }) => {
                   </tr>
                 </thead>
                 <tbody>
-                  {result.students.map((student, index) => (
+                  {currentStudents.map((student, index) => (
                     <tr key={index}>
                       <td>{student.usn}</td>
                       <td>{student.name}</td>
@@ -156,6 +185,22 @@ const ViewResult = ({ result, onBack, onNext }) => {
                   ))}
                 </tbody>
               </table>
+            </div>
+            {/* Pagination Controls */}
+            <div className="pagination-button">
+              <button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+              >
+                Previous
+              </button>
+              <span className="page-info">Page {currentPage} of {totalPages}</span>
+              <button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages || totalPages === 0}
+              >
+                Next
+              </button>
             </div>
           </div>
         </div>

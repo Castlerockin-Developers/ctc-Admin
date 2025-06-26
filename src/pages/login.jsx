@@ -1,111 +1,189 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import "./login.css";
-import logo from "/logo.png"; // Ensure logo is in the public folder
+import logo from "/logo.png";
+import Loadinggif from "../assets/Loading.gif";
 import { login } from "../scripts/AuthProvider";
 import { useNavigate } from "react-router-dom";
+
+const boxVariants = {
+  hidden: { scale: 0.8, opacity: 0 },
+  visible: {
+    scale: 1,
+    opacity: 1,
+    transition: {
+      type: 'spring',
+      stiffness: 260,
+      damping: 20,
+      when: 'beforeChildren',
+      staggerChildren: 0.1
+    }
+  }
+};
+
+const itemVariants = {
+  hidden: { y: 10, opacity: 0, transition: { duration: 0.2 } },
+  visible: { y: 0, opacity: 1, transition: { duration: 0.2 } }
+};
 
 const LoginPage = () => {
   const navigate = useNavigate();
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState(""); // New state for error message
-  const [loading, setLoading] = useState(false); // New state for loading
+  const [rememberMe, setRememberMe] = useState(false);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [shakeCount, setShakeCount] = useState(0);
+  const [showSplash, setShowSplash] = useState(true);
+
+  // on mount, load saved credentials if rememberMe
+  useEffect(() => {
+    const timer = setTimeout(() => setShowSplash(false), 2000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    if (localStorage.getItem('rememberMe') === 'true') {
+      const savedUser = localStorage.getItem('username') || '';
+      const savedPass = localStorage.getItem('password') || '';
+      setUsername(savedUser);
+      setPassword(savedPass);
+      setRememberMe(true);
+    }
+  }, []);
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setError(""); // Clear error on new attempt
-    setLoading(true); // Start loading
+    if (error) { setShakeCount(c => c + 1); return; }
+    setError(""); setLoading(true);
     try {
       const response = await login(username, password);
       if (response) {
+        if (rememberMe) {
+          localStorage.setItem('username', username);
+          localStorage.setItem('password', password);
+          localStorage.setItem('rememberMe', 'true');
+        } else {
+          localStorage.removeItem('username');
+          localStorage.removeItem('password');
+          localStorage.setItem('rememberMe', 'false');
+        }
         navigate("/home");
       }
-    } catch (err) {
-      // Show error message from backend or fallback
-      setError("Invalid username or password");
+    } catch {
+      setError("Invalid username or password!");
+      setShakeCount(c => c + 1);
     } finally {
-      setLoading(false); // Stop loading
+      setLoading(false);
     }
   };
 
-
-
   return (
-    <div className="login-container">
-      <div className="login-box">
-        <div className="logo-container">
-          <img src={logo} alt="Logo" className="logo" />
-        </div>
-        <h2 className="heading">Login</h2>
-        <div className="form-content">
-          {error && (
-            <div className="error-message" style={{ color: 'red', marginBottom: '10px' }}>{error}</div>
-          )}
-          <form onSubmit={handleLogin}>
-            <div className="form-group">
-              <label>Username</label>
-              <input
-                type="text"
-                placeholder="Enter your username"
-                className="input-field"
-                value={username}
-                onChange={e => setUsername(e.target.value)}
-              />
-            </div>
-            <div className="form-group">
-              <label>Password</label>
-              <input
-                type="password"
-                placeholder="Enter your password"
-                className="input-field"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-              />
-            </div>
-            <button type="submit" className="login-button"   disabled={loading}>
-              {loading ? (
-                <span className="loader" style={{display:'inline-block', marginRight:'8px'}}>
-                  <svg width="16" height="16" viewBox="0 0 38 38" xmlns="http://www.w3.org/2000/svg" stroke="#fff">
-                    <g fill="none" fillRule="evenodd">
-                      <g transform="translate(1 1)" strokeWidth="2">
-                        <circle strokeOpacity=".5" cx="18" cy="18" r="18" />
-                        <path d="M36 18c0-9.94-8.06-18-18-18">
-                          <animateTransform
-                            attributeName="transform"
-                            type="rotate"
-                            from="0 18 18"
-                            to="360 18 18"
-                            dur="1s"
-                            repeatCount="indefinite" />
-                        </path>
-                      </g>
-                    </g>
-                  </svg>
-                </span>
-                ) : null}
-              {loading ? "Logging in..." : "Login"}
-            </button>
-          </form>
-          <p className="forgot">
-            <a href="#" onClick={() => setIsPopupOpen(true)}>Forgot Password?</a>
-          </p>
-        </div>
-      </div>
+    <>
+      <AnimatePresence>
+        {showSplash ? (
+          <motion.div
+            className="splash-container"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0, transition: { duration: 0.5 } }}
+            style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}
+          >
+            <img
+              src={Loadinggif}
+              alt="Loading..."
+              className="splash-gif"
+              style={{ maxWidth: '300px' }}
+            />
+          </motion.div>
+        ) : (
+          <motion.div
+            className="login-container"
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.5 }}
+          >
+            <motion.div
+              className="login-box"
+              variants={boxVariants}
+              initial="hidden"
+              animate="visible"
+            >
+              <motion.div variants={itemVariants} className="logo-container">
+                <img src={logo} alt="Logo" className="logo" />
+              </motion.div>
 
-      {/* Forgot Password Popup */}
-      {isPopupOpen && (
-        <div className="popup-overlay">
-          <div className="popup-box">
-            <h3>Reset Password</h3>
-            <p>Enter your email address to receive a reset link.</p>
-            <input type="email" placeholder="Enter your email" className="popup-input" />
-            <button className="popup-submit">Submit</button>
-            <button className="popup-close" onClick={() => setIsPopupOpen(false)}>Close</button>
-          </div>
-        </div>
-      )}
-    </div>
+              <div className="form-content">
+                {error && (
+                  <motion.div key={shakeCount} className="error-message" variants={itemVariants} initial="hidden" animate="visible">
+                    {error}
+                  </motion.div>
+                )}
+
+                <motion.form onSubmit={handleLogin} variants={itemVariants} initial="hidden" animate="visible">
+                  <motion.div variants={itemVariants} className="form-group">
+                    <label>Username</label>
+                    <input
+                      type="text"
+                      placeholder="Enter your username"
+                      className="input-field"
+                      value={username}
+                      onChange={e => setUsername(e.target.value)}
+                    />
+                  </motion.div>
+
+                  <motion.div variants={itemVariants} className="form-group">
+                    <label>Password</label>
+                    <input
+                      type="password"
+                      placeholder="Enter your password"
+                      className="input-field"
+                      value={password}
+                      onChange={e => setPassword(e.target.value)}
+                    />
+                  </motion.div>
+
+                  <motion.div variants={itemVariants} className="remember-me">
+                    <input
+                      id="rememberMe"
+                      type="checkbox"
+                      checked={rememberMe}
+                      onChange={() => setRememberMe(r => !r)}
+                    />
+                    <label htmlFor="rememberMe" style={{ marginLeft: '8px' }}>
+                      Remember me
+                    </label>
+                  </motion.div>
+
+                  <motion.div variants={itemVariants}>
+                    <button type="submit" className="login-button" disabled={loading}>
+                      {loading ? 'Logging in...' : 'Login'}
+                    </button>
+                  </motion.div>
+                </motion.form>
+
+                <motion.p variants={itemVariants} className="forgot">
+                  <a href="#" onClick={() => setIsPopupOpen(true)}>Forgot Password?</a>
+                </motion.p>
+              </div>
+
+              {isPopupOpen && (
+                <div className="popup-overlay">
+                  <div className="popup-box">
+                    <h3>Reset Password</h3>
+                    <p>Enter your email address to receive a reset link.</p>
+                    <input type="email" placeholder="Enter your email" className="popup-input" />
+                    <button className="popup-submit">Submit</button>
+                    <button className="popup-close" onClick={() => setIsPopupOpen(false)}>Close</button>
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 };
 

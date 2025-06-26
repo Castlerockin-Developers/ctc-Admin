@@ -94,16 +94,11 @@ const Dashboard = ({ onCreateExam, onAddStudent, onAddUser, onAddCredits, onMana
 
     const toggleCompletedPopup = () => setShowCompletedPopup((prev) => !prev);
     const closeCompletedPopup = () => setShowCompletedPopup(false);
-
-    const openEditPopup = (exam) => {
-        setSelectedExam(exam);
-        setShowEditPopup(true);
-    };
     const closeEditPopup = () => setShowEditPopup(false);
 
-    const toggleSubscription = () => {
-        setShowSubscription((prev) => !prev);
-    };
+    // const toggleSubscription = () => {
+    //     setShowSubscription((prev) => !prev);
+    // };
 
     return (
         <div className="lg:w-full xl:w-3xl justify-center flex flex-wrap dashboard">
@@ -112,7 +107,7 @@ const Dashboard = ({ onCreateExam, onAddStudent, onAddUser, onAddCredits, onMana
             ) : (
                 <div className="greeting">
                     <h1 className="text-2xl md:text-3xl xl:text-4xl font-semibold text-white">Welcome Admin</h1>
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 w-full">
+                    <div className="grid grid-cols-2 xl:grid-cols-3 gap-4 w-full greet-grid">
                         <motion.div
                             whileTap={{ scale: 1.1 }}
                             className="top-display top-display-clickable cursor-pointer greet1"
@@ -133,7 +128,7 @@ const Dashboard = ({ onCreateExam, onAddStudent, onAddUser, onAddCredits, onMana
                             </h2>
                         </motion.div>
 
-                        <motion.div
+                        {/* <motion.div
                             whileTap={{ scale: 1.1 }}
                             className="top-display top-display-clickable cursor-pointer"
                             onClick={onSubscription}>
@@ -141,7 +136,7 @@ const Dashboard = ({ onCreateExam, onAddStudent, onAddUser, onAddCredits, onMana
                             <h2 className="xl:text-4xl lg:text-4xl md:text-4xl flex justify-center">
                                 {dashboardData.credit}
                             </h2>
-                        </motion.div>
+                        </motion.div> */}
 
                         <motion.div
                             whileTap={{ scale: 1.1 }}
