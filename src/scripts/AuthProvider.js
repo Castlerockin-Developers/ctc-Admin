@@ -100,11 +100,11 @@ export function useAuth() {
   return [!!refreshToken];
 }
 
-export async function authFetchPayload(path, payload,method) {
+export async function authFetchPayload(path, payload, method) {
   let accessToken = localStorage.getItem('access');
   const refreshToken = localStorage.getItem('refresh');
- 
- 
+
+
   const options = {
     method: method,
     headers: {
@@ -112,10 +112,10 @@ export async function authFetchPayload(path, payload,method) {
     },
     body: payload instanceof FormData ? payload : JSON.stringify(payload)
   };
- 
+
   // Fetch request
   const response = await fetch(baseUrl + path, options);
- 
+
   if (response.status === 401) {
     // If the response is 401 (Unauthorized), attempt to refresh the access token
     const refreshOptions = {
@@ -126,7 +126,7 @@ export async function authFetchPayload(path, payload,method) {
       },
       body: JSON.stringify({ refresh: refreshToken }) // Sending refresh token in the body with key "refresh"
     };
- 
+
     const refreshResponse = await fetch(baseUrl + '/auth/token/refresh/', refreshOptions);
     if (refreshResponse.ok) {
       const data = await refreshResponse.json();
@@ -148,13 +148,12 @@ export async function authFetchPayload(path, payload,method) {
     } else {
       throw new Error('Failed to refresh access token');
     }
-  }else if (response.status === 400) {
+  } else if (response.status === 400) {
     const errorData = await response.json();
     throw JSON.stringify(errorData);
   } else if (!response.ok) {
     throw new Error('Network response was not ok');
   }
- 
+
   return response;
 }
- 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { FaSearch, FaPlus } from "react-icons/fa";
+import { FaSearch, FaPlus, FaFilter } from "react-icons/fa";
 import filter from '../assets/filter.png';
 import line from '../assets/Line.png';
 import { motion } from "motion/react";
@@ -9,78 +9,45 @@ import Swal from "sweetalert2";
 const ManageExam = ({ onCreateNewExam, onNext }) => {
     const [activeButton, setActiveButton] = useState("all");
     const [searchQuery, setSearchQuery] = useState("");
-    const [showFilter, setShowFilter] = useState(false);
-    const [hoveredBranch, setHoveredBranch] = useState(null);
-    const [subMenuPosition, setSubMenuPosition] = useState({ top: 0, left: 0 });
     const [selectedExam, setSelectedExam] = useState(null);
+    const [showFilter, setShowFilter] = useState(false);
     const filterRef = useRef(null);
-    const subPopupRef = useRef(null);
-    let hoverTimeout = useRef(null);
-
     const [tableData, setTableData] = useState([]);
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
 
 
-    // Toggle filter pop-up
-    const toggleFilter = () => {
-        setShowFilter(!showFilter);
-        setHoveredBranch(null);
-    };
-
+    // Close filter dropdown on outside click
     useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (
-                filterRef.current &&
-                !filterRef.current.contains(event.target) &&
-                (!subPopupRef.current || !subPopupRef.current.contains(event.target))
-            ) {
+        const handleClickOutside = (e) => {
+            if (filterRef.current && !filterRef.current.contains(e.target)) {
                 setShowFilter(false);
-                setHoveredBranch(null);
             }
         };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
-        if (showFilter) {
-            document.addEventListener("mousedown", handleClickOutside);
-        } else {
-            document.removeEventListener("mousedown", handleClickOutside);
-        }
-
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
+    // Close filter dropdown on Escape key press
+    useEffect(() => {
+        const handleEsc = (e) => {
+            if (e.key === 'Escape') {
+                setShowFilter(false);
+            }
         };
-    }, [showFilter]);
+        document.addEventListener('keydown', handleEsc);
+        return () => document.removeEventListener('keydown', handleEsc);
+    }, []);
 
-    const handleHover = (event, branch) => {
-        clearTimeout(hoverTimeout.current);
-        hoverTimeout.current = setTimeout(() => {
-            const rect = event.target.getBoundingClientRect();
-            const subMenuWidth = 180;
-            const screenWidth = window.innerWidth;
-            const screenHeight = window.innerHeight;
-
-            let left = rect.right + 10;
-            if (left + subMenuWidth > screenWidth) {
-                left = rect.left - subMenuWidth - 10;
-            }
-
-            let top = rect.top;
-            if (top + 180 > screenHeight) {
-                top = rect.bottom - 180;
-            }
-
-            setHoveredBranch(branch);
-            setSubMenuPosition({ top, left });
-        }, 200);
+    const toggleFilter = () => {
+        setShowFilter(prev => !prev);
     };
 
-    const handleMouseLeave = () => {
-        hoverTimeout.current = setTimeout(() => {
-            setHoveredBranch(null);
-        }, 300);
+    const handleFilterSelect = (key) => {
+        setActiveButton(key);
+        setShowFilter(false);
     };
 
-    const handleSubMenuEnter = () => {
-        clearTimeout(hoverTimeout.current);
-    };
 
     const fetchExams = async () => {
         try {
@@ -128,12 +95,23 @@ const ManageExam = ({ onCreateNewExam, onNext }) => {
             row.status.toLowerCase().includes(searchQuery.toLowerCase())
         );
 
+    const totalPages = Math.ceil(filteredTableData.length / itemsPerPage);
+    const indexOfLast = currentPage * itemsPerPage;
+    const indexOfFirst = indexOfLast - itemsPerPage;
+    const currentTableData = filteredTableData.slice(indexOfFirst, indexOfLast);
+
     const handleViewExam = (exam) => {
         setSelectedExam(exam);
     };
 
     const handleBack = () => {
         setSelectedExam(null);
+        fetchExams(); // Re-fetch exams to ensure updated data after potential edit
+    };
+
+    const handlePageChange = (pageNumber) => {
+        if (pageNumber < 1 || pageNumber > totalPages) return;
+        setCurrentPage(pageNumber);
     };
 
     return (
@@ -143,26 +121,43 @@ const ManageExam = ({ onCreateNewExam, onNext }) => {
             ) : (
                 <div className="exam-greeting">
                     <h1>Exams</h1>
-                    <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-                        <div className="m-btn-left flex flex-wrap justify-center sm:justify-start gap-2">
-                            <motion.button whileTap={{ scale: 1.1 }} className={activeButton === "all" ? "m-active" : ""} onClick={() => setActiveButton("all")}>
-                                All Exams
-                            </motion.button>
-                            <motion.button whileTap={{ scale: 1.1 }} className={activeButton === "active" ? "m-active" : ""} onClick={() => setActiveButton("active")}>
-                                Active
-                            </motion.button>
-                            <motion.button whileTap={{ scale: 1.1 }} className={activeButton === "upcoming" ? "m-active" : ""} onClick={() => setActiveButton("upcoming")}>
-                                Upcoming
-                            </motion.button>
-                            <motion.button whileTap={{ scale: 1.1 }} className={activeButton === "completed" ? "m-active" : ""} onClick={() => setActiveButton("completed")}>
-                                Completed
-                            </motion.button>
-                        </div>
-                        <div className="m-btn-right flex flex-wrap items-center justify-center sm:justify-end gap-2 w-full sm:w-auto">
-                            <button className="filter-btn" onClick={toggleFilter}>
-                                <img src={filter} alt="Filter" />
-                            </button>
-                            <div className="search-box flex items-center w-full">
+                    <div className="flex sm:flex-row justify-self-end items-center gap-4">
+                        <div className="m-btn-right flex sm:justify-end gap-2 w-full sm:w-auto">
+                            {/* Filter dropdown */}
+                            <div ref={filterRef} className="relative">
+                                <button className="filter-btn" onClick={toggleFilter}>
+                                    <FaFilter
+                                        className="h-6 w-6 cursor-pointer text-white"
+                                    />
+                                </button>
+                                {showFilter && (
+                                    <motion.div
+                                        initial={{ opacity: 0, scale: 0.95 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        className="absolute mt-2 left-0 bg-[#1F1F1F] border border-gray-200 rounded shadow-lg z-10"
+                                    >
+                                        <ul className="py-2 text-white filter-btn-options">
+                                            <li
+                                                className={`px-4 py-3 hover:bg-[#535353] cursor-pointer ${activeButton === 'all' ? 'font-semibold' : ''}`}
+                                                onClick={() => handleFilterSelect('all')}
+                                            >All Exams</li>
+                                            <li
+                                                className={`px-4 py-3 hover:bg-[#535353] cursor-pointer ${activeButton === 'active' ? 'font-semibold' : ''}`}
+                                                onClick={() => handleFilterSelect('active')}
+                                            >Active</li>
+                                            <li
+                                                className={`px-4 py-3 hover:bg-[#535353] cursor-pointer ${activeButton === 'upcoming' ? 'font-semibold' : ''}`}
+                                                onClick={() => handleFilterSelect('upcoming')}
+                                            >Upcoming</li>
+                                            <li
+                                                className={`px-4 py-3 hover:bg-[#535353] cursor-pointer ${activeButton === 'completed' ? 'font-semibold' : ''}`}
+                                                onClick={() => handleFilterSelect('completed')}
+                                            >Completed</li>
+                                        </ul>
+                                    </motion.div>
+                                )}
+                            </div>
+                            <div className="search-box flex">
                                 <FaSearch className="search-icon" />
                                 <input
                                     type="text"
@@ -177,44 +172,6 @@ const ManageExam = ({ onCreateNewExam, onNext }) => {
                             </motion.button>
                         </div>
                     </div>
-                    {showFilter && (
-                        <>
-                            <div className="filter-popup" ref={filterRef}>
-                                <h3>Branch</h3>
-                                <div className="flex justify-center w-full">
-                                    <img src={line} alt="line" className="filter-line" />
-                                </div>
-                                <div className="filter-options">
-                                    {["CSE", "ISE", "AIML", "CSE AIML", "CSE DS", "EC"].map((branch, index) => (
-                                        <div
-                                            key={index}
-                                            className={`filter-item ${hoveredBranch === branch ? "active-filter-item" : ""}`}
-                                            onMouseEnter={(e) => handleHover(e, branch)}
-                                            onMouseLeave={handleMouseLeave}
-                                        >
-                                            {branch}
-                                        </div>
-                                    ))}
-                                </div>
-                                <button className="apply-btn">Add Branch</button>
-                            </div>
-                            {hoveredBranch && (
-                                <div
-                                    className="sub-popup"
-                                    ref={subPopupRef}
-                                    style={{ top: subMenuPosition.top, left: subMenuPosition.left }}
-                                    onMouseEnter={handleSubMenuEnter}
-                                    onMouseLeave={handleMouseLeave}
-                                >
-                                    <h4>{hoveredBranch} - Year</h4>
-                                    <button className="sub-item">1st Year</button>
-                                    <button className="sub-item">2nd Year</button>
-                                    <button className="sub-item">3rd Year</button>
-                                    <button className="sub-item">Final Year</button>
-                                </div>
-                            )}
-                        </>
-                    )}
                     <div className="m-table-container">
                         <table>
                             <thead>
@@ -229,9 +186,9 @@ const ManageExam = ({ onCreateNewExam, onNext }) => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {filteredTableData.length > 0 ? (
-                                    filteredTableData.map((row, index) => (
-                                        <tr key={row.id} className={index % 2 === 0 ? "even-row" : "odd-row"}>
+                                {currentTableData.length > 0 ? (
+                                    currentTableData.map((row, idx) => (
+                                        <tr key={row.id} className={idx % 2 === 0 ? "even-row" : "odd-row"}>
                                             <td>{row.id}</td>
                                             <td>{row.name}</td>
                                             <td>{row.startTime}</td>
@@ -249,6 +206,28 @@ const ManageExam = ({ onCreateNewExam, onNext }) => {
                             </tbody>
                         </table>
                     </div>
+                    {/* Pagination Controls */}
+                    {filteredTableData.length > 0 && (
+                        <div className="pagination-controls flex justify-between items-center mt-4">
+                            <motion.button
+                                whileTap={{ scale: 1.1 }}
+                                onClick={() => handlePageChange(currentPage - 1)}
+                                disabled={currentPage === 1}
+                                className="pagination-btn"
+                            >
+                                Previous
+                            </motion.button>
+                            <span>Page {currentPage} of {totalPages}</span>
+                            <motion.button
+                                whileTap={{ scale: 1.1 }}
+                                onClick={() => handlePageChange(currentPage + 1)}
+                                disabled={currentPage === totalPages}
+                                className="pagination-btn"
+                            >
+                                Next
+                            </motion.button>
+                        </div>
+                    )}
                 </div>
             )}
         </div>

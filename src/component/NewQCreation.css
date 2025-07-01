@@ -1,0 +1,237 @@
+.newmcq-container {
+    background-color: #282828;
+    width: calc(100% - 69px);
+    height: 87vh;
+    overflow-y: auto;
+    transition: width 0.3s ease-in-out, margin-left 0.3s ease-in-out;
+    padding: 1.2rem;
+    border-radius: 5px;
+}
+
+.newmcq-wrapper {
+    width: 93%;
+    padding-top: 1.5rem;
+}
+
+.newmcq-wrapper h1 {
+    color: white;
+    font-family: madina-semibold;
+    font-size: 2.5rem;
+    margin-top: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+.newmcq-wrapper h3 {
+    color: white;
+    font-family: madina-medium;
+    font-size: 1.5rem;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.newmcq-wrapper textarea {
+    width: 60%;
+    height: 150px;
+    padding: 0.5rem;
+    border-radius: 5px;
+    background-color: #3a3a3a;
+    color: white;
+    font-family: madina-regular;
+    font-size: 1rem;
+    resize: none;
+    border: 1px solid #6d6d6d;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.coding-question {
+    width: 60%;
+    padding: 0.5rem;
+    border-radius: 5px;
+    background-color: #3a3a3a;
+    color: white;
+    font-family: madina-regular;
+    font-size: 1rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+
+.newmcq-wrapper p {
+    color: white;
+    font-family: madina-regular;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+}
+
+.newmcq-wrapper h4 {
+    display: flex;
+    color: white;
+    font-family: madina-medium;
+}
+
+.newmcq-wrapper h4 input {
+    color: #ff6b6b;
+    font-family: madina-light;
+    cursor: pointer;
+}
+
+.custom-quill {
+    position: relative;
+    right: 34px;
+}
+
+.category-container select {
+    padding: 0.5rem;
+    border-radius: 5px;
+    background-color: #3a3a3a;
+    color: white;
+    font-family: madina-regular;
+    font-size: 1rem;
+    border: 1px solid #6d6d6d;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+}
+
+.category-container button {
+    padding: 0.5rem;
+    border-radius: 5px;
+    background-color: #3a3a3a;
+    color: white;
+    font-family: madina-regular;
+    font-size: 1rem;
+    border: 1px solid #6d6d6d;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-left: 10px;
+    cursor: pointer;
+}
+
+.options-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.testcase p {
+    margin-bottom: 5px;
+}
+
+.options-container .option-textarea {
+    width: 100%;
+    height: 100px;
+    padding: 0.5rem;
+    border-radius: 5px;
+    background-color: #3a3a3a;
+    color: white;
+    font-family: madina-regular;
+    font-size: 1rem;
+    resize: none;
+    border: 1px solid #6d6d6d;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+.option-column p {
+    color: white;
+    font-family: madina-regular;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+}
+
+.option-column input {
+    color: white;
+    cursor: pointer;
+}
+
+/* Remove default styles for checkboxes */
+.option-column input[type="checkbox"] {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    width: 15px;
+    height: 15px;
+    border: 2px solid #A294F9;
+    background-color: white;
+    border-radius: 2px;
+    cursor: pointer;
+    position: relative;
+}
+
+/* Change the background color when checkbox is checked */
+.option-column input[type="checkbox"]:checked {
+    background-color: #A294F9;
+    border-color: #A294F9;
+}
+
+.correct-answer-checkbox {
+    margin-right: 6px;
+}
+
+.option-column label {
+    color: white;
+    font-family: madina-regular;
+    font-size: 0.9rem;
+    cursor: pointer;
+    margin-right: 6px;
+}
+
+.option-column button {
+    color: #ff6b6b;
+    font-family: madina-regular;
+    font-size: 0.9rem;
+}
+
+
+.add-option-btn {
+    font-family: madina-regular;
+    color: #A294F9;
+    cursor: pointer;
+}
+
+.save-cancel-container {
+    display: flex;
+    margin-top: 20px;
+}
+
+.testcases-container {
+    margin-bottom: 10px;
+}
+
+.action-buttons {
+    display: flex;
+    justify-content: flex-start;
+}
+
+.add-remove-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.add-testcase-btn {
+    color: #A294F9;
+}
+
+.delete-testcase-btn {
+    color: #ff6b6b;
+}
+
+.save-btn,
+.cancel-btn {
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 16px;
+    border: none;
+    border-radius: 5px;
+    color: white;
+    font-family: madina-semibold;
+    margin-right: 15px;
+}
+
+.save-btn {
+    background-color: #A294F9;
+}
+
+.cancel-btn:hover {
+    background-color: #3a3a3a;
+}
+
+.save-btn:hover {
+    background-color: #8c7ae6;
+}

@@ -1,348 +1,131 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { FaSearch } from "react-icons/fa";
-import filter from "../assets/filter.png";
-import line from "../assets/Line.png";
 import { motion } from "framer-motion";
 import ViewResult from "./ViewResult";
 import ParticularResult from "./PerticularResult";
-import { authFetch } from "../scripts/AuthProvider"
+import { authFetch } from "../scripts/AuthProvider";
+import '../pages/home.css';
 
 const ManageResult = () => {
   const [activeTab, setActiveTab] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
-  const [showFilter, setShowFilter] = useState(false);
   const [selectedResult, setSelectedResult] = useState(null);
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [resultsData, setResultsData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Additional state and refs for the filter popup (similar to ManageExam)
-  const [hoveredBranch, setHoveredBranch] = useState(null);
-  const [subMenuPosition, setSubMenuPosition] = useState({ top: 0, left: 0 });
-  const filterRef = useRef(null);
-  const subPopupRef = useRef(null);
-  const hoverTimeout = useRef(null);
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [resultsPerPage] = useState(10); // Number of results to display per page
 
-  const toggleFilter = () => {
-    setShowFilter(!showFilter);
-    setHoveredBranch(null);
-  };
-
+  // Fetch results on mount
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (
-        filterRef.current &&
-        !filterRef.current.contains(event.target) &&
-        (!subPopupRef.current || !subPopupRef.current.contains(event.target))
-      ) {
-        setShowFilter(false);
-        setHoveredBranch(null);
-      }
-    };
-
-    if (showFilter) {
-      document.addEventListener("mousedown", handleClickOutside);
-    } else {
-      document.removeEventListener("mousedown", handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [showFilter]);
-
-  const handleHover = (event, branch) => {
-    clearTimeout(hoverTimeout.current);
-    hoverTimeout.current = setTimeout(() => {
-      const rect = event.target.getBoundingClientRect();
-      const subMenuWidth = 180;
-      const screenWidth = window.innerWidth;
-      const screenHeight = window.innerHeight;
-
-      let left = rect.right + 10;
-      if (left + subMenuWidth > screenWidth) {
-        left = rect.left - subMenuWidth - 10;
-      }
-
-      let top = rect.top;
-      if (top + 180 > screenHeight) {
-        top = rect.bottom - 180;
-      }
-
-      setHoveredBranch(branch);
-      setSubMenuPosition({ top, left });
-    }, 200);
-  };
-
-  const handleMouseLeave = () => {
-    hoverTimeout.current = setTimeout(() => {
-      setHoveredBranch(null);
-    }, 300);
-  };
-
-  const handleSubMenuEnter = () => {
-    clearTimeout(hoverTimeout.current);
-  };
-
-  useEffect(() => {
-    const fetchResults = async () => {
+    (async () => {
       try {
-        const response = await authFetch("/admin/results", {
-          method: "GET",
-        });
-        if (!response.ok) {
-          throw new Error("Failed to fetch results data");
-        }
+        const response = await authFetch("/admin/results", { method: "GET" });
+        if (!response.ok) throw new Error("Failed to fetch results");
         const data = await response.json();
-        const results = data.map((res) => ({
-          id: res.id,
-          category: !res.is_result_declared ? "Active" : "Completed",
-          name: res.name,
-          startTime: new Date(res.start_time).toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-            hour12: true,
-          }),
-          endTime: new Date(res.end_time).toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-            hour12: true,
-          }),
-          analytics: res.attempts_allowed + " Attempts Allowed",
-          status: res.is_result_declared ? "Completed" : "Active",
-          studentsAttempted: res.user.length,
-        }));
-        // Sort results by start time in descending order
-        results.sort((a, b) => new Date(b.startTime) - new Date(a.startTime));
-
-        setResultsData(results);
-        setLoading(false);
-      } catch (error) {
-        console.error("Error fetching results data", error);
-        setError("Failed to load data. Please try again later.");
+        const now = new Date();
+        const mapped = data.map(res => {
+          const start = new Date(res.start_time);
+          const end = new Date(res.end_time);
+          let status = "";
+          if (start > now) {
+            status = "Upcoming";
+          } else if (!res.is_result_declared && end > now) {
+            status = "Ongoing";
+          } else if (res.is_result_declared) {
+            status = "Results Declared";
+          } else {
+            status = "Completed";
+          }
+          return {
+            id: res.id,
+            name: res.name,
+            startTime: start.toLocaleString([], { dateStyle: 'short', timeStyle: 'short', hour12: true }),
+            endTime: end.toLocaleString([], { dateStyle: 'short', timeStyle: 'short', hour12: true }),
+            analytics: `${res.attempts_allowed} Attempts`,
+            status,
+          };
+        });
+        setResultsData(mapped);
+      } catch (err) {
+        setError(err.message);
+      } finally {
         setLoading(false);
       }
-    };
-
-    fetchResults();
+    })();
   }, []);
 
-  if (loading) {
-    return <p className="text-center text-lg">Loading data...</p>;
-  }
+  if (loading) return <p className="text-center">Loading...</p>;
+  if (error) return <p className="text-center text-red-500">{error}</p>;
 
-  if (error) {
-    return <p className="text-center text-lg text-red-500">{error}</p>;
-  }
-
-  // Filtering Results based on Tab Selection & Search Query
+  // Filter results by tab and search
   const filteredResults = resultsData
-    .filter(
-      (row) => activeTab === "all" || row.category.toLowerCase() === activeTab
-    )
-    .filter(
-      (row) =>
-        searchQuery === "" ||
-        row.id.toString().includes(searchQuery) ||
-        row.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        row.startTime.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        row.endTime.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        row.analytics.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        row.status.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    .filter(row => {
+      if (activeTab === 'all') return true;
+      if (activeTab === 'active') return row.status === 'Ongoing';
+      if (activeTab === 'completed') return row.status === 'Results Declared' || row.status === 'Completed';
+      return true;
+    })
+    .filter(row => {
+      if (!searchQuery) return true;
+      const q = searchQuery.toLowerCase();
+      return [row.id, row.name, row.analytics, row.status]
+        .some(field => String(field).toLowerCase().includes(q));
+    });
 
-  const handleViewResult = async (result) => {
-    try {
-      const response = await authFetch(`/admin/results/${result.id}/`, {
-        method: "GET",
-      });
-      if (!response.ok) {
-        throw new Error("Failed to fetch result details");
-      }
-      const data = await response.json();
-      const resultDetails = {
-        id: result.id,
-        category: result.category,
-        name: result.name,
-        startTime: result.startTime,
-        endTime: result.endTime,
-        analytics: result.analytics,
-        status: result.status,
-        studentsAttempted: data.users_attempted_count,
-        studentsUnattempted: data.users_unattempted_count,
-        malpractice: data.malpractice_recorded_count,
-        averageScore: data.users_average_score,
-        students:data.attempts.map((student) => ({
-          attempt_id: student.id,
-          usn: student.usn,
-          name: student.user_name,
-          startTime: new Date(student.start_time).toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-            hour12: true,
-          }),
-          endTime: new Date(student.end_time).toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-            hour12: true,
-          }),
-          score: student.score,
-          trustScore: student.trust_score,
-          // mcqMarks: 8,
-          // codingMarks: 15,
-          // totalMcqMarks: 10,
-          // totalCodingMarks: 20,
-          // mcqDetails: [
-          //   {
-          //     question: "What is the time complexity of binary search?",
-          //     status: "Correct",
-          //     marks: 2,
-          //     yourAnswer: "O(log n)",
-          //     actualAnswer: "O(log n)",
-          //   },
-          //   {
-          //     question:
-          //       "Which sorting algorithm has the best average-case time complexity?",
-          //     status: "Correct",
-          //     marks: 2,
-          //     yourAnswer: "Quick Sort",
-          //     actualAnswer: "Quick Sort",
-          //   },
-          // ],
-          // codingDetails: [
-          //   {
-          //     question: "Write a function to reverse a linked list.",
-          //     status: "Correct",
-          //     marks: 14,
-          //     yourAnswer: "function reverseLinkedList(head) {...}",
-          //     actualAnswer: "function reverseLinkedList(head) {...}",
-          //   },
-          //   {
-          //     question: "Implement a binary search tree.",
-          //     status: "Incorrect",
-          //     marks: 0,
-          //     yourAnswer: "class BST {...}",
-          //     actualAnswer: "class BST {...}",
-          //   },
-          // ],
-        })),
-        
-      }
-      console.log("Result Details:", resultDetails);
-      setSelectedResult(resultDetails);
-      setSelectedStudent(null);
-    } catch (error) {
-      console.error("Error fetching result details", error);
+  // Pagination Logic
+  const indexOfLastResult = currentPage * resultsPerPage;
+  const indexOfFirstResult = indexOfLastResult - resultsPerPage;
+  const currentResults = filteredResults.slice(
+    indexOfFirstResult,
+    indexOfLastResult
+  );
+
+  const totalPages = Math.ceil(filteredResults.length / resultsPerPage);
+
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+  const goToNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
     }
-    
   };
 
-  const mock = {
-            id: 1,
-            category: "Active",
-            name: "DSA Crash Course",
-            startTime: "10:00 AM",
-            endTime: "11:30 AM",
-            analytics: "25% Attempted",
-            status: "Expired",
-            studentsAttempted: 15,
-            studentsUnattempted: 2,
-            malpractice: 90,
-            averageScore: 572,
-            students: [
-              {
-                usn: "4NM20EC408",
-                name: "Manish Naik",
-                startTime: "10:00 AM",
-                endTime: "11:30 AM",
-                mcqMarks: 8,
-                codingMarks: 15,
-                score: 85,
-                trustScore: 15,
-                totalMcqMarks: 10,
-                totalCodingMarks: 20,
-                mcqDetails: [
-                  {
-                    question: "What is the time complexity of binary search?",
-                    status: "Correct",
-                    marks: 2,
-                    yourAnswer: "O(log n)",
-                    actualAnswer: "O(log n)",
-                  },
-                  {
-                    question:
-                      "Which sorting algorithm has the best average-case time complexity?",
-                    status: "Incorrect",
-                    marks: 0,
-                    yourAnswer: "Bubble Sort",
-                    actualAnswer: "Quick Sort",
-                  },
-                ],
-                codingDetails: [
-                  {
-                    question: "Write a function to reverse a linked list.",
-                    status: "Correct",
-                    marks: 15,
-                    yourAnswer: "function reverseLinkedList(head) {...}",
-                    actualAnswer: "function reverseLinkedList(head) {...}",
-                  },
-                  {
-                    question: "Implement a binary search tree.",
-                    status: "Partially Correct",
-                    marks: 10,
-                    yourAnswer: "class BST {...}",
-                    actualAnswer: "class BST {...}",
-                  },
-                ],
-              },
-              {
-                usn: "1AM22CI088",
-                name: "Sanath Naik",
-                startTime: "10:00 AM",
-                endTime: "11:00 AM",
-                mcqMarks: 10,
-                codingMarks: 14,
-                score: 75,
-                trustScore: 75,
-                totalMcqMarks: 10,
-                totalCodingMarks: 20,
-                mcqDetails: [
-                  {
-                    question: "What is the time complexity of binary search?",
-                    status: "Correct",
-                    marks: 2,
-                    yourAnswer: "O(log n)",
-                    actualAnswer: "O(log n)",
-                  },
-                  {
-                    question:
-                      "Which sorting algorithm has the best average-case time complexity?",
-                    status: "Correct",
-                    marks: 2,
-                    yourAnswer: "Quick Sort",
-                    actualAnswer: "Quick Sort",
-                  },
-                ],
-                codingDetails: [
-                  {
-                    question: "Write a function to reverse a linked list.",
-                    status: "Correct",
-                    marks: 14,
-                    yourAnswer: "function reverseLinkedList(head) {...}",
-                    actualAnswer: "function reverseLinkedList(head) {...}",
-                  },
-                  {
-                    question: "Implement a binary search tree.",
-                    status: "Incorrect",
-                    marks: 0,
-                    yourAnswer: "class BST {...}",
-                    actualAnswer: "class BST {...}",
-                  },
-                ],
-              },
-            ],
-          }
+  const goToPrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+
+  const handleViewResult = async (row) => {
+    try {
+      const resp = await authFetch(`/admin/results/${row.id}/`, { method: 'GET' });
+      if (!resp.ok) throw new Error('Failed to fetch details');
+      const details = await resp.json();
+      setSelectedResult({
+        ...row,
+        studentsAttempted: details.users_attempted_count,
+        studentsUnattempted: details.users_unattempted_count,
+        malpractice: details.malpractice_recorded_count,
+        averageScore: details.users_average_score,
+        students: details.attempts.map(a => ({
+          attempt_id: a.id,
+          usn: a.usn,
+          name: a.user_name,
+          startTime: new Date(a.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }),
+          endTime: new Date(a.end_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }),
+          score: a.score,
+          trustScore: a.trust_score
+        }))
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const handleBack = () => {
     setSelectedResult(null);
@@ -395,10 +178,6 @@ const ManageResult = () => {
 
             {/* Right Side: Filter Button, Search Bar */}
             <div className="m-btn-right flex flex-wrap items-center justify-center sm:justify-end gap-2 w-full sm:w-auto">
-              <button className="filter-btn" onClick={toggleFilter}>
-                <img src={filter} alt="Filter" />
-              </button>
-
               {/* Search Bar */}
               <div className="search-box flex items-center w-full sm:w-auto">
                 <FaSearch className="search-icon" />
@@ -412,49 +191,6 @@ const ManageResult = () => {
               </div>
             </div>
           </div>
-
-          {/* Filter Pop-up */}
-          {showFilter && (
-            <>
-              <div className="filter-popup resultfilter" ref={filterRef}>
-                <h3>Branch</h3>
-                <div className="flex justify-center w-full">
-                  <img src={line} alt="line" className="filter-line" />
-                </div>
-                <div className="filter-options">
-                  {["CSE", "ISE", "AIML", "CSE AIML", "CSE DS", "EC"].map(
-                    (branch, index) => (
-                      <div
-                        key={index}
-                        className={`filter-item ${hoveredBranch === branch ? "active-filter-item" : ""
-                          }`}
-                        onMouseEnter={(e) => handleHover(e, branch)}
-                        onMouseLeave={handleMouseLeave}
-                      >
-                        {branch}
-                      </div>
-                    )
-                  )}
-                </div>
-                <button className="apply-btn">Apply Filter</button>
-              </div>
-              {hoveredBranch && (
-                <div
-                  className="sub-popup"
-                  ref={subPopupRef}
-                  style={{ top: subMenuPosition.top, left: subMenuPosition.left }}
-                  onMouseEnter={handleSubMenuEnter}
-                  onMouseLeave={handleMouseLeave}
-                >
-                  <h4>{hoveredBranch} - Year</h4>
-                  <button className="sub-item">1st Year</button>
-                  <button className="sub-item">2nd Year</button>
-                  <button className="sub-item">3rd Year</button>
-                  <button className="sub-item">Final Year</button>
-                </div>
-              )}
-            </>
-          )}
 
           {/* Results Table */}
           <div className="m-table-container">
@@ -471,8 +207,8 @@ const ManageResult = () => {
                 </tr>
               </thead>
               <tbody>
-                {filteredResults.length > 0 ? (
-                  filteredResults.map((row, index) => (
+                {currentResults.length > 0 ? (
+                  currentResults.map((row, index) => (
                     <tr
                       key={row.id}
                       className={index % 2 === 0 ? "even-row" : "odd-row"}
@@ -510,6 +246,28 @@ const ManageResult = () => {
               </tbody>
             </table>
           </div>
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="pagination-controls flex justify-between items-center mt-4">
+              <motion.button
+                whileTap={{ scale: 1.1 }}
+                onClick={goToPrevPage}
+                disabled={currentPage === 1}
+                className="pagination-btn"
+              >
+                Previous
+              </motion.button>
+              <span>Page {currentPage} of {totalPages}</span>
+              <motion.button
+                whileTap={{ scale: 1.1 }}
+                onClick={goToNextPage}
+                disabled={currentPage === totalPages}
+                className="pagination-btn"
+              >
+                Next
+              </motion.button>
+            </div>
+          )}
         </div>
       )}
     </div>
