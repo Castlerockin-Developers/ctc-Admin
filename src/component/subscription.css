@@ -10,7 +10,7 @@
 .subscription-box {
     width: 95%;
     padding-top: 1.5rem;
-    height: 100%;
+    height: 70%;
 }
 
 .subscription-box h1 {
@@ -67,6 +67,10 @@
     font-family: madina-light;
 }
 
+.credit-balance {
+    margin-top: 15px;
+}
+
 .credit-balance p {
     color: white;
     font-family: madina-regular;
@@ -114,12 +118,13 @@
 }
 
 .credit-history {
-    margin: 10px 0px;
+    margin-left: 35px;
+    margin-bottom: 2px;
 }
 
 .credit-history p {
     color: white;
-    margin-right: 15px;
+    margin-right: 10px;
     font-family: madina-light;
     font-size: 1.25rem;
     cursor: pointer;
@@ -138,7 +143,6 @@
     gap: 1rem;
     margin-right: 2rem;
     width: 95%;
-    padding-bottom: 20px;
 }
 
 .bug-icon {
@@ -155,7 +159,7 @@
 
 .subcribe-table,
 .subcribe-history-table {
-    width: 100%;
+    width: 95%;
     margin-top: 0.5rem;
     background-color: #2D2D2D;
     border-radius: 10px;
@@ -164,6 +168,10 @@
     flex-direction: column;
     overflow-x: auto;
     margin-bottom: 20px;
+}
+
+.height-30 {
+    height: 30vh;
 }
 
 .subcribe-table thead,
@@ -234,6 +242,78 @@
 
 }
 
+@media (min-width:1025px) and (max-width:1440px) {
+    .subscribe-bg {
+        width: 34vw;
+    }
+}
+
+@media (min-width:769px) and (max-width:1024px) {
+    .subscription-container {
+        width: 100%;
+    }
+
+    .subscribe-bg {
+        width: 52vw;
+    }
+
+    .subscription-box {
+        height: 77%;
+    }
+
+    .subscription-box h1 {
+        font-size: 2.1rem;
+        margin-top: 0rem;
+        margin-bottom: 0.3rem;
+    }
+
+    .subscription-card-container h3 {
+        font-size: 1.7rem;
+    }
+
+    .subcribe-table thead,
+    .subcribe-table tbody,
+    .subcribe-history-table thead,
+    .subcribe-history-table tbody {
+        width: 120%;
+    }
+}
+
+@media (max-width: 768px) {
+    .subscription-container {
+        width: 100%;
+    }
+
+    .subscribe-bg {
+        width: 65vw;
+        height: 30vh;
+    }
+
+    .subscription-box {
+        height: 79%;
+    }
+
+    .subcribe-table thead,
+    .subcribe-table tbody,
+    .subcribe-history-table thead,
+    .subcribe-history-table tbody {
+        width: 130%;
+    }
+}
+
+@media (max-width: 425px) {
+    .subscribe-card {
+        width: 400px;
+        margin-right: 60px;
+    }
+
+    .subscribe-bg {
+        width: 65vw;
+        height: 50vh;
+    }
+}
+
+
 .modal {
     display: flex;
     justify-content: center;
@@ -279,6 +359,11 @@
     color: white;
     font-family: madina-semibold;
     font-size: 1.5rem;
+    /* Adjust as needed */
+}
+
+.credits-remain-text {
+    line-height: 50%;
 }
 
 .buy-credits-container {
@@ -462,308 +547,4 @@
 .tooltip-icon:hover .tooltiptext {
     visibility: visible;
     opacity: 1;
-}
-
-@media(max-width:3000px) and (min-width:2300px) {
-    .subscription-box h1 {
-        font-size: 4rem;
-    }
-
-    .subscription-card-container h3 {
-        font-size: 2.5rem;
-    }
-
-    .subscribe-card {
-        width: 680px;
-        height: auto;
-    }
-
-    .subscribe-bg {
-        top: -71px;
-    }
-
-    .subscribe-card ul li {
-        font-size: 1.5rem;
-    }
-
-    .subscribe-bottom p,
-    .subscribe-bottom p span {
-        font-size: 2rem;
-    }
-
-    .subscribe-bottom button {
-        font-size: 1.5rem;
-    }
-
-    .subscribe-bottom {
-        margin-top: 50px;
-        margin-bottom: 20px;
-    }
-
-    .subscription-container {
-        width: calc(100% - 59px);
-    }
-
-    .credit-history {
-        margin: 10px 0px;
-    }
-
-    .credit-history p {
-        font-size: 2rem;
-        margin-right: 20px;
-    }
-
-    .subcribe-table thead th,
-    .subcribe-history-table thead th {
-        font-size: 1.8rem;
-    }
-
-    .subcribe-table tbody td,
-    .subcribe-history-table tbody td {
-        font-size: 1.5rem;
-    }
-
-    .buy-item p {
-        font-size: 1.7rem;
-    }
-
-    .buy-item button {
-        font-size: 1.5rem;
-    }
-
-    .quantity-input {
-        font-style: 2rem;
-        height: 52px;
-    }
-
-    .add-credit-btn button {
-        font-size: 2rem;
-        height: 52px;
-    }
-}
-
-@media (min-width:1025px) and (max-width:1440px) {
-    .subscribe-bg {
-        width: 34vw;
-    }
-}
-
-@media (min-width:801px) and (max-width:1024px) {
-    .subscription-container {
-        width: calc(100% - 33px);
-    }
-
-    .subscribe-card {
-        font-size: 0.9rem;
-    }
-
-    .subscribe-bg {
-        width: 52vw;
-    }
-
-    .subscription-box {
-        height: 77%;
-    }
-
-    .subscription-box h1 {
-        font-size: 2.1rem;
-        margin-top: 0rem;
-        margin-bottom: 0.3rem;
-    }
-
-    .subcribe-table thead,
-    .subcribe-table tbody,
-    .subcribe-history-table thead,
-    .subcribe-history-table tbody {
-        width: 120%;
-    }
-
-    .subscription-container h2 {
-        font-size: 1rem;
-    }
-
-    .subscribe-card ul li {
-        font-size: 0.9rem !important;
-    }
-
-    .subscription-card-container h3 {
-        font-size: 1.5rem;
-    }
-}
-
-@media(max-width: 800px) and (min-width:426px) {
-    .subscription-card-container h3 {
-        font-size: 1.7rem;
-    }
-
-    .subscription-container {
-        width: 98%;
-    }
-
-    .subscription-box {
-        padding-top: 0rem;
-    }
-
-    .subscription-box h1 {
-        margin-top: 0rem;
-    }
-
-    .subscription-card-container {
-        width: 100%;
-        padding: 1rem 0.5rem;
-        height: 616px;
-    }
-
-    .quantity-input {
-        width: 43px;
-    }
-
-    .subscribe-card {
-        width: 100%;
-        margin-right: 0px;
-        margin-left: 0px;
-    }
-
-    .subscribe-bg {
-        left: 99px;
-        top: -49px;
-        width: 85vw;
-        height: 35.5vh;
-    }
-
-    .subscribe-card ul li {
-        font-size: 1rem;
-    }
-
-    .subscription-container h2 {
-        font-size: 1rem;
-        margin-left: 2px;
-    }
-
-    .subscribe-bottom p,
-    .subscribe-bottom p span {
-        font-size: 1.2rem;
-    }
-
-    .subscribe-bottom p span {
-        margin-left: 3px;
-    }
-
-    .subscribe-bottom button {
-        padding: 4px;
-        font-size: 1rem;
-    }
-
-    .credit-history p {
-        font-size: 1rem;
-    }
-
-    .subcribe-table thead,
-    .subcribe-table tbody,
-    .subcribe-history-table thead,
-    .subcribe-history-table tbody {
-        width: 227%;
-    }
-
-    .buy-item {
-        justify-content: flex-start;
-        margin-left: 17px;
-    }
-
-    .subscribe-card-wrapper {
-        width: 100%;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-    }
-}
-
-@media (max-width: 425px) and (min-width:320px) {
-    .subscription-container {
-        width: 100%;
-    }
-
-    .subscribe-card-wrapper {
-        width: 100%;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-    }
-
-    .subscription-box {
-        padding-top: 0rem;
-    }
-
-    .subscription-box h1 {
-        margin-top: 0rem;
-    }
-
-    .subscription-card-container {
-        width: 100%;
-        padding: 1rem 0.5rem;
-    }
-
-    .subscribe-card {
-        width: 100%;
-        margin-right: 0px;
-        margin-left: 0px;
-    }
-
-    .subscribe-bg {
-        width: 78vw;
-    }
-
-    .subcribe-table thead,
-    .subcribe-table tbody {
-        width: 200%;
-    }
-
-    .subcribe-history-table thead,
-    .subcribe-history-table tbody {
-        width: 300%;
-    }
-
-    .reciept-btn {
-        font-size: 0.9rem;
-    }
-}
-
-@media(max-width:375px) and (min-width:320px) {
-    /* .subscribe-card {
-        height: 300px;
-    } */
-
-    .subscription-card-container h3 {
-        font-size: 1.5rem;
-    }
-
-    .subscribe-card ul li {
-        font-size: 0.8rem;
-    }
-
-    .subscription-container h2 {
-        font-size: 1rem;
-    }
-
-    .subscribe-bottom p,
-    .subscribe-bottom p span {
-        font-size: 0.9rem;
-    }
-
-    .subscribe-bottom p span {
-        margin-left: 3px;
-    }
-
-    .subscribe-bottom button {
-        padding: 4px;
-        font-size: 0.9rem;
-    }
-
-    .credit-history p {
-        font-size: 1rem;
-    }
-
-    .buy-item button {
-        font-size: 0.9rem;
-    }
 }

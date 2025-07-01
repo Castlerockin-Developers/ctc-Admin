@@ -5,7 +5,6 @@ import "../pages/home.css";
 import logo from '../assets/ctc-logo.png';
 import { logout } from "../scripts/AuthProvider";
 import { Navigate, useNavigate } from "react-router-dom";
-import Swal from "sweetalert2";
 
 const Sidebar = ({ activeComponent, setActiveComponent }) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -13,7 +12,7 @@ const Sidebar = ({ activeComponent, setActiveComponent }) => {
     const navigate = useNavigate();
 
     // Map "newExam" to "manageExam" if needed
-    const currentActive = ["newExam", "addQuestion", "addStudents", "newMcq", "newCoding"].includes(activeComponent) ? "manageExam" : activeComponent;
+    const currentActive = activeComponent === "newExam" ? "manageExam" : activeComponent;
 
     useEffect(() => {
         const handleResize = () => {
@@ -35,45 +34,8 @@ const Sidebar = ({ activeComponent, setActiveComponent }) => {
         }
     };
     const handleLogout = () => {
-        Swal.fire({
-            title: 'Are you sure?',
-            text: "You will be logged out from your account.",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#a294f9',
-            cancelButtonColor: '#d33',   // Example: Red for cancel
-            confirmButtonText: 'Yes, log me out!',
-            background: '#181817',
-            color: '#FFFFFF',
-            // Apply custom CSS class for the warning icon
-            customClass: {
-                icon: 'swal2-warning-custom'
-            }
-        }).then((result) => {
-            if (result.isConfirmed) {
-                // User clicked "Yes, log me out!"
-                console.log("User confirmed logout. Initiating logout process...");
-
-                // Call your actual logout function (e.g., clear tokens, session)
-                logout();
-
-                // Show a success message to the user
-                Swal.fire({
-                    title: 'Logged Out!',
-                    text: 'You have been successfully logged out.',
-                    icon: 'success',
-                    background: '#181817', // Apply the same dark background
-                    color: '#FFFFFF'       // Apply white text color
-                }
-                ).then(() => {
-                    // Redirect to the login page AFTER the success message is dismissed
-                    navigate('/');
-                });
-            } else {
-                // User clicked "Cancel" or dismissed the dialog
-                console.log("Logout cancelled by user.");
-            }
-        });
+        logout();
+        navigate("/");
     };
 
     return (
@@ -82,7 +44,7 @@ const Sidebar = ({ activeComponent, setActiveComponent }) => {
                 <motion.button
                     className="menu-toggle"
                     onClick={() => setIsOpen(!isOpen)}
-                    animate={{ left: isOpen ? "280px" : "0px" }}
+                    animate={{ left: isOpen ? "200px" : "0px" }}
                     transition={{ duration: 0.3 }}
                 >
                     <motion.svg
@@ -192,7 +154,7 @@ const Sidebar = ({ activeComponent, setActiveComponent }) => {
                     </button>
                     <button
                         type="button"
-                        className={`bottom-sidebar-button ${currentActive === "logout" ? "side-active" : ""}`}
+                        className={`bottom-sidebar-button ${currentActive === "settings" ? "side-active" : ""}`}
                         onClick={() => handleLogout()}
                     >
                         <FaSignOutAlt className="sidebar-icon" />

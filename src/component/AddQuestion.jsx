@@ -2,26 +2,31 @@ import React, { useEffect, useState } from 'react';
 import line from '../assets/Line.png';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faRotateLeft } from '@fortawesome/free-solid-svg-icons';
+import { faListCheck, faCode } from "@fortawesome/free-solid-svg-icons";
 import Swal from "sweetalert2";
+import ReactQuill from 'react-quill';
+import filter from '../assets/filter.png';
+import { motion } from "motion/react";
+import closeicon from '../assets/close.png';
+import { useDropzone } from "react-dropzone";
 import { authFetch } from '../scripts/AuthProvider';
 
 
-const AddQuestion = ({ onBack, onNexts, onCreateMCQ, onCreateCoding }) => {
+const AddQuestion = ({ onBack, onNexts }) => {
     const [windowWidth, setWindowWidth] = useState(window.innerWidth);
     const [sourceQuestions, setSourceQuestions] = useState([]);
     useEffect(() => {
         const fetchQuestions = async () => {
             try {
-                const response = await authFetch('/admin/sections', { method: 'GET' });
+                const response = await authFetch('/admin/sections',{method: 'GET'});
                 if (response.ok) {
                     const data = await response.json();
-                    const questions = data.map(q => ({
-                        id: q.id,
-                        title: q.title,
-                        content: q.content,
-                        type: q.type,
-                        dataset: q.dataset,
-                        group_id: q.group_id
+                    const questions = data.map(question => ({
+                        id: question.id,
+                        title: question.title,
+                        content: question.content,
+                        type: question.type,
+                        dataset: question.dataset
                     }));
                     setSourceQuestions(questions || []);
                 } else {
@@ -38,19 +43,109 @@ const AddQuestion = ({ onBack, onNexts, onCreateMCQ, onCreateCoding }) => {
         return () => window.removeEventListener("resize", handleResize);
     }, []);
 
+    // const [sourceQuestions, setSourceQuestions] = useState([
+    //     {
+    //         id: 1,
+    //         title: "Question Title - Medium Difficulty",
+    //         content: "It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is",
+    //         type: "mcq",
+    //         dataset: "google"
+    //     },
+    //     {
+    //         id: 2,
+    //         title: "Question Title - Medium Difficulty",
+    //         content: "It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is",
+    //         type: "coding",
+    //         dataset: "google"
+    //     },
+    //     {
+    //         id: 3,
+    //         title: "Question Title - Medium Difficulty",
+    //         content: "It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is",
+    //         type: "mcq",
+    //         dataset: "microsoft"
+    //     },
+    //     {
+    //         id: 4,
+    //         title: "Question Title - Internals Exam",
+    //         content: "This is a sample question for internals exam.",
+    //         type: "mcq",
+    //         dataset: "internals exams"
+    //     },
+    //     {
+    //         id: 5,
+    //         title: "Coding Question - Internals Exam",
+    //         content: "This is a sample coding question for internals exam.",
+    //         type: "coding",
+    //         dataset: "internals exams"
+    //     },
+    //     {
+    //         id: 6,
+    //         title: "Final Exam MCQ",
+    //         content: "This is a sample MCQ for the final exam.",
+    //         type: "mcq",
+    //         dataset: "final exams"
+    //     },
+    //     {
+    //         id: 7,
+    //         title: "Final Exam Coding",
+    //         content: "This is a sample coding question for the final exam.",
+    //         type: "coding",
+    //         dataset: "final exams"
+    //     }
+    // ]);
     // Popup states
-    const [showCreatePopup, setShowCreatePopup] = useState(false);
-    const [showImportPopup, setShowImportPopup] = useState(false);
-    const [selectedQuestionType, setSelectedQuestionType] = useState(null);
+    const [showEditMCQPopup, setShowEditMCQPopup] = useState(false);
+    const [showEditCodingPopup, setShowEditCodingPopup] = useState(false);
+    const [showTimerPopup, setShowTimerPopup] = useState(false);
 
     //   Import Question Bank Popup
-    const [sectionTimers, setSectionTimers] = useState({});
+    const [showImportPopup, setShowImportPopup] = useState(false)
 
+    const [options, setOptions] = useState([{ text: "", isCorrect: false }]);
+    const [question, setQuestion] = useState("");
+    const [testCases, setTestCases] = useState([{ input: "", output: "" }]);
+
+    // Filter dropdown toggles
+    const [showFilterDropdownMCQ, setShowFilterDropdownMCQ] = useState(false);
+    const [showFilterDropdownCoding, setShowFilterDropdownCoding] = useState(false);
+
+    // ReactQuill editor state and modules (for coding statement)
+    const [value, setValue] = useState('');
+
+    const modules = {
+        toolbar: [
+            [{ font: [] }, { size: [] }],
+            ['bold', 'italic', 'underline', 'strike'],
+            [{ color: [] }, { background: [] }],
+            [{ script: 'sub' }, { script: 'super' }],
+            [{ header: '1' }, { header: '2' }, 'blockquote', 'code-block'],
+            [{ list: 'ordered' }, { list: 'bullet' }],
+            [{ indent: '-1' }, { indent: '+1' }],
+            [{ direction: 'rtl' }],
+            [{ align: [] }],
+            ['link', 'image', 'video'],
+            ['clean']
+        ],
+    };
+
+    //  Track editing of scores
+    const [isEditingScoreMCQ, setIsEditingScoreMCQ] = useState(false);
     const [isEditingScoreCoding, setIsEditingScoreCoding] = useState(false);
 
     const [mcqQuestions, setMcqQuestions] = useState([]);
     const [codingQuestions, setCodingQuestions] = useState([]);
     const [isQuestionBankVisible, setIsQuestionBankVisible] = useState(true);
+
+    // Import Question bank
+    const toggleImportPopup = () => setShowImportPopup((prev) => !prev);
+    const closeImportPopup = () => setShowImportPopup(false);
+    const [file, setFile] = useState(null);
+
+    const [showRandomizePopup, setShowRandomizePopup] = useState(false);
+    const [selectedDifficulty, setSelectedDifficulty] = useState('medium');
+    const [selectedNumberOfQuestions, setSelectedNumberOfQuestions] = useState(1);
+    const [selectedQuestionType, setSelectedQuestionType] = useState('mcq');
 
     useEffect(() => {
         const handleResize = () => setWindowWidth(window.innerWidth);
@@ -66,130 +161,81 @@ const AddQuestion = ({ onBack, onNexts, onCreateMCQ, onCreateCoding }) => {
         return title;
     };
 
-    const handleCreateClick = () => {
-        setShowCreatePopup(true);
+    const handleChange = (index, field, value) => {
+        const newTestCases = [...testCases];
+        newTestCases[index][field] = value;
+        setTestCases(newTestCases);
+    };
+    const addTestCase = () => {
+        setTestCases([...testCases, { input: "", output: "" }]);
+    };
+    const removeTestCase = (index) => {
+        const newTestCases = testCases.filter((_, i) => i !== index);
+        setTestCases(newTestCases);
     };
 
-    const handleImport = () => {
-        setShowImportPopup(true);
+    const handleCodingEdit = () => {
+        setShowEditCodingPopup(true);
+    };
+    const handleMcqEdit = () => {
+        setShowEditMCQPopup(true);
+    };
+    const handleCloseEditPopup = () => {
+        setShowEditMCQPopup(false);
+        setShowEditCodingPopup(false);
     };
 
-    const handleCloseCreatePopup = () => {
-        setShowCreatePopup(false);
-        setShowImportPopup(false);
-
+    const handleAddOption = () => {
+        setOptions([...options, { text: "", isCorrect: false }]);
     };
-
-    const handleCreateType = (type) => {
-        setShowCreatePopup(false);
-        if (type === 'mcq') {
-            onCreateMCQ();          // ← navigate to NewMcq
+    const handleOptionChange = (index, value) => {
+        const newOptions = [...options];
+        newOptions[index].text = value;
+        setOptions(newOptions);
+    };
+    const handleCorrectAnswer = (index) => {
+        const newOptions = options.map((option, i) => ({
+            ...option,
+            isCorrect: i === index,
+        }));
+        setOptions(newOptions);
+    };
+    const handleDeleteOption = (index) => {
+        if (options.length > 1) {
+            const newOptions = options.filter((_, i) => i !== index);
+            setOptions(newOptions);
         } else {
-            onCreateCoding();
+            Swal.fire({
+                title: "Cannot Delete!",
+                text: "At least one option is required.",
+                icon: "error",
+                background: "#181817",
+                color: "#fff",
+                showConfirmButton: false,
+                timer: 1500,
+            });
         }
     };
 
 
     // -------------------- Score Editing Logic --------------------
-    // near the top, alongside your other handlers
-    // at top of component
-    const handleEditSectionScore = (groupId) => {
-        // find a “default” current score
-        const current = mcqQuestions.find(q => q.group_id === groupId)?.score ?? 0;
-
-        Swal.fire({
-            title: 'Set score for this section',
-            text: 'Enter a score between 0 and 10',
-            input: 'number',
-            inputValue: current,
-            inputAttributes: { min: 0, max: 10, step: 1 },
-            showCancelButton: true,
-            confirmButtonText: 'Apply',
-            background: "#181817",
-            color: "#fff",
-        }).then(result => {
-            if (!result.isConfirmed) return;
-            const newScore = parseInt(result.value, 10);
-            if (isNaN(newScore) || newScore < 0 || newScore > 10) {
-                return Swal.fire({ title: 'Invalid', text: 'Must be 0–10', icon: 'error', background: "#181817", color: "#fff" });
-            }
-            setMcqQuestions(prev =>
-                prev.map(q =>
-                    q.group_id === groupId
-                        ? { ...q, score: newScore }
-                        : q
-                )
-            );
-            Swal.fire({ title: 'Done!', text: `All set to ${newScore}`, icon: 'success', background: "#181817", color: "#fff", timer: 1200 });
-        });
+    const handleEditScoreMCQ = () => {
+        // Toggle the editing state
+        setIsEditingScoreMCQ(prev => !prev);
+    };
+    const handleEditScoreCoding = () => {
+        // Toggle the editing state
+        setIsEditingScoreCoding(prev => !prev);
     };
 
-
-    const handleEditCodingSectionScore = () => {
-        // get a sensible default (first question’s score or 0)
-        const current = codingQuestions.length
-            ? codingQuestions[0].score ?? 0
-            : 0;
-
-        Swal.fire({
-            title: `Set score for all coding questions`,
-            text: 'Enter a score between 0 and 10:',
-            input: 'number',
-            inputValue: current,
-            inputAttributes: { min: 0, max: 10, step: 1 },
-            showCancelButton: true,
-            confirmButtonText: 'Apply',
-            cancelButtonText: 'Cancel',
-            background: "#181817",
-            color: "#fff",
-        }).then(result => {
-            if (result.isConfirmed) {
-                const newScore = parseInt(result.value, 10);
-                if (isNaN(newScore) || newScore < 0 || newScore > 10) {
-                    Swal.fire({
-                        title: 'Invalid score',
-                        text: 'Please enter a number from 0 to 10.',
-                        icon: 'error',
-                        background: "#181817",
-                        color: "#fff",
-                    });
-                    return;
-                }
-                // apply to all coding questions
-                setCodingQuestions(prev =>
-                    prev.map(q => ({ ...q, score: newScore }))
-                );
-                Swal.fire({
-                    title: 'Done!',
-                    text: `All coding questions set to ${newScore}.`,
-                    icon: 'success',
-                    background: "#181817",
-                    color: "#fff",
-                    timer: 1500,
-                });
-            }
-        });
-    };
-
-    const handleFileSelection = (questionType) => {
-        setSelectedQuestionType(questionType);  // Store the selected question type (MCQ or Coding)
-        document.getElementById('excelFileInput').click();  // Trigger file input click
-    };
-
-    const handleFileUpload = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            // Handle the file processing based on the selected question type (MCQ or Coding)
-            if (selectedQuestionType === 'mcq') {
-                // Process MCQ file
-                console.log('Uploading MCQ questions file:', file);
-            } else if (selectedQuestionType === 'coding') {
-                // Process Coding file
-                console.log('Uploading Coding questions file:', file);
-            }
-            // Optionally, you can close the popup after file selection
-            handleCloseCreatePopup();
-        }
+    // Handle changes to the score input for MCQ
+    const handleScoreChangeMCQ = (questionId, newScore) => {
+        const limitedScore = Math.min(10, Math.max(0, newScore)); // Ensure score is between 0 and 10
+        setMcqQuestions(prevQuestions =>
+            prevQuestions.map(q =>
+                q.id === questionId ? { ...q, score: limitedScore } : q
+            )
+        );
     };
 
     // Handle changes to the score input for Coding
@@ -202,91 +248,73 @@ const AddQuestion = ({ onBack, onNexts, onCreateMCQ, onCreateCoding }) => {
         );
     };
 
-    // Truncate content
-    const truncateContent = (text, limit = 10) => {
-        const words = text.split(' ');
-        return words.length > limit ? `${words.slice(0, limit).join(' ')}...` : text;
-    };
-
-    // Add single
-    const addSingleQuestion = (q, type) => {
-        if (!('score' in q)) q.score = 0;
-        const exists = [...mcqQuestions, ...codingQuestions].some(x => x.id === q.id);
-        if (!exists) {
-            if (type === 'mcq') setMcqQuestions(prev => [...prev, q]);
-            else setCodingQuestions(prev => [...prev, q]);
-            setSourceQuestions(prev => prev.filter(x => x.id !== q.id));
-            if (sourceQuestions.length - 1 === 0) setIsQuestionBankVisible(false);
-        }
-    };
-
-    // 1) Prompt & count
-    const handleAddAllClick = (sectionId, type) => {
-        // choose the right base list
-        const base = sectionId != null
-            ? sourceQuestions.filter(q => q.group_id === sectionId && q.type === type)
-            : sourceQuestions.filter(q => q.type === type);
-
-        const total = base.length;
-        if (total === 0) {
-            Swal.fire({
-                title: "Error",
-                text: "No questions available in this section.",
-                icon: "error",
-                background: "#181817",
-                color: "#fff",
-                showConfirmButton: true,
-            });
-            return;
-        }
-
+    const handleSaveChanges = () => {
+        console.log("Updated Question:", question);
+        console.log("Updated Options:", options);
+        setShowEditMCQPopup(false);
+        setShowEditCodingPopup(false);
         Swal.fire({
-            title: 'How many questions to add?',
-            input: 'number',
-            inputAttributes: { min: 1, max: total, step: 1 },
-            showDenyButton: true,
-            confirmButtonText: 'Add Number',
-            denyButtonText: 'Add All',
-            showCancelButton: true,
+            title: "Saved!",
+            text: "Your changes have been saved.",
+            icon: "success",
             background: "#181817",
             color: "#fff",
-        }).then(result => {
-            if (result.isDenied) {
-                addMultipleQuestions(sectionId, type, total);
-            } else if (result.isConfirmed && result.value) {
-                const count = Math.min(parseInt(result.value, 10) || 0, total);
-                if (count < 1) {
-                    Swal.fire({ title: "Invalid Input!", text: "Enter a positive number.", icon: "error", background: "#181817", color: "#fff" });
-                    return;
-                }
-                addMultipleQuestions(sectionId, type, count);
-            }
+            showConfirmButton: false,
+            timer: 1500,
         });
     };
 
-    // 2) Actually grab & add
-    const addMultipleQuestions = (sectionId, type, count) => {
-        const filtered = sectionId != null
-            ? sourceQuestions.filter(q => q.group_id === sectionId && q.type === type)
-            : sourceQuestions.filter(q => q.type === type);
-
-        const shuffled = [...filtered].sort(() => Math.random() - 0.5);
-        shuffled.slice(0, count).forEach(q => addSingleQuestion(q, type));
-    };
-
-    const handleDragStart = (e, q) => {
-        e.dataTransfer.setData('question', JSON.stringify(q));
+    const handleDragStart = (e, question) => {
+        e.dataTransfer.setData('question', JSON.stringify(question));
         e.target.classList.add('draggable-active');
     };
     const handleDragEnd = (e) => {
         e.target.classList.remove('draggable-active');
     };
-    const handleDragOver = (e) => e.preventDefault();
-    const handleDrop = (e, type) => {
+    const handleDragOver = (e) => {
+        e.preventDefault();
+    };
+    const handleDrop = (e, containerType) => {
         e.preventDefault();
         const questionData = JSON.parse(e.dataTransfer.getData('question'));
-        if (questionData.type === type) {
-            addSingleQuestion(questionData, type);
+        if (questionData.type === containerType) {
+            addSingleQuestion(questionData, containerType);
+        }
+    };
+
+    const addSingleQuestion = (questionToAdd, targetType) => {
+        // If the question doesn't have a score property, initialize it to 0
+        if (!('score' in questionToAdd)) {
+            questionToAdd.score = 0;
+        }
+
+        const isAlreadyAdded = [...mcqQuestions, ...codingQuestions].some(q => q.id === questionToAdd.id);
+        if (!isAlreadyAdded && questionToAdd.type === targetType) {
+            if (targetType === 'mcq') {
+                setMcqQuestions([...mcqQuestions, questionToAdd]);
+            } else if (targetType === 'coding') {
+                setCodingQuestions([...codingQuestions, questionToAdd]);
+            }
+            const remainingQuestions = sourceQuestions.filter(q => q.id !== questionToAdd.id);
+            setSourceQuestions(remainingQuestions);
+            if (remainingQuestions.length === 0) {
+                setIsQuestionBankVisible(false);
+            }
+        }
+    };
+
+    const addAllQuestions = (dataset, type) => {
+        const questionsToAdd = sourceQuestions.filter(q => q.dataset === dataset && q.type === type && !mcqQuestions.some(added => added.id === q.id) && !codingQuestions.some(added => added.id === q.id));
+        questionsToAdd.forEach(question => {
+            if (question.type === 'mcq') {
+                setMcqQuestions(prev => [...prev, question]);
+            } else if (question.type === 'coding') {
+                setCodingQuestions(prev => [...prev, question]);
+            }
+        });
+        setSourceQuestions(sourceQuestions.filter(q => !(q.dataset === dataset && q.type === type)));
+        if (sourceQuestions.filter(q => !(q.dataset === dataset && q.type === type)).length === 0) {
+            setIsQuestionBankVisible(false);
         }
     };
 
@@ -296,21 +324,40 @@ const AddQuestion = ({ onBack, onNexts, onCreateMCQ, onCreateCoding }) => {
         } else if (questionToReturn.type === 'coding') {
             setCodingQuestions(codingQuestions.filter(q => q.id !== questionToReturn.id));
         }
-        setSourceQuestions(prev => [...prev, questionToReturn]);
+        setSourceQuestions([...sourceQuestions, questionToReturn]);
         setIsQuestionBankVisible(true);
     };
 
-    const handleRemoveSection = (groupId) => {
-        const toReturn = mcqQuestions.filter(q => q.group_id === groupId);
-        setMcqQuestions(prev => prev.filter(q => q.group_id !== groupId));
-        setSourceQuestions(prev => [...prev, ...toReturn]);
-        setIsQuestionBankVisible(true);
+    const toggleFilterDropdownMCQ = () => {
+        setShowFilterDropdownMCQ(prev => !prev);
     };
 
-    const handleTimerChange = (groupId, value) => {
-        setSectionTimers(prev => ({ ...prev, [groupId]: value }));
+    const toggleFilterDropdownCoding = () => {
+        setShowFilterDropdownCoding(prev => !prev);
     };
 
+    const handleSectionTimerClick = () => {
+        setShowTimerPopup(true);
+        setShowFilterDropdownMCQ(false);
+        setShowFilterDropdownCoding(false);
+    };
+
+    const handleRandomizeClick = () => {
+        setShowFilterDropdownMCQ(false);
+        setShowFilterDropdownCoding(false);
+        setShowRandomizePopup(true);
+    };
+
+    const toggleTimerPopup = () => {
+        setShowTimerPopup(prev => !prev);
+    };
+
+    //     Drop questionbank dataset logic
+    const onDrop = (acceptedFiles) => {
+        setFile(acceptedFiles[0]);
+    };
+
+    const { getRootProps, getInputProps } = useDropzone({ onDrop });
 
     const handleNextButtonClick = () => {
         if (mcqQuestions.length === 0 && codingQuestions.length === 0) {
@@ -362,7 +409,16 @@ const AddQuestion = ({ onBack, onNexts, onCreateMCQ, onCreateCoding }) => {
         onNexts();
     };
 
-    const uniqueSections = [...new Set(sourceQuestions.map(q => q.group_id))];
+    const uniqueDatasets = [...new Set(sourceQuestions.map(q => q.dataset))];
+    const handleRandomizePopupClose = () => {
+        setShowRandomizePopup(false);
+    };
+
+    const handleAddRandomizedQuestions = () => {
+        console.log("Adding randomized questions:", selectedNumberOfQuestions, selectedDifficulty, selectedQuestionType);
+        setShowRandomizePopup(false);
+    };
+
     return (
         <div className='addq-container justify-center flex flex-wrap'>
             <style>
@@ -374,168 +430,126 @@ const AddQuestion = ({ onBack, onNexts, onCreateMCQ, onCreateCoding }) => {
             </style>
             <div className='addquestion-box'>
                 <h1>Add Questions</h1>
-                <div className='flex gap-4 new-question-buttons'>
-                    <button onClick={handleCreateClick}>Create MCQ/Coding</button>
-                    <button onClick={handleImport}>Import MCQ/Coding</button>
-                    {showCreatePopup && (
-                        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                            <div className="create-popup">
-                                <button
-                                    onClick={handleCloseCreatePopup}
-                                    className="absolute top-1 right-2 text-white font-bold hover:text-gray-700"
-                                >
-                                    ✕
-                                </button>
-                                <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">
-                                    Create new question
-                                </h2>
-                                <div className="flex gap-2 justify-between create-popup-btn">
-                                    <button
-                                        onClick={() => handleCreateType('mcq')}
-                                        className="flex-1"
-                                    >
-                                        MCQ
-                                    </button>
-                                    <button
-                                        onClick={() => handleCreateType('coding')}
-                                        className="flex-1"
-                                    >
-                                        Coding
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {showImportPopup && (
-                        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                            <div className="create-popup">
-                                <button
-                                    onClick={handleCloseCreatePopup}
-                                    className="absolute top-1 right-2 text-white font-bold hover:text-gray-700"
-                                >
-                                    ✕
-                                </button>
-                                <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">
-                                    Import questions from excel
-                                </h2>
-
-                                <div className='flex gap-2 import-btn'>
-                                    {/* MCQ Button */}
-                                    <button
-                                        className="px-4 py-2 bg-blue-500 text-white rounded-md mb-2 w-full"
-                                        onClick={() => handleFileSelection('mcq')}
-                                    >
-                                        MCQ Questions
-                                    </button>
-
-                                    {/* Coding Button */}
-                                    <button
-                                        className="px-4 py-2 bg-green-500 text-white rounded-md w-full"
-                                        onClick={() => handleFileSelection('coding')}
-                                    >
-                                        Coding Questions
-                                    </button>
-                                </div>
-
-                                {/* File Input (hidden, triggered by buttons) */}
-                                <input
-                                    type="file"
-                                    accept=".xlsx, .xls"
-                                    onChange={handleFileUpload}
-                                    id="excelFileInput"
-                                    className="hidden"
-                                />
-                            </div>
-                        </div>
-                    )}
-
-
-                </div>
                 <div className='grid xl:grid-cols-2 lg:grid-cols-1 md:grid-cols-1 add-q-container xl:gap-1.5 lg:gap-10 gap-14'>
                     <div className='questionbank-container'>
                         <div className='question-bank'>
                             <div className='question-bank-head flex justify-between'>
                                 <h3>Question Bank</h3>
+                                <div className='flex gap-2'>
+                                    <button onClick={toggleImportPopup}>+ Import</button>
+                                    <button onClick={handleRandomizeClick} className="randomize-button">
+                                        Randomize
+                                    </button>
+                                </div>
                             </div>
                             <div className='question-bank-body'>
                                 {isQuestionBankVisible && (
-                                    <>
-                                        {/* MCQ Sections by group_id */}
-                                        {uniqueSections.map(sectionId => {
-                                            const sectionQs = sourceQuestions.filter(q => q.group_id === sectionId && q.type === 'mcq');
-                                            if (!sectionQs.length) return null;
-                                            const sectionName = sectionQs[0].title;
-                                            const total = sectionQs.length;
-                                            const list = sectionQs.slice(0, 10);
-                                            return (
-                                                <div key={sectionId} className="dataset-section card-gap">
-                                                    <div className="question-templet-wrapper">
-                                                        <div className="question-templet-header flex justify-between">
-                                                            <p>{`${sectionName} - ${total} questions`}</p>
-                                                            <button
-                                                                className="bg-green-500 rounded-sm hover:bg-green-900 px-2"
-                                                                onClick={() => handleAddAllClick(sectionId, 'mcq')}
-                                                            >
-                                                                + Add All
-                                                            </button>
+                                    <div>
+                                        {uniqueDatasets.map(dataset => (
+                                            <div key={dataset}>
+                                                {/* MCQ Section */}
+                                                <div className='dataset-section card-gap'>
+                                                    <div className='question-templet-wrapper'>
+                                                        <div className='question-templet-header flex justify-between'>
+                                                            <p>- MCQ</p>
+                                                            <div className='flex'>
+                                                                <span>{sourceQuestions.filter(q => q.dataset === dataset && q.type === 'mcq').length} MCQ</span>
+                                                                <button
+                                                                    className='bg-green-500 rounded-sm hover:bg-green-900 px-2'
+                                                                    onClick={() => addAllQuestions(dataset, 'mcq')}
+                                                                >
+                                                                    + Add All
+                                                                </button>
+                                                            </div>
                                                         </div>
-                                                        <div className="question-templet-body">
-                                                            {list.map(q => (
-                                                                <p key={q.id} className="cardin-q">
-                                                                    {windowWidth <= 1024
-                                                                        ? truncateContent(q.content, 10)
-                                                                        : q.content}
-                                                                </p>
-                                                            ))}
+                                                        <div className='question-templet-body'>
+                                                            <div className='question'>
+                                                                {sourceQuestions.filter(q => q.dataset === dataset && q.type === 'mcq').map(question => (
+                                                                    <details
+                                                                        key={question.id}
+                                                                        draggable
+                                                                        onDragStart={(e) => handleDragStart(e, question)}
+                                                                        onDragEnd={handleDragEnd}
+                                                                        className='card-gap'
+                                                                    >
+                                                                        <summary className='flex justify-between'>
+                                                                            {windowWidth <= 1024
+                                                                                ? truncateTitle(question.title, 2)
+                                                                                : question.title}
+                                                                            <div className="flex items-center gap-2 exam-type">
+                                                                                <span className="text-sm">
+                                                                                    {question.type.toUpperCase()}
+                                                                                </span>
+                                                                                <button
+                                                                                    onClick={(e) => {
+                                                                                        e.preventDefault();
+                                                                                        addSingleQuestion(question, question.type);
+                                                                                    }}
+                                                                                >
+                                                                                    + Add
+                                                                                </button>
+                                                                            </div>
+                                                                        </summary>
+                                                                        <p>{question.content}</p>
+                                                                    </details>
+                                                                ))}
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
-                                            );
-                                        })}
-
-                                        {/* Coding Section once, outside the loop */}
-                                        <div className="dataset-section card-gap">
-                                            <div className="question-templet-wrapper">
-                                                <div className="question-templet-header flex justify-between">
-                                                    <p>{`Coding Questions - ${sourceQuestions.filter(q => q.type === 'coding').length} questions`}</p>
-                                                    <button
-                                                        className="bg-green-500 rounded-sm hover:bg-green-900 px-2"
-                                                        onClick={() => handleAddAllClick(null, 'coding')}
-                                                    >
-                                                        + Add All
-                                                    </button>
-                                                </div>
-                                                <div className="question-templet-body">
-                                                    <div className="question">
-                                                        {sourceQuestions
-                                                            .filter(q => q.type === 'coding')
-                                                            .slice(0, 10)
-                                                            .map(question => (
-                                                                <details
-                                                                    key={question.id}
-                                                                    draggable
-                                                                    onDragStart={e => handleDragStart(e, question)}
-                                                                    onDragEnd={handleDragEnd}
+                                                {/* Coding Section */}
+                                                <div className='dataset-section card-gap'>
+                                                    <div className='question-templet-wrapper'>
+                                                        <div className='question-templet-header flex justify-between'>
+                                                            <p> - Coding</p>
+                                                            <div className='flex'>
+                                                                <span>{sourceQuestions.filter(q => q.dataset === dataset && q.type === 'coding').length} Coding</span>
+                                                                <button
+                                                                    className='bg-green-500 rounded-sm hover:bg-green-900 px-2'
+                                                                    onClick={() => addAllQuestions(dataset, 'coding')}
                                                                 >
-                                                                    <summary className="flex justify-between">
-                                                                        {windowWidth <= 1024
-                                                                            ? truncateTitle(question.title, 2)
-                                                                            : question.title}
-                                                                        <div className="flex items-center gap-2 exam-type">
-                                                                            <span className="text-sm">
-                                                                                {question.type.toUpperCase()}
-                                                                            </span>
-                                                                        </div>
-                                                                    </summary>
-                                                                    <p>{question.content}</p>
-                                                                </details>
-                                                            ))}
+                                                                    + Add All
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                        <div className='question-templet-body'>
+                                                            <div className='question'>
+                                                                {sourceQuestions.filter(q => q.dataset === dataset && q.type === 'coding').map(question => (
+                                                                    <details
+                                                                        key={question.id}
+                                                                        draggable
+                                                                        onDragStart={(e) => handleDragStart(e, question)}
+                                                                        onDragEnd={handleDragEnd}
+                                                                        className='card-gap'
+                                                                    >
+                                                                        <summary className='flex justify-between'>
+                                                                            {windowWidth <= 1024
+                                                                                ? truncateTitle(question.title, 2)
+                                                                                : question.title}
+                                                                            <div className="flex items-center gap-2 exam-type">
+                                                                                <span className="text-sm">
+                                                                                    {question.type.toUpperCase()}
+                                                                                </span>
+                                                                                <button
+                                                                                    onClick={(e) => {
+                                                                                        e.preventDefault();
+                                                                                        addSingleQuestion(question, question.type);
+                                                                                    }}
+                                                                                >
+                                                                                    + Add
+                                                                                </button>
+                                                                            </div>
+                                                                        </summary>
+                                                                        <p>{question.content}</p>
+                                                                    </details>
+                                                                ))}
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    </>
+                                        ))}
+                                    </div>
                                 )}
                             </div>
                         </div>
@@ -544,57 +558,77 @@ const AddQuestion = ({ onBack, onNexts, onCreateMCQ, onCreateCoding }) => {
                         <div className='question-bank'>
                             <div className='addedquestion-bank-head flex justify-between'>
                                 <h3>MCQ</h3>
-                            </div>
-                            <div className='addedquestion-bank-body'>
-                                {[...new Set(mcqQuestions.map(q => q.group_id))].map(groupId => {
-                                    const sectionQs = mcqQuestions.filter(q => q.group_id === groupId);
-                                    const sectionName = sectionQs[0]?.title || 'Unnamed Section'; // Safeguard for missing title
-
-                                    return (
-                                        <details key={groupId} className="mb-4 border rounded p-2">
-                                            <summary className="flex justify-between items-center cursor-pointer">
-                                                <p>{`${sectionName} — ${sectionQs.length} questions`}</p>
-                                                <div className="flex items-center gap-2">
-                                                    {/* Timer input */}
-                                                    <input
-                                                        type="number"
-                                                        placeholder="Timer"
-                                                        value={sectionTimers[groupId] || ''}
-                                                        onChange={e => handleTimerChange(groupId, e.target.value)}
-                                                        className="section-timer"
-                                                    />
-
-                                                    {/* Edit Score */}
-                                                    <button
-                                                        onClick={() => handleEditSectionScore(groupId)}
-                                                        className="bg-[#A294F9] hover:bg-[#826fff] px-2 py-1 rounded text-sm text-white"
-                                                    >
-                                                        Edit Score
-                                                    </button>
-
-                                                    {/* Remove */}
-                                                    <button
-                                                        onClick={() => handleRemoveSection(groupId, 'mcq')}
-                                                        className="bg-red-500 hover:bg-red-700 px-2 py-1 rounded text-sm"
-                                                    >
-                                                        Remove
-                                                    </button>
+                                <div className='flex relative'>
+                                    <div className="section-timer-desktop">
+                                        <span>Section timer: </span>
+                                        <input type="number" placeholder='In minutes' />
+                                    </div>
+                                    <div className='r-filter-btn' onClick={toggleFilterDropdownMCQ}>
+                                        <img src={filter} alt="filter-options" />
+                                        {showFilterDropdownMCQ && (
+                                            <div className="filter-dropdown">
+                                                <div className="dropdown-item" onClick={handleSectionTimerClick}>
+                                                    Section Timer
                                                 </div>
-                                            </summary>
-
-                                            {/* Display the content of each question in the section */}
-                                            <div>
-                                                {sectionQs.map((question, index) => (
-                                                    <div key={question.id} className="score-alloted">
-                                                        <p>{`${index + 1}. ${question.content || 'No content available'}`}</p>
-                                                        <p className="text-sm text-white-500">Score: {question.score !== undefined ? question.score : 'N/A'}</p>
-                                                    </div>
-                                                ))}
+                                                <button className='edit-button' onClick={handleEditScoreMCQ}>
+                                                    {isEditingScoreMCQ ? "Save Changes" : "Edit Score"}
+                                                </button>
                                             </div>
-                                        </details>
-                                    );
-                                })}
+                                        )}
+                                    </div>
+                                    <button className='edit-button' onClick={handleEditScoreMCQ}>
+                                        {isEditingScoreMCQ ? "Save Changes" : "Edit Score"}
+                                    </button>
+                                    <button onClick={handleMcqEdit}>Create</button>
+                                </div>
+                            </div>
 
+                            {showTimerPopup && (
+                                <div className="timer-popup-overlay" onClick={toggleTimerPopup}>
+                                    <div
+                                        className="timer-popup-content"
+                                        onClick={(e) => e.stopPropagation()}
+                                    >
+                                        <button className="close-btn" onClick={toggleTimerPopup}>X</button>
+                                        <div>
+                                            <span>Section timer: </span>
+                                            <input type="number" placeholder='In minutes' />
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                            <div
+                                className='addedquestion-bank-body'
+                                onDragOver={handleDragOver}
+                                onDrop={(e) => handleDrop(e, 'mcq')}
+                            >
+                                {mcqQuestions.map(question => (
+                                    <details key={question.id}>
+                                        <summary className='flex justify-between'>
+                                            {windowWidth <= 1024
+                                                ? truncateTitle(question.title, 3)
+                                                : question.title}
+                                            <div className="flex items-center gap-4">
+                                                <input
+                                                    type="number"
+                                                    max={10}
+                                                    value={question.score ?? 0}
+                                                    disabled={!isEditingScoreMCQ}
+                                                    onChange={(e) => handleScoreChangeMCQ(question.id, e.target.value)}
+                                                    className={`${isEditingScoreMCQ ? 'w-16' : 'w-8'} mr-2 text-black rounded-sm text-white text-center ${isEditingScoreMCQ ? '[background-color:oklch(0.42_0_0)]' : ''}`}
+                                                />
+                                                {!isEditingScoreMCQ && <span className="ml-1">score</span>}
+                                                <button
+                                                    onClick={() => handleReturnQuestion(question)}
+                                                    className="bg-red-500 hover:bg-red-700 px-2 py-1 rounded"
+                                                >
+                                                    Remove
+                                                </button>
+                                            </div>
+                                        </summary>
+                                        <p>{question.content}</p>
+                                    </details>
+                                ))}
                             </div>
                         </div>
 
@@ -602,19 +636,45 @@ const AddQuestion = ({ onBack, onNexts, onCreateMCQ, onCreateCoding }) => {
                         <div className='question-bank'>
                             <div className='addedquestion-bank-head flex justify-between'>
                                 <h3>Coding</h3>
-                                <div className='flex items-center gap-2'>
-                                    <button
-                                        onClick={handleEditCodingSectionScore}
-                                        className="bg-blue-500 hover:bg-blue-700 px-2 py-1 rounded text-sm text-white"
-                                    >
-                                        Edit Score
-                                    </button>
+                                <div className='flex relative'>
                                     <div className='section-timer-desktop'>
                                         <span>Section timer: </span>
                                         <input type="number" placeholder='In minutes' />
                                     </div>
+                                    {/* Filter button for mobile */}
+                                    <div className='r-filter-btn' onClick={toggleFilterDropdownCoding}>
+                                        <img src={filter} alt="filter-options" />
+                                        {showFilterDropdownCoding && (
+                                            <div className="filter-dropdown2">
+                                                <div className="dropdown-item" onClick={handleSectionTimerClick}>
+                                                    Section Timer
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                    {/* Edit Score Button */}
+                                    <button className='edit-button' onClick={handleEditScoreCoding}>
+                                        {isEditingScoreCoding ? "Save Changes" : "Edit Score"}
+                                    </button>
+                                    <button onClick={handleCodingEdit}>Create</button>
                                 </div>
                             </div>
+
+                            {/* Timer Popup Modal (same global modal as above) */}
+                            {showTimerPopup && (
+                                <div className="timer-popup-overlay" onClick={toggleTimerPopup}>
+                                    <div
+                                        className="timer-popup-content"
+                                        onClick={(e) => e.stopPropagation()}
+                                    >
+                                        <button className="close-btn" onClick={toggleTimerPopup}>X</button>
+                                        <div>
+                                            <span>Section timer: </span>
+                                            <input type="number" placeholder='In minutes' />
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
 
                             <div
                                 className='addedquestion-bank-body'
@@ -663,6 +723,314 @@ const AddQuestion = ({ onBack, onNexts, onCreateMCQ, onCreateCoding }) => {
                     <button className='exam-next-btn' onClick={handleNextButtonClick}>Next</button>
                 </div>
             </div>
+            {showImportPopup && (
+                <div className="fixed inset-0 flex items-center justify-center top-display-pop">
+                    <div className="top-display-pop-card rounded-sm shadow-lg w-3/4 md:w-1/2 min-h-[500px]">
+                        <div className="flex justify-between items-center mb-4 top-display-pop-title">
+                            <h2 className="font-semibold text-center">Import Questionbank</h2>
+                            <motion.button whileTap={{ scale: 1.2 }} className="text-red-500 text-lg" onClick={closeImportPopup}>
+                                <img src={closeicon} alt="Close" />
+                            </motion.button>
+
+                        </div>
+
+                        <div>
+                            <div
+                                {...getRootProps()}
+                                className="border-2 border-dashed border-gray-500 p-6 rounded-lg text-center cursor-pointer hover:border-gray-300 transition"
+                            >
+                                <input {...getInputProps()} />
+                                <div className="flex flex-col items-center">
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        className="w-12 h-12 text-gray-400"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth="2"
+                                            d="M12 16v-4m0 0V8m0 4h4m-4 0H8m12 4v4H4v-4M4 16l8-8 8 8"
+                                        />
+                                    </svg>
+                                    <h2 className="mt-2 text-white text-3xl">Drag the dataset</h2>
+                                    <p className="text-sm text-gray-400 text-3xl">or <span className="text-blue-400 cursor-pointer">upload from device</span></p>
+                                </div>
+                            </div>
+                            {file && (
+                                <p className="mt-3 text-sm text-green-400">Selected: {file.name}</p>
+                            )}
+
+                        </div>
+
+                    </div>
+                </div>
+
+            )}
+
+            {showEditMCQPopup && (
+                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+                    <div className="MCQ-edit-container text-white p-8 rounded-lg shadow-lg w-[600px]">
+                        <h2 className="text-2xl font-semibold mb-6">Edit Question</h2>
+                        <div className='mb-6'>
+                            <label className="block text-sm font-medium mb-2">Question:</label>
+                            <textarea
+                                value={question}
+                                onChange={(e) => setQuestion(e.target.value)}
+                                className="rounded-md w-full border border-gray-600 p-2 bg-[#333] text-white"
+                                placeholder="Enter your question"
+                            ></textarea>
+                        </div>
+                        <div className='mb-6'>
+                            <label className="block text-sm font-medium mb-2">Score:</label>
+                            {/* // <input
+                            //     type="number"
+                            //     value={question}
+                            //     onChange={(e) => setQuestion(e.target.value)}
+                            //     className="rounded-md w-full border border-gray-600 p-2 bg-[#333] text-white"
+                            //     placeholder="Enter Score"
+                            // /> */}
+                            <textarea
+                                value={question}
+                                onChange={(e) => setQuestion(e.target.value)}
+                                className="rounded-md mt-1 mb-3 border border-gray-600"
+                                placeholder="Enter your question"
+                            ></textarea>
+                        </div>
+                        {options.map((option, index) => (
+                            <div key={index} className="mb-4">
+                                <label className="block text-sm font-medium mb-2">Option {index + 1}:</label>
+                                <div className='flex items-center space-x-4'>
+                                    {/* // <input
+                                    //     type="text"
+                                    //     value={option.text}
+                                    //     onChange={(e) => handleOptionChange(index, e.target.value)}
+                                    //     className="flex-1 rounded-md border border-gray-600 p-2 bg-[#333] text-white"
+                                    //     placeholder={`Option ${index + 1}`}
+                                    // /> */}
+                                    <textarea
+                                        value={option.text}
+                                        onChange={(e) => handleOptionChange(index, e.target.value)}
+                                        className="rounded-md border border-gray-600"
+                                        placeholder={`Option ${index + 1}`}
+                                    ></textarea>
+                                    <input
+                                        type="checkbox"
+                                        checked={option.isCorrect}
+                                        onChange={() => handleCorrectAnswer(index)}
+                                        className="m-checkbox"
+                                        title="Mark as correct answer"
+                                    />
+                                    <button
+                                        onClick={() => handleDeleteOption(index)}
+                                        className="text-white px-3 py-1 rounded-md e-delete-btn"
+                                    >
+                                        🗑️
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                        <button
+                            onClick={handleAddOption}
+                            className="bg-blue-500 hover:bg-blue-800 text-white rounded-md add-option"
+                        >
+                            <span>+</span> Add Option
+                        </button>
+                        <div className="flex justify-end gap-3 mt-6 eq-button">
+                            <button
+                                onClick={handleCloseEditPopup}
+                                className="bg-gray-600 hover:bg-gray-800 text-white px-4 py-2 rounded-md"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleSaveChanges}
+                                className="bg-green-500 hover:bg-green-800 text-white px-4 py-2 rounded-md"
+                            >
+                                Save Changes
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Coding Edit Popup */}
+            {showEditCodingPopup && (
+                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+                    <div className="Coding-edit-container text-white p-8 rounded-lg shadow-lg w-[600px]">
+                        <h2 className="text-2xl font-semibold mb-6">Coding Question</h2>
+                        <div className='mb-6'>
+                            <label className="block text-sm font-medium mb-2">Question:</label>
+                            <textarea
+                                value={question}
+                                rows={6}
+                                onChange={(e) => setQuestion(e.target.value)}
+                                className="rounded-md w-full border border-gray-600 p-2 bg-[#333] text-white"
+                                placeholder="Enter your question"
+                            ></textarea>
+                        </div>
+                        <div className='mb-6'>
+                            <label className="block text-sm font-medium mb-2">Statement:</label>
+                            <ReactQuill theme="snow" value={value} onChange={setValue} />
+                        </div>
+                        <div className='mb-6'>
+                            <label className="block text-sm font-medium mb-2">Sample Test Case:</label>
+                            <textarea
+                                value={question}
+                                rows={6}
+                                onChange={(e) => setQuestion(e.target.value)}
+                                className="rounded-md w-full border border-gray-600 p-2 bg-[#333] text-white"
+                                placeholder="Enter your question"
+                            ></textarea>
+                        </div>
+                        <div className='mb-6'>
+                            <label className="block text-sm font-medium mb-2">Sample Test Case Output:</label>
+                            <textarea
+                                value={question}
+                                rows={6}
+                                onChange={(e) => setQuestion(e.target.value)}
+                                //     className="rounded-md mt-1 mb-3 border border-gray-600"
+                                //     placeholder="Enter sample output"
+                                // />
+                                className="rounded-md w-full border border-gray-600 p-2 bg-[#333] text-white"
+                                placeholder="Enter your question"
+                            ></textarea>
+                        </div>
+                        <h2 className="text-xl font-semibold mb-4">Test Cases</h2>
+                        {testCases.map((testCase, index) => (
+                            <div key={index} className="mb-4">
+                                <div className='mb-4'>
+                                    <label className="block text-sm font-medium mb-2">Test Case Input:</label>
+                                    <textarea
+                                        value={testCase.input}
+                                        rows={6}
+                                        onChange={(e) => handleChange(index, "input", e.target.value)}
+                                        className="rounded-md w-full border border-gray-600 p-2 bg-[#333] text-white"
+                                        placeholder="Enter test case input"
+                                    ></textarea>
+                                </div>
+                                <div className='mb-4'>
+                                    <label className="block text-sm font-medium mb-2">Test Case Output:</label>
+                                    <textarea
+                                        value={testCase.output}
+                                        rows={6}
+                                        onChange={(e) => handleChange(index, "output", e.target.value)}
+                                        className="rounded-md w-full border border-gray-600 p-2 bg-[#333] text-white"
+                                        placeholder="Enter test case output"
+                                    ></textarea>
+                                    <button className="" onClick={() => removeTestCase(index)}>🗑️</button>
+
+                                </div>
+                            </div>
+                        ))}
+                        <div className=''>
+                            <button className="add-btn" onClick={addTestCase}>➕ Add Test Case</button>
+                        </div>
+                        <div className="flex justify-end space-x-4 mt-6 save-cancel">
+                            <button
+                                onClick={handleCloseEditPopup}
+                                className="bg-gray-600 hover:bg-gray-800 text-white px-4 py-2 rounded-md"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleSaveChanges}
+                                className="bg-green-500 hover:bg-green-800 text-white px-4 py-2 rounded-md"
+                            >
+                                Save Changes
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {showRandomizePopup && (
+                <div className="fixed inset-0 flex items-center justify-center top-display-pop">
+                    <div className="rounded-sm shadow-lg w-[700px]  flex flex-col bg-[#1e1e1e] text-white">
+                        <div className="flex justify-between gap-55 items-center top-display-pop-title randomize-head">
+                            <h2 className="font-semibold text-2xl text-center text-white">Randomize Questions</h2>
+                            <motion.button whileTap={{ scale: 1.2 }} className="text-red-500 text-2xl" onClick={handleRandomizePopupClose}>
+                                <img src={closeicon} alt="Close" />
+                            </motion.button>
+                        </div>
+
+                        <div className="flex flex-col justify-center random-data form-content">
+                            <div className="flex">
+                                <div className="flex">
+                                    <label className="block text-xl font-medium mb-6 text-white">Number of Questions </label><span>:</span>
+                                </div>
+                                <input
+                                    type="number"
+                                    value={selectedNumberOfQuestions}
+                                    onChange={(e) => setSelectedNumberOfQuestions(Number(e.target.value))}
+                                    className="rounded-md w-sm border border-gray-600 p-4 bg-[#333] text-white text-xl"
+                                    placeholder="Enter number of questions"
+                                    min="1"
+                                />
+                            </div>
+                            <div className="flex-grow">
+                                <div className="flex">
+                                    <label className="block text-xl font-medium mb-6 text-white">Question Type:</label>
+                                    <div className="flex flex-col space-y-4">
+                                        <div className="toggle-buttons flex space-x-4">
+                                            <motion.button
+                                                className={`toggle-btn ${selectedQuestionType === "mcq" ? "active" : ""}`}
+                                                onClick={() => setSelectedQuestionType("mcq")}
+                                            >
+                                                <FontAwesomeIcon icon={faListCheck} className="icon" /> MCQ
+                                            </motion.button>
+                                            <motion.button
+                                                className={`toggle-btn ${selectedQuestionType === "coding" ? "active" : ""}`}
+                                                onClick={() => setSelectedQuestionType("coding")}
+                                            >
+                                                <FontAwesomeIcon icon={faCode} className="icon" /> Coding
+                                            </motion.button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="flex-grow">
+                                <div className="flex">
+                                    <label className="block text-xl font-medium mb-6 text-white">Difficulty Level:</label>
+                                    <div className="flex flex-col space-y-4">
+                                        <div className="toggle-buttons flex space-x-4 mt-4">
+                                            <motion.button
+                                                className={`toggle-btn ${selectedDifficulty === "easy" ? "active" : ""}`}
+                                                onClick={() => setSelectedDifficulty("easy")}
+                                            >
+                                                Easy
+                                            </motion.button>
+                                            <motion.button
+                                                className={`toggle-btn ${selectedDifficulty === "medium" ? "active" : ""}`}
+                                                onClick={() => setSelectedDifficulty("medium")}
+                                            >
+                                                Medium
+                                            </motion.button>
+                                            <motion.button
+                                                className={`toggle-btn ${selectedDifficulty === "hard" ? "active" : ""}`}
+                                                onClick={() => setSelectedDifficulty("hard")}
+                                            >
+                                                Hard
+                                            </motion.button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex justify-end space-x-6 mt-6">
+                            <button
+                                onClick={handleAddRandomizedQuestions}
+                                className=" text-white px-7 py-4 rounded-md text-lg  default-btn"
+                            >
+                                Add Questions
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
         </div>
     );
 };
