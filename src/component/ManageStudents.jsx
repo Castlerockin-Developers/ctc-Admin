@@ -539,6 +539,7 @@ const EditStudentModal = ({ onClose, groups, studentId }) => {
             className="form-input"
             placeholder="Enter email"
             value={student.email}
+            disabled
             onChange={handleChange}
           />
           {errors.email && <span className="error-text">{errors.email}</span>}
@@ -565,6 +566,7 @@ const EditStudentModal = ({ onClose, groups, studentId }) => {
             className="form-input"
             placeholder="Enter USN"
             value={student.usn}
+            disabled
             onChange={handleChange}
           />
           {errors.usn && <span className="error-text">{errors.usn}</span>}

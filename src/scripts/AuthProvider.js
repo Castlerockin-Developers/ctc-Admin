@@ -1,5 +1,5 @@
 export const baseUrl = 'https://api.crackthecampus.com/api';
-export const staticUrl = 'https://api.crackthecampus.com/api';
+export const staticUrl = 'https://api.crackthecampus.com';
 export async function authFetch(url, options) {
   let accessToken = localStorage.getItem('access'); // Declare `let` to allow reassignment
   const refreshToken = localStorage.getItem('refresh');

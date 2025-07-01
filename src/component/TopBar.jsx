@@ -1,7 +1,7 @@
 import React from 'react'
 import '../pages/home.css'
 import logo from '../assets/ctc-logo.png';
-import clogo from '../assets/nitte-logo.png';
+
 
 const TopBar = () => {
     return (
