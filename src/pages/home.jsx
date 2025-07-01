@@ -14,9 +14,6 @@ import Settings from "../component/Settings";
 import ViewResult from "../component/ViewResult";
 import PerticularResult from "../component/PerticularResult";
 import ViewExam from "../component/ViewExam";
-import NewMcq from "../component/NewMcq";
-import NewCoding from "../component/NewCoding";
-import { authFetch } from "../scripts/AuthProvider";
 
 const Home = () => {
     const [activeComponent, setActiveComponent] = useState("dashboard");
@@ -25,28 +22,28 @@ const Home = () => {
     const [createExamRequest, setCreateExamRequest] = useState([]);
 
     const handleSubmitExam = async () => {
-
-        try {
-            const response = await authFetch("/admin/exams/create-exam/", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(createExamRequest),
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                console.error("Failed:", errorData);
-                Swal.fire("Error", "Exam creation failed", "error");
-                return;
+    
+            try {
+                const response = await authFetch("/admin/exams/create-exam/", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(createExamRequest),
+                });
+    
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    console.error("Failed:", errorData);
+                    Swal.fire("Error", "Exam creation failed", "error");
+                    return;
+                }
+    
+                Swal.fire("Success", "Exam created successfully", "success");
+                onNext();
+            } catch (error) {
+                console.error("Error:", error);
+                Swal.fire("Error", "Something went wrong", "error");
             }
-
-            Swal.fire("Success", "Exam created successfully", "success");
-            onNext();
-        } catch (error) {
-            console.error("Error:", error);
-            Swal.fire("Error", "Something went wrong", "error");
-        }
-    };
+        };
 
     // Function to handle exam creation alert
     const handleCreateExam = () => {
@@ -65,10 +62,10 @@ const Home = () => {
     return (
         <div className="home-container">
             <TopBar /> {/* Keep top bar fixed */}
-
+            
             <div className="flex">
                 {/* Sidebar */}
-                <div className="xl:w-2/10 lg:w-[25%] md:w-0/10 sm:w-0">
+                <div className="xl:w-2/10 lg:w-2/10 md:w-0/10 sm:w-0">
                     <Sidebar activeComponent={activeComponent}
                         setActiveComponent={setActiveComponent}
                         onCreateExam={() => setActiveComponent("newExam")}
@@ -76,7 +73,7 @@ const Home = () => {
                 </div>
 
                 {/* Main Content Area */}
-                <div className="xl:w-8/10 lg:w-[75%] md:w-10/10 sm:w-full">
+                <div className="xl:w-8/10 lg:w-8/10 md:w-10/10 sm:w-full">
                     {/* Main Navigation Components */}
                     {activeComponent === "dashboard" && (
                         <Dashboard
@@ -145,24 +142,10 @@ const Home = () => {
                             setCreateExamRequest={setCreateExamRequest}
                         />
                     )}
-                    {activeComponent === "newMcq" && (
-                        <NewMcq
-                            onSave={() => setActiveComponent("addQuestion")}
-                            onCancel={() => setActiveComponent("addQuestion")}
-                        />
-                    )}
-                    {activeComponent === "newCoding" && (
-                        <NewCoding
-                            onSave={() => setActiveComponent("addQuestion")}
-                            onBack={() => setActiveComponent("addQuestion")}
-                        />
-                    )}
                     {activeComponent === "addQuestion" && (
                         <AddQuestion
                             onBack={() => setActiveComponent("newExam")}
                             onNexts={() => setActiveComponent("addStudents")}
-                            onCreateMCQ={() => setActiveComponent("newMcq")}
-                            onCreateCoding={() => setActiveComponent("newCoding")}
                             createExamRequest={createExamRequest}
                             setCreateExamRequest={setCreateExamRequest}
                         />

@@ -74,6 +74,7 @@
     color: white;
     text-align: center;
     font-size: 2.5rem;
+    margin-top: 12px;
     font-family: madina-semibold;
 }
 
@@ -90,7 +91,7 @@
     cursor: pointer;
     background-color: transparent;
     font-weight: bold;
-    border-bottom: 4px solid #A294F9;
+    border-bottom: 2px solid #FF0099;
     height: 31px;
 }
 
@@ -101,7 +102,7 @@
 
 .middle-view button {
     padding: 0.5rem;
-    background-color: #A294F9;
+    background-color: #FF0099;
     border-radius: 5px;
     color: white;
     margin-left: 20px;
@@ -228,15 +229,12 @@
 }
 
 .p-result-section {
-    width: 102%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    margin: 30px 40px;
+    width: 100%;
+    margin-top: 30px;
 }
 
 .p-result-header {
-    width: 100%;
+    width: 105%;
     height: 6.5vh;
     padding: 1rem;
     background-color: #5A5A5A;
@@ -258,7 +256,7 @@
 
 .p-result-header button {
     color: white;
-    background-color: #A294F9;
+    background-color: #FF0099;
     padding: 0.5rem;
     font-size: 1.2rem;
     font-family: madina-semibold;
@@ -276,23 +274,13 @@
     font-size: 1.5rem;
 }
 
-.p-result-body-container {
-    width: 100%;
+.p-result-body {
+    width: 105%;
     height: 57vh;
     background-color: #4B4B4B;
     border-bottom-right-radius: 5px;
     border-bottom-left-radius: 5px;
     overflow-y: auto;
-}
-
-.p-result-body {
-    width: 95%;
-    margin-top: 10px;
-    border-radius: 10px;
-}
-
-.p-result-body table {
-    margin-top: 10px;
 }
 
 .p-result-viwer {
@@ -301,12 +289,12 @@
 }
 
 .p-reult-viwer-header {
+    width: 100%;
+    height: 6vh;
     background-color: #303030;
     border-top-left-radius: 5px;
     border-top-right-radius: 5px;
-    color: white;
-    font-size: 1.5rem;
-    font-family: madina-semibold;
+    padding: 7px 20px 5px;
 }
 
 .p-reult-viwer-header h2 {
@@ -328,8 +316,6 @@
     background-color: #3A3A3A;
     border-bottom-right-radius: 5px;
     border-bottom-left-radius: 5px;
-    color: white;
-    font-family: madina-light;
 }
 
 .presult-container {
@@ -398,192 +384,6 @@
     font-size: 1rem;
 }
 
-.pagination-button {
-    margin-top: 20px;
-}
-
-.pagination-button button {
-    color: white;
-    padding: 0.5rem 1rem;
-    border-radius: 0.5rem;
-    align-content: flex-end;
-    cursor: pointer;
-    transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out;
-}
-
-.pagination-button button:disabled {
-    background-color: #cccccc;
-    color: #fff;
-    cursor: not-allowed;
-    border-color: #cccccc;
-}
-
-.pagination-button button.active-page {
-    background-color: #a294f9;
-    /* Or your primary accent color */
-    color: white;
-    border-color: #a294f9;
-}
-
-.page-info {
-    color: white;
-    font-size: 1.125rem;
-    font-weight: 500;
-    margin-top: 8px;
-    margin: 0 10px;
-}
-
-@media(max-width:3000px) and (min-width:2300px) {
-    .view-table-container table tbody td {
-        font-size: 1.7rem;
-    }
-
-    .view-table-container table thead th {
-        font-size: 2rem;
-    }
-
-    .view-r-cards {
-        padding: 1.5rem 1rem;
-        font-size: 1.5rem;
-        width: 380px;
-        height: 210px;
-    }
-
-    .view-time {
-        width: 34%;
-    }
-
-    .view-r-cards p {
-        font-size: 2rem;
-    }
-
-    .view-r-cards h4 {
-        font-size: 2.8rem;
-    }
-
-
-    .view-table-container table {
-        width: 100%;
-    }
-
-    .students {
-        font-size: 1.8em;
-        height: 50px;
-    }
-
-    .middle-view button span {
-        font-size: 1.7rem;
-    }
-
-    .middle-view button img {
-        width: 30px;
-        height: auto;
-    }
-
-    .search-box input {
-        font-size: 1.4rem;
-    }
-
-    .view-time p {
-        font-size: 1.3rem;
-    }
-
-    .marks-r-cards p {
-        font-size: 1.8rem;
-    }
-
-    .marks-r-cards {
-        width: 290px;
-        height: 150px;
-    }
-
-    .top-viewresult p {
-        font-size: 1.5rem;
-    }
-
-    .top-viewresult h1 {
-        font-size: 3rem;
-    }
-
-    .top-viewresult button {
-        font-size: 3rem;
-        bottom: 0px;
-    }
-
-    .p-result-header button {
-        font-size: 1.6rem;
-    }
-
-    .share-icon {
-        font-size: 1.6rem;
-        top: 8px;
-    }
-
-    .p-result-header h2 {
-        font-size: 2.2rem;
-    }
-
-    .p-reult-viwer-header {
-        font-size: 1.8rem;
-    }
-
-    .p-result-viwer-body {
-        font-size: 1.5rem;
-    }
-
-    .answer-box h3 {
-        font-size: 1.8rem;
-    }
-
-    .answer-box p {
-        font-size: 1.5rem;
-    }
-
-    .p-result-body-container {
-        height: 63vh;
-    }
-}
-
-@media(max-width:2299px) and (min-width:1701px) {
-    .view-table-container table tbody td {
-        font-size: 1.2rem;
-    }
-
-    .view-table-container table thead th {
-        font-size: 1.3rem;
-    }
-
-    .view-r-cards {
-        padding: 2rem 1rem;
-        font-size: 1.3rem;
-    }
-
-    .view-table-container table {
-        width: 110%;
-    }
-
-    .students {
-        font-size: 1.5rem;
-        height: 40px;
-    }
-
-    .search-box input {
-        font-size: 1.2rem;
-    }
-
-}
-
-@media(max-width:1700px) and (min-width:1441px) {
-    .view-r-cards {
-        width: 248px;
-    }
-
-    .view-table-container table {
-        width: 100%;
-        height: 38vh;
-    }
-}
-
 @media (min-width:1025px) and (max-width:1440px) {
     .view-r-card-container {
         gap: 15px;
@@ -591,11 +391,6 @@
 
     .marks-r-cards-container {
         left: 150px;
-    }
-
-    .view-table-container table {
-        width: 103%;
-        height: 41vh;
     }
 }
 
@@ -665,7 +460,7 @@
     }
 }
 
-@media (max-width: 768px) and (min-width: 500px) {
+@media (max-width: 768px) {
     .viewresult-container {
         width: 100%;
     }
@@ -692,112 +487,6 @@
     }
 
     .view-r-cards p {
-        font-size: 1.1rem;
-    }
-
-}
-
-@media(max-width:425px) and (min-width:320px) {
-    .result-container {
-        padding: 0rem;
-    }
-
-    .top-viewresult {
-        display: flex;
-        width: 100%;
-        flex-direction: column;
-    }
-
-    .top-viewresult h1 {
-        font-size: 2rem;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        display: block;
-        width: 100%;
-    }
-
-    .top-viewresult button {
-        font-size: 2.6rem;
-        bottom: 7px;
-    }
-
-    .view-time {
-        width: 71%;
-    }
-
-    .viewresult-container {
-        padding: 0rem !important;
-    }
-
-    .view-r-card-container {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
-        margin-top: 10px;
-    }
-
-    .view-r-cards {
-        width: 100%;
-        height: 130px;
-        padding: 0.5rem;
-    }
-
-    .middle-view {
-        display: grid;
-        grid-template-columns: repeat(1, 1fr);
-        gap: 10px;
-    }
-
-    .students {
-        width: 25%;
-    }
-
-    .middle-view button span {
-        display: none;
-    }
-
-    .view-table-container table thead,
-    .view-table-container table tbody {
-        width: 200%;
-    }
-
-    .view-table-container table thead th,
-    .view-table-container table tbody td {
-        font-size: 0.9rem;
-    }
-
-    .view-table-container table {
-        width: 141%;
-        height: 45vh;
-    }
-
-    /* Perticular Result */
-    .marks-r-cards-container {
-        left: 25px;
-        gap: 5px !important;
-        margin: 10px;
-    }
-
-    .marks-r-cards {
-        width: 200px;
-    }
-
-    .p-result-header h2 {
-        font-size: 1.2rem;
-    }
-
-    .p-result-section {
-        width: 95%;
-        margin: 30px 34px;
-        padding-bottom: 20px;
-    }
-
-    .p-result-header button span {
-        display: none;
-    }
-
-    .share-icon {
         font-size: 1.1rem;
     }
 }
