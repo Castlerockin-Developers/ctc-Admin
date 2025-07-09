@@ -83,7 +83,7 @@ const Home = () => {
                             onCreateExam={() => setActiveComponent("newExam")}
                             onAddStudent={() => {
                                 setActiveComponent("student");
-                                setStudentModalOpen(true); // Open modal when quick link is clicked
+                                setStudentModalOpen(true);
                             }}
                             onAddUser={() => {
                                 setActiveComponent("settings");

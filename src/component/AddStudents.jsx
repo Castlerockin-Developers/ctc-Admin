@@ -21,11 +21,17 @@ const AddStudents = ({ onBack, onSubmit, createExamRequest }) => {
     const [allBranchFilter, setAllBranchFilter] = useState('');
     const [addedBranchFilter, setAddedBranchFilter] = useState('');
 
+    // Search queries
+    const [allSearchQuery, setAllSearchQuery] = useState('');
+    const [addedSearchQuery, setAddedSearchQuery] = useState('');
+
     // Derive branches dynamically
     const branches = useMemo(
         () => Array.from(new Set(allStudents.map(s => s.branch))).sort(),
         [allStudents]
     );
+
+    const [isCreating, setIsCreating] = useState(false);
 
     // Load session and fetch
     useEffect(() => {
@@ -80,17 +86,29 @@ const AddStudents = ({ onBack, onSubmit, createExamRequest }) => {
         sessionStorage.setItem(STORAGE_KEYS.addedBranch, addedBranchFilter);
     }, [addedBranchFilter]);
 
-    // Filters applied
+    // Filter logic including branch + search
     const filteredAll = allStudents.filter(s =>
         (!allBranchFilter || s.branch === allBranchFilter) &&
-        !addedStudents.some(a => a.studentId === s.studentId)
+        !addedStudents.some(a => a.studentId === s.studentId) &&
+        (
+            s.id.toLowerCase().includes(allSearchQuery.toLowerCase()) ||
+            s.name.toLowerCase().includes(allSearchQuery.toLowerCase())
+        )
     );
     const filteredAdded = addedStudents.filter(s =>
-        !addedBranchFilter || s.branch === addedBranchFilter
+        (!addedBranchFilter || s.branch === addedBranchFilter) &&
+        (
+            s.id.toLowerCase().includes(addedSearchQuery.toLowerCase()) ||
+            s.name.toLowerCase().includes(addedSearchQuery.toLowerCase())
+        )
     );
 
     // Actions
-    const addAll = () => setAddedStudents(prev => [...prev, ...filteredAll]);
+    const addAll = () => {
+        setAddedStudents(prev => [...prev, ...filteredAll]);
+        setAddedBranchFilter('');
+        setAddedSearchQuery('');
+    };
     const addOne = s =>
         setAddedStudents(prev =>
             prev.some(a => a.studentId === s.studentId)
@@ -102,23 +120,63 @@ const AddStudents = ({ onBack, onSubmit, createExamRequest }) => {
             prev.filter(a => a.studentId !== s.studentId)
         );
 
+    const removeAll = () => {
+        Swal.fire({
+            title: 'Are you sure?',
+            text: 'This will remove all added students.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, remove all',
+            cancelButtonText: 'Cancel',
+            background: '#181817',
+            color: '#fff'
+        }).then(result => {
+            if (result.isConfirmed) {
+                setAddedStudents([]);  // clear the array
+            }
+        });
+    };
+
+
     const createExam = async () => {
         if (!addedStudents.length) {
-            return Swal.fire({
-                title: 'No Students Added',
-                text: 'Add at least one student before creating the exam.', icon: 'error',
-                confirmButtonText: 'OK', background: '#181817', color: '#fff'
-            });
+            return Swal.fire({ /* … */ });
         }
+
+        setIsCreating(true);
         const payload = { ...createExamRequest, students: addedStudents.map(s => s.studentId) };
-        const res = await authFetch('/admin/exams/create-exam/', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
-        });
-        if (!res.ok) {
-            const { message } = await res.json();
-            return Swal.fire({ title: 'Error', text: message || 'Failed.', icon: 'error', confirmButtonText: 'OK', background: '#181817', color: '#fff' });
+
+        try {
+            const res = await authFetch('/admin/exams/create-exam/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            if (!res.ok) {
+                const { message } = await res.json();
+                throw new Error(message || 'Failed to create exam');
+            }
+            await Swal.fire({
+                title: 'Test Created',
+                text: 'Test has been created.',
+                icon: 'success',
+                confirmButtonText: 'OK',
+                background: '#181817',
+                color: '#fff'
+            });
+            onSubmit();
+        } catch (err) {
+            Swal.fire({
+                title: 'Error',
+                text: err.message,
+                icon: 'error',
+                confirmButtonText: 'OK',
+                background: '#181817',
+                color: '#fff'
+            });
+        } finally {
+            setIsCreating(false);
         }
-        Swal.fire({ title: 'Test Created', text: 'Test has been created.', icon: 'success', confirmButtonText: 'OK', background: '#181817', color: '#fff' }).then(onSubmit);
     };
 
     return (
@@ -135,7 +193,7 @@ const AddStudents = ({ onBack, onSubmit, createExamRequest }) => {
                                 <select
                                     className='filter-select-branch'
                                     value={allBranchFilter}
-                                    onChange={e => { setAllBranchFilter(e.target.value); setAllBatchFilter(''); }}
+                                    onChange={e => setAllBranchFilter(e.target.value)}
                                 >
                                     <option value=''>Branch</option>
                                     {branches.map(b => (
@@ -144,7 +202,7 @@ const AddStudents = ({ onBack, onSubmit, createExamRequest }) => {
                                 </select>
                                 <div className='flex relative s-search-container'>
                                     <FontAwesomeIcon icon={faSearch} className='s-icon' />
-                                    <input type='text' placeholder='Search All Students' />
+                                    <input type='text' placeholder='Search All Students' onChange={e => setAllSearchQuery(e.target.value)} />
                                 </div>
                             </div>
                         </div>
@@ -200,7 +258,7 @@ const AddStudents = ({ onBack, onSubmit, createExamRequest }) => {
                                 <select
                                     className='filter-select-branch'
                                     value={addedBranchFilter}
-                                    onChange={e => { setAddedBranchFilter(e.target.value); setAddedBatchFilter(''); }}
+                                    onChange={e => setAddedBranchFilter(e.target.value)}
                                 >
                                     <option value=''>Branch</option>
                                     {branches.map(b => (
@@ -209,7 +267,7 @@ const AddStudents = ({ onBack, onSubmit, createExamRequest }) => {
                                 </select>
                                 <div className='flex relative s-search-container'>
                                     <FontAwesomeIcon icon={faSearch} className='s-icon' />
-                                    <input type='text' placeholder='Search Added Students' />
+                                    <input type='text' placeholder='Search Added Students' onChange={e => setAddedSearchQuery(e.target.value)} />
                                 </div>
                             </div>
                         </div>
@@ -219,7 +277,8 @@ const AddStudents = ({ onBack, onSubmit, createExamRequest }) => {
                                     <table>
                                         <thead>
                                             <tr>
-                                                <td colSpan={6} align='left'>Added Students</td>
+                                                <td colSpan={5} align='left'>Added Students</td>
+                                                <td><button className='bg-red-500 hover:bg-red-900 rounded adds-btn' onClick={removeAll}>Remove all</button></td>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -258,7 +317,23 @@ const AddStudents = ({ onBack, onSubmit, createExamRequest }) => {
                         <FontAwesomeIcon icon={faRotateLeft} className='left-icon' />back
                     </button>
                     <p>3/3</p>
-                    <button className='exam-next-btn' onClick={createExam}>+ CreateExam</button>
+                    <button
+                        className='exam-next-btn'
+                        onClick={createExam}
+                        disabled={isCreating}
+                    >
+                        {isCreating
+                            ? <span className='flex items-center gap-2'>
+                                <svg className='animate-spin h-5 w-5' viewBox='0 0 24 24'>
+                                    <circle className='opacity-25' cx='12' cy='12' r='10' stroke='currentColor' strokeWidth='4' />
+                                    <path className='opacity-75' fill='currentColor' d='M4 12a8 8 0 018-8v8z' />
+                                </svg>
+                                Creating…
+                            </span>
+                            : '+ CreateExam'
+                        }
+                    </button>
+
                 </div>
             </div>
         </div>

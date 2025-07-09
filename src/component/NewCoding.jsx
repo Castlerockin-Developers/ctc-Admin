@@ -122,11 +122,7 @@ const NewCoding = ({ setActiveComponent, onSave, onBack }) => {
                         value={shortDescription}
                         onChange={setShortDescription}
                         placeholder="Write your short description here"
-                        style={{
-                            width: "40%",
-                            marginLeft: "0",  // Ensure no left margin
-                            left: "0",
-                        }}
+                        className="custom-quill"
                     />
                 </div>
 
@@ -137,11 +133,6 @@ const NewCoding = ({ setActiveComponent, onSave, onBack }) => {
                         onChange={setStatement}
                         placeholder="Write your rich-text statement here"
                         className="custom-quill"
-                        style={{
-                            width: "40%",
-                            marginLeft: "0",  // Ensure no left margin
-                            left: "0",
-                        }}
                     />
                 </div>
 

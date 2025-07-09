@@ -1651,8 +1651,15 @@ details {
 @media(min-width:769px) and (max-width:1024px) {
 
     .newexam-container,
-    .addq-container {
-        width: 100%;
+    .addq-container,
+    .adds-container {
+        background-color: #282828;
+        width: calc(100% - 40px);
+        height: 87vh;
+        overflow-y: auto;
+        transition: width 0.3s ease-in-out, margin-left 0.3s ease-in-out;
+        padding: 1.2rem;
+        border-radius: 5px;
     }
 
     .newexam-box h1,
@@ -1861,51 +1868,6 @@ details {
         font-family: 'madina-regular', sans-serif;
     }
 
-    /* Responsive Design */
-
-    @media (min-width: 0px) and (max-width: 426px) {
-        /* Mobile Styles */
-    }
-
-    @media (min-width: 426px) and (max-width: 768px) {
-        /* Tablet Styles */
-    }
-
-    @media (min-width: 769px) and (max-width: 1024px) {
-        /* Desktop Styles */
-    }
-
-    /* No code was selected, so I will provide a general improvement to the CSS code */
-
-    /* Improved CSS Code */
-
-    /* Global Styles */
-
-    * {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-    }
-
-    body {
-        font-family: madina-regular;
-        background-color: #282828;
-        color: white;
-    }
-
-    /* Container Styles */
-
-    .newexam-container,
-    .addq-container,
-    .adds-container {
-        background-color: #282828;
-        width: calc(100% - 69px);
-        height: 87vh;
-        overflow-y: auto;
-        transition: width 0.3s ease-in-out, margin-left 0.3s ease-in-out;
-        padding: 1.2rem;
-        border-radius: 5px;
-    }
 
     /* Box Styles */
 
@@ -2014,9 +1976,7 @@ details {
     }
 }
 
-/* @media(min-width:1025px) and (max-width:1920px) {
-
-    .newexam-box h1,
+/* .newexam-box h1,
     .addStudent-box h1 {
         margin-top: 0rem;
     }
@@ -2055,5 +2015,4 @@ details {
 
     .adds-branch {
         padding: 4px 6px 4px;
-    }
-} */
+    } */

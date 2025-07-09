@@ -2,9 +2,9 @@
     background-color: #282828;
     width: calc(100% - 69px);
     height: 87vh;
-    overflow-y: auto;
     transition: width 0.3s ease-in-out, margin-left 0.3s ease-in-out;
     padding: 1.2rem;
+    overflow-y: hidden;
 }
 
 .viewexam-box {

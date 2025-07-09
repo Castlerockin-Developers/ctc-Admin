@@ -108,11 +108,13 @@ const NewMcq = ({ setActiveComponent, onSave, onCancel }) => {
             icon: 'warning',
             showCancelButton: true,
             confirmButtonText: 'Yes, discard',
-            cancelButtonText: 'No, go back',
+            cancelButtonText: 'go back',
             background: "#181817",
             color: "#fff",
-        }).then(() => {
-            onCancel();
+        }).then((result) => {
+            if (result.isConfirmed) {
+                onCancel();
+            }
         });
     };
 
@@ -172,7 +174,7 @@ const NewMcq = ({ setActiveComponent, onSave, onCancel }) => {
                             {option.file && <p>Picked: {option.file.name}</p>}
 
                             {/* Correct Answer Checkbox */}
-                            <label>
+                            <div>
                                 <input
                                     type="checkbox"
                                     checked={option.isCorrect}
@@ -180,7 +182,7 @@ const NewMcq = ({ setActiveComponent, onSave, onCancel }) => {
                                     className='correct-answer-checkbox'
                                 />
                                 Correct Answer
-                            </label>
+                            </div>
 
                             {/* Delete Option */}
                             <button onClick={() => handleDeleteOption(index)}>Delete Option</button>
