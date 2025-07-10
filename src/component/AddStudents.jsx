@@ -1,10 +1,10 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import Swal from 'sweetalert2';
-import line from '../assets/Line.png';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faRotateLeft, faSearch } from '@fortawesome/free-solid-svg-icons';
-import { authFetch } from '../scripts/AuthProvider';
-
+import React, { useEffect, useMemo, useState } from "react";
+import Swal from "sweetalert2";
+import line from "../assets/Line.png";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faRotateLeft, faSearch } from "@fortawesome/free-solid-svg-icons";
+import { authFetch } from "../scripts/AuthProvider";
+ 
 const AddStudents = ({ onBack, onSubmit, createExamRequest }) => {
     // Session storage keys
     const STORAGE_KEYS = {
@@ -308,9 +308,72 @@ const AddStudents = ({ onBack, onSubmit, createExamRequest }) => {
                         </div>
                     </div>
                 </div>
-
-                <div className='flex justify-center'>
-                    <img src={line} alt='line' className='line-bottom' />
+              </div>
+            </div>
+            <div className="all-s-body">
+              <div className="adds-table-wrapper">
+                <table>
+                  <thead>
+                    <tr>
+                      <td colSpan={2} align="left">
+                        All Students
+                      </td>
+                      <td colSpan={2} align="right">
+                        <button
+                          onClick={addAll}
+                          className="bg-green-500 rounded hover:bg-green-900 adds-branch"
+                        >
+                          + Add Batch
+                        </button>
+                      </td>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {paginatedAll.length ? (
+                      paginatedAll.map((s) => (
+                        <tr key={s.studentId} className="border-1 border-white">
+                          <td>{s.id}</td>
+                          <td>{s.name}</td>
+                          <td>{s.branch}</td>
+                          <td>
+                            <button
+                              onClick={() => addOne(s)}
+                              className="bg-green-500 hover:bg-green-900 rounded adds-btn"
+                            >
+                              +Add
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={4} className="text-center">
+                          No students found
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+                <div className="flex justify-center items-center space-x-2 mt-4">
+                  <button
+                    disabled={allPage === 1}
+                    onClick={() => setAllPage((p) => Math.max(1, p - 1))}
+                    className="px-4 py-2 bg-[#A294F9] text-white border border-[#A294F9] rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#8E5DAF] hover:text-white hover:border-[#8E5DAF] transition"
+                  >
+                    Prev
+                  </button>
+ 
+                  <span className="text-sm font-medium px-2">
+                    {allPage} / {allTotal}
+                  </span>
+ 
+                  <button
+                    disabled={allPage === allTotal}
+                    onClick={() => setAllPage((p) => Math.min(allTotal, p + 1))}
+                    className="px-4 py-2 bg-[#A294F9] text-white border border-[#A294F9] rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#8E5DAF] hover:text-white hover:border-[#8E5DAF] transition"
+                  >
+                    Next
+                  </button>
                 </div>
                 <div className='flex w-full justify-end bottom-control gap-1'>
                     <button onClick={onBack} className="exam-previous-btn">
@@ -333,11 +396,92 @@ const AddStudents = ({ onBack, onSubmit, createExamRequest }) => {
                             : '+ CreateExam'
                         }
                     </button>
-
                 </div>
+              </div>
             </div>
+            <div className="all-s-body">
+              <div className="addeds-table-wrapper">
+                {paginatedAdded.length ? (
+                  <>
+                    <table>
+                      <thead>
+                        <tr>
+                          <td colSpan={6} align="left">
+                            Added Students
+                          </td>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {paginatedAdded.map((s) => (
+                          <tr
+                            key={s.studentId}
+                            className="border-1 border-white"
+                          >
+                            <td>{s.id}</td>
+                            <td className="whitespace-nowrap">{s.name}</td>
+                            <td>{s.degree}</td>
+                            <td>{s.year}</td>
+                            <td>{s.branch}</td>
+                            <td>
+                              <button
+                                onClick={() => removeOne(s)}
+                                className="bg-red-500 hover:bg-red-900 rounded adds-btn"
+                              >
+                                Remove
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                    <div className="pagination flex justify-center items-center gap-2 mt-2">
+                      <button
+                        disabled={addedPage === 1}
+                        onClick={() => setAddedPage((p) => Math.max(1, p - 1))}
+                        className="px-3 py-1 bg-gray-700 rounded disabled:opacity-50"
+                      >
+                        Prev
+                      </button>
+                      <span>
+                        {addedPage} / {addedTotal}
+                      </span>
+                      <button
+                        disabled={addedPage === addedTotal}
+                        onClick={() =>
+                          setAddedPage((p) => Math.min(addedTotal, p + 1))
+                        }
+                        className="px-3 py-1 bg-gray-700 rounded disabled:opacity-50"
+                      >
+                        Next
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <p className="text-center text-white">
+                    No students added yet.
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
-    );
+ 
+        <div className="flex justify-center">
+          <img src={line} alt="line" className="line-bottom" />
+        </div>
+        <div className="flex w-full justify-end bottom-control gap-1">
+          <button onClick={onBack} className="exam-previous-btn">
+            <FontAwesomeIcon icon={faRotateLeft} className="left-icon" />
+            back
+          </button>
+          <p>3/3</p>
+          <button className="exam-next-btn" onClick={createExam}>
+            + CreateExam
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 };
-
+ 
 export default AddStudents;
