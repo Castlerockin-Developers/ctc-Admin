@@ -7,8 +7,38 @@ import { authFetch } from '../scripts/AuthProvider';
 
 
 const AddQuestion = ({ onBack, onNexts, onCreateMCQ, onCreateCoding }) => {
+
+    const [mcqQuestions, setMcqQuestions] = useState(() => {
+        const v = sessionStorage.getItem('mcqQuestions');
+        return v ? JSON.parse(v) : [];
+    });
+    const [codingQuestions, setCodingQuestions] = useState(() => {
+        const v = sessionStorage.getItem('codingQuestions');
+        return v ? JSON.parse(v) : [];
+    });
+    const [sectionTimers, setSectionTimers] = useState(() => {
+        const v = sessionStorage.getItem('sectionTimers');
+        return v ? JSON.parse(v) : {};
+    });
+
+    // Save mcqQuestions
+    useEffect(() => {
+        sessionStorage.setItem('mcqQuestions', JSON.stringify(mcqQuestions));
+    }, [mcqQuestions]);
+
+    // Save codingQuestions
+    useEffect(() => {
+        sessionStorage.setItem('codingQuestions', JSON.stringify(codingQuestions));
+    }, [codingQuestions]);
+
+    // Save sectionTimers
+    useEffect(() => {
+        sessionStorage.setItem('sectionTimers', JSON.stringify(sectionTimers));
+    }, [sectionTimers]);
+
     const [windowWidth, setWindowWidth] = useState(window.innerWidth);
     const [sourceQuestions, setSourceQuestions] = useState([]);
+
     useEffect(() => {
         const fetchQuestions = async () => {
             try {
@@ -44,13 +74,9 @@ const AddQuestion = ({ onBack, onNexts, onCreateMCQ, onCreateCoding }) => {
     const [selectedQuestionType, setSelectedQuestionType] = useState(null);
 
     //   Import Question Bank Popup
-    const [sectionTimers, setSectionTimers] = useState({});
-
     const [isEditingScoreCoding, setIsEditingScoreCoding] = useState(false);
-
-    const [mcqQuestions, setMcqQuestions] = useState([]);
-    const [codingQuestions, setCodingQuestions] = useState([]);
     const [isQuestionBankVisible, setIsQuestionBankVisible] = useState(true);
+
 
     useEffect(() => {
         const handleResize = () => setWindowWidth(window.innerWidth);
@@ -126,47 +152,36 @@ const AddQuestion = ({ onBack, onNexts, onCreateMCQ, onCreateCoding }) => {
 
 
     const handleEditCodingSectionScore = () => {
-        // get a sensible default (first question’s score or 0)
-        const current = codingQuestions.length
-            ? codingQuestions[0].score ?? 0
-            : 0;
-
+        if (codingQuestions.length === 0) {
+            return Swal.fire({
+                title: 'No Questions',
+                text: 'No coding questions added to score.',
+                icon: 'error',
+                background: '#181817',
+                color: '#fff',
+                showConfirmButton: false,
+                timer: 1500,
+            });
+        }
+        const current = codingQuestions[0].score ?? 0;
         Swal.fire({
-            title: `Set score for all coding questions`,
+            title: 'Set score for all coding questions',
             text: 'Enter a score between 0 and 10:',
             input: 'number',
             inputValue: current,
             inputAttributes: { min: 0, max: 10, step: 1 },
             showCancelButton: true,
             confirmButtonText: 'Apply',
-            cancelButtonText: 'Cancel',
-            background: "#181817",
-            color: "#fff",
+            background: '#181817',
+            color: '#fff',
         }).then(result => {
             if (result.isConfirmed) {
                 const newScore = parseInt(result.value, 10);
                 if (isNaN(newScore) || newScore < 0 || newScore > 10) {
-                    Swal.fire({
-                        title: 'Invalid score',
-                        text: 'Please enter a number from 0 to 10.',
-                        icon: 'error',
-                        background: "#181817",
-                        color: "#fff",
-                    });
-                    return;
+                    return Swal.fire({ title: 'Invalid score', text: 'Enter 0–10.', icon: 'error', background: '#181817', color: '#fff' });
                 }
-                // apply to all coding questions
-                setCodingQuestions(prev =>
-                    prev.map(q => ({ ...q, score: newScore }))
-                );
-                Swal.fire({
-                    title: 'Done!',
-                    text: `All coding questions set to ${newScore}.`,
-                    icon: 'success',
-                    background: "#181817",
-                    color: "#fff",
-                    timer: 1500,
-                });
+                setCodingQuestions(prev => prev.map(q => ({ ...q, score: newScore })));
+                Swal.fire({ title: 'Done!', text: `All coding questions set to ${newScore}.`, icon: 'success', background: '#181817', color: '#fff', timer: 1500 });
             }
         });
     };
@@ -313,20 +328,37 @@ const AddQuestion = ({ onBack, onNexts, onCreateMCQ, onCreateCoding }) => {
 
 
     const handleNextButtonClick = () => {
+        // 0) Make sure at least one question is added
         if (mcqQuestions.length === 0 && codingQuestions.length === 0) {
-            Swal.fire({
+            return Swal.fire({
                 title: "Error",
                 text: "Please add at least one question from the Question Bank to proceed.",
                 icon: "error",
                 background: "#181817",
                 color: "#fff",
-                showConfirmButton: false,
                 timer: 1500,
+                showConfirmButton: false,
             });
-            return;
         }
+
+        // 1) Ensure all scores are > 0
+        const allQs = [...mcqQuestions, ...codingQuestions];
+        const hasZeroScore = allQs.some(q => q.score === 0 || q.score == null);
+        if (hasZeroScore) {
+            return Swal.fire({
+                title: "Scores Incomplete",
+                text: "Please assign a non-zero score to every question before proceeding.",
+                icon: "error",
+                background: "#181817",
+                color: "#fff",
+                timer: 1500,
+                showConfirmButton: false,
+            });
+        }
+
+        // 2) Warn if one type is missing
         if (mcqQuestions.length > 0 && codingQuestions.length === 0) {
-            Swal.fire({
+            return Swal.fire({
                 title: "Warning",
                 text: "You have not added any Coding questions. Do you want to proceed?",
                 icon: "warning",
@@ -335,15 +367,12 @@ const AddQuestion = ({ onBack, onNexts, onCreateMCQ, onCreateCoding }) => {
                 cancelButtonText: "No",
                 background: "#181817",
                 color: "#fff",
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    onNexts();
-                }
+            }).then(result => {
+                if (result.isConfirmed) onNexts();
             });
-            return;
         }
         if (codingQuestions.length > 0 && mcqQuestions.length === 0) {
-            Swal.fire({
+            return Swal.fire({
                 title: "Warning",
                 text: "You have not added any MCQ questions. Do you want to proceed?",
                 icon: "warning",
@@ -352,15 +381,15 @@ const AddQuestion = ({ onBack, onNexts, onCreateMCQ, onCreateCoding }) => {
                 cancelButtonText: "No",
                 background: "#181817",
                 color: "#fff",
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    onNexts();
-                }
+            }).then(result => {
+                if (result.isConfirmed) onNexts();
             });
-            return;
         }
+
+        // 3) All good — go next
         onNexts();
     };
+
 
     const uniqueSections = [...new Set(sourceQuestions.map(q => q.group_id))];
     return (
@@ -477,7 +506,7 @@ const AddQuestion = ({ onBack, onNexts, onCreateMCQ, onCreateCoding }) => {
                                                                 className="bg-green-500 rounded-sm hover:bg-green-900 px-2"
                                                                 onClick={() => handleAddAllClick(sectionId, 'mcq')}
                                                             >
-                                                                + Add All
+                                                                + Add
                                                             </button>
                                                         </div>
                                                         <div className="question-templet-body">
@@ -503,7 +532,7 @@ const AddQuestion = ({ onBack, onNexts, onCreateMCQ, onCreateCoding }) => {
                                                         className="bg-green-500 rounded-sm hover:bg-green-900 px-2"
                                                         onClick={() => handleAddAllClick(null, 'coding')}
                                                     >
-                                                        + Add All
+                                                        + Add
                                                     </button>
                                                 </div>
                                                 <div className="question-templet-body">
@@ -660,7 +689,15 @@ const AddQuestion = ({ onBack, onNexts, onCreateMCQ, onCreateCoding }) => {
                         <FontAwesomeIcon icon={faRotateLeft} className='left-icon' />back
                     </button>
                     <p>2/3</p>
-                    <button className='exam-next-btn' onClick={handleNextButtonClick}>Next</button>
+                    <button
+                        className='exam-next-btn'
+                        onClick={handleNextButtonClick}
+                        disabled={[...mcqQuestions, ...codingQuestions].some(q => q.score === 0 || q.score == null)}
+                        style={{ opacity: ([...mcqQuestions, ...codingQuestions].some(q => q.score === 0 || q.score == null) ? 0.5 : 1) }}
+                    >
+                        Next
+                    </button>
+
                 </div>
             </div>
         </div>

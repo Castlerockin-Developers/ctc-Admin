@@ -5,6 +5,7 @@ import line from '../assets/Line.png';
 import { motion } from "motion/react";
 import { authFetch } from "../scripts/AuthProvider";
 import Swal from "sweetalert2";
+import ManageLoader from "../loader/ManageLoader";
 
 const ManageExam = ({ onCreateNewExam, onNext }) => {
     const [activeButton, setActiveButton] = useState("all");
@@ -271,9 +272,7 @@ const ViewExam = ({ exam, onBack }) => {
 
     if (!examDetails) {
         return (
-            <div className="viewexam-container justify-center flex flex-wrap">
-                <h1>Loading exam details...</h1>
-            </div>
+            <ManageLoader />
         );
     }
 

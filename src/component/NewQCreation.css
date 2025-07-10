@@ -76,7 +76,8 @@
 
 .custom-quill {
     position: relative;
-    right: 34px;
+    right: 18px;
+    width: 57.5% !important;
 }
 
 .category-container select {
@@ -152,6 +153,7 @@
     border-radius: 2px;
     cursor: pointer;
     position: relative;
+    top: 2px;
 }
 
 /* Change the background color when checkbox is checked */
@@ -164,7 +166,7 @@
     margin-right: 6px;
 }
 
-.option-column label {
+.option-column div {
     color: white;
     font-family: madina-regular;
     font-size: 0.9rem;
@@ -234,4 +236,106 @@
 
 .save-btn:hover {
     background-color: #8c7ae6;
+}
+
+@media(max-width:1024px) {
+    .newmcq-container {
+        width: calc(100% - 30px);
+    }
+
+    .coding-question {
+        width: 100%;
+    }
+
+    .custom-quill {
+        width: 100% !important;
+    }
+}
+
+@media(min-width:660px) and (max-width:1023px) {
+    .newmcq-container {
+        width: 100%;
+    }
+
+    .newmcq-wrapper textarea {
+        width: 80%;
+    }
+
+    .custom-quill {
+        width: 94% !important;
+    }
+}
+
+@media(min-width:400px) and (max-width:659px) {
+    .newmcq-container {
+        width: 100%;
+    }
+
+    .newmcq-wrapper textarea {
+        width: 100%;
+    }
+
+    .options-container .option-textarea {
+        width: 100%;
+    }
+
+    .options-container {
+        grid-template-columns: 1fr;
+    }
+
+    .newmcq-wrapper h4 input {
+        width: 50%;
+    }
+
+    .category-container {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .category-container button {
+        margin-left: 0px;
+    }
+
+    .custom-quill {
+        right: 0px;
+        width: 95% !important;
+    }
+}
+
+@media(min-width:300px) and (max-width:399px) {
+    .newmcq-container {
+        width: 100%;
+    }
+
+    .newmcq-wrapper textarea {
+        width: 100%;
+    }
+
+    .options-container .option-textarea {
+        width: 95%;
+    }
+
+    .options-container {
+        grid-template-columns: 1fr;
+    }
+
+    .newmcq-wrapper h4 input {
+        width: 50%;
+    }
+
+    .category-container {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .category-container button {
+        margin-left: 0px;
+    }
+
+    .custom-quill {
+        right: 0px;
+        width: 95% !important;
+    }
 }

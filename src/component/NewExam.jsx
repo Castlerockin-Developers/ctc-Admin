@@ -9,6 +9,8 @@ import Swal from 'sweetalert2';
 const STORAGE_KEY = 'newExam';
 
 const NewExam = ({ onBack, onNext, setCreateExamRequest }) => { //
+    const [isSubmitted, setIsSubmitted] = useState(false);
+
     // State variables for form fields
     const [testName, setTestName] = useState(() =>
         sessionStorage.getItem(`${STORAGE_KEY}:testName`) || ''
@@ -158,6 +160,7 @@ const NewExam = ({ onBack, onNext, setCreateExamRequest }) => { //
 
     // Handler for the "Next" button
     const handleNext = () => { //
+        setIsSubmitted(true);
         const formIsValid = runAllValidations(); // Run all validations and update errors state
 
         if (formIsValid) { //
@@ -200,7 +203,9 @@ const NewExam = ({ onBack, onNext, setCreateExamRequest }) => { //
                     {/* Test Name Input */}
                     <div className='createexam-col1 flex'>
                         <h4 className='flex justify-between'>
-                            Test Name <span style={{ color: 'red' }}>*</span>
+                            Test Name {isSubmitted && errors.testName && (
+                                <span style={{ color: 'red' }}>*</span>
+                            )}
                         </h4>
                         <input
                             type="text"
@@ -217,7 +222,9 @@ const NewExam = ({ onBack, onNext, setCreateExamRequest }) => { //
                     {/* Exam Start Date Input (Calendar) */}
                     <div className='createexam-col1 flex'>
                         <h4 className='flex justify-between'>
-                            Exam Start Date <span style={{ color: 'red' }}>*</span>
+                            Exam Start Date {isSubmitted && errors.examStartDate && (
+                                <span style={{ color: 'red' }}>*</span>
+                            )}
                         </h4>
                         <input
                             type="date"
@@ -233,7 +240,9 @@ const NewExam = ({ onBack, onNext, setCreateExamRequest }) => { //
                     {/* Start Time Input */}
                     <div className='createexam-col1 flex'>
                         <h4 className='flex justify-between'>
-                            Start Time <span style={{ color: 'red' }}>*</span>
+                            Start Time {isSubmitted && errors.startTime && (
+                                <span style={{ color: 'red' }}>*</span>
+                            )}
                         </h4>
                         <input
                             type="time"
@@ -249,7 +258,9 @@ const NewExam = ({ onBack, onNext, setCreateExamRequest }) => { //
                     {/* Exam End Date Input (Calendar) */}
                     <div className='createexam-col1 flex'>
                         <h4 className='flex justify-between'>
-                            Exam End Date <span style={{ color: 'red' }}>*</span>
+                            Exam End Date {isSubmitted && errors.examEndDate && (
+                                <span style={{ color: 'red' }}>*</span>
+                            )}
                         </h4>
                         <input
                             type="date"
@@ -265,7 +276,9 @@ const NewExam = ({ onBack, onNext, setCreateExamRequest }) => { //
                     {/* End Time Input */}
                     <div className='createexam-col1 flex'>
                         <h4 className='flex justify-between'>
-                            End Time <span style={{ color: 'red' }}>*</span>
+                            End Time {isSubmitted && errors.endTime && (
+                                <span style={{ color: 'red' }}>*</span>
+                            )}
                         </h4>
                         <input
                             type="time"
@@ -281,7 +294,9 @@ const NewExam = ({ onBack, onNext, setCreateExamRequest }) => { //
                     {/* Timed Test Toggle and Timer Input */}
                     <div className='createexam-col1 flex'>
                         <h4 className='flex justify-between'>
-                            Timed Test <span style={{ color: 'red' }}>*</span>
+                            Timed Test {isSubmitted && errors.timedTest && (
+                                <span style={{ color: 'red' }}>*</span>
+                            )}
                         </h4>
                         <div>
                             <label className="toggle-switch">
@@ -327,7 +342,9 @@ const NewExam = ({ onBack, onNext, setCreateExamRequest }) => { //
                     {/* Attempts Allowed Input */}
                     <div className='createexam-col1 flex'>
                         <h4 className='flex justify-between'>
-                            Attempts Allowed <span style={{ color: 'red' }}>*</span>
+                            Attempts Allowed {isSubmitted && errors.attemptsAllowed && (
+                                <span style={{ color: 'red' }}>*</span>
+                            )}
                         </h4>
                         <input
                             type="number"
@@ -344,7 +361,10 @@ const NewExam = ({ onBack, onNext, setCreateExamRequest }) => { //
                     {/* Instructions ReactQuill Editor */}
                     <div className='createexam-col1 flex'>
                         <h4 className='flex justify-between'>
-                            Instructions <span style={{ color: 'red' }}>*</span>
+                            Instructions
+                            {isSubmitted && errors.instructions && (
+                                <span style={{ color: 'red' }}>*</span>
+                            )}
                         </h4>
                         <ReactQuill
                             value={instructions}

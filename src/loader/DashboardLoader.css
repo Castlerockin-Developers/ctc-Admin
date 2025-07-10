@@ -1,0 +1,24 @@
+.title {
+    margin: 1rem 0;
+}
+
+.top-stats,
+.bottom-stats {
+    margin-bottom: 1rem;
+}
+
+.row-space {
+    margin: 12px 0;
+}
+
+@media(max-width:450px) and (min-width:375px) {
+    .animate-pulse {
+        width: 140%;
+    }
+}
+
+@media(max-width:320px) {
+    .animate-pulse {
+        width: 120%;
+    }
+}

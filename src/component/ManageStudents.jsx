@@ -3,6 +3,7 @@ import { FaSearch, FaPlus, FaFilter, FaDatabase, FaPen, FaUpload } from "react-i
 import Swal from "sweetalert2";
 import { motion } from "framer-motion";
 import { authFetch, authFetchPayload } from '../scripts/AuthProvider';
+import TableSkeleton from "../loader/TableSkeleton";
 
 // Utility function to truncate text:
 // It returns "..." if the text is too long,
@@ -38,6 +39,9 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen }) => {
   // **NEW STATE FOR SORTING**
   const [sortConfig, setSortConfig] = useState({ key: 'usn', direction: 'ascending' });
 
+  const [loading, setLoading] = useState(true); // State to track loading
+
+
   // Effect to update screenWidth on window resize
   useEffect(() => {
     const handleResize = () => {
@@ -50,11 +54,12 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen }) => {
 
   // When data loads, set activeTab to first branch
   const fetchStudentsData = async () => {
+    setLoading(true); // Set loading to true when data fetch starts
     const response = await authFetch('/admin/students/', { method: 'GET' });
     if (response.status === 200) {
       const data = await response.json();
       userCount.current = data.user_count || 0; // total students count
-      totalAllowedStudents.current = data.max_users
+      totalAllowedStudents.current = data.max_users;
       setStudentsData(data.data || {}); // your students are under data key
       const firstBranch = Object.keys(data.data || {})[0];
       setActiveTab(firstBranch || "");
@@ -62,7 +67,9 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen }) => {
     } else {
       console.error("Failed to fetch students data");
     }
+    setLoading(false); // Set loading to false when data fetch is complete
   };
+
 
   useEffect(() => {
     const loadGroups = async () => {
@@ -260,73 +267,77 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen }) => {
 
         {/* Students Table */}
         <div className="m-table-container">
-          <table>
-            <thead>
-              {/* Changed breakpoint to 768px to cover tablets and most mobile devices */}
-              {screenWidth <= 768 ? (
-                // Mobile/Tablet Headers (6 columns)
-                <tr>
-                  <th className="mobile-usn-col" onClick={() => handleSort('usn')}>
-                    USN
-                  </th>
-                  <th className="mobile-name-col">Name</th>
-                  <th className="mobile-email-col">Email</th>
-                  <th className="mobile-phone-col">Phone</th>
-                  <th className="mobile-status-col">Active</th>
+          {loading ? (
+            <TableSkeleton />
+          ) : (
+            <table>
+              <thead>
+                {/* Changed breakpoint to 768px to cover tablets and most mobile devices */}
+                {screenWidth <= 768 ? (
+                  // Mobile/Tablet Headers (6 columns)
+                  <tr>
+                    <th className="mobile-usn-col" onClick={() => handleSort('usn')}>
+                      USN
+                    </th>
+                    <th className="mobile-name-col">Name</th>
+                    <th className="mobile-email-col">Email</th>
+                    <th className="mobile-phone-col">Phone</th>
+                    <th className="mobile-status-col">Active</th>
 
-                </tr>
-              ) : (
-                // Desktop Headers (6 columns)
-                <tr>
-                  <th className="desktop-usn-col" onClick={() => handleSort('usn')}>
-                    #USN
-                  </th>
-                  <th className="desktop-name-col">Name</th>
-                  <th className="desktop-email-col">Email</th>
-                  <th className="desktop-phone-col">Phone</th>
-                  <th className="desktop-active-col">Active</th>
-
-                </tr>
-              )}
-            </thead>
-            <tbody>
-              {currentStudents.length > 0 ? (
-                currentStudents.map((student, index) => (
-                  <tr key={student.usn} className={index % 2 === 0 ? "even-row" : "odd-row"}>
-                    {/* Changed breakpoint to 768px */}
-                    {screenWidth <= 768 ? (
-                      // Mobile/Tablet Data Cells (6 columns)
-                      <>
-                        <td className="mobile-usn-col">{student.usn}</td>
-                        {/* Name column: Displays "..." if long, full name on hover */}
-                        <td className="mobile-name-col" title={student.name || student.email}>{truncateText(student.name, 20)}</td>
-                        <td className="mobile-email-col">{student.email}</td>
-                        {/* Phone column: Displays content or "-", full number on hover */}
-                        <td className="mobile-phone-col" title={student.contact}>{student.contact || "-"}</td>
-                        <td className="mobile-status-col">{student.is_active ? "Yes" : "No"}</td>
-                      </>
-                    ) : (
-                      // Desktop Data Cells (6 columns)
-                      <>
-                        <td className="desktop-usn-col">{student.usn}</td>
-                        {/* Name column: Displays "..." if long, full name on hover */}
-                        <td className="desktop-name-col" title={student.name || student.email}>{truncateText(student.name || student.email, 30)}</td>
-                        <td className="desktop-email-col">{student.email}</td>
-                        {/* Phone column: Displays content or "-", full number on hover */}
-                        <td className="desktop-phone-col" title={student.contact}>{student.contact || "-"}</td>
-                        <td className="desktop-active-col">{student.is_active ? "Yes" : "No"}</td>
-                      </>
-                    )}
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  {/* Adjusted colspan to 6 as there are now 6 columns */}
-                  <td colSpan="6" className="no-data">No students found</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                ) : (
+                  // Desktop Headers (6 columns)
+                  <tr>
+                    <th className="desktop-usn-col" onClick={() => handleSort('usn')}>
+                      #USN
+                    </th>
+                    <th className="desktop-name-col">Name</th>
+                    <th className="desktop-email-col">Email</th>
+                    <th className="desktop-phone-col">Phone</th>
+                    <th className="desktop-active-col">Active</th>
+
+                  </tr>
+                )}
+              </thead>
+              <tbody>
+                {currentStudents.length > 0 ? (
+                  currentStudents.map((student, index) => (
+                    <tr key={student.usn} className={index % 2 === 0 ? "even-row" : "odd-row"}>
+                      {/* Changed breakpoint to 768px */}
+                      {screenWidth <= 768 ? (
+                        // Mobile/Tablet Data Cells (6 columns)
+                        <>
+                          <td className="mobile-usn-col">{student.usn}</td>
+                          {/* Name column: Displays "..." if long, full name on hover */}
+                          <td className="mobile-name-col" title={student.name || student.email}>{truncateText(student.name, 20)}</td>
+                          <td className="mobile-email-col">{student.email}</td>
+                          {/* Phone column: Displays content or "-", full number on hover */}
+                          <td className="mobile-phone-col" title={student.contact}>{student.contact || "-"}</td>
+                          <td className="mobile-status-col">{student.is_active ? "Yes" : "No"}</td>
+                        </>
+                      ) : (
+                        // Desktop Data Cells (6 columns)
+                        <>
+                          <td className="desktop-usn-col">{student.usn}</td>
+                          {/* Name column: Displays "..." if long, full name on hover */}
+                          <td className="desktop-name-col" title={student.name || student.email}>{truncateText(student.name || student.email, 30)}</td>
+                          <td className="desktop-email-col">{student.email}</td>
+                          {/* Phone column: Displays content or "-", full number on hover */}
+                          <td className="desktop-phone-col" title={student.contact}>{student.contact || "-"}</td>
+                          <td className="desktop-active-col">{student.is_active ? "Yes" : "No"}</td>
+                        </>
+                      )}
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    {/* Adjusted colspan to 6 as there are now 6 columns */}
+                    <td colSpan="6" className="no-data">No students found</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          )}
         </div>
 
         {/* Pagination Controls */}

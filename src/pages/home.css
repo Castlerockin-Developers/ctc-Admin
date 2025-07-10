@@ -361,16 +361,14 @@
 }
 
 .tablee {
-    /* Outer card container */
     width: 90%;
-    height: 40vh;
+    height: auto;
+    max-height: 40vh;
     margin-top: 1rem;
     border-collapse: collapse;
     border: 1px solid #656565;
-    /* Subtle border */
     border-radius: 5px;
     background-color: #4B4B4B;
-    /* Outer background color */
     box-shadow: 0 0 8px rgba(36, 36, 36, 0.3);
     overflow-y: auto;
 }
@@ -393,15 +391,14 @@
     display: block;
     max-width: 100%;
     cursor: pointer;
-    /* Pointer on hover */
 }
 
 .tablee-content h6 {
     color: #fff;
-    /* White text by default */
     font-family: madina-regular;
     font-size: 1rem;
     transition: color 0.3s ease;
+    white-space: normal;
 }
 
 .tablee-content:hover {
@@ -1484,7 +1481,8 @@ body {
 /*notification-table*/
 .notification-table {
     width: 90%;
-    height: 40vh;
+    height: auto;
+    max-height: 40vh;
     margin-top: 1rem;
     border-collapse: collapse;
     box-shadow: 0 0 8px rgba(36, 36, 36, 0.3);
@@ -1664,10 +1662,14 @@ body {
         white-space: nowrap;
     }
 
+    .pop-up-table thead {
+        width: 150%;
+    }
+
     .pop-up-table tbody {
         max-height: 35vh;
         overflow-y: auto;
-        width: 100%;
+        width: 150%;
     }
 
     .pop-up-table tbody td,
@@ -1720,7 +1722,7 @@ body {
     }
 
     .viewexam-header {
-        height: 6vh;
+        height: auto;
         padding: 0.8rem;
         font-size: 1.2rem;
     }
@@ -2598,7 +2600,8 @@ body {
     .dashboard,
     .result-container,
     .exam-container {
-        width: calc(100% - 28px);
+        width: calc(100% - 20px);
+        padding: 1rem;
     }
 
     .menu-toggle {
@@ -2628,6 +2631,11 @@ body {
         width: auto;
     }
 
+    .pop-up-table thead,
+    .pop-up-table tbody {
+        width: 130%;
+    }
+
 
     .m-table-container table thead,
     .m-table-container table tbody {
@@ -2655,7 +2663,7 @@ body {
 
     .sidebar-button {
         width: 85%;
-        padding: 10px 15px;
+        padding: 11px 15px;
     }
 
     .sidebar-item {

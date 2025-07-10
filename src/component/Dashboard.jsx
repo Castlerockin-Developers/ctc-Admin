@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import EditExam from "./EditExam";
 import ViewExam from "./ViewExam"; // Import ViewExam component
 import { authFetch } from "../scripts/AuthProvider";
+import DashboardLoader from "../loader/DashboardLoader";
 // import axios from 'axios'; // Uncomment and use axios for making HTTP requests when backend is ready
 
 const Dashboard = ({ onCreateExam, onAddStudent, onAddUser, onAddCredits, onManageExam, onSubscription, onManageStudents }) => {
@@ -69,30 +70,31 @@ const Dashboard = ({ onCreateExam, onAddStudent, onAddUser, onAddCredits, onMana
             //     setLoading(false);
             // }
 
-            const resposeData = await authFetch('/admin/home/',{
+            const resposeData = await authFetch('/admin/home/', {
                 method: 'GET',
             });
             const raesponseData = await resposeData.json();
 
-                setDashboardData({
-                    activeContest: raesponseData.active_exam,
-                    liveContest: raesponseData.completed_exams_count,
-                    credit: raesponseData.credits,   
-                    totalStudents: raesponseData.total_users});
-                
-                setTestDetails(raesponseData.active_exams);
-                setRecentTests(raesponseData.recent_exams);
-                setCompletedResults(raesponseData.completed_exams);
-                setNotifications(raesponseData.notifications);
-                setLoading(false);
-                setUserData(raesponseData.logged_in_user);
+            setDashboardData({
+                activeContest: raesponseData.active_exam,
+                liveContest: raesponseData.completed_exams_count,
+                credit: raesponseData.credits,
+                totalStudents: raesponseData.total_users
+            });
+
+            setTestDetails(raesponseData.active_exams);
+            setRecentTests(raesponseData.recent_exams);
+            setCompletedResults(raesponseData.completed_exams);
+            setNotifications(raesponseData.notifications);
+            setLoading(false);
+            setUserData(raesponseData.logged_in_user);
         };
 
         fetchDashboardData();
     }, []);
 
     if (loading) {
-        return <p className="text-center text-lg">Loading data...</p>;
+        return <DashboardLoader />;
     }
 
     if (error) {
@@ -129,7 +131,7 @@ const Dashboard = ({ onCreateExam, onAddStudent, onAddUser, onAddCredits, onMana
             ) : (
                 <div className="greeting">
                     <h1 className="text-2xl md:text-3xl xl:text-4xl font-semibold text-white">Welcome {userData}</h1>
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 w-full">
+                    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-4 w-full">
                         <motion.div
                             whileTap={{ scale: 1.1 }}
                             className="top-display top-display-clickable cursor-pointer greet1"
@@ -172,7 +174,7 @@ const Dashboard = ({ onCreateExam, onAddStudent, onAddUser, onAddCredits, onMana
 
                         {showPopup && (
                             <div className="fixed inset-0 flex items-center justify-center top-display-pop">
-                                <div className="top-display-pop-card rounded-sm shadow-lg w-11/12 md:w-3/4 lg:w-1/2">
+                                <div className="top-display-pop-card rounded-sm shadow-lg w-11/12 md:w-3/4 lg:w-2/3 xl:w-1/2">
                                     <div className="flex justify-between items-center mb-4 top-display-pop-title">
                                         <h2 className="font-semibold text-center">Active Exams</h2>
                                         <motion.button
@@ -199,15 +201,15 @@ const Dashboard = ({ onCreateExam, onAddStudent, onAddUser, onAddCredits, onMana
                                                         <tr key={test.id}>
                                                             <td>{index + 1}</td>
                                                             <td>{test.name}</td>
-                                                           <td>{new Date(test.start_time).toLocaleString('en-US', { 
-                                                            weekday: 'short', year: 'numeric', month: 'short', day: 'numeric', 
-                                                            hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true 
-                                                        })}</td>
+                                                            <td>{new Date(test.start_time).toLocaleString('en-US', {
+                                                                weekday: 'short', year: 'numeric', month: 'short', day: 'numeric',
+                                                                hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true
+                                                            })}</td>
 
-                                                        <td>{new Date(test.end_time).toLocaleString('en-US', { 
-                                                            weekday: 'short', year: 'numeric', month: 'short', day: 'numeric', 
-                                                            hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true 
-                                                        })}</td>
+                                                            <td>{new Date(test.end_time).toLocaleString('en-US', {
+                                                                weekday: 'short', year: 'numeric', month: 'short', day: 'numeric',
+                                                                hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true
+                                                            })}</td>
                                                             <td>
                                                                 <motion.button
 
@@ -256,15 +258,15 @@ const Dashboard = ({ onCreateExam, onAddStudent, onAddUser, onAddCredits, onMana
                                                         <tr key={test.id}>
                                                             <td>{index + 1}</td>
                                                             <td>{test.name}</td>
-                                                            <td>{new Date(test.start_time).toLocaleString('en-US', { 
-                                                            weekday: 'short', year: 'numeric', month: 'short', day: 'numeric', 
-                                                            hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true 
-                                                        })}</td>
+                                                            <td>{new Date(test.start_time).toLocaleString('en-US', {
+                                                                weekday: 'short', year: 'numeric', month: 'short', day: 'numeric',
+                                                                hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true
+                                                            })}</td>
 
-                                                        <td>{new Date(test.end_time).toLocaleString('en-US', { 
-                                                            weekday: 'short', year: 'numeric', month: 'short', day: 'numeric', 
-                                                            hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true 
-                                                        })}</td>
+                                                            <td>{new Date(test.end_time).toLocaleString('en-US', {
+                                                                weekday: 'short', year: 'numeric', month: 'short', day: 'numeric',
+                                                                hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true
+                                                            })}</td>
                                                             <td>
                                                                 <motion.button
                                                                     whileTap={{ scale: 1.1 }}
@@ -291,7 +293,7 @@ const Dashboard = ({ onCreateExam, onAddStudent, onAddUser, onAddCredits, onMana
 
                     {showSubscription && <Subscription />}
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full mid-container">
+                    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 gap-4 w-full mid-container">
                         <div className="w-4/10 mid-display">
                             <h4>Recent Tests</h4>
                             <div className="flex w-full justify-center">
@@ -317,7 +319,7 @@ const Dashboard = ({ onCreateExam, onAddStudent, onAddUser, onAddCredits, onMana
                                 </div>
                             </div>
                         </div>
-                        <div className="w-10/10">
+                        <div className="w-10/10 md:block lg:hidden xl:block">
                             <div className="mid-display2">
                                 <h4>Quick links</h4>
                                 <ul className="list-disc">

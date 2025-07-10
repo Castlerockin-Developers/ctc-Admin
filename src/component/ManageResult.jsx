@@ -5,6 +5,7 @@ import ViewResult from "./ViewResult";
 import ParticularResult from "./PerticularResult";
 import { authFetch } from "../scripts/AuthProvider";
 import '../pages/home.css';
+import ManageLoader from "../loader/ManageLoader";
 
 const ManageResult = () => {
   const [activeTab, setActiveTab] = useState("all");
@@ -58,7 +59,7 @@ const ManageResult = () => {
     })();
   }, []);
 
-  if (loading) return <p className="text-center">Loading...</p>;
+  if (loading) return <ManageLoader />;
   if (error) return <p className="text-center text-red-500">{error}</p>;
 
   // Filter results by tab and search
