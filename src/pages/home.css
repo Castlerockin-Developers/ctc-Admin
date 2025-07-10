@@ -1527,6 +1527,7 @@ body {
         top: 8px;
         height: 91vh;
         padding: 0.5rem;
+        margin-bottom: 10px;
     }
 
     .result-header,
@@ -1555,7 +1556,7 @@ body {
     /* Sidebar */
     .sidebar-container {
         position: fixed;
-        left: 0;
+        left: 5px;
         top: 0px;
         height: 100vh;
         width: 330px;
@@ -1625,6 +1626,10 @@ body {
 
     .tablee-content h6 {
         font-size: 0.75rem;
+    }
+
+    .tablee{
+        max-height: 37vh;
     }
 
     /* Manage Exam Section */
@@ -1752,7 +1757,7 @@ body {
 
     .viewexam-viwer-header {
         height: 5.5vh;
-        padding: 6px 15px 4px;
+        padding: 1px 15px 4px;
     }
 
     .viewexam-viwer-header h2 {
@@ -1888,7 +1893,12 @@ body {
         top: 8px;
         height: 91vh;
         padding: 0.5rem;
+
     }
+    .result-container{
+        margin-bottom: 5px;
+    }
+    
 
     .result-header,
     .greeting {
@@ -2111,7 +2121,7 @@ body {
 
     .viewexam-viwer-header {
         height: 5.5vh;
-        padding: 6px 15px 4px;
+        padding: 1px 15px 4px;
     }
 
     .viewexam-viwer-header h2 {
@@ -2453,7 +2463,7 @@ body {
     .viewexam-header-btn button {
         font-size: 1rem;
         padding: 4px 12px;
-        margin-top: 15px;
+        margin-top: 10px;
     }
 
     .viewexam-body {

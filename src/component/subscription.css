@@ -611,7 +611,7 @@
     .subscription-card-container {
         width: 100%;
         padding: 1rem 0.5rem;
-        height: 616px;
+        height: 400px;
     }
 
     .quantity-input {
@@ -726,6 +726,12 @@
     .reciept-btn {
         font-size: 0.9rem;
     }
+    .modal-row{
+        flex-direction: column;
+    }
+    .modal-row label{
+        width: 70% !important;
+    }
 }
 
 @media(max-width:375px) and (min-width:320px) {
@@ -765,5 +771,11 @@
 
     .buy-item button {
         font-size: 0.9rem;
+    }
+    .modal-row{
+        flex-direction: column;
+    }
+    .modal-row label{
+        width: 70% !important;
     }
 }
