@@ -1357,6 +1357,10 @@ details {
         padding: 0rem;
     }
 
+    .addquestion-box{
+        padding: 0.5rem;
+    }
+
     .addquestion-box h1 {
         font-size: 2rem;
     }
@@ -1394,6 +1398,7 @@ details {
 
     .bottom-control {
         padding-bottom: 20px;
+        padding-right: 30px;
     }
 
     /* Responsive Grid Layout */
@@ -1407,7 +1412,7 @@ details {
     /* Adjust All Students & Added Students Sections */
     .all-student,
     .all-student-added {
-        width: 100%;
+        width: 85%;
         padding: 0.4rem;
     }
 
@@ -1604,7 +1609,7 @@ details {
     }
 
     .bottom-btns {
-        margin-top: 30px;
+        margin-top: 46px;
         width: 30%;
     }
 
@@ -1777,7 +1782,7 @@ details {
     }
 
     .s-search-container input {
-        width: 250px;
+        width: 195px;
     }
 
     .r-header-search {
@@ -1974,6 +1979,13 @@ details {
     .ql-editor {
         width: 60%;
     }
+}
+
+
+@media(max-width:1499px) and (min-width:1200px) {
+.all-student-added{
+    width: 105%;
+}
 }
 
 /* .newexam-box h1,

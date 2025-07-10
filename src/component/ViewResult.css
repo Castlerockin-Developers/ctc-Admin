@@ -663,6 +663,9 @@
     .share-icon {
         top: 0px;
     }
+    .p-result-section{
+        width: 100%;
+    }
 }
 
 @media (max-width: 768px) and (min-width: 500px) {
@@ -693,6 +696,16 @@
 
     .view-r-cards p {
         font-size: 1.1rem;
+    }
+    .marks-r-cards-container {
+        left: 50px;
+    }
+    .marks-r-cards{
+        width: 200px;
+    }
+     .view-table-container table thead,
+    .view-table-container table tbody {
+        width: 135%;
     }
 
 }
