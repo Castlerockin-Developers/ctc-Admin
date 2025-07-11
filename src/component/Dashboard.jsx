@@ -332,7 +332,7 @@ const Dashboard = ({ onCreateExam, onAddStudent, onAddUser, onAddCredits, onMana
                                     <li onClick={onAddUser}>
                                         Add User
                                     </li>
-                                    <li onClick={onAddCredits}>Buy Credits</li>
+                                    {/* <li onClick={onAddCredits}>Buy Credits</li> */}
                                 </ul>
                             </div>
                             <div className="mid-display3">
