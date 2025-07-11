@@ -200,7 +200,7 @@ button.viewexam-edit-btn:hover {
     padding: 5px 10px;
     border-radius: 5px;
     border: 1px solid white;
-    width: 87vw;
+    
 }
 
 .search-box1:hover {
@@ -227,4 +227,16 @@ button.viewexam-edit-btn:hover {
 
 .search-icon {
     color: white;
+}
+@media (max-width: 500px) and (min-width: 0px) {
+    .search-box1 {
+    display: flex;
+    align-items: center;
+    background: #535353;
+    padding: 5px 10px;
+    border-radius: 5px;
+    border: 1px solid white;
+    width: 87vw;
+}
+
 }
