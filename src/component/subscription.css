@@ -732,6 +732,12 @@
     .modal-row label{
         width: 70% !important;
     }
+    .subscribe-bottom p{
+        font-size: 1rem;
+    }
+     .subscribe-bottom p span{
+        font-size: 1rem;
+     }
 }
 
 @media(max-width:375px) and (min-width:320px) {

@@ -1553,7 +1553,19 @@ details {
         margin-bottom: 0.5rem;
         margin-top: 0.5rem;
     }
+    .section-timer {
+        width: 15vw;
+    }
 }
+
+@media(min-width:400px) and (max-width:425px) {
+.all-student,
+    .all-student-added {
+        width: 96%;
+        padding: 0.4rem;
+    }
+}
+
 
 @media(min-width:426px) and (max-width:768px) {
 

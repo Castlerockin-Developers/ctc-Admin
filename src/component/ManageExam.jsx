@@ -123,7 +123,7 @@ const ManageExam = ({ onCreateNewExam, onNext }) => {
                 <div className="exam-greeting">
                     <h1>Exams</h1>
                     <div className="flex sm:flex-row justify-self-end items-center gap-4">
-                        <div className="m-btn-right flex sm:justify-end gap-2 w-full sm:w-auto">
+                      <div className="m-btn-right flex sm:flex-row flex-col-reverse sm:justify-end justify-center items-center gap-2 w-full sm:w-auto">
                             {/* Filter dropdown */}
                             <div ref={filterRef} className="relative">
                                 <button className="filter-btn" onClick={toggleFilter}>
@@ -158,7 +158,7 @@ const ManageExam = ({ onCreateNewExam, onNext }) => {
                                     </motion.div>
                                 )}
                             </div>
-                            <div className="search-box flex">
+                            <div className="search-box1 flex">
                                 <FaSearch className="search-icon" />
                                 <input
                                     type="text"

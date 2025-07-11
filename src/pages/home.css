@@ -414,7 +414,9 @@
 .exam-container {
     background-color: #282828;
     width: calc(100% - 58px);
-    height: 87vh;
+    /* height: 87vh; */
+    height: auto;
+    max-height: 87vh;
     overflow-y: auto;
     transition: width 0.3s ease-in-out, margin-left 0.3s ease-in-out;
     padding: 1.5rem;
@@ -1190,7 +1192,9 @@ body {
 .result-container {
     background-color: #282828;
     width: calc(100% - 58px);
-    height: 87vh;
+    /* height: 87vh; */
+    height: auto;
+    max-height: 87vh;
     overflow-y: auto;
     transition: width 0.3s ease-in-out, margin-left 0.3s ease-in-out;
     padding: 1.5rem;
@@ -1427,6 +1431,7 @@ body {
     /* Space between label and input */
 }
 
+
 .form-input {
     flex-grow: 1;
     padding: 8px;
@@ -1554,7 +1559,7 @@ body {
     }
 
     /* Sidebar */
-    .sidebar-container {
+    /* .sidebar-container {
         position: fixed;
         left: 5px;
         top: 0px;
@@ -1587,12 +1592,61 @@ body {
     .bottom-sidebar-button {
         width: 100%;
         border-radius: 0px;
-    }
+    } */
+
+    .sidebar-container {
+    position: fixed;
+    left: 5px;
+    top: 0;
+    height: 100vh; /* Full viewport height */
+    width: 330px;
+    background-color: #181817;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease-in-out;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column; /* Stack children vertically */
+    justify-content: flex-start;
+    overflow-y: auto; /* Enable vertical scrolling */
+}
+
+.sidebar-top {
+    padding-top: 40px; /* Adjust padding for the top section */
+    flex-shrink: 0; /* Prevent shrinking of the top part */
+}
+
+.sidebar-content {
+    flex-grow: 1; /* Allow content to expand and take available space */
+    overflow-y: auto; /* Allow scrolling if content exceeds */
+}
+
+.sidebar-bottom {
+    margin-top: auto; /* Push the bottom part to the bottom */
+    flex-shrink: 0; /* Prevent shrinking of the bottom part */
+}
+
+.sidebar-item {
+    font-size: 1.3rem;
+}
+
+.sidebar-container.open {
+    transform: translateX(0);
+}
+
+.sidebar-button {
+    width: 100%;
+    padding: 10px 15px;
+}
+
+.bottom-sidebar-button {
+    width: 100%;
+    border-radius: 0px;
+}
 
     .menu-toggle {
         display: block;
         position: fixed;
-        top: 15px;
+        top: 10px;
         left: -5px;
     }
 
@@ -1880,6 +1934,19 @@ body {
         height: 600px;
         overflow-y: auto;
     }
+
+    .form-group input[type="checkbox"] {         
+        cursor: pointer;       
+        position: relative;
+        top: 1.5rem;
+  /* optionally: accent-color: #4F46E5; to match your theme */
+}
+.mid-display2{
+    height: auto;
+}
+.modal-overlay {
+    z-index: 2000;
+}
 }
 
 @media(max-width:800px) and (min-width:501px) {
@@ -2244,6 +2311,12 @@ body {
         height: 600px;
         overflow-y: auto;
     }
+     .form-group input[type="checkbox"] {         
+        cursor: pointer;       
+        position: relative;
+        top: 1.65rem;
+  /* optionally: accent-color: #4F46E5; to match your theme */
+}
 }
 
 @media(max-width:1023px) and (min-width:801px) {
@@ -2603,6 +2676,12 @@ body {
         height: 600px;
         overflow-y: auto;
     }
+    .form-group input[type="checkbox"] {         
+        cursor: pointer;       
+        position: relative;
+        top: 1.65rem;
+  /* optionally: accent-color: #4F46E5; to match your theme */
+}
 }
 
 @media(max-width:1199px) and (min-width:1024px) {
@@ -2660,6 +2739,12 @@ body {
     .mid-display3 {
         padding: 13px 0px;
     }
+    .form-group input[type="checkbox"] {         
+        cursor: pointer;       
+        position: relative;
+        top: 1.75rem;
+  /* optionally: accent-color: #4F46E5; to match your theme */
+}
 }
 
 @media(max-width:1499px) and (min-width:1200px) {
@@ -2703,6 +2788,12 @@ body {
     .m-table-container {
         overflow-x: auto;
     }
+     .form-group input[type="checkbox"] {         
+        cursor: pointer;       
+        position: relative;
+        top: 1.75rem;
+  /* optionally: accent-color: #4F46E5; to match your theme */
+}
 
 }
 
