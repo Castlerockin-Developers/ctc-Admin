@@ -25,6 +25,10 @@ const AddStudents = ({ onBack, onSubmit, createExamRequest }) => {
     const [allSearchQuery, setAllSearchQuery] = useState('');
     const [addedSearchQuery, setAddedSearchQuery] = useState('');
 
+    // Pagination States
+    const [addedPage, setAddedPage] = useState(1);
+    const studentsPerPage = 20;
+
     // Derive branches dynamically
     const branches = useMemo(
         () => Array.from(new Set(allStudents.map(s => s.branch))).sort(),
@@ -38,7 +42,6 @@ const AddStudents = ({ onBack, onSubmit, createExamRequest }) => {
         const saved = sessionStorage.getItem(STORAGE_KEYS.addedList);
         if (saved) {
             const parsed = JSON.parse(saved).map(item => ({
-                // old entries had only `id`—assume that was the USN
                 studentId: item.studentId ?? item.id,
                 id: item.id,
                 name: item.name,
@@ -95,6 +98,7 @@ const AddStudents = ({ onBack, onSubmit, createExamRequest }) => {
             s.name.toLowerCase().includes(allSearchQuery.toLowerCase())
         )
     );
+
     const filteredAdded = addedStudents.filter(s =>
         (!addedBranchFilter || s.branch === addedBranchFilter) &&
         (
@@ -102,6 +106,12 @@ const AddStudents = ({ onBack, onSubmit, createExamRequest }) => {
             s.name.toLowerCase().includes(addedSearchQuery.toLowerCase())
         )
     );
+
+    // Pagination Logic
+    const paginateData = (data, currentPage) => {
+        const startIndex = (currentPage - 1) * studentsPerPage;
+        return data.slice(startIndex, startIndex + studentsPerPage);
+    };
 
     // Actions
     const addAll = () => {
@@ -136,7 +146,6 @@ const AddStudents = ({ onBack, onSubmit, createExamRequest }) => {
             }
         });
     };
-
 
     const createExam = async () => {
         if (!addedStudents.length) {
@@ -223,8 +232,8 @@ const AddStudents = ({ onBack, onSubmit, createExamRequest }) => {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {filteredAll.length ? (
-                                            filteredAll.map(s => (
+                                        {paginateData(filteredAll, addedPage).length ? (
+                                            paginateData(filteredAll, addedPage).map(s => (
                                                 <tr key={s.studentId} className='border-1 border-white'>
                                                     <td>{s.id}</td>
                                                     <td>{s.name}</td>
@@ -246,6 +255,29 @@ const AddStudents = ({ onBack, onSubmit, createExamRequest }) => {
                                         )}
                                     </tbody>
                                 </table>
+                            </div>
+
+                            {/* Pagination Controls */}
+                            <div className="pagination flex justify-center items-center gap-2 mt-2">
+                                <button
+                                    disabled={addedPage === 1}
+                                    onClick={() => setAddedPage((p) => Math.max(1, p - 1))}
+                                    className="px-3 py-1 bg-gray-700 rounded disabled:opacity-50"
+                                >
+                                    Prev
+                                </button>
+                                <span>
+                                    {addedPage} / {Math.ceil(filteredAll.length / studentsPerPage)}
+                                </span>
+                                <button
+                                    disabled={addedPage === Math.ceil(filteredAll.length / studentsPerPage)}
+                                    onClick={() =>
+                                        setAddedPage((p) => Math.min(Math.ceil(filteredAll.length / studentsPerPage), p + 1))
+                                    }
+                                    className="px-3 py-1 bg-gray-700 rounded disabled:opacity-50"
+                                >
+                                    Next
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -305,6 +337,29 @@ const AddStudents = ({ onBack, onSubmit, createExamRequest }) => {
                                     <p className='text-center text-white'>No students added yet.</p>
                                 )}
                             </div>
+
+                            {/* Pagination Controls for Added Students */}
+                            <div className="pagination flex justify-center items-center gap-2 mt-2">
+                                <button
+                                    disabled={addedPage === 1}
+                                    onClick={() => setAddedPage((p) => Math.max(1, p - 1))}
+                                    className="px-3 py-1 bg-gray-700 rounded disabled:opacity-50"
+                                >
+                                    Prev
+                                </button>
+                                <span>
+                                    {addedPage} / {Math.ceil(filteredAdded.length / studentsPerPage)}
+                                </span>
+                                <button
+                                    disabled={addedPage === Math.ceil(filteredAdded.length / studentsPerPage)}
+                                    onClick={() =>
+                                        setAddedPage((p) => Math.min(Math.ceil(filteredAdded.length / studentsPerPage), p + 1))
+                                    }
+                                    className="px-3 py-1 bg-gray-700 rounded disabled:opacity-50"
+                                >
+                                    Next
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -328,12 +383,11 @@ const AddStudents = ({ onBack, onSubmit, createExamRequest }) => {
                                     <circle className='opacity-25' cx='12' cy='12' r='10' stroke='currentColor' strokeWidth='4' />
                                     <path className='opacity-75' fill='currentColor' d='M4 12a8 8 0 018-8v8z' />
                                 </svg>
-                                Creating…
+                                Creating… 
                             </span>
                             : '+ CreateExam'
                         }
                     </button>
-
                 </div>
             </div>
         </div>
