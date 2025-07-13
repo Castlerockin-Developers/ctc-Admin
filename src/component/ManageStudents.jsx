@@ -1,8 +1,15 @@
 import React, { useState, useEffect, useRef } from "react";
-import { FaSearch, FaPlus, FaFilter, FaDatabase, FaPen, FaUpload } from "react-icons/fa";
+import {
+  FaSearch,
+  FaPlus,
+  FaFilter,
+  FaDatabase,
+  FaPen,
+  FaUpload,
+} from "react-icons/fa";
 import Swal from "sweetalert2";
 import { motion } from "framer-motion";
-import { authFetch, authFetchPayload } from '../scripts/AuthProvider';
+import { authFetch, authFetchPayload } from "../scripts/AuthProvider";
 import TableSkeleton from "../loader/TableSkeleton";
 
 // Utility function to truncate text:
@@ -17,7 +24,6 @@ const truncateText = (text, maxLength) => {
   }
 };
 
-
 const ManageStudents = ({ studentModalOpen, setStudentModalOpen }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const userCount = useRef(0); // to track total students count
@@ -27,8 +33,7 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen }) => {
   const [studentsData, setStudentsData] = useState({}); // expect object with branch keys
   const [groups, setGroups] = useState([]);
   const [editModalOpen, setEditModalOpen] = useState(false);
-  const [selectedStudent, setSelectedStudent] = useState(null);  // Store selected student data
-
+  const [selectedStudent, setSelectedStudent] = useState(null); // Store selected student data
   // State to track screen width for responsive rendering
   const [screenWidth, setScreenWidth] = useState(window.innerWidth);
 
@@ -37,10 +42,12 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen }) => {
   const [studentsPerPage] = useState(10); // Number of students to display per page
 
   // **NEW STATE FOR SORTING**
-  const [sortConfig, setSortConfig] = useState({ key: 'usn', direction: 'ascending' });
+  const [sortConfig, setSortConfig] = useState({
+    key: "usn",
+    direction: "ascending",
+  });
 
   const [loading, setLoading] = useState(true); // State to track loading
-
 
   // Effect to update screenWidth on window resize
   useEffect(() => {
@@ -51,11 +58,10 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen }) => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-
   // When data loads, set activeTab to first branch
   const fetchStudentsData = async () => {
     setLoading(true); // Set loading to true when data fetch starts
-    const response = await authFetch('/admin/students/', { method: 'GET' });
+    const response = await authFetch("/admin/students/", { method: "GET" });
     if (response.status === 200) {
       const data = await response.json();
       userCount.current = data.user_count || 0; // total students count
@@ -70,7 +76,6 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen }) => {
     setLoading(false); // Set loading to false when data fetch is complete
   };
 
-
   useEffect(() => {
     const loadGroups = async () => {
       const data = await fetchGroups();
@@ -82,9 +87,9 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen }) => {
 
   // **NEW FUNCTION FOR SORTING**
   const handleSort = (key) => {
-    let direction = 'ascending';
-    if (sortConfig.key === key && sortConfig.direction === 'ascending') {
-      direction = 'descending';
+    let direction = "ascending";
+    if (sortConfig.key === key && sortConfig.direction === "ascending") {
+      direction = "descending";
     }
     setSortConfig({ key, direction });
   };
@@ -98,7 +103,7 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen }) => {
 
     // Apply search filter first
     const searchLower = searchQuery.toLowerCase();
-    const filtered = currentBranchStudents.filter(student => {
+    const filtered = currentBranchStudents.filter((student) => {
       if (!student || !student.usn) return false;
       return (
         student.usn.toLowerCase().includes(searchLower) ||
@@ -111,14 +116,18 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen }) => {
     // Apply sorting
     if (sortConfig.key) {
       filtered.sort((a, b) => {
-        const aValue = a[sortConfig.key] ? String(a[sortConfig.key]).toLowerCase() : '';
-        const bValue = b[sortConfig.key] ? String(b[sortConfig.key]).toLowerCase() : '';
+        const aValue = a[sortConfig.key]
+          ? String(a[sortConfig.key]).toLowerCase()
+          : "";
+        const bValue = b[sortConfig.key]
+          ? String(b[sortConfig.key]).toLowerCase()
+          : "";
 
         if (aValue < bValue) {
-          return sortConfig.direction === 'ascending' ? -1 : 1;
+          return sortConfig.direction === "ascending" ? -1 : 1;
         }
         if (aValue > bValue) {
-          return sortConfig.direction === 'ascending' ? 1 : -1;
+          return sortConfig.direction === "ascending" ? 1 : -1;
         }
         return 0;
       });
@@ -131,7 +140,10 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen }) => {
   // Pagination Logic
   const indexOfLastStudent = currentPage * studentsPerPage;
   const indexOfFirstStudent = indexOfLastStudent - studentsPerPage;
-  const currentStudents = studentsToDisplay.slice(indexOfFirstStudent, indexOfLastStudent);
+  const currentStudents = studentsToDisplay.slice(
+    indexOfFirstStudent,
+    indexOfLastStudent
+  );
 
   const totalPages = Math.ceil(studentsToDisplay.length / studentsPerPage);
 
@@ -153,7 +165,6 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen }) => {
   const totalStudents = userCount.current;
   const maxStudents = totalAllowedStudents.current || 500;
 
-
   // Function to open the modal with selected student data
   const handleEditClick = (student) => {
     setSelectedStudent(student);
@@ -162,16 +173,16 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen }) => {
 
   const fetchGroups = async () => {
     try {
-      const response = await authFetch('/admin/groups', { method: 'GET' });
+      const response = await authFetch("/admin/groups", { method: "GET" });
       if (response.ok) {
         const groupsData = await response.json();
         return groupsData;
       } else {
-        console.error('Failed to fetch groups:', response.status);
+        console.error("Failed to fetch groups:", response.status);
         return null;
       }
     } catch (error) {
-      console.error('Error fetching groups:', error);
+      console.error("Error fetching groups:", error);
       return null;
     }
   };
@@ -179,32 +190,32 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen }) => {
   const handleDeleteStudent = async (id) => {
     try {
       const response = await authFetch(`/admin/students/${id}/`, {
-        method: 'DELETE',
+        method: "DELETE",
       });
 
       if (response.ok) {
         Swal.fire({
-          icon: 'success',
-          title: 'Student Deleted',
-          text: 'Student deleted successfully.',
+          icon: "success",
+          title: "Student Deleted",
+          text: "Student deleted successfully.",
         });
         fetchStudentsData(); // Refresh data after deletion
       } else {
         const errorData = await response.json();
         Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: errorData.error || 'Failed to delete student.',
+          icon: "error",
+          title: "Error",
+          text: errorData.error || "Failed to delete student.",
         });
       }
     } catch (error) {
       Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: error.message || 'Network error.',
+        icon: "error",
+        title: "Error",
+        text: error.message || "Network error.",
       });
     }
-  }
+  };
 
   return (
     <div className="lg:w-3xl justify-center flex flex-wrap result-container">
@@ -220,7 +231,6 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen }) => {
             </p>
           </div>
         </div>
-
 
         {/* Search and Add */}
         <div className="m-btn-right flex flex-wrap items-center justify-center sm:justify-end gap-2 w-full sm:w-auto">
@@ -276,55 +286,86 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen }) => {
                 {screenWidth <= 768 ? (
                   // Mobile/Tablet Headers (6 columns)
                   <tr>
-                    <th className="mobile-usn-col" onClick={() => handleSort('usn')}>
+                    <th
+                      className="mobile-usn-col"
+                      onClick={() => handleSort("usn")}
+                    >
                       USN
                     </th>
                     <th className="mobile-name-col">Name</th>
                     <th className="mobile-email-col">Email</th>
                     <th className="mobile-phone-col">Phone</th>
                     <th className="mobile-status-col">Active</th>
-
                   </tr>
                 ) : (
                   // Desktop Headers (6 columns)
                   <tr>
-                    <th className="desktop-usn-col" onClick={() => handleSort('usn')}>
+                    <th
+                      className="desktop-usn-col"
+                      onClick={() => handleSort("usn")}
+                    >
                       #USN
                     </th>
                     <th className="desktop-name-col">Name</th>
                     <th className="desktop-email-col">Email</th>
                     <th className="desktop-phone-col">Phone</th>
                     <th className="desktop-active-col">Active</th>
-
                   </tr>
                 )}
               </thead>
               <tbody>
                 {currentStudents.length > 0 ? (
                   currentStudents.map((student, index) => (
-                    <tr key={student.usn} className={index % 2 === 0 ? "even-row" : "odd-row"}>
+                    <tr
+                      key={student.usn}
+                      className={index % 2 === 0 ? "even-row" : "odd-row"}
+                    >
                       {/* Changed breakpoint to 768px */}
                       {screenWidth <= 768 ? (
                         // Mobile/Tablet Data Cells (6 columns)
                         <>
                           <td className="mobile-usn-col">{student.usn}</td>
                           {/* Name column: Displays "..." if long, full name on hover */}
-                          <td className="mobile-name-col" title={student.name || student.email}>{truncateText(student.name, 20)}</td>
+                          <td
+                            className="mobile-name-col"
+                            title={student.name || student.email}
+                          >
+                            {truncateText(student.name, 20)}
+                          </td>
                           <td className="mobile-email-col">{student.email}</td>
                           {/* Phone column: Displays content or "-", full number on hover */}
-                          <td className="mobile-phone-col" title={student.contact}>{student.contact || "-"}</td>
-                          <td className="mobile-status-col">{student.is_active ? "Yes" : "No"}</td>
+                          <td
+                            className="mobile-phone-col"
+                            title={student.contact}
+                          >
+                            {student.contact || "-"}
+                          </td>
+                          <td className="mobile-status-col">
+                            {student.is_active ? "Yes" : "No"}
+                          </td>
                         </>
                       ) : (
                         // Desktop Data Cells (6 columns)
                         <>
                           <td className="desktop-usn-col">{student.usn}</td>
                           {/* Name column: Displays "..." if long, full name on hover */}
-                          <td className="desktop-name-col" title={student.name || student.email}>{truncateText(student.name || student.email, 30)}</td>
+                          <td
+                            className="desktop-name-col"
+                            title={student.name || student.email}
+                          >
+                            {truncateText(student.name || student.email, 30)}
+                          </td>
                           <td className="desktop-email-col">{student.email}</td>
                           {/* Phone column: Displays content or "-", full number on hover */}
-                          <td className="desktop-phone-col" title={student.contact}>{student.contact || "-"}</td>
-                          <td className="desktop-active-col">{student.is_active ? "Yes" : "No"}</td>
+                          <td
+                            className="desktop-phone-col"
+                            title={student.contact}
+                          >
+                            {student.contact || "-"}
+                          </td>
+                          <td className="desktop-active-col">
+                            {student.is_active ? "Yes" : "No"}
+                          </td>
                         </>
                       )}
                     </tr>
@@ -332,7 +373,9 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen }) => {
                 ) : (
                   <tr>
                     {/* Adjusted colspan to 6 as there are now 6 columns */}
-                    <td colSpan="6" className="no-data">No students found</td>
+                    <td colSpan="6" className="no-data">
+                      No students found
+                    </td>
                   </tr>
                 )}
               </tbody>
@@ -367,7 +410,12 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen }) => {
       </div>
 
       {/* Add/Edit Student Modals */}
-      {studentModalOpen && <AddStudentModal onClose={() => setStudentModalOpen(false)} groups={groups} />}
+      {studentModalOpen && (
+        <AddStudentModal
+          onClose={() => setStudentModalOpen(false)}
+          groups={groups}
+        />
+      )}
       {editModalOpen && selectedStudent && (
         <EditStudentModal
           studentId={selectedStudent.id}
@@ -378,7 +426,6 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen }) => {
     </div>
   );
 };
-
 
 // -----------------------------------------------------------------------------
 // EditStudentModal Component (no changes needed for this specific request)
@@ -401,7 +448,9 @@ const EditStudentModal = ({ onClose, groups, studentId }) => {
     // Fetch student data if studentId is available
     const fetchStudentData = async () => {
       try {
-        const response = await authFetch(`/admin/students/${studentId}`, { method: "GET" });
+        const response = await authFetch(`/admin/students/${studentId}`, {
+          method: "GET",
+        });
         if (response.ok) {
           const data = await response.json();
 
@@ -445,7 +494,7 @@ const EditStudentModal = ({ onClose, groups, studentId }) => {
     if (!student.lastName) newErrors.lastName = "Last name is required.";
     if (!student.usn) newErrors.usn = "USN is required.";
     if (!student.groupId) newErrors.groupId = "Group selection is required.";
-    return newErrors;
+        return newErrors;
   };
 
   const handleEditStudent = async () => {
@@ -470,7 +519,6 @@ const EditStudentModal = ({ onClose, groups, studentId }) => {
     if (student.password) {
       payload.password = student.password;
     }
-
 
     try {
       const response = await authFetch(`/admin/students/${studentId}/`, {
@@ -510,7 +558,6 @@ const EditStudentModal = ({ onClose, groups, studentId }) => {
     if (errors[e.target.name]) setErrors({ ...errors, [e.target.name]: null });
   };
 
-
   return (
     <div className="modal-overlay">
       <div className="modal-container">
@@ -526,7 +573,9 @@ const EditStudentModal = ({ onClose, groups, studentId }) => {
             value={student.firstName}
             onChange={handleChange}
           />
-          {errors.firstName && <span className="error-text">{errors.firstName}</span>}
+          {errors.firstName && (
+            <span className="error-text">{errors.firstName}</span>
+          )}
         </div>
 
         <div className="form-group">
@@ -539,7 +588,9 @@ const EditStudentModal = ({ onClose, groups, studentId }) => {
             value={student.lastName}
             onChange={handleChange}
           />
-          {errors.lastName && <span className="error-text">{errors.lastName}</span>}
+          {errors.lastName && (
+            <span className="error-text">{errors.lastName}</span>
+          )}
         </div>
 
         <div className="form-group">
@@ -566,7 +617,9 @@ const EditStudentModal = ({ onClose, groups, studentId }) => {
             value={student.password}
             onChange={handleChange}
           />
-          {errors.password && <span className="error-text">{errors.password}</span>}
+          {errors.password && (
+            <span className="error-text">{errors.password}</span>
+          )}
         </div>
 
         <div className="form-group">
@@ -598,7 +651,9 @@ const EditStudentModal = ({ onClose, groups, studentId }) => {
               </option>
             ))}
           </select>
-          {errors.groupId && <span className="error-text">{errors.groupId}</span>}
+          {errors.groupId && (
+            <span className="error-text">{errors.groupId}</span>
+          )}
         </div>
 
         <div className="form-group">
@@ -632,7 +687,10 @@ const EditStudentModal = ({ onClose, groups, studentId }) => {
           <motion.button className="back-btn" onClick={onClose}>
             Back
           </motion.button>
-          <motion.button className="create-btn-student" onClick={handleEditStudent}>
+          <motion.button
+            className="create-btn-student"
+            onClick={handleEditStudent}
+          >
             Update
           </motion.button>
         </div>
@@ -658,7 +716,8 @@ const AddStudentModal = ({ onClose, groups }) => {
   });
   const [errors, setErrors] = useState({});
   const [file, setFile] = useState(null);
-
+  const [isAddingGroup, setIsAddingGroup] = useState(false);
+  const [newGroupName, setNewGroupName]   = useState("");
 
   const validate = () => {
     const newErrors = {};
@@ -668,12 +727,29 @@ const AddStudentModal = ({ onClose, groups }) => {
     if (!student.password) newErrors.password = "Password is required.";
     if (!student.usn) newErrors.usn = "USN is required.";
     if (!student.groupId) newErrors.groupId = "Group selection is required.";
+    if (isAddingGroup) {
+    if (!newGroupName.trim()) 
+      newErrors.newGroupName = "Please enter a group name.";
+  } else {
+    if (!student.groupId) 
+      newErrors.groupId = "Group selection is required.";
+  }
     return newErrors;
   };
 
   const handleChange = (e) => {
     setStudent({ ...student, [e.target.name]: e.target.value });
     if (errors[e.target.name]) setErrors({ ...errors, [e.target.name]: null });
+  };
+  const handleGroupChange = (e) => {
+    if (e.target.value === "add_new") {
+      setIsAddingGroup(true);
+      setStudent((s) => ({ ...s, groupId: "" }));
+    } else {
+      setIsAddingGroup(false);
+      setStudent((s) => ({ ...s, groupId: e.target.value }));
+      setErrors((err) => ({ ...err, groupId: null }));
+    }
   };
 
   const handleFileUpload = (event) => {
@@ -698,7 +774,11 @@ const AddStudentModal = ({ onClose, groups }) => {
         const formData = new FormData();
         formData.append("file", file);
 
-        const response = await authFetchPayload("/admin/student-excel/", formData, "POST");
+        const response = await authFetchPayload(
+          "/admin/student-excel/",
+          formData,
+          "POST"
+        );
 
         if (response.ok) {
           const responseData = await response.json();
@@ -725,25 +805,60 @@ const AddStudentModal = ({ onClose, groups }) => {
           text: error.message || "Network error.",
         });
       }
-    }
-    else {
+    } else {
       const validationErrors = validate();
       if (Object.keys(validationErrors).length > 0) {
         setErrors(validationErrors);
         return;
       }
 
-      const payload = {
-        first_name: student.firstName,
-        last_name: student.lastName,
-        email: student.email,
-        password: student.password,
-        username: student.email,
-        slNo: student.usn,
-        group: student.groupId,  // group id as integer in array
-        contact: student.contact,
-        gender: student.gender,
-      };
+       if (isAddingGroup) {
+      const res = await authFetch("/admin/groups/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: newGroupName.trim() }),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        return Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: err.error || "Could not create group.",
+        });
+      }
+      const created = await res.json();
+      // overwrite student.groupId with the new group's ID
+      student.groupId = created.id;
+      // update the local dropdown list
+      setGroups(g => [...g, created]);
+      setIsAddingGroup(false);
+    }
+    // ──────────────────────────────────────────────────────────────────────────
+
+    // 3) Build the payload for student creation
+    const payload = {
+      first_name: student.firstName,
+      last_name:  student.lastName,
+      email:      student.email,
+      password:   student.password,
+      username:   student.email,
+      slNo:       student.usn,
+      group:      student.groupId,   // now either existing or newly created
+      contact:    student.contact,
+      gender:     student.gender,
+    };
+
+      // const payload = {
+      //   first_name: student.firstName,
+      //   last_name: student.lastName,
+      //   email: student.email,
+      //   password: student.password,
+      //   username: student.email,
+      //   slNo: student.usn,
+      //   group: student.groupId, // group id as integer in array
+      //   contact: student.contact,
+      //   gender: student.gender,
+      // };
 
       try {
         const response = await authFetch("/admin/students/", {
@@ -816,7 +931,9 @@ const AddStudentModal = ({ onClose, groups }) => {
           </div>
         )}
         {activeTab === "manual" && (
-          <> {/* This fragment is correctly opened here */}
+          <>
+            {" "}
+            {/* This fragment is correctly opened here */}
             <div className="form-group">
               <label>First Name :</label>
               <input
@@ -827,9 +944,10 @@ const AddStudentModal = ({ onClose, groups }) => {
                 value={student.firstName}
                 onChange={handleChange}
               />
-              {errors.firstName && <span className="error-text">{errors.firstName}</span>}
+              {errors.firstName && (
+                <span className="error-text">{errors.firstName}</span>
+              )}
             </div>
-
             <div className="form-group">
               <label>Last Name :</label>
               <input
@@ -840,10 +958,10 @@ const AddStudentModal = ({ onClose, groups }) => {
                 value={student.lastName}
                 onChange={handleChange}
               />
-              {errors.lastName && <span className="error-text">{errors.lastName}</span>}
-
+              {errors.lastName && (
+                <span className="error-text">{errors.lastName}</span>
+              )}
             </div>
-
             <div className="form-group">
               <label>Email :</label>
               <input
@@ -855,9 +973,10 @@ const AddStudentModal = ({ onClose, groups }) => {
                 onChange={handleChange}
               />
 
-              {errors.email && <span className="error-text">{errors.email}</span>}
+              {errors.email && (
+                <span className="error-text">{errors.email}</span>
+              )}
             </div>
-
             <div className="form-group">
               <label>Password :</label>
               <input
@@ -868,9 +987,10 @@ const AddStudentModal = ({ onClose, groups }) => {
                 value={student.password}
                 onChange={handleChange}
               />
-              {errors.password && <span className="error-text">{errors.password}</span>}
+              {errors.password && (
+                <span className="error-text">{errors.password}</span>
+              )}
             </div>
-
             <div className="form-group">
               <label>USN :</label>
               <input
@@ -883,10 +1003,9 @@ const AddStudentModal = ({ onClose, groups }) => {
               />
               {errors.usn && <span className="error-text">{errors.usn}</span>}
             </div>
-
             <div className="form-group">
               <label>Group :</label>
-              <select
+              {/* <select
                 name="groupId"
                 className="form-input"
                 value={student.groupId}
@@ -898,9 +1017,41 @@ const AddStudentModal = ({ onClose, groups }) => {
                     {g.name}
                   </option>
                 ))}
+              </select> */}
+              <select
+                name="groupId"
+                className="form-input"
+                value={student.groupId || ""}
+                onChange={handleGroupChange} // ← new handler
+              >
+                <option value="">Select a group</option>
+                <option value="add_new">Add a group</option>
+                {groups.map((g) => (
+                  <option key={g.id} value={g.id}>
+                    {g.name}
+                  </option>
+                ))}
               </select>
-              {errors.groupId && <span className="error-text">{errors.groupId}</span>}
-            </div> {/* This closes the fragment started on line 925 */}
+              {errors.groupId && (
+                <span className="error-text">{errors.groupId}</span>
+              )}
+            </div>
+            {isAddingGroup && (
+              <div className="form-group">
+                <label>Add a group:</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  value={newGroupName}
+                  onChange={(e) => setNewGroupName(e.target.value)}
+                  placeholder="Enter new group name"
+                />
+                {errors.newGroupName && (
+                  <span className="error-text">{errors.newGroupName}</span>
+                )}
+              </div>
+            )}{" "}
+            {/* This closes the fragment started on line 925 */}
             {/* The problematic closing fragment was here, removed it. */}
           </>
         )}
@@ -909,7 +1060,10 @@ const AddStudentModal = ({ onClose, groups }) => {
             Back
           </motion.button>
           {activeTab === "manual" && (
-            <motion.button className="create-btn-student" onClick={handleCreateStudent}>
+            <motion.button
+              className="create-btn-student"
+              onClick={handleCreateStudent}
+            >
               Create Student
             </motion.button>
           )}

@@ -42,6 +42,9 @@ const NewExam = ({ onBack, onNext, setCreateExamRequest }) => { //
 
     const [errors, setErrors] = useState({}); //
 
+    // compute “YYYY-MM-DD” string for today
+  const today = new Date().toISOString().split('T')[0];
+
     // 2) Write back on every change
     useEffect(() => {
         sessionStorage.setItem(`${STORAGE_KEY}:testName`, testName);
@@ -228,6 +231,7 @@ const NewExam = ({ onBack, onNext, setCreateExamRequest }) => { //
                         </h4>
                         <input
                             type="date"
+                             min={today}
                             value={examStartDate}
                             onChange={(e) => {
                                 setExamStartDate(e.target.value);
@@ -265,6 +269,7 @@ const NewExam = ({ onBack, onNext, setCreateExamRequest }) => { //
                         <input
                             type="date"
                             value={examEndDate}
+                             min={today}
                             onChange={(e) => {
                                 setExamEndDate(e.target.value);
                                 runAllValidations(); // Re-run all validations on change

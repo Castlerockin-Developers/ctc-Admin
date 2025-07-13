@@ -25,7 +25,8 @@ const AddStudents = ({ onBack, onSubmit, createExamRequest }) => {
     const [allSearchQuery, setAllSearchQuery] = useState('');
     const [addedSearchQuery, setAddedSearchQuery] = useState('');
 
-    // Pagination States
+    // Pagination States (one for each table)
+    const [allPage, setAllPage]     = useState(1);
     const [addedPage, setAddedPage] = useState(1);
     const studentsPerPage = 20;
 
@@ -232,8 +233,9 @@ const AddStudents = ({ onBack, onSubmit, createExamRequest }) => {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {paginateData(filteredAll, addedPage).length ? (
-                                            paginateData(filteredAll, addedPage).map(s => (
+                                        {
+                                             paginateData(filteredAll, allPage).length ? (
+                                            paginateData(filteredAll, allPage).map(s => (
                                                 <tr key={s.studentId} className='border-1 border-white'>
                                                     <td>{s.id}</td>
                                                     <td>{s.name}</td>
@@ -260,20 +262,18 @@ const AddStudents = ({ onBack, onSubmit, createExamRequest }) => {
                             {/* Pagination Controls */}
                             <div className="pagination flex justify-center items-center gap-2 mt-2">
                                 <button
-                                    disabled={addedPage === 1}
-                                    onClick={() => setAddedPage((p) => Math.max(1, p - 1))}
+                                    disabled={filteredAll.length === 0 || allPage === 1}
+                                    onClick={() => setAllPage(p => Math.max(1, p - 1))}
                                     className="px-3 py-1 bg-gray-700 rounded disabled:opacity-50"
                                 >
                                     Prev
                                 </button>
                                 <span>
-                                    {addedPage} / {Math.ceil(filteredAll.length / studentsPerPage)}
+                                    {filteredAll.length ? allPage : 0} / {Math.ceil(filteredAll.length / studentsPerPage) || 0}
                                 </span>
                                 <button
-                                    disabled={addedPage === Math.ceil(filteredAll.length / studentsPerPage)}
-                                    onClick={() =>
-                                        setAddedPage((p) => Math.min(Math.ceil(filteredAll.length / studentsPerPage), p + 1))
-                                    }
+                                    disabled={filteredAll.length === 0 || allPage >= Math.ceil(filteredAll.length / studentsPerPage)}
+                                    onClick={() => setAllPage(p => Math.min(Math.ceil(filteredAll.length / studentsPerPage), p + 1))}
                                     className="px-3 py-1 bg-gray-700 rounded disabled:opacity-50"
                                 >
                                     Next
@@ -314,7 +314,7 @@ const AddStudents = ({ onBack, onSubmit, createExamRequest }) => {
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {filteredAdded.map(s => (
+                                            {paginateData(filteredAdded, addedPage).map(s => (
                                                 <tr key={s.studentId} className='border-1 border-white'>
                                                     <td>{s.id}</td>
                                                     <td className='whitespace-nowrap'>{s.name}</td>
@@ -339,22 +339,20 @@ const AddStudents = ({ onBack, onSubmit, createExamRequest }) => {
                             </div>
 
                             {/* Pagination Controls for Added Students */}
-                            <div className="pagination flex justify-center items-center gap-2 mt-2">
+                             <div className="pagination flex justify-center items-center gap-2 mt-2">
                                 <button
-                                    disabled={addedPage === 1}
-                                    onClick={() => setAddedPage((p) => Math.max(1, p - 1))}
+                                    disabled={filteredAdded.length === 0 || addedPage === 1}
+                                    onClick={() => setAddedPage(p => Math.max(1, p - 1))}
                                     className="px-3 py-1 bg-gray-700 rounded disabled:opacity-50"
                                 >
                                     Prev
                                 </button>
-                                <span>
-                                    {addedPage} / {Math.ceil(filteredAdded.length / studentsPerPage)}
+                               <span>
+                                    {filteredAdded.length ? addedPage : 0} / {Math.ceil(filteredAdded.length / studentsPerPage) || 0}
                                 </span>
                                 <button
-                                    disabled={addedPage === Math.ceil(filteredAdded.length / studentsPerPage)}
-                                    onClick={() =>
-                                        setAddedPage((p) => Math.min(Math.ceil(filteredAdded.length / studentsPerPage), p + 1))
-                                    }
+                                    disabled={filteredAdded.length === 0 || addedPage >= Math.ceil(filteredAdded.length / studentsPerPage)}
+                                    onClick={() => setAddedPage(p => Math.min(Math.ceil(filteredAdded.length / studentsPerPage), p + 1))}
                                     className="px-3 py-1 bg-gray-700 rounded disabled:opacity-50"
                                 >
                                     Next
