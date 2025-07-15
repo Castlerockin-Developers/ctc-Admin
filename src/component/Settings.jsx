@@ -303,7 +303,7 @@ const Settings = ({ openAddUserModal, setOpenAddUserModal }) => {
               <div className="profile-details">
                 <div className="flex">
                   <div className="flex profile-img-col">
-                    <img src={user.profile_img} alt="Profile Avatar" />
+                    <img src={avatar} alt="Profile Avatar" />
                     <div>
                       <p>Username:</p>
                       <p>Email:</p>

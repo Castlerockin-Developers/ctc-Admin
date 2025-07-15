@@ -1308,6 +1308,23 @@ details {
     font-weight: 600;
 }
 
+.swal2-popup {
+  /* make width proportional to viewport */
+  width: 40vw !important;
+  max-width: 600px !important;  /* cap on smaller screens */
+  padding: 1.5rem !important;
+  box-sizing: border-box;
+}
+
+/* typography on default screens */
+.swal2-title {
+  font-size: 1.5rem !important;   /* ~24px */
+}
+.swal2-html-container {
+  font-size: 1rem !important;     /* ~16px */
+  line-height: 1.4 !important;
+}
+
 
 @media(min-width:0px) and (max-width:425px) {
     .home-container {
@@ -2045,6 +2062,198 @@ details {
     width: 105%;
 }
 }
+
+
+@media(max-width:2560px) and (min-width:1921px) {
+
+    .newexam-box h1{
+    font-size: 4rem;
+}
+.createexam-col1 h4{
+    font-size: 2rem;
+}
+.createexam-col1 input{
+    height: 4.5vh;
+    font-size: 1.5rem;
+}
+.back-btn-create{
+    font-size: 2rem;
+}
+.bottom-btns{
+    margin-top: 220px;
+}
+.bottom-btns p{
+    font-size: 2rem;
+}
+.next-btn{
+    font-size: 2rem;
+}
+.new-question-buttons button{
+    font-size: 2.4rem;
+}
+.question-bank-head h3, .addedquestion-bank-head h3{
+    font-size: 2.3rem;
+}
+.question-templet-header p {
+    font-size: 1.9rem;
+}
+.question-templet-header button {
+    font-size: 1.4rem;
+}
+.cardin-q {
+    font-size: 1.6rem;
+}
+.addedquestion-bank-body details{
+    font-size: 22px;
+}
+.section-timer{
+    font-size: 1.3rem;
+}
+.addedquestion-bank-body details summary button{
+    padding: 7px 10px 3px;
+    font-size: 1.3rem;
+}
+.addedquestion-bank-body{
+    height: 23.8vh;
+}
+.add-q-container{
+    margin-top: 50px;
+    height: 60vh;
+}
+.addedquestion-bank-head span{
+    font-size: 1.4rem;
+}
+.addedquestion-bank-head button{
+    font-size: 1.3rem;
+}
+.exam-previous-btn{
+    font-size: 1.5rem;
+}
+.bottom-control p{
+    font-size: 1.5rem;
+    margin-right: 5px;
+}
+.exam-next-btn {
+    font-size: 1.5rem;
+}
+
+.all-s-header h3, .all-s-header-added h3{
+    font-size: 2.4rem;
+}
+.addquestion-box h1, .addStudent-box h1{
+    font-size: 3rem;
+}
+.filter-select-branch{
+    font-size: 1.3rem;
+}
+.all-s-body table thead tr td {
+    font-size: 1.9rem;
+}
+.all-s-body table tbody tr td {
+    font-size: 1.5rem;
+}
+.all-student, .all-student-added{
+    margin-top: 20px;
+}
+.pagination button{
+    font-size: 20px;
+}
+.pagination span{
+    font-size: 20px;
+}
+.add-s-container{
+    height: 80%;
+}
+.all-s-body {
+    height: 62vh;
+}
+.newmcq-wrapper h1 {
+    font-size: 3rem;
+}
+.newmcq-wrapper h3{
+    font-size: 2.5rem !important;
+    
+}
+.newmcq-wrapper textarea {
+    font-size: 1.6rem !important;
+}
+.newmcq-wrapper p{
+    font-size: 1.6rem !important;
+}
+.newmcq-wrapper h4 {
+    font-size: 1.6rem !important;
+}
+.options-container .option-textarea{
+    font-size: 1.6rem !important;
+}
+.category-container select{
+    font-size: 1.5rem !important;
+}
+.category-container button{
+    font-size: 1.5rem !important;
+}
+.option-column input{
+    font-size: 1.6rem !important;
+}
+.option-column input[type="checkbox"]{
+    width: 23px;
+    height: 23px;
+}
+.option-column button{
+    font-size: 1.5rem !important;
+}
+.add-option-btn {
+    font-size: 1.5rem !important;
+}
+.save-btn, .cancel-btn{
+    font-size: 1.6rem !important;
+}
+.option-column div {
+    font-size: 1.5rem !important;
+}
+.coding-question {
+    font-size: 1.5rem !important;
+}
+.ql-editor {
+    font-size: 1.5rem;
+}
+.add-testcase-btn, .delete-testcase-btn{
+    font-size: 1.5rem;
+}
+
+ .swal2-popup {
+    /* allow it to grow more on 4K */
+    width: 40vw !important;
+    max-width: 750px !important;
+    padding: 2rem !important;
+  }
+  .swal2-title {
+    font-size: 2.7rem !important;   /* ~32px */
+  }
+  .swal2-html-container {
+    font-size: 2.25rem !important; /* ~20px */
+  }
+  .swal2-input{
+    font-size: 2rem;
+  }
+  .swal2-styled,
+  .swal2-confirm,
+  .swal2-cancel {
+    font-size: 2rem !important;    /* bump button text too */
+    padding: 0.75rem 1.25rem !important;
+  }
+
+}
+
+
+
+
+
+
+
+
+
+
 
 /* .newexam-box h1,
     .addStudent-box h1 {

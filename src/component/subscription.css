@@ -785,3 +785,8 @@
         width: 70% !important;
     }
 }
+@media(max-width:2560px) and (min-width:1921px) {
+    .subscribe-bg{
+        top: -94px;
+    }
+}

@@ -707,3 +707,70 @@
         font-size: 1.5rem;
     }
 }
+
+@media(max-width:2560px) and (min-width:1921px) {
+    .profile-img-col p {
+        font-size: 2rem;
+    }
+    .profile-d-display p{
+        font-size: 2rem;
+        margin-left: 10px;
+    }
+    .profile-card h3{
+        font-size: 2.9rem;
+    }
+    .profile-img-col img{
+        margin-top: 29px;
+    }
+    .Account-manager-box h5 {
+        font-size: 2.5rem;
+    }
+    .Account-manager-box p{
+        font-size: 2rem;
+   }
+   .activity-history {
+    height: 435px;
+   }
+    .activity-list {
+        height: 250px;
+       }
+   .activity-history h5{
+    font-size: 2.5rem;
+   }
+   .activity-history p{
+    font-size: 1.5rem;
+   }
+   .activity-history button{
+    font-size: 1.8rem;
+   }
+   .manage-btn button{
+    font-size: 2.5rem;
+   }
+   .search-box input{
+    font-size: 2rem;
+   }
+   .manage-create-btn {
+    font-size: 2rem;
+   }
+   .settings-box .cursor-pointer{
+    font-size: 1.8rem;
+   }
+   .modal-content {
+    width: 700px;
+   }
+   .modal-content h2{
+    font-size: 3rem;
+   }
+   .modal-row label{
+    font-size: 1.5rem;
+   }
+   .modal-row select, .modal-row input {
+    font-size: 1.5rem;
+   }
+   .modal-buttons button{
+    font-size: 1.6rem;
+   }
+   .setting-modal-buttons button{
+    font-size: 1.5rem;
+   }
+}

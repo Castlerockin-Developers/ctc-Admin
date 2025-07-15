@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import ViewResult from "./ViewResult";
 import ParticularResult from "./PerticularResult";
 import { authFetch } from "../scripts/AuthProvider";
-import '../pages/home.css';
+import "../pages/home.css";
 import ManageLoader from "../loader/ManageLoader";
 
 const ManageResult = () => {
@@ -18,7 +18,19 @@ const ManageResult = () => {
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
-  const [resultsPerPage] = useState(10); // Number of results to display per page
+  // const [resultsPerPage] = useState(10); // Number of results to display per page
+  // responsive results-per-page: 15 if width ≥2560px, else 10
+  const [resultsPerPage, setResultsPerPage] = useState(() =>
+    window.innerWidth >= 2560 ? 15 : 10
+  );
+
+  useEffect(() => {
+    const onResize = () => {
+      setResultsPerPage(window.innerWidth >= 2560 ? 15 : 10);
+    };
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
 
   // Fetch results on mount
   useEffect(() => {
@@ -28,7 +40,7 @@ const ManageResult = () => {
         if (!response.ok) throw new Error("Failed to fetch results");
         const data = await response.json();
         const now = new Date();
-        const mapped = data.map(res => {
+        const mapped = data.map((res) => {
           const start = new Date(res.start_time);
           const end = new Date(res.end_time);
           let status = "";
@@ -44,8 +56,16 @@ const ManageResult = () => {
           return {
             id: res.id,
             name: res.name,
-            startTime: start.toLocaleString([], { dateStyle: 'short', timeStyle: 'short', hour12: true }),
-            endTime: end.toLocaleString([], { dateStyle: 'short', timeStyle: 'short', hour12: true }),
+            startTime: start.toLocaleString([], {
+              dateStyle: "short",
+              timeStyle: "short",
+              hour12: true,
+            }),
+            endTime: end.toLocaleString([], {
+              dateStyle: "short",
+              timeStyle: "short",
+              hour12: true,
+            }),
             analytics: `${res.attempts_allowed} Attempts`,
             status,
           };
@@ -64,17 +84,19 @@ const ManageResult = () => {
 
   // Filter results by tab and search
   const filteredResults = resultsData
-    .filter(row => {
-      if (activeTab === 'all') return true;
-      if (activeTab === 'active') return row.status === 'Ongoing';
-      if (activeTab === 'completed') return row.status === 'Results Declared' || row.status === 'Completed';
+    .filter((row) => {
+      if (activeTab === "all") return true;
+      if (activeTab === "active") return row.status === "Ongoing";
+      if (activeTab === "completed")
+        return row.status === "Results Declared" || row.status === "Completed";
       return true;
     })
-    .filter(row => {
+    .filter((row) => {
       if (!searchQuery) return true;
       const q = searchQuery.toLowerCase();
-      return [row.id, row.name, row.analytics, row.status]
-        .some(field => String(field).toLowerCase().includes(q));
+      return [row.id, row.name, row.analytics, row.status].some((field) =>
+        String(field).toLowerCase().includes(q)
+      );
     });
 
   // Pagination Logic
@@ -101,11 +123,12 @@ const ManageResult = () => {
     }
   };
 
-
   const handleViewResult = async (row) => {
     try {
-      const resp = await authFetch(`/admin/results/${row.id}/`, { method: 'GET' });
-      if (!resp.ok) throw new Error('Failed to fetch details');
+      const resp = await authFetch(`/admin/results/${row.id}/`, {
+        method: "GET",
+      });
+      if (!resp.ok) throw new Error("Failed to fetch details");
       const details = await resp.json();
       setSelectedResult({
         ...row,
@@ -113,15 +136,23 @@ const ManageResult = () => {
         studentsUnattempted: details.users_unattempted_count,
         malpractice: details.malpractice_recorded_count,
         averageScore: details.users_average_score,
-        students: details.attempts.map(a => ({
+        students: details.attempts.map((a) => ({
           attempt_id: a.id,
           usn: a.usn,
           name: a.user_name,
-          startTime: new Date(a.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }),
-          endTime: new Date(a.end_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }),
+          startTime: new Date(a.start_time).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true,
+          }),
+          endTime: new Date(a.end_time).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true,
+          }),
           score: a.score,
-          trustScore: a.trust_score
-        }))
+          trustScore: a.trust_score,
+        })),
       });
     } catch (err) {
       console.error(err);
@@ -258,7 +289,9 @@ const ManageResult = () => {
               >
                 Previous
               </motion.button>
-              <span>Page {currentPage} of {totalPages}</span>
+              <span>
+                Page {currentPage} of {totalPages}
+              </span>
               <motion.button
                 whileTap={{ scale: 1.1 }}
                 onClick={goToNextPage}
