@@ -39,7 +39,19 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen }) => {
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
-  const [studentsPerPage] = useState(10); // Number of students to display per page
+  // const [studentsPerPage] = useState(10); // Number of students to display per page
+  // responsive students-per-page: 15 if width ≥2560px, else 10
+  const [studentsPerPage, setStudentsPerPage] = useState(
+    () => window.innerWidth >= 2560 ? 18 : 10
+  );
+
+  useEffect(() => {
+    const onResize = () => {
+      setStudentsPerPage(window.innerWidth >= 2560 ? 15 : 10);
+    };
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
 
   // **NEW STATE FOR SORTING**
   const [sortConfig, setSortConfig] = useState({

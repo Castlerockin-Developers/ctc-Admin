@@ -814,3 +814,12 @@
         font-size: 1.1rem;
     }
 }
+
+@media(max-width:2560px) and (min-width:1921px) {
+    .pagination-button button {
+        font-size: 1.5rem;
+    }
+    .page-info{
+        font-size: 1.4rem;
+    }
+}

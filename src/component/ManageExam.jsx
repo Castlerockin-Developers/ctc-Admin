@@ -15,7 +15,17 @@ const ManageExam = ({ onCreateNewExam, onNext }) => {
     const filterRef = useRef(null);
     const [tableData, setTableData] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 10;
+    // const itemsPerPage = 10;
+     const [itemsPerPage, setItemsPerPage] = useState(
+    () => window.innerWidth >= 2560 ? 15 : 10
+  );
+  useEffect(() => {
+    const onResize = () => {
+      setItemsPerPage(window.innerWidth >= 2560 ? 15 : 10);
+    };
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
 
 
     // Close filter dropdown on outside click

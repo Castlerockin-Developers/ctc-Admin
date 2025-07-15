@@ -414,9 +414,7 @@
 .exam-container {
     background-color: #282828;
     width: calc(100% - 58px);
-    /* height: 87vh; */
-    height: auto;
-    max-height: 87vh;
+    height: 87vh;    
     overflow-y: auto;
     transition: width 0.3s ease-in-out, margin-left 0.3s ease-in-out;
     padding: 1.5rem;
@@ -1192,9 +1190,7 @@ body {
 .result-container {
     background-color: #282828;
     width: calc(100% - 58px);
-    /* height: 87vh; */
-    height: auto;
-    max-height: 87vh;
+    height: 87vh;
     overflow-y: auto;
     transition: width 0.3s ease-in-out, margin-left 0.3s ease-in-out;
     padding: 1.5rem;
@@ -1530,9 +1526,14 @@ body {
         position: relative;
         left: 0rem;
         top: 8px;
-        height: 91vh;
+        height: auto;
+        max-height: 91vh;
         padding: 0.5rem;
         margin-bottom: 20px;
+    }
+    .result-container{
+        height: auto;
+        max-height: 91vh;
     }
 
     .result-header,
@@ -2930,4 +2931,138 @@ body {
     .total-students-card {
         padding: 20px 52px;
     }
+}
+
+
+@media(max-width:2560px) and (min-width:1921px) {
+    .greeting h1,
+    .exam-greeting h1,
+    .result-header h1 {
+        font-size: 5rem;
+    }
+    .tablee {
+        height: 46vh;
+        max-height: 46vh;
+    }
+    .top-display h4 {
+        font-size: 3.2rem;
+    }
+
+    .top-display h2 {
+        font-size: 3.9rem;
+    }
+    .mid-display2 ul li,
+    .tablee-content h6,
+    .tablee-new h6 {
+        font-size: 2rem;
+    }
+    
+    .mid-display h4,
+    .mid-display2 h4,
+    .mid-display3 h4 {
+        font-size: 3.2rem;
+    }
+    .top-display-pop-title h2{
+        font-size: 3.6rem;
+    }
+    .pop-up-table thead th{
+        font-size: 2rem;
+    }
+    .pop-up-table tbody td{
+        font-size: 1.5rem;
+    }
+    .top-display-pop-title button img {
+        width: 40px;
+    }
+    .viewexam-body{
+        height: 72vh;
+    }
+    .viewexam-box h1{
+        font-size: 3.3rem;
+    }
+    .viewexam-header h2{
+        font-size: 2.5rem;
+    }
+    .viewexam-header-btn button{
+        font-size: 2rem;
+    }
+    .viewexam-viwer-header p {
+        font-size: 2rem;
+    }
+    .viewexam-viwer-header h2{
+        font-size: 2rem;
+    }
+    .text-white{
+        font-size: 1.5rem;
+    }
+    .viewexam-viwer-header{
+        height: 4vh;
+    }
+    .viewexam-header{
+        margin-top: 10px;
+    }
+    .search-box1{
+        width: 25rem;
+        padding: 9px 10px;
+        font-size: 1.5rem;
+    }
+    .search-box1 input{
+        font-size: 1.5rem;
+    }
+    .filter-btn{
+        padding: 12px 15px;
+    }
+    .pagination-controls .pagination-btn{
+        font-size: 1.7rem;
+    }
+    .pagination-controls span{
+        font-size: 1.7rem;
+    }
+    .modal-container{
+        width: 700px;
+    }
+    .form-group label{
+        font-size: 27px !important;
+        width: 170px;
+    }
+    .modal-title{
+        font-size: 3rem;
+    }
+    .form-group input{
+        font-size: 25px !important;
+    }
+    .form-group input[type="checkbox"] {
+        cursor: pointer;
+        position: relative;
+        top: 3rem;
+            }
+    .back-btn {
+    font-size: 1.5rem;
+    }
+    .create-btn-student{
+    font-size: 1.5rem;
+        
+    }
+    .branch-filter-select{
+        font-size: 1.5rem;
+    }
+    .search-box{
+        padding: 9px 20px;
+    }
+    .form-input{
+        font-size: 25px;
+    }
+    .toggle-btn{
+        font-size: 1.5rem;
+    }
+    .subscribe-bottom button {
+        font-size: 1.8rem;
+    }
+    .settings-box h1{
+        font-size: 4rem !important;
+    }
+    .result-container{
+        padding: 1.3rem;
+    }
+
 }
