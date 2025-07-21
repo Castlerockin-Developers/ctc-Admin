@@ -226,6 +226,11 @@
     background-color: #6f1ba7;
 }
 
+.new-exam-quill .ql-toolbar,
+.new-exam-quill .ql-container {
+    width: 70% !important; /* Adjust this value as needed */
+}
+
 .addq-container {
     background-color: #282828;
     width: calc(100% - 69px);
@@ -1408,7 +1413,11 @@ details {
 
     .bottom-btns {
         width: 70%;
-        margin-top: 112px;
+        margin-top: 80px !important;
+        margin-bottom: 50px !important;
+    }
+    .swal2-popup{
+        width: 78vw !important;
     }
 
     .addq-container,
@@ -1619,6 +1628,10 @@ details {
     .section-timer {
         width: 15vw;
     }
+    .new-exam-quill .ql-toolbar,
+.new-exam-quill .ql-container {
+    width: 110% !important; /* Adjust this value as needed */
+}
 }
 
 @media(min-width:400px) and (max-width:425px) {

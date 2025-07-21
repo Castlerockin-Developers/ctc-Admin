@@ -95,14 +95,28 @@ const NewExam = ({ onBack, onNext, setCreateExamRequest }) => { //
         if (!testName.trim()) { //
             currentErrors.testName = "Test Name is required."; //
         }
-        if (!examStartDate) { //
-            currentErrors.examStartDate = "Exam Start Date is required."; //
+        if (!examStartDate) {
+            currentErrors.examStartDate = "Exam Start Date is required.";
+        } else {
+            const startDate = new Date(examStartDate);
+            if (isNaN(startDate.getTime())) {
+                currentErrors.examStartDate = "Invalid Start Date format.";
+            } else if (startDate.getFullYear() > 9999) {
+                currentErrors.examStartDate = "Year in Start Date must be 4 digits.";
+            }
         }
         if (!startTime) { //
             currentErrors.startTime = "Start Time is required."; //
         }
-        if (!examEndDate) { //
-            currentErrors.examEndDate = "Exam End Date is required."; //
+        if (!examEndDate) {
+            currentErrors.examEndDate = "Exam End Date is required.";
+        } else {
+            const endDate = new Date(examEndDate);
+            if (isNaN(endDate.getTime())) {
+                currentErrors.examEndDate = "Invalid End Date format.";
+            } else if (endDate.getFullYear() > 9999) {
+                currentErrors.examEndDate = "Year in End Date must be 4 digits.";
+            }
         }
         if (!endTime) { //
             currentErrors.endTime = "End Time is required."; //
@@ -138,7 +152,7 @@ const NewExam = ({ onBack, onNext, setCreateExamRequest }) => { //
                 currentDateTime.getMinutes(),
                 0, 0); // Set seconds and milliseconds to 0
 
-            if (startDateTime.getTime() < currentDateTimeAdjusted.getTime()) { //
+            if (startDateTime.getTime() < currentDateTimeAdjusted.getTime() && !currentErrors.examStartDate) { //
                 currentErrors.examStartDate = "Start date/time cannot be in the past."; //
             }
         }
@@ -148,7 +162,7 @@ const NewExam = ({ onBack, onNext, setCreateExamRequest }) => { //
             const endDateTime = new Date(`${examEndDate}T${endTime}`); //
 
             // Exam End Date/Time must be strictly after Exam Start Date/Time
-            if (endDateTime.getTime() <= startDateTime.getTime()) { //
+            if (endDateTime.getTime() <= startDateTime.getTime() && !currentErrors.examEndDate) { //
                 currentErrors.examEndDate = "End date/time must be after start date/time."; //
             }
         }
@@ -364,13 +378,14 @@ const NewExam = ({ onBack, onNext, setCreateExamRequest }) => { //
                         />
                     </div>
                     {/* Instructions ReactQuill Editor */}
-                    <div className='createexam-col1 flex'>
-                        <h4 className='flex justify-between'>
+                    <div className='createexam-col1 flex items-start'>
+                        <h4 className='flex justify-between pt-2'>
                             Instructions
                             {isSubmitted && errors.instructions && (
                                 <span style={{ color: 'red' }}>*</span>
                             )}
                         </h4>
+                        <div className='flex-1 min-w-0 new-exam-quill'>
                         <ReactQuill
                             value={instructions}
                             onChange={(value) => {
@@ -381,6 +396,7 @@ const NewExam = ({ onBack, onNext, setCreateExamRequest }) => { //
                             theme="snow"
                             placeholder="Enter exam instructions here..."
                         />
+                        </div>
                     </div>
                 </div>
 

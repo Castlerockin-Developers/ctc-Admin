@@ -4,7 +4,7 @@ import { FaPen, FaSearch } from "react-icons/fa";
 import swal from "sweetalert";
 import "./Settings.css";
 import { authFetch } from "../scripts/AuthProvider";
-import avatar from '../assets/useravatar.jpg';
+import avatar from "../assets/useravatar.jpg";
 import { FaEllipsisV } from "react-icons/fa";
 
 const Settings = ({ openAddUserModal, setOpenAddUserModal }) => {
@@ -16,8 +16,6 @@ const Settings = ({ openAddUserModal, setOpenAddUserModal }) => {
   const [user, setUser] = useState({});
   const [activityHistory, setActivityHistory] = useState([]);
   const [relations, setRelations] = useState({});
-
-
 
   // Modal visibility states for editing and adding users
   const [showEditUserModal, setShowEditUserModal] = useState(false);
@@ -43,7 +41,7 @@ const Settings = ({ openAddUserModal, setOpenAddUserModal }) => {
       name: data.user,
       email: data.email,
       phone_number: data.phone,
-      profile_img: data.profile_picture
+      profile_img: data.profile_picture,
     };
 
     const activityHistory = activity_logs.map((log) => ({
@@ -55,7 +53,7 @@ const Settings = ({ openAddUserModal, setOpenAddUserModal }) => {
     const relations = {
       name: account_manager.first_name,
       email: account_manager.email,
-      phone_number: account_manager.phone_number
+      phone_number: account_manager.phone_number,
     };
 
     const users = admin_users.map((admin) => ({
@@ -70,10 +68,7 @@ const Settings = ({ openAddUserModal, setOpenAddUserModal }) => {
     setActivityHistory(activityHistory);
     setRelations(relations);
     setUsers(users);
-
-
   };
-
 
   // States for the Add User form
   const [newUserName, setNewUserName] = useState("");
@@ -87,19 +82,22 @@ const Settings = ({ openAddUserModal, setOpenAddUserModal }) => {
   const [editEmail, setEditEmail] = useState("");
   const [editPhone, setEditPhone] = useState("");
   const [editRole, setEditRole] = useState("");
+  const [isCreatingUser, setIsCreatingUser] = useState(false);
 
   // States for the Change Password form
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  const [showChangePasswordModalForUser, setShowChangePasswordModalForUser] = useState(false);
+  const [showChangePasswordModalForUser, setShowChangePasswordModalForUser] =
+    useState(false);
   const [passwordUser, setPasswordUser] = useState(null);
   const [newPasswordUser, setNewPasswordUser] = useState("");
   const [confirmPasswordUser, setConfirmPasswordUser] = useState("");
 
   const [openMenuId, setOpenMenuId] = useState(null);
 
+  const [newUserPassword, setNewUserPassword] = useState("");
 
   // Function to handle change password action (for both admin and user)
   const handleChangePasswordForUser = async () => {
@@ -134,6 +132,7 @@ const Settings = ({ openAddUserModal, setOpenAddUserModal }) => {
 
   // Function to create a new user (Add User modal) with validation
   const handleCreateUser = async () => {
+    setIsCreatingUser(true);
     const errors = {};
 
     if (!newUserName.trim()) {
@@ -149,14 +148,35 @@ const Settings = ({ openAddUserModal, setOpenAddUserModal }) => {
     }
     if (!newUserPhone.trim()) {
       errors.newUserPhone = "Phone number is required.";
+    } else {
+      const phoneRegex = /^\d{10}$/;
+      if (!phoneRegex.test(newUserPhone)) {
+        errors.newUserPhone =
+          "Phone number must be exactly 10 digits and only numbers.";
+      }
     }
 
+    if (Object.keys(errors).length > 0) {
+      const errorMsg = Object.values(errors).join("\n");
+      swal("Error", errorMsg, "error");
+      setIsCreatingUser(false);
+      return;
+    }
+
+    // const newUserData = {
+    //   request_type: "add_admin",
+    //   name: newUserName,
+    //   email: newUserEmail,
+    //   phone: newUserPhone,
+    //   role: newUserRole,
+    // };
     const newUserData = {
       request_type: "add_admin",
       name: newUserName,
       email: newUserEmail,
       phone: newUserPhone,
       role: newUserRole,
+      password: newUserPassword, // Add this
     };
 
     try {
@@ -166,6 +186,7 @@ const Settings = ({ openAddUserModal, setOpenAddUserModal }) => {
       });
       if (!response.ok) {
         swal("Error", "Failed to create user. Please try again.", "error");
+        setIsCreatingUser(false);
         return;
       }
       fetchSettings();
@@ -173,6 +194,7 @@ const Settings = ({ openAddUserModal, setOpenAddUserModal }) => {
     } catch (error) {
       console.error("Error creating user:", error);
       swal("Error", "Failed to create user. Please try again.", "error");
+      setIsCreatingUser(false);
     }
 
     setOpenAddUserModal(false);
@@ -182,6 +204,8 @@ const Settings = ({ openAddUserModal, setOpenAddUserModal }) => {
     setNewUserEmail("");
     setNewUserPhone("");
     setNewUserRole("User");
+    setNewUserPassword("");
+    setIsCreatingUser(false);
   };
 
   // Open the Edit User modal and pre-populate fields
@@ -235,9 +259,12 @@ const Settings = ({ openAddUserModal, setOpenAddUserModal }) => {
       dangerMode: true,
     }).then(async (willDelete) => {
       if (willDelete) {
-        const response = await authFetch(`/admin/settings/update/` + userId + "/", {
-          method: "DELETE",
-        });
+        const response = await authFetch(
+          `/admin/settings/update/` + userId + "/",
+          {
+            method: "DELETE",
+          }
+        );
         if (!response.ok) {
           swal("Error", "Failed to delete user. Please try again.", "error");
           return;
@@ -260,11 +287,12 @@ const Settings = ({ openAddUserModal, setOpenAddUserModal }) => {
     }
 
     const response = authFetch("/admin/settings/update/", {
-      method: "POST", body: JSON.stringify({
+      method: "POST",
+      body: JSON.stringify({
         request_type: "change_password",
         old_password: oldPassword,
         new_password: newPassword,
-      })
+      }),
     });
 
     if (!response.ok) {
@@ -281,7 +309,6 @@ const Settings = ({ openAddUserModal, setOpenAddUserModal }) => {
     setConfirmPassword("");
     setShowChangePasswordModal(false);
   };
-
 
   // Filter users based on search query
   const filteredUserData = useMemo(() => {
@@ -354,7 +381,10 @@ const Settings = ({ openAddUserModal, setOpenAddUserModal }) => {
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4 manage-table-container">
             {/* Title */}
             <div className="flex flex-wrap justify-center sm:justify-start gap-6 manage-btn">
-              <motion.button whileTap={{ scale: 1.1 }} className="manage-active">
+              <motion.button
+                whileTap={{ scale: 1.1 }}
+                className="manage-active"
+              >
                 Manage Users
               </motion.button>
             </div>
@@ -407,7 +437,9 @@ const Settings = ({ openAddUserModal, setOpenAddUserModal }) => {
                           <FaEllipsisV
                             className="cursor-pointer text-gray-400 hover:text-white"
                             onClick={() =>
-                              setOpenMenuId(openMenuId === user.id ? null : user.id)
+                              setOpenMenuId(
+                                openMenuId === user.id ? null : user.id
+                              )
                             }
                           />
 
@@ -445,7 +477,6 @@ const Settings = ({ openAddUserModal, setOpenAddUserModal }) => {
                           )}
                         </div>
                       </td>
-
                     </tr>
                   ))
                 ) : (
@@ -492,16 +523,34 @@ const Settings = ({ openAddUserModal, setOpenAddUserModal }) => {
                   />
                 </div>
                 <div className="modal-row">
+                  <label>Password:</label>
+                  <input
+                    type="password"
+                    value={newUserPassword}
+                    onChange={(e) => setNewUserPassword(e.target.value)}
+                    placeholder="Enter password"
+                  />
+                </div>
+                <div className="modal-row">
                   <label>Role:</label>
-                  <select value={newUserRole} onChange={(e) => setNewUserRole(e.target.value)}>
+                  <select
+                    value={newUserRole}
+                    onChange={(e) => setNewUserRole(e.target.value)}
+                  >
                     <option value="Admin">Admin</option>
-                    <option value="User">User</option>
+                    <option value="Lecturer">Lecturer</option>
                   </select>
                 </div>
                 <div className="setting-modal-buttons">
-                  <button onClick={() => setOpenAddUserModal(false)}>Back</button>
-                  <button onClick={handleCreateUser} className="create-btn">
-                    Create
+                  <button onClick={() => setOpenAddUserModal(false)}>
+                    Back
+                  </button>
+                  <button
+                    onClick={handleCreateUser}
+                    className="create-btn"
+                    disabled={isCreatingUser}
+                  >
+                    {isCreatingUser ? "Creating..." : "Create"}
                   </button>
                 </div>
               </div>
@@ -539,13 +588,18 @@ const Settings = ({ openAddUserModal, setOpenAddUserModal }) => {
                 </div>
                 <div className="modal-row">
                   <label>Role:</label>
-                  <select value={editRole} onChange={(e) => setEditRole(e.target.value)}>
+                  <select
+                    value={editRole}
+                    onChange={(e) => setEditRole(e.target.value)}
+                  >
                     <option value="Admin">Admin</option>
-                    <option value="User">User</option>
+                    <option value="Lecturer">Lecturer</option>
                   </select>
                 </div>
                 <div className="modal-buttons">
-                  <button onClick={() => setShowEditUserModal(false)}>Back</button>
+                  <button onClick={() => setShowEditUserModal(false)}>
+                    Back
+                  </button>
                   <button onClick={handleUpdateUser} className="create-btn">
                     Update
                   </button>
@@ -618,10 +672,15 @@ const Settings = ({ openAddUserModal, setOpenAddUserModal }) => {
                   />
                 </div>
                 <div className="setting-modal-buttons">
-                  <button onClick={() => setShowChangePasswordModalForUser(false)}>
+                  <button
+                    onClick={() => setShowChangePasswordModalForUser(false)}
+                  >
                     Back
                   </button>
-                  <button onClick={handleChangePasswordForUser} className="create-btn">
+                  <button
+                    onClick={handleChangePasswordForUser}
+                    className="create-btn"
+                  >
                     Update Password
                   </button>
                 </div>
@@ -753,7 +812,7 @@ const Settings = ({ openAddUserModal, setOpenAddUserModal }) => {
                           className="bg-red-600 text-white px-3 py-1 rounded m-password-btn"
                           onClick={() => {
                             setPasswordUser(user);
-                            setShowChangePasswordModalForUser(true)
+                            setShowChangePasswordModalForUser(true);
                           }}
                         >
                           Change Password
@@ -806,16 +865,32 @@ const Settings = ({ openAddUserModal, setOpenAddUserModal }) => {
                 />
               </div>
               <div className="modal-row">
+                <label>Password:</label>
+                <input
+                  type="password"
+                  value={newUserPassword}
+                  onChange={(e) => setNewUserPassword(e.target.value)}
+                  placeholder="Enter password"
+                />
+              </div>
+              <div className="modal-row">
                 <label>Role:</label>
-                <select value={newUserRole} onChange={(e) => setNewUserRole(e.target.value)}>
+                <select
+                  value={newUserRole}
+                  onChange={(e) => setNewUserRole(e.target.value)}
+                >
                   <option value="Admin">Admin</option>
-                  <option value="User">User</option>
+                  <option value="Lecturer">Lecturer</option>
                 </select>
               </div>
               <div className="setting-modal-buttons">
                 <button onClick={() => setOpenAddUserModal(false)}>Back</button>
-                <button onClick={handleCreateUser} className="create-btn">
-                  Create
+                <button
+                  onClick={handleCreateUser}
+                  className="create-btn"
+                  disabled={isCreatingUser}
+                >
+                  {isCreatingUser ? "Creating..." : "Create"}
                 </button>
               </div>
             </div>
@@ -853,13 +928,18 @@ const Settings = ({ openAddUserModal, setOpenAddUserModal }) => {
               </div>
               <div className="modal-row">
                 <label>Role:</label>
-                <select value={editRole} onChange={(e) => setEditRole(e.target.value)}>
+                <select
+                  value={editRole}
+                  onChange={(e) => setEditRole(e.target.value)}
+                >
                   <option value="Admin">Admin</option>
-                  <option value="User">User</option>
+                  <option value="Lecturer">Lecturer</option>
                 </select>
               </div>
               <div className="modal-buttons">
-                <button onClick={() => setShowEditUserModal(false)}>Back</button>
+                <button onClick={() => setShowEditUserModal(false)}>
+                  Back
+                </button>
                 <button onClick={handleUpdateUser} className="create-btn">
                   Update
                 </button>
@@ -933,10 +1013,15 @@ const Settings = ({ openAddUserModal, setOpenAddUserModal }) => {
                 />
               </div>
               <div className="setting-modal-buttons">
-                <button onClick={() => setShowChangePasswordModalForUser(false)}>
+                <button
+                  onClick={() => setShowChangePasswordModalForUser(false)}
+                >
                   Back
                 </button>
-                <button onClick={handleChangePasswordForUser} className="create-btn">
+                <button
+                  onClick={handleChangePasswordForUser}
+                  className="create-btn"
+                >
                   Update Password
                 </button>
               </div>

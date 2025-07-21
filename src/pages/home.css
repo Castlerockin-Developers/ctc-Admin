@@ -1515,6 +1515,11 @@ body {
     word-wrap: break-word;
     overflow-wrap: break-word;
 }
+    .form-group input[type="checkbox"] {
+        cursor: pointer;
+        position: relative;
+        top: 1.8rem;
+    }
 
 /* Mobile view */
 @media (max-width: 500px) and (min-width: 0px) {
@@ -1624,6 +1629,7 @@ body {
 .sidebar-bottom {
     margin-top: auto; /* Push the bottom part to the bottom */
     flex-shrink: 0; /* Prevent shrinking of the bottom part */
+    margin-bottom: 50px;
 }
 
 .sidebar-item {
@@ -1948,6 +1954,20 @@ body {
 .modal-overlay {
     z-index: 2000;
 }
+.pagination-controls{
+    margin-top: 3px;
+    margin-bottom: 50px;
+}
+.total-students-card{
+    min-width: 100%;
+}
+.branch-filter-select{
+    width: 122% !important;
+}
+.create-btn {
+min-width: 100%;
+}
+
 }
 
 @media(max-width:800px) and (min-width:501px) {

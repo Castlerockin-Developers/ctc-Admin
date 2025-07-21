@@ -56,6 +56,7 @@ const ManageExam = ({ onCreateNewExam, onNext }) => {
 
     const handleFilterSelect = (key) => {
         setActiveButton(key);
+        setCurrentPage(1); // Reset to first page when filter is applied
         setShowFilter(false);
     };
 
