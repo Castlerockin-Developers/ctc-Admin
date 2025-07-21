@@ -774,3 +774,73 @@
     font-size: 1.5rem;
    }
 }
+
+/* SweetAlert2 Dark Theme */
+.swal-modal {
+  background-color: #1e1e1e !important;
+  border: 1px solid #444 !important;
+}
+
+.swal-title,
+.swal-text {
+  color: #fff !important;
+}
+
+.swal-button {
+  background-color: #007bff !important;
+  color: #fff !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.swal-button:hover {
+  background-color: #0056b3 !important;
+}
+
+.swal-button--confirm {
+  background-color: #28a745 !important;
+}
+.swal-button--confirm:hover {
+  background-color: #218838 !important;
+}
+
+.swal-button--cancel {
+  background-color: #dc3545 !important;
+}
+.swal-button--cancel:hover {
+  background-color: #c82333 !important;
+}
+
+.swal-icon--success__line {
+  background-color: #28a745 !important;
+}
+
+.swal-icon--error {
+  border-color: #dc3545 !important;
+}
+
+.swal-icon--error__x-mark {
+  background-color: #dc3545 !important;
+}
+
+.swal-icon--warning {
+  border-color: #ffc107 !important;
+}
+
+.swal-icon--warning__body,
+.swal-icon--warning__dot {
+  background-color: #ffc107 !important;
+}
+
+/* Fix for success icon on dark background */
+.swal-icon--success:before,
+.swal-icon--success:after {
+  background-color: #1e1e1e !important;
+}
+.swal-icon--success__hide-corners {
+  background-color: #1e1e1e !important;
+}
+
+.swal-icon--success__ring {
+  border-color: rgba(255, 255, 255, 0.3) !important;
+}

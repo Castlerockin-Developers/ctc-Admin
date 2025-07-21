@@ -28,7 +28,7 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const userCount = useRef(0); // to track total students count
   const totalAllowedStudents = useRef(0); // to track max students count
-
+  const [totalStudents, setTotalStudents] = useState(0); // <-- use only this for total students
   const [activeTab, setActiveTab] = useState("all"); // default to first branch after load
   const [studentsData, setStudentsData] = useState({}); // expect object with branch keys
   const [groups, setGroups] = useState([]);
@@ -55,7 +55,7 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen }) => {
 
   // **NEW STATE FOR SORTING**
   const [sortConfig, setSortConfig] = useState({
-    key: "usn",
+    key: "name",
     direction: "ascending",
   });
 
@@ -77,10 +77,9 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen }) => {
     if (response.status === 200) {
       const data = await response.json();
       userCount.current = data.user_count || 0; // total students count
+      setTotalStudents(data.user_count || 0); // <-- update state
       totalAllowedStudents.current = data.max_users;
       setStudentsData(data.data || {}); // your students are under data key
-      const firstBranch = Object.keys(data.data || {})[0];
-      setActiveTab(firstBranch || "");
       setCurrentPage(1); // Reset to first page when branch data changes
     } else {
       console.error("Failed to fetch students data");
@@ -173,8 +172,7 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen }) => {
     }
   };
 
-  // Calculate total students and max students from response or props
-  const totalStudents = userCount.current;
+  // Calculate max students from response or props
   const maxStudents = totalAllowedStudents.current || 500;
 
   // Function to open the modal with selected student data
@@ -210,6 +208,8 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen }) => {
           icon: "success",
           title: "Student Deleted",
           text: "Student deleted successfully.",
+           background: '#181817',
+            color: '#fff',
         });
         fetchStudentsData(); // Refresh data after deletion
       } else {
@@ -218,6 +218,8 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen }) => {
           icon: "error",
           title: "Error",
           text: errorData.error || "Failed to delete student.",
+           background: '#181817',
+            color: '#fff',
         });
       }
     } catch (error) {
@@ -225,6 +227,8 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen }) => {
         icon: "error",
         title: "Error",
         text: error.message || "Network error.",
+         background: '#181817',
+            color: '#fff',
       });
     }
   };
@@ -258,7 +262,7 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen }) => {
               }}
             >
               <option value="all">All Branches</option>
-              {Object.keys(studentsData).map((branch) => (
+              {Object.keys(studentsData).sort().map((branch) => (
                 <option key={branch} value={branch}>
                   {branch}
                 </option>
@@ -300,7 +304,7 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen }) => {
                   <tr>
                     <th
                       className="mobile-usn-col"
-                      onClick={() => handleSort("usn")}
+                      // onClick={() => handleSort("usn")}
                     >
                       USN
                     </th>
@@ -314,7 +318,7 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen }) => {
                   <tr>
                     <th
                       className="desktop-usn-col"
-                      onClick={() => handleSort("usn")}
+                      // onClick={() => handleSort("usn")}
                     >
                       #USN
                     </th>
@@ -426,6 +430,7 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen }) => {
         <AddStudentModal
           onClose={() => setStudentModalOpen(false)}
           groups={groups}
+          refreshTotalStudents={fetchStudentsData} // <-- pass callback
         />
       )}
       {editModalOpen && selectedStudent && (
@@ -484,6 +489,8 @@ const EditStudentModal = ({ onClose, groups, studentId }) => {
             icon: "error",
             title: "Error",
             text: "Student data could not be loaded.",
+             background: '#181817',
+            color: '#fff',
           });
         }
       } catch (error) {
@@ -492,6 +499,8 @@ const EditStudentModal = ({ onClose, groups, studentId }) => {
           icon: "error",
           title: "Error",
           text: "Failed to fetch student data.",
+           background: '#181817',
+            color: '#fff',
         });
       }
     };
@@ -544,6 +553,8 @@ const EditStudentModal = ({ onClose, groups, studentId }) => {
           icon: "success",
           title: "Student Updated",
           text: "Student details updated successfully.",
+           background: '#181817',
+            color: '#fff',
         });
         onClose(); // Close modal
         // You might want to trigger a refresh of the student list in ManageStudents
@@ -554,6 +565,8 @@ const EditStudentModal = ({ onClose, groups, studentId }) => {
           icon: "error",
           title: "Error",
           text: errData.error || "Failed to update student.",
+           background: '#181817',
+            color: '#fff',
         });
       }
     } catch (error) {
@@ -561,6 +574,8 @@ const EditStudentModal = ({ onClose, groups, studentId }) => {
         icon: "error",
         title: "Error",
         text: error.message || "Network error.",
+         background: '#181817',
+            color: '#fff',
       });
     }
   };
@@ -656,7 +671,7 @@ const EditStudentModal = ({ onClose, groups, studentId }) => {
             value={student.groupId}
             onChange={handleChange}
           >
-            <option value="">Select a group</option>
+            <option value="" disabled>Select a group</option>
             {groups.map((g) => (
               <option key={g.id} value={g.id}>
                 {g.name}
@@ -714,7 +729,7 @@ const EditStudentModal = ({ onClose, groups, studentId }) => {
 // -----------------------------------------------------------------------------
 // AddStudentModal Component (fixed)
 // -----------------------------------------------------------------------------
-const AddStudentModal = ({ onClose, groups }) => {
+const AddStudentModal = ({ onClose, groups, refreshTotalStudents }) => {
   const [activeTab, setActiveTab] = useState("manual");
   const [student, setStudent] = useState({
     firstName: "",
@@ -730,6 +745,7 @@ const AddStudentModal = ({ onClose, groups }) => {
   const [file, setFile] = useState(null);
   const [isAddingGroup, setIsAddingGroup] = useState(false);
   const [newGroupName, setNewGroupName]   = useState("");
+  const [isCreatingStudent, setIsCreatingStudent] = useState(false);
 
   const validate = () => {
     const newErrors = {};
@@ -773,13 +789,17 @@ const AddStudentModal = ({ onClose, groups }) => {
   };
 
   const handleCreateStudent = async () => {
+    setIsCreatingStudent(true);
     if (activeTab === "dataset") {
       if (!file) {
         Swal.fire({
           icon: "error",
           title: "No file selected",
           text: "Please select an Excel file to upload.",
+          background: '#181817',
+          color: '#fff',
         });
+        setIsCreatingStudent(false);
         return;
       }
       try {
@@ -800,7 +820,10 @@ const AddStudentModal = ({ onClose, groups }) => {
             html: `Successfully imported ${responseData.imported_count} students. Failed to import ${responseData.failed_count} students.<br><br>
                                             <a href="${responseData.excel_report_url}" download="import_report.xlsx" class="swal2-confirm swal2-styled" style="background-color: #3085d6; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none;">Download Report</a>`,
             showConfirmButton: true,
+             background: '#181817',
+            color: '#fff',
           });
+          if (refreshTotalStudents) await refreshTotalStudents();
           onClose();
         } else {
           const errData = await response.json();
@@ -808,6 +831,8 @@ const AddStudentModal = ({ onClose, groups }) => {
             icon: "error",
             title: "Import Failed",
             text: errData.error || "Failed to import students.",
+             background: '#181817',
+            color: '#fff',
           });
         }
       } catch (error) {
@@ -815,12 +840,16 @@ const AddStudentModal = ({ onClose, groups }) => {
           icon: "error",
           title: "Error",
           text: error.message || "Network error.",
+           background: '#181817',
+            color: '#fff',
         });
       }
+      setIsCreatingStudent(false);
     } else {
       const validationErrors = validate();
       if (Object.keys(validationErrors).length > 0) {
         setErrors(validationErrors);
+        setIsCreatingStudent(false);
         return;
       }
 
@@ -836,7 +865,10 @@ const AddStudentModal = ({ onClose, groups }) => {
           icon: "error",
           title: "Error",
           text: err.error || "Could not create group.",
+           background: '#181817',
+            color: '#fff',
         });
+        setIsCreatingStudent(false);
       }
       const created = await res.json();
       // overwrite student.groupId with the new group's ID
@@ -884,7 +916,10 @@ const AddStudentModal = ({ onClose, groups }) => {
             icon: "success",
             title: "Student Created",
             text: "Student added successfully.",
+             background: '#181817',
+            color: '#fff',
           });
+          if (refreshTotalStudents) await refreshTotalStudents();
           onClose();
         } else {
           const errData = await response.json();
@@ -899,8 +934,11 @@ const AddStudentModal = ({ onClose, groups }) => {
           icon: "error",
           title: "Error",
           text: error.message || "Network error.",
+           background: '#181817',
+            color: '#fff',
         });
       }
+      setIsCreatingStudent(false);
     }
   };
 
@@ -937,8 +975,9 @@ const AddStudentModal = ({ onClose, groups }) => {
               className="upload-btn"
               whileTap={{ scale: 1.1 }}
               onClick={handleCreateStudent} // Changed onClick to handleCreateStudent
+              disabled={isCreatingStudent}
             >
-              <FaUpload className="icon" /> Upload File
+              {isCreatingStudent ? (<> <FaUpload className="icon" /> Uploading...</>) : (<> <FaUpload className="icon" /> Upload File</>)}
             </motion.button>
           </div>
         )}
@@ -1036,7 +1075,7 @@ const AddStudentModal = ({ onClose, groups }) => {
                 value={student.groupId || ""}
                 onChange={handleGroupChange} // ← new handler
               >
-                <option value="">Select a group</option>
+                <option value="" disabled>Select a group</option>
                 <option value="add_new">Add a group</option>
                 {groups.map((g) => (
                   <option key={g.id} value={g.id}>
@@ -1075,8 +1114,9 @@ const AddStudentModal = ({ onClose, groups }) => {
             <motion.button
               className="create-btn-student"
               onClick={handleCreateStudent}
+              disabled={isCreatingStudent}
             >
-              Create Student
+              {isCreatingStudent ? "Creating..." : "Create Student"}
             </motion.button>
           )}
         </div>
