@@ -1,0 +1,415 @@
+.Custom-container {
+    background-color: #282828;
+    width: calc(100% - 58px);
+    height: 87vh;
+    transition: width 0.3s ease-in-out, margin-left 0.3s ease-in-out;
+    border-radius: 5px;
+    overflow-y: auto;
+}
+
+.c-top {
+    width: 92%;
+    margin-top: 4rem;
+}
+
+.c-top h1 {
+    color: #fff;
+    font-size: 2.5rem;
+    font-family: madina-semibold;
+}
+
+.c-top button {
+    background-color: #8C4BFF;
+    padding: 0.5rem 2rem;
+    color: white;
+    font-family: madina-semibold;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.search-box {
+    display: flex;
+    align-items: center;
+    background: #535353;
+    padding: 5px 10px;
+    border-radius: 5px;
+    border: 1px solid white;
+}
+
+.search-box:hover {
+    background-color: #383838;
+}
+
+.search-box:focus-within {
+    outline: 1px solid #A294F9;
+    outline-offset: 1px;
+    border: none;
+    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.6),
+        0 0 0 2px rgba(123, 103, 252, 0.5);
+    background-color: #383838;
+}
+
+.search-box input {
+    border: none;
+    background: none;
+    color: white;
+    outline: none;
+    margin-left: 8px;
+    font-size: 1rem;
+}
+
+.course-card-container {
+    padding: 2rem 3.8rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.course-card {
+    width: 100%;
+    padding: 1rem;
+    background-color: #535353;
+    border-radius: 10px;
+    border: 1px solid #fffefe;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+}
+
+.course-card h2 {
+    color: white;
+    font-family: madina-regular;
+    font-size: 1.5rem;
+}
+
+.course-card p {
+    color: white;
+    font-family: madina-light;
+}
+
+.c-branch h4 {
+    color: white;
+    font-family: madina-regular;
+    margin-right: 10px;
+    background-color: #181817;
+    padding: 1rem;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+    border-radius: 5px;
+}
+
+.course-title {
+    margin-left: 20px;
+    display: flex;
+}
+
+.course-view-btn {
+    margin-right: 20px;
+}
+
+.course-view-btn select {
+    color: white;
+    font-family: madina-semibold;
+    background-color: #6455C4;
+    padding: 0.5rem 2rem;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.course-view-btn option {
+    background-color: #383838;
+    border-bottom: 1px solid #fff;
+}
+
+.course-view-btn button:hover {
+    background-color: #3924c4;
+}
+
+
+/* Part One */
+.new-c-top {
+    padding: 1.5rem 3.5rem;
+    margin-top: 2.5rem;
+}
+
+.new-c-top h1 {
+    color: white;
+    font-family: madina-semibold;
+    font-size: 2.5rem;
+}
+
+.new-c-top img {
+    margin-top: 10px;
+}
+
+.c-input-containers {
+    padding: 0rem 3.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.c-input-containers img {
+    margin-top: 30px;
+}
+
+.c-input-containers h4 {
+    color: white;
+    font-family: madina-medium;
+    font-size: 1.2rem;
+}
+
+.create-course {
+    margin-top: 10px;
+}
+
+.create-course input {
+    width: 40%;
+    height: 5.5vh;
+    padding: 5px;
+    margin-top: 10px;
+    background-color: #434343;
+    border: 1px solid rgb(141, 141, 141);
+    border-radius: 5px;
+    color: white;
+    font-family: madina-light;
+}
+
+.create-course textarea {
+    background-color: #434343;
+    border: 1px solid rgb(141, 141, 141);
+    border-radius: 5px;
+    color: white;
+    font-family: madina-light;
+    margin-top: 10px;
+    padding: 0.5rem;
+}
+
+.create-course input:focus {
+    outline: 1px solid #A294F9;
+    outline-offset: 1px;
+    border: none;
+    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.6),
+        0 0 0 2px rgba(123, 103, 252, 0.5);
+    background-color: #383838;
+}
+
+.back-btn-create {
+    color: white;
+    font-family: madina-regular;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1.1rem;
+}
+
+.next-btn {
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    background-color: #8E5DAF;
+    font-family: madina-semibold;
+    cursor: pointer;
+}
+
+.bottom-course {
+    margin-bottom: 15px;
+}
+
+.bottom-course p {
+    color: white;
+    font-family: madina-semibold;
+}
+
+.add-import {
+    padding: 0rem 3.5rem;
+}
+
+.add-import h2 {
+    color: white;
+    font-family: madina-medium;
+    font-size: 1.5rem;
+}
+
+.import-file {
+    display: flex;
+    align-items: center;
+    border: 1px solid rgb(141, 141, 141);
+    border-radius: 10px;
+    background: #434343;
+    padding: 0.25rem 0.5rem;
+    width: 40%;
+    margin-top: 10px;
+}
+
+.upload-pic {
+    flex: 1;
+    font-size: 1rem;
+    padding: 0.7rem 1rem;
+    background-color: #434343;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    overflow-x: auto;
+    white-space: nowrap;
+    margin-top: 10px;
+    width: 40%;
+}
+
+.add-import p {
+    color: white;
+    font-family: madina-medium;
+    margin-top: 10px;
+    font-size: 1.1rem;
+}
+
+.upload-btn {
+    background-color: #7b6cf6;
+    color: #fff;
+    border: none;
+    border-radius: 7px;
+    padding: 0.6rem 1.5rem;
+    font-size: 1rem;
+    cursor: pointer;
+    font-family: madina-semibold;
+    margin: 0.5rem 0;
+}
+
+.upload-btn:hover {
+    background-color: #8d81e6;
+}
+
+.chapter-sections {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+    margin-top: 10px;
+    margin-bottom: 20px;
+}
+
+.left-manual-form,
+.right-preview {
+    flex: 1;
+    min-width: 300px;
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.left-manual-form {
+    background-color: #434343;
+    padding: 1.5rem;
+    border-radius: 8px;
+}
+
+.left-manual-form h3,
+.right-preview h3 {
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+    color: white;
+    font-family: madina-semibold;
+}
+
+.form-group-c {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1rem;
+}
+
+.form-group-c label {
+    margin-bottom: 0.3rem;
+    font-family: madina-medium;
+    color: white;
+    font-size: 1.2rem;
+}
+
+.form-group-c input,
+.form-group-c textarea {
+    padding: 0.6rem;
+    border-radius: 5px;
+    border: 1px solid rgb(141, 141, 141);
+    background-color: #5F5F5F;
+    color: white;
+    font-size: 1rem;
+}
+
+.form-group-c input:focus-within,
+.form-group-c textarea:focus-within {
+    outline: 1px solid #A294F9;
+    outline-offset: 1px;
+    border: none;
+    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.6),
+        0 0 0 2px rgba(123, 103, 252, 0.5);
+    background-color: #4D4D4D;
+}
+
+.save-btn {
+    background-color: #A294F9;
+    border: none;
+    color: white;
+    padding: 0.6rem 2rem;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 1rem;
+    font-size: 1rem;
+}
+
+.right-preview {
+    background-color: #434343;
+    padding: 1.5rem;
+    border-radius: 8px;
+    overflow-y: auto;
+    max-height: 600px;
+}
+
+.no-chapters {
+    color: #aaa;
+    font-style: italic;
+}
+
+.chapter-card {
+    background-color: #656565;
+    padding: 1rem;
+    border: 1px solid rgb(141, 141, 141);
+    border-radius: 6px;
+    margin-bottom: 1rem;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.chapter-card:hover {
+    background-color: #525252;
+}
+
+.chapter-card h4 {
+    margin: 0;
+    color: #ecf0f1;
+    font-family: madina-medium;
+}
+
+.chapter-details {
+    margin-top: 0.5rem;
+    line-height: 1.5;
+    color: #dbe1e8;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    /* for legacy browser support */
+    word-break: break-word;
+    white-space: normal;
+}
+
+.chapter-details h5 {
+    font-family: madina-medium;
+    margin-top: 0.5rem;
+}
+
+.chapter-details p {
+    background-color: #303030;
+    font-family: madina-light;
+    padding: 1rem;
+    border-radius: 8px;
+}
+
+.expanded {
+    background-color: #656565;
+}
+
+.third-step {
+    margin-top: 20px;
+}

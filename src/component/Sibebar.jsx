@@ -170,6 +170,14 @@ const Sidebar = ({ activeComponent, setActiveComponent }) => {
                         <h6 className="sidebar-item">Manage Students</h6>
                         <div className={`sidebar-animation ${currentActive === "student" ? "active" : ""}`} />
                     </button>
+                    <button
+                        type="button"
+                        className={`sidebar-button ${currentActive === "custom" ? "side-active" : ""}`}
+                        onClick={() => handleNavigation("custom")}
+                    >
+                        <h6 className="sidebar-item">Custom Learning</h6>
+                        <div className={`sidebar-animation ${currentActive === "custom" ? "active" : ""}`} />
+                    </button>
                 </div>
 
                 {/* Bottom Menu */}
