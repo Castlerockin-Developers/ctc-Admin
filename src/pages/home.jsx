@@ -17,6 +17,10 @@ import ViewExam from "../component/ViewExam";
 import NewMcq from "../component/NewMcq";
 import NewCoding from "../component/NewCoding";
 import { authFetch } from "../scripts/AuthProvider";
+import CustomLearning from "../component/CustomLearning";
+import NewCoursefirst from "../component/NewCoursefirst";
+import ChapterAdding from "../component/ChapterAdding";
+import CourseStudents from "../component/CourseStudents";
 
 const Home = () => {
     const [activeComponent, setActiveComponent] = useState("dashboard");
@@ -133,6 +137,33 @@ const Home = () => {
                         <ManageStudents
                             studentModalOpen={isStudentModalOpen}
                             setStudentModalOpen={setStudentModalOpen}
+                        />
+                    )}
+
+                    {activeComponent === "custom" && (
+                        <CustomLearning
+                            onNewcourse={() => setActiveComponent("partone")}
+                        />
+                    )}
+
+                    {activeComponent === "partone" && (
+                        <NewCoursefirst
+                            onNextc={() => setActiveComponent("parttwo")}
+                            onBackc={() => setActiveComponent("custom")}
+                        />
+                    )}
+
+                    {activeComponent === "parttwo" && (
+                        <ChapterAdding
+                            onBackcc={() => setActiveComponent("partone")}
+                            onNextcc={() => setActiveComponent("partthree")}
+                        />
+                    )}
+
+                    {activeComponent === "partthree" && (
+                        <CourseStudents
+                            onNextccc={() => setActiveComponent("custom")}
+                            onBackccc={() => setActiveComponent("parttwo")}
                         />
                     )}
 
