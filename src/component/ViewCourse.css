@@ -1,0 +1,352 @@
+/* Existing structure for view-details-container */
+.view-details-container {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    padding: 0rem 3.5rem;
+    align-items: flex-start;
+    gap: 30px;
+    flex-wrap: wrap;
+}
+
+/* Existing structure for view-details (Left side: Avatar + Info) */
+.view-details {
+    background-color: #333333;
+    padding: 1rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    flex: 1;
+    min-width: 300px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    border: 1px solid #777;
+}
+
+/* Styles for the profile avatar section */
+.profile-avatar-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    background-color: #181817;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+    padding: 1rem;
+    border-radius: 8px;
+}
+
+/* Style for the AvatarEditor canvas */
+.avatar-editor-canvas {
+    border: 2px solid #A294F9;
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+.avatar-file-input {
+    background-color: #333;
+    color: white;
+    padding: 8px;
+    border: 1px solid #555;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    width: 100%;
+    /* Make it take full width of its container */
+    box-sizing: border-box;
+}
+
+.avatar-file-input::-webkit-file-upload-button {
+    visibility: hidden;
+}
+
+.avatar-file-input::before {
+    content: 'Choose File';
+    display: inline-block;
+    background: #444;
+    border: 1px solid #777;
+    border-radius: 3px;
+    padding: 5px 8px;
+    outline: none;
+    white-space: nowrap;
+    -webkit-user-select: none;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
+.avatar-file-input:hover::before {
+    background: #666;
+}
+
+.avatar-file-input:active::before {
+    background: #777;
+}
+
+
+.save-avatar-btn {
+    background-color: #A294F9;
+    color: white;
+    padding: 8px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: madina-semibold;
+    font-size: 0.9rem;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.save-avatar-btn:hover {
+    background-color: #7e6cf5;
+}
+
+
+/* Styles for the profile info text (Name, Designation, Created At) */
+.profile-info-text {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    /* Space between name, designation, date */
+}
+
+.profile-info-text h2 {
+    margin: 0;
+    font-family: madina-medium;
+    font-size: 1.8rem;
+    color: #e0e0e0;
+}
+
+.designation-input {
+    background-color: #444;
+    color: white;
+    border: 1px solid #555;
+    border-radius: 4px;
+    padding: 8px 12px;
+    font-size: 1rem;
+    font-family: madina-medium;
+    width: fit-content;
+    min-width: 150px;
+    box-sizing: border-box;
+}
+
+.designation-input:focus {
+    outline: none;
+    border-color: #A294F9;
+    box-shadow: 0 0 0 2px rgba(162, 148, 249, 0.3);
+}
+
+.created-at-date {
+    color: #bbb;
+    font-size: 0.9rem;
+    font-family: madina-light;
+}
+
+/* Styles for the right side buttons */
+.profile-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    /* Space between action buttons */
+    align-items: flex-end;
+    /* Align buttons to the right */
+    padding-top: 1rem;
+    /* Align with the top of .view-details */
+}
+
+.profile-actions button {
+    padding: 10px 20px;
+    font-family: madina-semibold;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    min-width: 120px;
+    /* Ensure buttons have a consistent width */
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.profile-actions button:hover {
+    transform: translateY(-2px);
+}
+
+.btn-unassign {
+    background-color: #777;
+    /* Orange for unassign */
+    color: white;
+}
+
+.btn-unassign:hover {
+    background-color: orange;
+}
+
+.btn-edit {
+    background-color: #D1B3FF;
+    /* Green for edit */
+    color: white;
+}
+
+.btn-edit:hover {
+    background-color: #b685ff;
+}
+
+.btn-delete {
+    background-color: #f44336;
+    /* Red for delete */
+    color: white;
+}
+
+.btn-delete:hover {
+    background-color: #e53935;
+}
+
+.course-columns-container {
+    display: flex;
+    gap: 30px;
+    padding: 20px 3.5rem;
+    flex-wrap: wrap;
+}
+
+.chapters-column,
+.students-column {
+    background: #333333;
+    border: 1px solid #555;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+    flex: 1;
+    min-width: 280px;
+    max-height: 500px;
+    color: #e0e0e0;
+    overflow-y: auto;
+}
+
+.chapters-column h2,
+.students-column h2 {
+    color: #fff;
+    font-family: madina-medium;
+    font-size: 1.5rem;
+    text-align: center;
+    margin-bottom: 16px;
+}
+
+.chapter-item {
+    margin-bottom: 12px;
+    border-radius: 6px;
+    background: #444444;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+}
+
+.chapter-name {
+    font-family: madina-semibold;
+    padding: 10px 14px;
+    cursor: pointer;
+    user-select: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #e0e0e0;
+}
+
+.chapter-name:hover {
+    background: #555555;
+}
+
+.expand-icon {
+    font-size: 0.8rem;
+}
+
+.chapter-content {
+    padding: 10px 16px;
+    background: #3a3a3a;
+    font-family: madina-light;
+    font-size: 0.95rem;
+}
+
+.question-item {
+    margin-bottom: 10px;
+}
+
+.question-item p {
+    margin: 4px 0;
+    color: #c0c0c0;
+}
+
+.student-filters {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 16px;
+    gap: 10px;
+}
+
+.filter-btn {
+    background: #444444;
+    padding: 8px 14px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    color: #ddd;
+    font-family: madina-semibold;
+    transition: background-color 0.3s ease;
+}
+
+.filter-btn:hover {
+    background: #555555;
+}
+
+.filter-btn.active {
+    background: #A294F9;
+    color: white;
+}
+
+.student-list {
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+.student-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #444444;
+    padding: 10px 15px;
+    border-radius: 6px;
+    margin-bottom: 10px;
+    font-family: madina-light;
+    font-size: 1rem;
+    color: #e0e0e0;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+}
+
+.student-item.completed {
+    border-left: 5px solid #4A6AC9;
+}
+
+.student-item.not-completed {
+    border-left: 5px solid #f44336;
+}
+
+.completion-status {
+    font-family: madina-semibold;
+    font-size: 0.85rem;
+    background: #666;
+    padding: 2px 8px;
+    border-radius: 4px;
+    color: white;
+}
+
+.student-item.completed .completion-status {
+    background: #4A6AC9;
+}
+
+.student-item.not-completed .completion-status {
+    background: #f44336;
+}
+
+.no-students {
+    text-align: center;
+    color: #bbb;
+    padding: 20px 0;
+    font-family: madina-light;
+}

@@ -21,12 +21,14 @@ import CustomLearning from "../component/CustomLearning";
 import NewCoursefirst from "../component/NewCoursefirst";
 import ChapterAdding from "../component/ChapterAdding";
 import CourseStudents from "../component/CourseStudents";
+import ViewCourse from "../component/ViewCourse";
 
 const Home = () => {
     const [activeComponent, setActiveComponent] = useState("dashboard");
     const [isStudentModalOpen, setStudentModalOpen] = useState(false);
     const [openAddUserModal, setOpenAddUserModal] = useState(false);
     const [createExamRequest, setCreateExamRequest] = useState([]);
+    const [selectedCourse, setSelectedCourse] = useState(null);
 
     const handleSubmitExam = async () => {
 
@@ -143,7 +145,14 @@ const Home = () => {
                     {activeComponent === "custom" && (
                         <CustomLearning
                             onNewcourse={() => setActiveComponent("partone")}
+                            onView={(course) => {
+                                setSelectedCourse(course);
+                                setActiveComponent("viewcourse");
+                            }}
                         />
+                    )}
+                    {activeComponent === "viewcourse" && (
+                        <ViewCourse />
                     )}
 
                     {activeComponent === "partone" && (

@@ -214,8 +214,8 @@
     color: #ff6b6b;
 }
 
-.save-btn,
-.cancel-btn {
+.save-btn-m,
+.cancel-btn-m {
     padding: 10px 20px;
     cursor: pointer;
     font-size: 16px;
@@ -226,11 +226,11 @@
     margin-right: 15px;
 }
 
-.save-btn {
+.save-btn-m {
     background-color: #A294F9;
 }
 
-.cancel-btn:hover {
+.cancel-btn-m:hover {
     background-color: #3a3a3a;
 }
 

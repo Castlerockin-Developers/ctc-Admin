@@ -193,8 +193,8 @@ const NewMcq = ({ setActiveComponent, onSave, onCancel }) => {
 
                 {/* Save and Cancel Buttons */}
                 <div className="save-cancel-container">
-                    <button onClick={handleSave} className='save-btn'>Save</button>
-                    <button onClick={handleCancel} className='cancel-btn'>Cancel</button>
+                    <button onClick={handleSave} className='save-btn-m'>Save</button>
+                    <button onClick={handleCancel} className='cancel-btn-m'>Cancel</button>
                 </div>
             </div>
         </div>

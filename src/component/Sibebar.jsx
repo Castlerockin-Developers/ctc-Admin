@@ -13,7 +13,12 @@ const Sidebar = ({ activeComponent, setActiveComponent }) => {
     const navigate = useNavigate();
 
     // Map "newExam" to "manageExam" if needed
-    const currentActive = ["newExam", "addQuestion", "addStudents", "newMcq", "newCoding"].includes(activeComponent) ? "manageExam" : activeComponent;
+    const currentActive = ["newExam", "addQuestion", "addStudents", "newMcq", "newCoding"].includes(activeComponent)
+        ? "manageExam"
+        : ["partone", "parttwo", "partthree", "viewcourse"].includes(activeComponent)
+            ? "custom"
+            : activeComponent;
+
 
     useEffect(() => {
         const handleResize = () => {
