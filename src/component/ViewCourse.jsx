@@ -68,7 +68,7 @@ const ViewCourse = ({ onUnassign, onEdit, onDelete }) => {
     return (
         <div className='Custom-container'>
             <div className='new-c-top'>
-                <h1>View Profile</h1>
+                <h1>View Course</h1>
             </div>
             <div className='view-details-container'>
                 <div className='view-details'>
