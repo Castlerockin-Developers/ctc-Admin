@@ -152,7 +152,8 @@ const Home = () => {
                         />
                     )}
                     {activeComponent === "viewcourse" && (
-                        <ViewCourse />
+                        // <ViewCourse />
+                        <ViewCourse onBack={() => setActiveComponent("custom")} />
                     )}
 
                     {activeComponent === "partone" && (
