@@ -350,3 +350,157 @@
     padding: 20px 0;
     font-family: madina-light;
 }
+.mobile-action-dropdown button:hover {
+    background: #444;
+  }
+
+@media (max-width: 768px) {
+  .profile-actions {
+    display: none !important;
+  }
+  .mobile-action-menu {
+    display: flex !important;
+    flex-direction: column;
+    align-items: flex-end;
+    position: relative;
+  }
+  .mobile-action-menu .hamburger {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    font-size: 2rem;
+    color: #fff;
+    outline: none;
+  }
+  .mobile-action-dropdown {
+    position: absolute;
+    top: 40px;
+    right: 0;
+    background: #333;
+    border: 1px solid #555;
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    min-width: 140px;
+  }
+  .mobile-action-dropdown button {
+    background: none;
+    border: none;
+    border-bottom: 1px solid #555;
+    color: #fff;
+    padding: 12px 20px;
+    text-align: center;
+    font-size: 1rem;
+    font-family: madina-semibold;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .mobile-action-dropdown button:hover {
+    background: #444;
+  }
+}
+
+/* Hide mobile menu by default on desktop */
+.mobile-action-menu {
+  display: none;
+}
+@media (max-width: 500px) and (min-width: 0px) {
+    .view-details{
+        min-width: 345px !important;
+        position: relative;
+       
+    }
+    .view-details-container{
+        padding: 0rem 1rem;
+
+    }
+    .course-columns-container{
+        padding: 20px 1rem;
+        margin-bottom: 60px;
+    }
+    .profile-flex{
+        gap: 5px;
+    }
+    .designation-input {
+    /* reduce width on phones */
+    min-width: 100px;   /* shrink the minimum */
+    width: 169px;       /* fixed mobile width */
+  }
+  .new-c-top1 h1{
+    font-size: 2rem;
+    margin-left: -20px;
+
+  }
+  .avatar-file-input{
+    padding: 8px 8px 8px 10px;
+  }
+  .back-btn{
+    margin-left: -50px;
+  }
+  .profile-avatar-section{
+    margin-right: 10px;
+  }
+  .mobile-action-menu{
+    position: absolute;
+    top: 1px;
+    right: 1px;
+  }
+  .profile-info-text h2 {
+    width: 150px;
+    font-size: 1.5rem;
+  }
+
+}
+@media(max-width:400px) and (min-width:330px) {
+    .view-details{
+        min-width: 335px !important;
+    }
+    .designation-input {
+        width: 159px;
+        padding: 8px 5px;
+    }
+    .avatar-file-input{
+        padding: 8px 6px 8px 8px;
+    }
+    .avatar-file-input::before{
+        padding: 5px 3px;
+    }
+    .profile-flex {
+        gap: 1px;
+    }
+
+}
+@media(max-width:329px) and (min-width:300px) {
+    .new-c-top1 h1{
+        font-size: 1.5rem !important;
+    }
+     .view-details{
+        min-width: 285px !important;
+        padding: 0.5rem 0.5rem;
+    }
+    .profile-avatar-section {
+        margin-right: 3px;
+    }
+      .designation-input {
+        width: 130px;
+        padding: 8px 5px;
+        font-size: 0.8rem;
+    }
+    .chapters-column, .students-column{
+        min-width: 285px;
+    }
+    .avatar-file-input{
+        padding: 8px 6px 8px 4px;
+    }
+       .avatar-file-input::before{
+        padding: 5px 5px;
+    }
+        .Custom-container{
+            overflow-x: hidden;
+        }
+}
+
+ 
