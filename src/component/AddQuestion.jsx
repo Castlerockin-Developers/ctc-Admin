@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import line from '../assets/Line.png';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faRotateLeft } from '@fortawesome/free-solid-svg-icons';
+import { faRotateLeft, faRefresh } from '@fortawesome/free-solid-svg-icons';
 import Swal from "sweetalert2";
 import { authFetch } from '../scripts/AuthProvider';
+import './NewExam.css';
 
 
-const AddQuestion = ({ onBack, onNexts, onCreateMCQ, onCreateCoding }) => {
+const AddQuestion = ({ onBack, onNexts, onCreateMCQ, onCreateCoding, isEditing = false, editExamData = null }) => {
 
     const [mcqQuestions, setMcqQuestions] = useState(() => {
         const v = sessionStorage.getItem('mcqQuestions');
@@ -20,6 +21,70 @@ const AddQuestion = ({ onBack, onNexts, onCreateMCQ, onCreateCoding }) => {
         const v = sessionStorage.getItem('sectionTimers');
         return v ? JSON.parse(v) : {};
     });
+
+    // Populate questions from existing exam data when editing
+    useEffect(() => {
+        if (isEditing && editExamData) {
+            console.log("AddQuestion props:", { isEditing, editExamData });
+            console.log("editExamData in useEffect", editExamData);
+            console.log("alloted_sections:", editExamData.alloted_sections);
+            
+            // Process MCQ questions from alloted_sections
+            if (editExamData.alloted_sections && editExamData.alloted_sections.length > 0) {
+                const mcqQuestionsFromExam = [];
+                editExamData.alloted_sections.forEach((section, index) => {
+                    console.log(`Processing section ${index}:`, section);
+                    
+                    // Check if questions are directly in the section
+                    if (section.questions && section.questions.length > 0) {
+                        console.log(`Section ${index} has ${section.questions.length} questions:`, section.questions);
+                        section.questions.forEach(question => {
+                            mcqQuestionsFromExam.push({
+                                id: question.id,
+                                title: question.title || question.content,
+                                content: question.content,
+                                type: question.type || 'mcq',
+                                dataset: question.dataset,
+                                group_id: section.section,
+                                score: question.score || 0
+                            });
+                        });
+                    } else {
+                        console.log(`Section ${index} has no questions array, creating placeholder`);
+                        // If no questions array, create a placeholder for the section
+                        // This handles the case where we only have section info
+                        mcqQuestionsFromExam.push({
+                            id: `section_${section.id}`,
+                            title: section.section_name || `Section ${section.id}`,
+                            content: `Section with ${section.no_of_question || 0} questions`,
+                            type: 'mcq',
+                            dataset: 'exam_section',
+                            group_id: section.section,
+                            score: 0,
+                            is_section_placeholder: true
+                        });
+                    }
+                });
+                console.log("MCQ questions from exam:", mcqQuestionsFromExam);
+                setMcqQuestions(mcqQuestionsFromExam);
+            } else {
+                console.log("No alloted_sections found in editExamData");
+            }
+
+            // Process coding questions from selected_coding_questions
+            if (editExamData.selected_coding_questions && editExamData.selected_coding_questions.length > 0) {
+                const codingQuestionsFromExam = editExamData.selected_coding_questions.map(coding => ({
+                    id: coding.id,
+                    title: coding.question_name,
+                    content: coding.statement,
+                    type: 'coding',
+                    score: coding.score || 0
+                }));
+                console.log("Coding questions from exam:", codingQuestionsFromExam);
+                setCodingQuestions(codingQuestionsFromExam);
+            }
+        }
+    }, [isEditing, editExamData]);
 
     // Save mcqQuestions
     useEffect(() => {
@@ -38,29 +103,40 @@ const AddQuestion = ({ onBack, onNexts, onCreateMCQ, onCreateCoding }) => {
 
     const [windowWidth, setWindowWidth] = useState(window.innerWidth);
     const [sourceQuestions, setSourceQuestions] = useState([]);
+    const [isRefreshing, setIsRefreshing] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+
+    const fetchQuestions = async () => {
+        try {
+            setIsRefreshing(true);
+            setIsLoading(true);
+            console.log("Fetching questions...");
+            const response = await authFetch('/admin/questions/', { method: 'GET' });
+            if (response.ok) {
+                const data = await response.json();
+                console.log("Received questions data:", data);
+                const questions = data.map(q => ({
+                    id: q.id,
+                    title: q.title,
+                    content: q.content,
+                    type: q.type,
+                    dataset: q.dataset,
+                    group_id: q.group_id
+                }));
+                setSourceQuestions(questions || []);
+                console.log("Processed questions:", questions);
+            } else {
+                console.error("Failed to fetch questions:", response.statusText);
+            }
+        } catch (error) {
+            console.error("Error fetching questions:", error);
+        } finally {
+            setIsRefreshing(false);
+            setIsLoading(false);
+        }
+    };
 
     useEffect(() => {
-        const fetchQuestions = async () => {
-            try {
-                const response = await authFetch('/admin/sections', { method: 'GET' });
-                if (response.ok) {
-                    const data = await response.json();
-                    const questions = data.map(q => ({
-                        id: q.id,
-                        title: q.title,
-                        content: q.content,
-                        type: q.type,
-                        dataset: q.dataset,
-                        group_id: q.group_id
-                    }));
-                    setSourceQuestions(questions || []);
-                } else {
-                    console.error("Failed to fetch questions:", response.statusText);
-                }
-            } catch (error) {
-                console.error("Error fetching questions:", error);
-            }
-        };
         fetchQuestions();
         const handleResize = () => setWindowWidth(window.innerWidth);
         window.addEventListener("resize", handleResize);
@@ -120,7 +196,7 @@ const AddQuestion = ({ onBack, onNexts, onCreateMCQ, onCreateCoding }) => {
     // near the top, alongside your other handlers
     // at top of component
     const handleEditSectionScore = (groupId) => {
-        // find a “default” current score
+        // find a "default" current score
         const current = mcqQuestions.find(q => q.group_id === groupId)?.score ?? 0;
 
         Swal.fire({
@@ -392,15 +468,26 @@ const AddQuestion = ({ onBack, onNexts, onCreateMCQ, onCreateCoding }) => {
 
 
     const uniqueSections = [...new Set(sourceQuestions.map(q => q.group_id))];
+    
+    // Skeleton loader component
+    const QuestionSkeleton = () => (
+        <div className="dataset-section card-gap">
+            <div className="question-templet-wrapper">
+                <div className="question-templet-header flex justify-between">
+                    <div className="skeleton-text skeleton-header"></div>
+                    <div className="skeleton-button"></div>
+                </div>
+                <div className="question-templet-body">
+                    {[1, 2, 3].map(i => (
+                        <div key={i} className="skeleton-question-line"></div>
+                    ))}
+                </div>
+            </div>
+        </div>
+    );
+
     return (
         <div className='addq-container justify-center flex flex-wrap'>
-            <style>
-                {`
-                    .card-gap {
-                        margin-bottom: 10px; /* Adjust the value to control the gap size */
-                    }
-                `}
-            </style>
             <div className='addquestion-box'>
                 <h1>Add Questions</h1>
                 <div className='flex gap-4 new-question-buttons'>
@@ -486,9 +573,30 @@ const AddQuestion = ({ onBack, onNexts, onCreateMCQ, onCreateCoding }) => {
                         <div className='question-bank'>
                             <div className='question-bank-head flex justify-between'>
                                 <h3>Question Bank</h3>
+                                <button 
+                                    onClick={fetchQuestions} 
+                                    disabled={isRefreshing}
+                                    className={`flex items-center gap-2 px-3 py-1 rounded text-sm text-white transition-all duration-200 ${
+                                        isRefreshing 
+                                            ? 'bg-gray-400 cursor-not-allowed' 
+                                            : 'bg-blue-500 hover:bg-blue-700'
+                                    }`}
+                                >
+                                    <FontAwesomeIcon 
+                                        icon={faRefresh} 
+                                        className={`${isRefreshing ? 'animate-spin' : ''}`}
+                                    />
+                                </button>
                             </div>
                             <div className='question-bank-body'>
-                                {isQuestionBankVisible && (
+                                {isLoading ? (
+                                    // Show skeleton loaders while loading
+                                    <>
+                                        <QuestionSkeleton />
+                                        <QuestionSkeleton />
+                                        <QuestionSkeleton />
+                                    </>
+                                ) : isQuestionBankVisible && (
                                     <>
                                         {/* MCQ Sections by group_id */}
                                         {uniqueSections.map(sectionId => {
@@ -578,6 +686,7 @@ const AddQuestion = ({ onBack, onNexts, onCreateMCQ, onCreateCoding }) => {
                                 {[...new Set(mcqQuestions.map(q => q.group_id))].map(groupId => {
                                     const sectionQs = mcqQuestions.filter(q => q.group_id === groupId);
                                     const sectionName = sectionQs[0]?.title || 'Unnamed Section'; // Safeguard for missing title
+                                    const isSectionPlaceholder = sectionQs[0]?.is_section_placeholder;
 
                                     return (
                                         <details key={groupId} className="mb-4 border rounded p-2">
@@ -603,7 +712,7 @@ const AddQuestion = ({ onBack, onNexts, onCreateMCQ, onCreateCoding }) => {
 
                                                     {/* Remove */}
                                                     <button
-                                                        onClick={() => handleRemoveSection(groupId, 'mcq')}
+                                                        onClick={() => handleRemoveSection(groupId)}
                                                         className="bg-red-500 hover:bg-red-700 px-2 py-1 rounded text-sm"
                                                     >
                                                         Remove
@@ -617,6 +726,9 @@ const AddQuestion = ({ onBack, onNexts, onCreateMCQ, onCreateCoding }) => {
                                                     <div key={question.id} className="score-alloted">
                                                         <p>{`${index + 1}. ${question.content || 'No content available'}`}</p>
                                                         <p className="text-sm text-white-500">Score: {question.score !== undefined ? question.score : 'N/A'}</p>
+                                                        {isSectionPlaceholder && (
+                                                            <p className="text-sm text-blue-400">Section placeholder - questions will be loaded from question bank</p>
+                                                        )}
                                                     </div>
                                                 ))}
                                             </div>
@@ -624,6 +736,13 @@ const AddQuestion = ({ onBack, onNexts, onCreateMCQ, onCreateCoding }) => {
                                     );
                                 })}
 
+                                {/* Show message if no MCQ sections are added */}
+                                {mcqQuestions.length === 0 && (
+                                    <div className="text-center text-gray-400 py-4">
+                                        <p>No MCQ sections added yet.</p>
+                                        <p className="text-sm">Add questions from the Question Bank to get started.</p>
+                                    </div>
+                                )}
                             </div>
                         </div>
 

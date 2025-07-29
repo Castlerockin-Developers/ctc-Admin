@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { FaSearch, FaPlus, FaFilter } from "react-icons/fa";
 import filter from '../assets/filter.png';
 import line from '../assets/Line.png';
@@ -6,26 +6,39 @@ import { motion } from "motion/react";
 import { authFetch } from "../scripts/AuthProvider";
 import Swal from "sweetalert2";
 import ManageLoader from "../loader/ManageLoader";
+import { useCache } from "../hooks/useCache";
+import CacheStatusIndicator from "./CacheStatusIndicator";
+import "./CacheStatusIndicator.css";
 
-const ManageExam = ({ onCreateNewExam, onNext }) => {
+const ManageExam = ({ onCreateNewExam, onNext, cacheAllowed, onEditExam }) => {
     const [activeButton, setActiveButton] = useState("all");
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedExam, setSelectedExam] = useState(null);
     const [showFilter, setShowFilter] = useState(false);
     const filterRef = useRef(null);
-    const [tableData, setTableData] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     // const itemsPerPage = 10;
-     const [itemsPerPage, setItemsPerPage] = useState(
-    () => window.innerWidth >= 2560 ? 15 : 10
-  );
-  useEffect(() => {
-    const onResize = () => {
-      setItemsPerPage(window.innerWidth >= 2560 ? 15 : 10);
+    const [itemsPerPage, setItemsPerPage] = useState(
+        () => window.innerWidth >= 2560 ? 15 : 10
+    );
+
+    const pageFade = {
+        initial: { opacity: 0 },
+        animate: { opacity: 1, transition: { duration: 0.4 } }
     };
-    window.addEventListener('resize', onResize);
-    return () => window.removeEventListener('resize', onResize);
-  }, []);
+
+    const slideUp = {
+        initial: { y: 20, opacity: 0 },
+        animate: { y: 0, opacity: 1, transition: { duration: 0.3 } }
+    };
+
+    useEffect(() => {
+        const onResize = () => {
+            setItemsPerPage(window.innerWidth >= 2560 ? 15 : 10);
+        };
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
+    }, []);
 
 
     // Close filter dropdown on outside click
@@ -61,33 +74,54 @@ const ManageExam = ({ onCreateNewExam, onNext }) => {
     };
 
 
-    const fetchExams = async () => {
-        try {
-            const response = await authFetch('/admin/exams/', { method: "GET" });
-            const data = await response.json();
-            // Assuming the response data is an array of exam objects
-            setExams(data);
-        } catch (error) {
-            console.error("Error fetching exams:", error);
-        }
-    };
-    useEffect(() => {
-        fetchExams();
+    // Exams data fetch function
+    const fetchExams = useCallback(async () => {
+        const response = await authFetch('/admin/exams/', { method: "GET" });
+        const data = await response.json();
+        return data;
     }, []);
 
-    const setExams = (data) => {
-        // Assuming data is an array of exam objects
+    // Cache callbacks
+    const onCacheHit = useCallback((data) => {
+        console.log('Exams data loaded from cache');
+    }, []);
 
-        const exams = data.map((exam) => ({
-            id: exam.id,
-            name: exam.name,
-            startTime: new Date(exam.start_time).toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short', hour12: true }),
-            endTime: new Date(exam.end_time).toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short', hour12: true }),
-            attemptsAllowed: exam.attempts_allowed,
-            status: new Date(exam.start_time) > new Date() ? "Upcoming" : exam.is_result_declared ? "Results Declared" : new Date(exam.end_time) > new Date() ? "Ongoing" : "Completed",
-        }));
-        setTableData(exams);
-    };
+    const onCacheMiss = useCallback((data) => {
+        console.log('Exams data fetched fresh');
+    }, []);
+
+    const onError = useCallback((err) => {
+        console.error('Exams fetch error:', err);
+    }, []);
+
+    // Use cache hook for exams data
+    const {
+        data: examsData,
+        loading,
+        error,
+        cacheUsed,
+        cacheInfo,
+        forceRefresh,
+        invalidateCache,
+        clearAllCache
+    } = useCache('exam_data', fetchExams, {
+        enabled: cacheAllowed,
+        expiryMs: 5 * 60 * 1000, // 5 minutes
+        autoRefresh: false,
+        onCacheHit,
+        onCacheMiss,
+        onError
+    });
+
+    // Process exams data for display
+    const tableData = examsData ? examsData.map((exam) => ({
+        id: exam.id,
+        name: exam.name,
+        startTime: new Date(exam.start_time).toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short', hour12: true }),
+        endTime: new Date(exam.end_time).toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short', hour12: true }),
+        attemptsAllowed: exam.attempts_allowed,
+        status: new Date(exam.start_time) > new Date() ? "Upcoming" : exam.is_result_declared ? "Results Declared" : new Date(exam.end_time) > new Date() ? "Ongoing" : "Completed",
+    })) : [];
 
     const filteredTableData = tableData
         .filter(row => {
@@ -118,7 +152,7 @@ const ManageExam = ({ onCreateNewExam, onNext }) => {
 
     const handleBack = () => {
         setSelectedExam(null);
-        fetchExams(); // Re-fetch exams to ensure updated data after potential edit
+        forceRefresh(); // Re-fetch exams to ensure updated data after potential edit
     };
 
     const handlePageChange = (pageNumber) => {
@@ -127,16 +161,23 @@ const ManageExam = ({ onCreateNewExam, onNext }) => {
     };
 
     return (
-        <div className="lg:w-3xl justify-center flex flex-wrap exam-container">
+        <motion.div
+            variants={pageFade}
+            initial="initial"
+            animate="animate"
+            className="lg:w-3xl justify-center flex flex-wrap exam-container">
             {selectedExam ? (
-                <ViewExam exam={selectedExam} onBack={handleBack} />
+                <ViewExam exam={selectedExam} onBack={handleBack} onEditExam={onEditExam} />
             ) : (
                 <div className="exam-greeting">
-                    <h1>Exams</h1>
+                    <div className="flex justify-between items-center mb-4">
+                        <motion.h1 variants={slideUp}>Exams</motion.h1>
+
+                    </div>
                     <div className="flex sm:flex-row justify-self-end items-center gap-4">
-                      <div className="m-btn-right flex sm:flex-row flex-col-reverse sm:justify-end justify-center items-center gap-2 w-full sm:w-auto">
+                        <div className="m-btn-right flex sm:flex-row flex-col-reverse sm:justify-end justify-center items-center gap-2 w-full sm:w-auto">
                             {/* Filter dropdown */}
-                            <div ref={filterRef} className="relative">
+                            <motion.div variants={slideUp} ref={filterRef} className="relative">
                                 <button className="filter-btn" onClick={toggleFilter}>
                                     <FaFilter
                                         className="h-6 w-6 cursor-pointer text-white"
@@ -168,8 +209,8 @@ const ManageExam = ({ onCreateNewExam, onNext }) => {
                                         </ul>
                                     </motion.div>
                                 )}
-                            </div>
-                            <div className="search-box1 flex">
+                            </motion.div>
+                            <motion.div variants={slideUp} className="search-box1 flex">
                                 <FaSearch className="search-icon" />
                                 <input
                                     type="text"
@@ -178,8 +219,8 @@ const ManageExam = ({ onCreateNewExam, onNext }) => {
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                     className="w-full sm:w-auto"
                                 />
-                            </div>
-                            <motion.button whileTap={{ scale: 1.2 }} className="create-btn w-full sm:w-auto" onClick={onCreateNewExam}>
+                            </motion.div>
+                            <motion.button variants={slideUp} whileTap={{ scale: 1.2 }} className="create-btn w-full sm:w-auto" onClick={onCreateNewExam}>
                                 <FaPlus className="icon" /> Create New Exam
                             </motion.button>
                         </div>
@@ -200,7 +241,12 @@ const ManageExam = ({ onCreateNewExam, onNext }) => {
                             <tbody>
                                 {currentTableData.length > 0 ? (
                                     currentTableData.map((row, idx) => (
-                                        <tr key={row.id} className={idx % 2 === 0 ? "even-row" : "odd-row"}>
+                                        <motion.tr
+                                            key={row.id}
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: idx * 0.03, duration: 0.2 }}
+                                            className={idx % 2 === 0 ? "even-row" : "odd-row"}>
                                             <td>{row.id}</td>
                                             <td>{row.name}</td>
                                             <td>{row.startTime}</td>
@@ -208,7 +254,7 @@ const ManageExam = ({ onCreateNewExam, onNext }) => {
                                             <td>{row.attemptsAllowed}</td>
                                             <td>{row.status}</td>
                                             <td><motion.button className="viewexam-btn" whileTap={{ scale: 1.2 }} onClick={() => handleViewExam(row)}>View Exam</motion.button></td>
-                                        </tr>
+                                        </motion.tr>
                                     ))
                                 ) : (
                                     <tr>
@@ -242,21 +288,18 @@ const ManageExam = ({ onCreateNewExam, onNext }) => {
                     )}
                 </div>
             )}
-        </div>
+        </motion.div>
     );
 };
 
 
-const ViewExam = ({ exam, onBack }) => {
+const ViewExam = ({ exam, onBack, onEditExam }) => {
     const [examDetails, setExamDetails] = useState(null);  // <-- new state for detailed exam data
-    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
     const handleEditClick = () => {
-        setIsEditModalOpen(true);
-    };
-
-    const handleCloseModal = () => {
-        setIsEditModalOpen(false);
+        if (onEditExam && examDetails) {
+            onEditExam(examDetails);
+        }
     };
 
     const handleViewExam = async (exam) => {
@@ -266,7 +309,9 @@ const ViewExam = ({ exam, onBack }) => {
                 throw new Error("Failed to fetch exam details");
             }
             const data = await response.json();
-            console.log("Exam details:", data);
+            console.log("ManageExam - Exam details:", data);
+            console.log("ManageExam - Students in exam data:", data.students);
+            console.log("ManageExam - Students count:", data.students?.length || 0);
             setExamDetails(data);  // set detailed data here
         } catch (error) {
             console.error("Error fetching exam details:", error);
@@ -289,7 +334,11 @@ const ViewExam = ({ exam, onBack }) => {
 
     return (
         <div className='viewexam-container justify-center flex flex-wrap'>
-            <div className='viewexam-box'>
+            <motion.div
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ duration: 0.4 }}
+                className='viewexam-box'>
                 <div className='flex'>
                     <button onClick={onBack}>&lt;</button>
                     <h1>#{examDetails.id} {examDetails.name}</h1>
@@ -312,7 +361,12 @@ const ViewExam = ({ exam, onBack }) => {
                                 <div className="viewexam-viwer-body flex justify-center">
                                     <div className="viewexams-container pb-2">
                                         {examDetails?.alloted_sections?.map((section, index) => (
-                                            <div key={section.id || index} className="question-block my-2">
+                                            <motion.div
+                                                initial={{ opacity: 0, translateX: -10 }}
+                                                animate={{ opacity: 1, translateX: 0 }}
+                                                transition={{ delay: index * 0.05, duration: 0.3 }}
+                                                key={section.id || index}
+                                                className="question-block my-2">
                                                 <div className="flex justify-between items-center w-full text-xl py-2">
                                                     <p className='text-white'>
                                                         {index + 1}. {section.section_name || "Sample Question"}
@@ -321,7 +375,7 @@ const ViewExam = ({ exam, onBack }) => {
                                                         Timed: {section.is_timed ? "Yes" : "No"} {section.is_timed && `| Time: ${section.section_time} min`} | Total: {section.no_of_question}
                                                     </p>
                                                 </div>
-                                            </div>
+                                            </motion.div>
                                         ))}
                                     </div>
                                 </div>
@@ -347,215 +401,53 @@ const ViewExam = ({ exam, onBack }) => {
                         </div>
                     </div>
                 </div>
-            </div>
-            {isEditModalOpen && (
-                <EditExamModal examID={examDetails.id} onClose={handleCloseModal} />
-            )}
-        </div>
-    );
-};
-
-const EditExamModal = ({ onClose, examID }) => {
-    const [exam, setExam] = useState({
-        id: examID,
-        name: "",
-        start_time: "",
-        end_time: "",
-        attempts_allowed: "",
-        is_result_declared: false,
-        is_timed: false,
-    });
-
-    const [errors, setErrors] = useState({});
-
-    useEffect(() => {
-        const fetchExamData = async () => {
-            try {
-                const response = await authFetch(`/admin/exams/${examID}`, { method: "GET" });
-                if (response.ok) {
-                    const data = await response.json();
-                    setExam({
-                        id: data.id,
-                        name: data.name,
-                        start_time: new Date(data.start_time).toISOString().slice(0, 16),
-                        end_time: new Date(data.end_time).toISOString().slice(0, 16),
-                        attempts_allowed: data.attempts_allowed,
-                        is_result_declared: data.is_result_declared,
-                        is_timed: data.is_timed,
-                    });
-                } else {
-                    Swal.fire({
-                        icon: "error",
-                        title: "Error",
-                        text: "Exam data could not be loaded.",
-                    });
-                }
-            } catch (error) {
-                console.error(error);
-                Swal.fire({
-                    icon: "error",
-                    title: "Error",
-                    text: "Failed to fetch exam data.",
-                });
-            }
-        };
-
-        if (examID) fetchExamData();
-    }, [examID]);
-
-    const validate = () => {
-        const newErrors = {};
-        if (!exam.name) newErrors.name = "Exam name is required.";
-        if (!exam.start_time) newErrors.start_time = "Start time is required.";
-        if (!exam.end_time) newErrors.end_time = "End time is required.";
-        if (!exam.attempts_allowed || isNaN(Number(exam.attempts_allowed)) || Number(exam.attempts_allowed) < 1)
-            newErrors.attempts_allowed = "Attempts allowed must be a positive number.";
-        return newErrors;
-    };
-
-    const handleEditExam = async () => {
-        const validationErrors = validate();
-        if (Object.keys(validationErrors).length > 0) {
-            setErrors(validationErrors);
-            return;
-        }
-
-        const payload = {
-            name: exam.name,
-            start_time: new Date(exam.start_time).toISOString(),
-            end_time: new Date(exam.end_time).toISOString(),
-            attempts_allowed: Number(exam.attempts_allowed),
-            is_result_declared: exam.is_result_declared,
-            is_timed: exam.is_timed,
-        };
-
-        try {
-            const response = await authFetch(`/admin/exams/${examID}/`, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload),
-            });
-
-            if (response.ok) {
-                Swal.fire({
-                    icon: "success",
-                    title: "Exam Updated",
-                    text: "Exam details updated successfully.",
-                });
-                onClose();
-            } else {
-                const errData = await response.json();
-                Swal.fire({
-                    icon: "error",
-                    title: "Error",
-                    text: errData.error || "Failed to update exam.",
-                });
-            }
-        } catch (error) {
-            Swal.fire({
-                icon: "error",
-                title: "Error",
-                text: error.message || "Network error.",
-            });
-        }
-    };
-
-    const handleChange = (e) => {
-        const { name, value, type, checked } = e.target;
-        setExam({
-            ...exam,
-            [name]: type === "checkbox" ? checked : value,
-        });
-        if (errors[name]) setErrors({ ...errors, [name]: null });
-    };
-
-    return (
-        <div className="modal-overlay">
-            <div className="modal-container">
-                <h2 className="modal-title">Edit Exam</h2>
-
-                <div className="form-group">
-                    <label>Exam Name :</label>
-                    <input
-                        type="text"
-                        name="name"
-                        className="form-input"
-                        placeholder="Enter Exam Name"
-                        value={exam.name}
-                        onChange={handleChange}
-                    />
-                    {errors.name && <span className="error-text">{errors.name}</span>}
+                
+                {/* Students Section */}
+                <div className="viewexam-section">
+                    <div className="viewexam-header">
+                        <h2>Assigned Students</h2>
+                    </div>
+                    <div className="viewexam-body flex flex-col items-center justify-start">
+                        <div className="viewexam-viwer">
+                            <div className='viewexam-q'>
+                                <div className="viewexam-viwer-header flex justify-between">
+                                    <p className='text-xl text-bold text-white leading-loose'>Students</p>
+                                    <p>{examDetails?.students?.length || 0}</p>
+                                </div>
+                                <div className="viewexam-viwer-body flex justify-center">
+                                    <div className="viewexams-container pb-2">
+                                        {examDetails?.students && examDetails.students.length > 0 ? (
+                                            examDetails.students.map((student, index) => (
+                                                <motion.div
+                                                    initial={{ opacity: 0, translateX: -10 }}
+                                                    animate={{ opacity: 1, translateX: 0 }}
+                                                    transition={{ delay: index * 0.05, duration: 0.3 }}
+                                                    key={student.id || index}
+                                                    className="question-block my-2">
+                                                    <div className="flex justify-between items-center w-full text-xl py-2">
+                                                        <p className='text-white'>
+                                                            {index + 1}. {student.name || `${student.first_name} ${student.last_name}`}
+                                                        </p>
+                                                        <p className="text-sm text-white whitespace-nowrap">
+                                                            USN: {student.usn || student.slNo} | {student.email}
+                                                        </p>
+                                                    </div>
+                                                </motion.div>
+                                            ))
+                                        ) : (
+                                            <div className="question-block my-2">
+                                                <div className="flex justify-center items-center w-full text-xl py-2">
+                                                    <p className='text-white text-center'>No students assigned to this exam</p>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-
-                <div className="form-group">
-                    <label>Start Time :</label>
-                    <input
-                        type="datetime-local"
-                        name="start_time"
-                        className="form-input"
-                        value={exam.start_time}
-                        onChange={handleChange}
-                    />
-                    {errors.start_time && <span className="error-text">{errors.start_time}</span>}
-                </div>
-
-                <div className="form-group">
-                    <label>End Time :</label>
-                    <input
-                        type="datetime-local"
-                        name="end_time"
-                        className="form-input"
-                        value={exam.end_time}
-                        onChange={handleChange}
-                    />
-                    {errors.end_time && <span className="error-text">{errors.end_time}</span>}
-                </div>
-
-                <div className="form-group">
-                    <label>Attempts Allowed :</label>
-                    <input
-                        type="number"
-                        min="1"
-                        name="attempts_allowed"
-                        className="form-input"
-                        placeholder="Number of attempts"
-                        value={exam.attempts_allowed}
-                        onChange={handleChange}
-                    />
-                    {errors.attempts_allowed && <span className="error-text">{errors.attempts_allowed}</span>}
-                </div>
-
-                <div className="form-group flex items-center gap-2">
-                    <input
-                        type="checkbox"
-                        name="is_result_declared"
-                        checked={exam.is_result_declared}
-                        onChange={handleChange}
-                        id="resultDeclared"
-                    />
-                    <label htmlFor="resultDeclared">Is Result Declared?</label>
-                </div>
-
-                <div className="form-group flex items-center gap-2">
-                    <input
-                        type="checkbox"
-                        name="is_timed"
-                        checked={exam.is_timed}
-                        onChange={handleChange}
-                        id="isTimed"
-                    />
-                    <label htmlFor="isTimed">Is Timed Exam?</label>
-                </div>
-
-                <div className="modal-buttons">
-                    <motion.button className="back-btn" onClick={onClose}>
-                        ↩ Back
-                    </motion.button>
-                    <motion.button className="create-btn-student" onClick={handleEditExam}>
-                        Update
-                    </motion.button>
-                </div>
-            </div>
+            </motion.div>
         </div>
     );
 };

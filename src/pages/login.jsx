@@ -71,8 +71,15 @@ const LoginPage = () => {
         }
         navigate("/home");
       }
-    } catch {
-      setError("Invalid username or password!");
+    } catch (error) {
+      // Check if it's a network error
+      if (error.name === 'TypeError' || error.message.includes('fetch') || error.message.includes('Network') || !navigator.onLine) {
+        setError("Network error! Please check your internet connection and try again.");
+      } else if (error.message && error.message.includes('Login failed')) {
+        setError("Invalid username or password!");
+      } else {
+        setError("Something went wrong! Please try again later.");
+      }
       setShakeCount(c => c + 1);
     } finally {
       setLoading(false);
@@ -121,7 +128,7 @@ const LoginPage = () => {
                   </motion.div>
                 )}
 
-                <motion.form onSubmit={handleLogin} variants={itemVariants} initial="hidden" animate="visible">
+                <form onSubmit={handleLogin} initial="hidden" animate="visible">
                   <motion.div variants={itemVariants} className="form-group">
                     <label>Username</label>
                     <input
@@ -161,7 +168,7 @@ const LoginPage = () => {
                       {loading ? 'Logging in...' : 'Login'}
                     </button>
                   </motion.div>
-                </motion.form>
+                </form>
 
                 <motion.p variants={itemVariants} className="forgot">
                   <a href="#" onClick={() => setIsPopupOpen(true)}>Forgot Password?</a>

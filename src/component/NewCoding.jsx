@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import './NewQCreation.css';
 import ReactQuill from 'react-quill';
 import Swal from 'sweetalert2';
+import { authFetch } from '../scripts/AuthProvider';
 
 const NewCoding = ({ setActiveComponent, onSave, onBack }) => {
     const [file, setFile] = useState(null);
@@ -11,6 +12,9 @@ const NewCoding = ({ setActiveComponent, onSave, onBack }) => {
     const [question, setQuestion] = useState("");
     const [shortDescription, setShortDescription] = useState("");
     const [statement, setStatement] = useState("");
+    const [sampleInput, setSampleInput] = useState("");
+    const [sampleOutput, setSampleOutput] = useState("");
+    const [score, setScore] = useState(10);
 
     const handleChange = e => {
         if (e.target.files?.[0]) setFile(e.target.files[0]);
@@ -25,36 +29,86 @@ const NewCoding = ({ setActiveComponent, onSave, onBack }) => {
         setEditorContent(value);
     };
 
-    const handleSave = () => {
-        if (!question || !shortDescription || !statement || testCases.some(test => !test.input || !test.output)) {
+    const handleSave = async () => {
+        // Validate inputs
+        if (
+            !question.trim() ||
+            !shortDescription.trim() ||
+            !statement.trim() ||
+            !sampleInput.trim() ||
+            !sampleOutput.trim() ||
+            testCases.some(test => !test.input.trim() || !test.output.trim())
+        ) {
             Swal.fire({
                 icon: 'warning',
                 title: 'Incomplete Form',
-                text: 'Please fill in all the required fields.',
+                text: 'Please fill in all the required fields including sample input/output and test cases.',
                 background: "#181817",
                 color: "#fff",
             });
-        } else {
+            return;
+        }
+
+        try {
+            // Prepare data for backend
+            const codingData = {
+                question: question,
+                shortDescription: shortDescription,
+                statement: statement,
+                sampleInput: sampleInput,
+                sampleOutput: sampleOutput,
+                testCases: testCases,
+                score: score
+            };
+
+            console.log('Sending coding data:', codingData);
+
+            // Send to backend
+            const response = await authFetch('/admin/coding/', {
+                method: 'POST',
+                body: JSON.stringify(codingData),
+            });
+
+            if (response.ok) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Saved Successfully!',
+                    text: 'Your coding question has been saved.',
+                    background: "#181817",
+                    color: "#fff",
+                }).then(() => {
+                    onSave();
+                });
+            } else {
+                const errorData = await response.json();
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Save Failed',
+                    text: errorData.error || errorData.message || 'An error occurred while saving.',
+                    background: "#181817",
+                    color: "#fff",
+                });
+            }
+        } catch (error) {
+            console.error('Error saving coding question:', error);
             Swal.fire({
-                icon: 'success',
-                title: 'Saved Successfully!',
-                text: 'Your coding question has been saved.',
+                icon: 'error',
+                title: 'Save Failed',
+                text: error.message || 'An unexpected error occurred.',
                 background: "#181817",
                 color: "#fff",
-            }).then(() => {
-                onSave();
             });
         }
     };
 
     const handleCancel = () => {
         Swal.fire({
-            icon: 'warning',
             title: 'Are you sure?',
-            text: 'You will lose all the unsaved data!',
+            text: 'You will lose all unsaved data.',
+            icon: 'warning',
             showCancelButton: true,
-            confirmButtonText: 'Yes, cancel',
-            cancelButtonText: 'No, stay',
+            confirmButtonText: 'Yes, discard',
+            cancelButtonText: 'go back',
             background: "#181817",
             color: "#fff",
         }).then((result) => {
@@ -138,15 +192,30 @@ const NewCoding = ({ setActiveComponent, onSave, onBack }) => {
 
                 <h3>Sample Testcase: </h3>
                 <textarea
-                    name="Sample testcase"
+                    name="sampleInput"
                     placeholder="Enter sample testcase"
+                    value={sampleInput}
+                    onChange={(e) => setSampleInput(e.target.value)}
                     required
                 />
 
                 <h3>Sample Testcase Output: </h3>
                 <textarea
-                    name="Sample testcase output"
+                    name="sampleOutput"
                     placeholder="Enter sample output"
+                    value={sampleOutput}
+                    onChange={(e) => setSampleOutput(e.target.value)}
+                    required
+                />
+
+                <h3>Score: </h3>
+                <input
+                    type="number"
+                    name="score"
+                    placeholder="Enter score (default: 10)"
+                    value={score}
+                    onChange={(e) => setScore(parseInt(e.target.value) || 10)}
+                    min="1"
                     required
                 />
 
@@ -182,9 +251,9 @@ const NewCoding = ({ setActiveComponent, onSave, onBack }) => {
                     ))}
 
                 </div>
-                <div className="action-buttons">
-                    <button type="button" onClick={handleSave} className='save-btn'>Save</button>
-                    <button type="button" onClick={handleCancel} className='cancel-btn'>Cancel</button>
+                <div className="save-cancel-container">
+                    <button onClick={handleSave} className='save-btn-m'>Save</button>
+                    <button onClick={handleCancel} className='cancel-btn-m'>Cancel</button>
                 </div>
             </div>
         </div>

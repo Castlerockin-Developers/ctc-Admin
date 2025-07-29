@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { FaSearch } from "react-icons/fa";
 import { motion } from "framer-motion";
 import ViewResult from "./ViewResult";
@@ -6,23 +6,53 @@ import ParticularResult from "./PerticularResult";
 import { authFetch } from "../scripts/AuthProvider";
 import "../pages/home.css";
 import ManageLoader from "../loader/ManageLoader";
+import { useCache } from "../hooks/useCache";
+import CacheStatusIndicator from "./CacheStatusIndicator";
+import "./CacheStatusIndicator.css";
 
-const ManageResult = () => {
+const ManageResult = ({ onNext, cacheAllowed }) => {
   const [activeTab, setActiveTab] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedResult, setSelectedResult] = useState(null);
   const [selectedStudent, setSelectedStudent] = useState(null);
-  const [resultsData, setResultsData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
-  // const [resultsPerPage] = useState(10); // Number of results to display per page
-  // responsive results-per-page: 15 if width ≥2560px, else 10
   const [resultsPerPage, setResultsPerPage] = useState(() =>
     window.innerWidth >= 2560 ? 15 : 10
   );
+
+  const pageVariant = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        duration: 0.3,
+        when: "beforeChildren",
+        staggerChildren: 0.08,
+      },
+    },
+  };
+
+  const itemVariant = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.2 },
+    },
+  };
+
+  const rowVariant = {
+    hidden: { opacity: 0, y: 10 },
+    visible: (i) => ({
+      opacity: 1,
+      y: 0,
+      transition: {
+        delay: i * 0.03,
+        duration: 0.5,
+      },
+    }),
+  };
+
 
   useEffect(() => {
     const onResize = () => {
@@ -32,58 +62,102 @@ const ManageResult = () => {
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
-  // Fetch results on mount
-  useEffect(() => {
-    (async () => {
-      try {
-        const response = await authFetch("/admin/results", { method: "GET" });
-        if (!response.ok) throw new Error("Failed to fetch results");
-        const data = await response.json();
-        const now = new Date();
-        const mapped = data.map((res) => {
-          const start = new Date(res.start_time);
-          const end = new Date(res.end_time);
-          let status = "";
-          if (start > now) {
-            status = "Upcoming";
-          } else if (!res.is_result_declared && end > now) {
-            status = "Ongoing";
-          } else if (res.is_result_declared) {
-            status = "Results Declared";
-          } else {
-            status = "Completed";
-          }
-          return {
-            id: res.id,
-            name: res.name,
-            startTime: start.toLocaleString([], {
-              dateStyle: "short",
-              timeStyle: "short",
-              hour12: true,
-            }),
-            endTime: end.toLocaleString([], {
-              dateStyle: "short",
-              timeStyle: "short",
-              hour12: true,
-            }),
-            analytics: `${res.attempts_allowed} Attempts`,
-            status,
-          };
-        });
-        setResultsData(mapped);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
+  // Results data fetch function
+  const fetchResultData = useCallback(async () => {
+    const response = await authFetch("/admin/results", { method: "GET" });
+    if (!response.ok) throw new Error("Failed to fetch results");
+    const data = await response.json();
+    
+    // Map and format data
+    const now = new Date();
+    const mapped = data.map((res) => {
+      const start = new Date(res.start_time);
+      const end = new Date(res.end_time);
+      let status = "";
+      if (start > now) {
+        status = "Upcoming";
+      } else if (!res.is_result_declared && end > now) {
+        status = "Ongoing";
+      } else if (res.is_result_declared) {
+        status = "Results Declared";
+      } else {
+        status = "Completed";
       }
-    })();
+      return {
+        id: res.id,
+        name: res.name,
+        startTime: start.toLocaleString([], {
+          dateStyle: "short",
+          timeStyle: "short",
+          hour12: true,
+        }),
+        endTime: end.toLocaleString([], {
+          dateStyle: "short",
+          timeStyle: "short",
+          hour12: true,
+        }),
+        analytics: `${res.attempts_allowed} Attempts`,
+        status,
+      };
+    });
+    
+    return mapped;
   }, []);
 
+  // Cache callbacks
+  const onCacheHit = useCallback((data) => {
+    console.log('Results data loaded from cache');
+  }, []);
+
+  const onCacheMiss = useCallback((data) => {
+    console.log('Results data fetched fresh');
+  }, []);
+
+  const onError = useCallback((err) => {
+    console.error('Results fetch error:', err);
+  }, []);
+
+  // Use cache hook for results data
+  const {
+    data: resultsData,
+    loading,
+    error,
+    cacheUsed,
+    cacheInfo,
+    forceRefresh,
+    invalidateCache,
+    clearAllCache
+  } = useCache('result_data', fetchResultData, {
+    enabled: cacheAllowed,
+    expiryMs: 5 * 60 * 1000, // 5 minutes
+    autoRefresh: false,
+    onCacheHit,
+    onCacheMiss,
+    onError
+  });
+
   if (loading) return <ManageLoader />;
-  if (error) return <p className="text-center text-red-500">{error}</p>;
+  if (error) {
+    return (
+      <div className="text-center">
+        <p className="text-red-500 mb-4">{error.message || "Failed to load results"}</p>
+        <button 
+          onClick={forceRefresh}
+          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
+
+  // Don't render the main content if data is not available yet
+  if (!resultsData) {
+    return <ManageLoader />;
+  }
 
   // Filter results by tab and search
-  const filteredResults = resultsData
+  const filteredResults = resultsData ? resultsData
     .filter((row) => {
       if (activeTab === "all") return true;
       if (activeTab === "active") return row.status === "Ongoing";
@@ -97,7 +171,7 @@ const ManageResult = () => {
       return [row.id, row.name, row.analytics, row.status].some((field) =>
         String(field).toLowerCase().includes(q)
       );
-    });
+    }) : [];
 
   // Pagination Logic
   const indexOfLastResult = currentPage * resultsPerPage;
@@ -169,7 +243,11 @@ const ManageResult = () => {
   };
 
   return (
-    <div className="lg:w-3xl justify-center flex flex-wrap result-container">
+    <motion.div
+      variants={pageVariant}
+      initial="hidden"
+      animate="visible"
+      className="lg:w-3xl justify-center flex flex-wrap result-container">
       {selectedStudent ? (
         <ParticularResult student={selectedStudent} onBack={handleBack} />
       ) : selectedResult ? (
@@ -180,12 +258,16 @@ const ManageResult = () => {
         />
       ) : (
         <div className="result-header">
-          <h1>Results</h1>
+          <div className="flex justify-between items-center mb-4">
+            <h1>Results</h1>
+            
+          </div>
 
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
             {/* Left Button Group (Tabs) */}
             <div className="m-btn-left flex flex-wrap justify-center sm:justify-start gap-2">
               <motion.button
+                variants={itemVariant}
                 whileTap={{ scale: 1.1 }}
                 className={activeTab === "all" ? "m-active" : ""}
                 onClick={() => setActiveTab("all")}
@@ -193,6 +275,7 @@ const ManageResult = () => {
                 All Exams
               </motion.button>
               <motion.button
+                variants={itemVariant}
                 whileTap={{ scale: 1.1 }}
                 className={activeTab === "active" ? "m-active" : ""}
                 onClick={() => setActiveTab("active")}
@@ -200,6 +283,7 @@ const ManageResult = () => {
                 Active
               </motion.button>
               <motion.button
+                variants={itemVariant}
                 whileTap={{ scale: 1.1 }}
                 className={activeTab === "completed" ? "m-active" : ""}
                 onClick={() => setActiveTab("completed")}
@@ -211,7 +295,9 @@ const ManageResult = () => {
             {/* Right Side: Filter Button, Search Bar */}
             <div className="m-btn-right flex flex-wrap items-center justify-center sm:justify-end gap-2 w-full sm:w-auto">
               {/* Search Bar */}
-              <div className="search-box flex items-center w-full sm:w-auto">
+              <motion.div
+                variants={itemVariant}
+                className="search-box flex items-center w-full sm:w-auto">
                 <FaSearch className="search-icon" />
                 <input
                   type="text"
@@ -220,64 +306,74 @@ const ManageResult = () => {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full sm:w-auto"
                 />
-              </div>
+              </motion.div>
             </div>
           </div>
 
           {/* Results Table */}
-          <div className="m-table-container">
-            <table>
-              <thead>
-                <tr>
-                  <th>#ID</th>
-                  <th>Name</th>
-                  <th className="start-time">Start Time</th>
-                  <th className="start-time">End Time</th>
-                  <th>Analytics</th>
-                  <th>Status</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                {currentResults.length > 0 ? (
-                  currentResults.map((row, index) => (
-                    <tr
-                      key={row.id}
-                      className={index % 2 === 0 ? "even-row" : "odd-row"}
-                    >
-                      <td>{row.id}</td>
-                      <td>{row.name}</td>
-                      <td>{row.startTime}</td>
-                      <td>{row.endTime}</td>
-                      <td>{row.analytics}</td>
-                      <td
-                        className={
-                          row.status === "Expired" ? "text-red-500" : ""
-                        }
+          {resultsData ? (
+            <div className="m-table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>#ID</th>
+                    <th>Name</th>
+                    <th className="start-time">Start Time</th>
+                    <th className="start-time">End Time</th>
+                    <th>Analytics</th>
+                    <th>Status</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {currentResults.length > 0 ? (
+                    currentResults.map((row, index) => (
+                      <motion.tr
+                        custom={index}
+                        variants={rowVariant}
+                        initial="hidden"
+                        animate="visible"
+                        key={row.id}
+                        className={index % 2 === 0 ? "even-row" : "odd-row"}
                       >
-                        {row.status}
-                      </td>
-                      <td>
-                        <motion.button
-                          className="viewexam-btn"
-                          whileTap={{ scale: 1.2 }}
-                          onClick={() => handleViewResult(row)}
+                        <td>{row.id}</td>
+                        <td>{row.name}</td>
+                        <td>{row.startTime}</td>
+                        <td>{row.endTime}</td>
+                        <td>{row.analytics}</td>
+                        <td
+                          className={
+                            row.status === "Expired" ? "text-red-500" : ""
+                          }
                         >
-                          View Result
-                        </motion.button>
+                          {row.status}
+                        </td>
+                        <td>
+                          <motion.button
+                            className="viewexam-btn"
+                            whileTap={{ scale: 1.2 }}
+                            onClick={() => handleViewResult(row)}
+                          >
+                            View Result
+                          </motion.button>
+                        </td>
+                      </motion.tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="7" className="no-data">
+                        No results found
                       </td>
                     </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="7" className="no-data">
-                      No results found
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-gray-500">Loading results...</p>
+            </div>
+          )}
           {/* Pagination Controls */}
           {totalPages > 1 && (
             <div className="pagination-controls flex justify-between items-center mt-4">
@@ -304,7 +400,7 @@ const ManageResult = () => {
           )}
         </div>
       )}
-    </div>
+    </motion.div>
   );
 };
 

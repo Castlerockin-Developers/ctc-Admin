@@ -13,7 +13,9 @@ const ViewExam = ({ exam, onBack }) => {
                 throw new Error("Failed to fetch exam details");
             }
             const data = await response.json();
-            console.log("Exam details:", data);
+            console.log("ViewExam - Exam details:", data);
+            console.log("ViewExam - Students in exam data:", data.students);
+            console.log("ViewExam - Students count:", data.students?.length || 0);
             setExamDetails(data);  // set detailed data here
         } catch (error) {
             console.error("Error fetching exam details:", error);
@@ -92,6 +94,47 @@ const ViewExam = ({ exam, onBack }) => {
                                                 </div>
                                             </div>
                                         ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                {/* Students Section */}
+                <div className="viewexam-section">
+                    <div className="viewexam-header">
+                        <h2>Assigned Students</h2>
+                    </div>
+                    <div className="viewexam-body flex flex-col items-center justify-start">
+                        <div className="viewexam-viwer">
+                            <div className='viewexam-q'>
+                                <div className="viewexam-viwer-header flex justify-between items-center">
+                                    <h2 className='text-xl'>Students</h2>
+                                    <p>{examDetails?.students?.length || 0}</p>
+                                </div>
+                                <div className="viewexam-viwer-body flex justify-center">
+                                    <div className="viewexams-container pb-2">
+                                        {examDetails?.students && examDetails.students.length > 0 ? (
+                                            examDetails.students.map((student, index) => (
+                                                <div key={student.id || index} className="question-block my-2">
+                                                    <div className="flex justify-between items-center w-full text-xl py-2">
+                                                        <p className='text-white'>
+                                                            {index + 1}. {student.name || `${student.first_name} ${student.last_name}`}
+                                                        </p>
+                                                        <p className="text-sm text-white whitespace-nowrap">
+                                                            USN: {student.usn || student.slNo} | {student.email}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <div className="question-block my-2">
+                                                <div className="flex justify-center items-center w-full text-xl py-2">
+                                                    <p className='text-white text-center'>No students assigned to this exam</p>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </div>

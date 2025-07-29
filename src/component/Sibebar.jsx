@@ -12,6 +12,32 @@ const Sidebar = ({ activeComponent, setActiveComponent }) => {
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 1024);
     const navigate = useNavigate();
 
+    const sidebarVariants = {
+        hidden: { x: -280 },
+        visible: {
+            x: 0,
+            transition: {
+                when: "beforeChildren",
+                staggerChildren: 0.05,
+                duration: 0.5
+            }
+        }
+    };
+
+    const buttonVariants = {
+        hidden: { opacity: 0, x: -16 },
+        visible: {
+            opacity: 1,
+            x: 0,
+            transition: {
+                duration: 0.45,
+                ease: "easeOut"
+            }
+        }
+    };
+
+
+
     // Map "newExam" to "manageExam" if needed
     const currentActive = ["newExam", "addQuestion", "addStudents", "newMcq", "newCoding"].includes(activeComponent)
         ? "manageExam"
@@ -137,82 +163,94 @@ const Sidebar = ({ activeComponent, setActiveComponent }) => {
                 </motion.button>
             )}
 
-            <div className={`sidebar-container ${isOpen && isMobile ? "open" : ""}`}>
+            <motion.div
+                variants={sidebarVariants}
+                initial="hidden"
+                animate={isOpen || !isMobile ? "visible" : "hidden"}
+                className={`sidebar-container ${isOpen && isMobile ? "open" : ""}`}>
                 <img src={logo} alt="logo" className="sidebar-logo lg:hidden" />
                 <div className="sidebar-top">
-                    <button
+                    <motion.button
                         type="button"
+                        variants={buttonVariants}
                         className={`sidebar-button ${currentActive === "dashboard" ? "side-active" : ""}`}
                         onClick={() => handleNavigation("dashboard")}
                     >
                         <h6 className="sidebar-item">Home</h6>
                         <div className={`sidebar-animation ${currentActive === "dashboard" ? "active" : ""}`} />
-                    </button>
+                    </motion.button>
 
-                    <button
+                    <motion.button
                         type="button"
+                        variants={buttonVariants}
                         className={`sidebar-button ${currentActive === "manageExam" ? "side-active" : ""}`}
                         onClick={() => handleNavigation("manageExam")}
                     >
                         <h6 className="sidebar-item">Manage Exam</h6>
                         <div className={`sidebar-animation ${currentActive === "manageExam" ? "active" : ""}`} />
-                    </button>
+                    </motion.button>
 
-                    <button
+                    <motion.button
                         type="button"
+                        variants={buttonVariants}
                         className={`sidebar-button ${currentActive === "result" ? "side-active" : ""}`}
                         onClick={() => handleNavigation("result")}
                     >
                         <h6 className="sidebar-item">Manage Results</h6>
                         <div className={`sidebar-animation ${currentActive === "result" ? "active" : ""}`} />
-                    </button>
+                    </motion.button>
 
-                    <button
+                    <motion.button
                         type="button"
+                        variants={buttonVariants}
                         className={`sidebar-button ${currentActive === "student" ? "side-active" : ""}`}
                         onClick={() => handleNavigation("student")}
                     >
                         <h6 className="sidebar-item">Manage Students</h6>
                         <div className={`sidebar-animation ${currentActive === "student" ? "active" : ""}`} />
-                    </button>
-                    <button
+                    </motion.button>
+                    <motion.button
                         type="button"
+                        variants={buttonVariants}
                         className={`sidebar-button ${currentActive === "custom" ? "side-active" : ""}`}
                         onClick={() => handleNavigation("custom")}
                     >
                         <h6 className="sidebar-item">Custom Learning</h6>
                         <div className={`sidebar-animation ${currentActive === "custom" ? "active" : ""}`} />
-                    </button>
+                    </motion.button>
                 </div>
 
                 {/* Bottom Menu */}
                 <div className="sidebar-bottom">
-                    <button
+                    <motion.button
                         type="button"
+                        variants={buttonVariants}
                         className={`bottom-sidebar-button ${currentActive === "subcribe" ? "side-active" : ""}`}
                         onClick={() => handleNavigation("subcribe")}
                     >
                         <FaMoneyBillWave className="sidebar-icon" />
                         <h6 className="sidebar-item">Subscription</h6>
-                    </button>
-                    <button
+                    </motion.button>
+                    <motion.button
                         type="button"
+                        variants={buttonVariants}
                         className={`bottom-sidebar-button ${currentActive === "settings" ? "side-active" : ""}`}
                         onClick={() => handleNavigation("settings")}
                     >
                         <FaCog className="sidebar-icon" />
                         <h6 className="sidebar-item">Settings</h6>
-                    </button>
-                    <button
+                    </motion.button>
+                    <motion.button
                         type="button"
+                        variants={buttonVariants}
                         className={`bottom-sidebar-button ${currentActive === "logout" ? "side-active" : ""}`}
                         onClick={() => handleLogout()}
                     >
                         <FaSignOutAlt className="sidebar-icon" />
                         <h6 className="sidebar-item">Logout</h6>
-                    </button>
+                    </motion.button>
                 </div>
-            </div>
+            </motion.div>
         </>
     );
 };
