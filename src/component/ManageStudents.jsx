@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   FaSearch,
   FaPlus,
@@ -11,6 +11,9 @@ import Swal from "sweetalert2";
 import { motion } from "framer-motion";
 import { authFetch, authFetchPayload } from "../scripts/AuthProvider";
 import TableSkeleton from "../loader/TableSkeleton";
+import { useCache } from "../hooks/useCache";
+import CacheStatusIndicator from "./CacheStatusIndicator";
+import "./CacheStatusIndicator.css";
 
 // Utility function to truncate text:
 // It returns "..." if the text is too long,
@@ -24,7 +27,7 @@ const truncateText = (text, maxLength) => {
   }
 };
 
-const ManageStudents = ({ studentModalOpen, setStudentModalOpen }) => {
+const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const userCount = useRef(0); // to track total students count
   const totalAllowedStudents = useRef(0); // to track max students count
@@ -44,6 +47,39 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen }) => {
   const [studentsPerPage, setStudentsPerPage] = useState(
     () => window.innerWidth >= 2560 ? 18 : 10
   );
+
+  const pageFade = {
+    initial: { opacity: 0 },
+    animate: {
+      opacity: 1,
+      transition: {
+        duration: 0.4,
+        when: "beforeChildren",
+        staggerChildren: 0.08,
+      },
+    },
+  };
+
+  const itemSlide = {
+    initial: { opacity: 0, y: 20 },
+    animate: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.4 },
+    },
+  };
+
+  const tableRowSlide = {
+    hidden: { opacity: 0, y: 10 },
+    visible: (i) => ({
+      opacity: 1,
+      y: 0,
+      transition: {
+        delay: i * 0.03,
+        duration: 0.3,
+      },
+    }),
+  };
 
   useEffect(() => {
     const onResize = () => {
@@ -70,30 +106,85 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen }) => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // When data loads, set activeTab to first branch
-  const fetchStudentsData = async () => {
-    setLoading(true); // Set loading to true when data fetch starts
+  // Students data fetch function
+  const fetchStudentsData = useCallback(async () => {
     const response = await authFetch("/admin/students/", { method: "GET" });
     if (response.status === 200) {
       const data = await response.json();
-      userCount.current = data.user_count || 0; // total students count
-      setTotalStudents(data.user_count || 0); // <-- update state
-      totalAllowedStudents.current = data.max_users;
-      setStudentsData(data.data || {}); // your students are under data key
-      setCurrentPage(1); // Reset to first page when branch data changes
+      return {
+        user_count: data.user_count || 0,
+        max_users: data.max_users,
+        data: data.data || {}
+      };
     } else {
-      console.error("Failed to fetch students data");
+      throw new Error("Failed to fetch students data");
     }
-    setLoading(false); // Set loading to false when data fetch is complete
-  };
+  }, []);
 
+  // Cache callbacks
+  const onCacheHit = useCallback((data) => {
+    console.log('Students data loaded from cache');
+  }, []);
+
+  const onCacheMiss = useCallback((data) => {
+    console.log('Students data fetched fresh');
+  }, []);
+
+  const onError = useCallback((err) => {
+    console.error('Students fetch error:', err);
+  }, []);
+
+  // Use cache hook for students data
+  const {
+    data: cachedStudentsData,
+    loading: cacheLoading,
+    error: cacheError,
+    cacheUsed,
+    cacheInfo,
+    forceRefresh,
+    invalidateCache,
+    clearAllCache
+  } = useCache('students_data', fetchStudentsData, {
+    enabled: cacheAllowed,
+    expiryMs: 5 * 60 * 1000, // 5 minutes
+    autoRefresh: false,
+    onCacheHit,
+    onCacheMiss,
+    onError
+  });
+
+  console.log('Cache debug:', {
+    cacheAllowed,
+    cacheLoading,
+    cacheError,
+    cachedStudentsData,
+    cacheUsed,
+    cacheInfo
+  });
+
+  // If cache is disabled, show a message
+  if (!cacheAllowed) {
+    console.log('Cache is disabled - this might be causing the issue');
+  }
+
+  // Update local state when cache data changes
+  useEffect(() => {
+    if (cachedStudentsData) {
+      console.log('Cached students data:', cachedStudentsData);
+      setTotalStudents(cachedStudentsData.user_count || 0);
+      totalAllowedStudents.current = cachedStudentsData.max_users;
+      setStudentsData(cachedStudentsData.data || {});
+      setCurrentPage(1);
+    }
+  }, [cachedStudentsData]);
+
+  // Load groups on component mount
   useEffect(() => {
     const loadGroups = async () => {
       const data = await fetchGroups();
       if (data) setGroups(data);
     };
     loadGroups();
-    fetchStudentsData();
   }, []);
 
   // **NEW FUNCTION FOR SORTING**
@@ -107,10 +198,20 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen }) => {
 
   // Filter students based on search query
   const filteredAndSortedStudents = () => {
+    console.log('Filter function - studentsData:', studentsData);
+    console.log('Filter function - activeTab:', activeTab);
+    
+    if (!studentsData) {
+      console.log('No studentsData, returning empty array');
+      return [];
+    }
+
     let currentBranchStudents =
       activeTab === "all"
         ? Object.values(studentsData).flat()
         : studentsData[activeTab] || [];
+    
+    console.log('Current branch students:', currentBranchStudents);
 
     // Apply search filter first
     const searchLower = searchQuery.toLowerCase();
@@ -208,8 +309,8 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen }) => {
           icon: "success",
           title: "Student Deleted",
           text: "Student deleted successfully.",
-           background: '#181817',
-            color: '#fff',
+          background: '#181817',
+          color: '#fff',
         });
         fetchStudentsData(); // Refresh data after deletion
       } else {
@@ -218,8 +319,8 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen }) => {
           icon: "error",
           title: "Error",
           text: errorData.error || "Failed to delete student.",
-           background: '#181817',
-            color: '#fff',
+          background: '#181817',
+          color: '#fff',
         });
       }
     } catch (error) {
@@ -227,32 +328,44 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen }) => {
         icon: "error",
         title: "Error",
         text: error.message || "Network error.",
-         background: '#181817',
-            color: '#fff',
+        background: '#181817',
+        color: '#fff',
       });
     }
   };
 
   return (
-    <div className="lg:w-3xl justify-center flex flex-wrap result-container">
-      <div className="result-header">
-        <div className="header-wrapper">
-          <div>
-            <h1 className="header-title">Manage Students</h1>
+    <motion.div
+      variants={pageFade}
+      initial="initial"
+      animate="animate"
+      className="lg:w-3xl justify-center flex flex-wrap result-container">
+              <div className="result-header">
+          <div className="header-wrapper">
+            <div className="flex justify-between items-center w-full">
+              <div>
+                <motion.h1 variants={itemSlide} className="header-title">Manage Students</motion.h1>
+              </div>
+              <div className="flex items-center gap-4">
+                <motion.div variants={itemSlide} className="total-students-card">
+                  <p className="total-label">Total Students</p>
+                  <p className="total-count">
+                    {totalStudents}/{totalAllowedStudents.current || 500}
+                  </p>
+                </motion.div>
+
+              </div>
+            </div>
           </div>
-          <div className="total-students-card">
-            <p className="total-label">Total Students</p>
-            <p className="total-count">
-              {totalStudents}/{maxStudents}
-            </p>
-          </div>
-        </div>
 
         {/* Search and Add */}
         <div className="m-btn-right flex flex-wrap items-center justify-center sm:justify-end gap-2 w-full sm:w-auto">
           {/* Combined Branch Filter */}
-          <div className="m-btn-left flex flex-wrap justify-center sm:justify-start gap-2">
-            <select
+          <motion.div
+            variants={itemSlide}
+            className="m-btn-left flex flex-wrap justify-center sm:justify-start gap-2">
+            <motion.select
+              variants={itemSlide}
               className="branch-filter-select" // Add a class for styling
               value={activeTab}
               onChange={(e) => {
@@ -262,14 +375,16 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen }) => {
               }}
             >
               <option value="all">All Branches</option>
-              {Object.keys(studentsData).sort().map((branch) => (
+              {studentsData && Object.keys(studentsData).sort().map((branch) => (
                 <option key={branch} value={branch}>
                   {branch}
                 </option>
               ))}
-            </select>
-          </div>
-          <div className="search-box flex items-center w-full sm:w-auto">
+            </motion.select>
+          </motion.div>
+          <motion.div
+            variants={itemSlide}
+            className="search-box flex items-center w-full sm:w-auto">
             <FaSearch className="search-icon" />
             <input
               type="text"
@@ -281,9 +396,10 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen }) => {
               }}
               className="w-full sm:w-auto"
             />
-          </div>
+          </motion.div>
           <motion.button
             whileTap={{ scale: 1.1 }}
+            variants={itemSlide}
             className="create-btn"
             onClick={() => setStudentModalOpen(true)}
           >
@@ -293,7 +409,19 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen }) => {
 
         {/* Students Table */}
         <div className="m-table-container">
-          {loading ? (
+          {cacheLoading ? (
+            <TableSkeleton />
+          ) : cacheError ? (
+            <div className="text-center py-8">
+              <p className="text-red-500 mb-4">{cacheError.message || "Failed to load students data"}</p>
+              <button 
+                onClick={forceRefresh}
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              >
+                Retry
+              </button>
+            </div>
+          ) : !cachedStudentsData ? (
             <TableSkeleton />
           ) : (
             <table>
@@ -304,7 +432,7 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen }) => {
                   <tr>
                     <th
                       className="mobile-usn-col"
-                      // onClick={() => handleSort("usn")}
+                    // onClick={() => handleSort("usn")}
                     >
                       USN
                     </th>
@@ -318,7 +446,7 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen }) => {
                   <tr>
                     <th
                       className="desktop-usn-col"
-                      // onClick={() => handleSort("usn")}
+                    // onClick={() => handleSort("usn")}
                     >
                       #USN
                     </th>
@@ -332,8 +460,12 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen }) => {
               <tbody>
                 {currentStudents.length > 0 ? (
                   currentStudents.map((student, index) => (
-                    <tr
+                    <motion.tr
                       key={student.usn}
+                      custom={index}
+                      variants={tableRowSlide}
+                      initial="hidden"
+                      animate="visible"
                       className={index % 2 === 0 ? "even-row" : "odd-row"}
                     >
                       {/* Changed breakpoint to 768px */}
@@ -384,7 +516,7 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen }) => {
                           </td>
                         </>
                       )}
-                    </tr>
+                    </motion.tr>
                   ))
                 ) : (
                   <tr>
@@ -440,7 +572,7 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen }) => {
           onClose={() => setEditModalOpen(false)}
         />
       )}
-    </div>
+    </motion.div>
   );
 };
 
@@ -489,7 +621,7 @@ const EditStudentModal = ({ onClose, groups, studentId }) => {
             icon: "error",
             title: "Error",
             text: "Student data could not be loaded.",
-             background: '#181817',
+            background: '#181817',
             color: '#fff',
           });
         }
@@ -499,8 +631,8 @@ const EditStudentModal = ({ onClose, groups, studentId }) => {
           icon: "error",
           title: "Error",
           text: "Failed to fetch student data.",
-           background: '#181817',
-            color: '#fff',
+          background: '#181817',
+          color: '#fff',
         });
       }
     };
@@ -515,7 +647,7 @@ const EditStudentModal = ({ onClose, groups, studentId }) => {
     if (!student.lastName) newErrors.lastName = "Last name is required.";
     if (!student.usn) newErrors.usn = "USN is required.";
     if (!student.groupId) newErrors.groupId = "Group selection is required.";
-        return newErrors;
+    return newErrors;
   };
 
   const handleEditStudent = async () => {
@@ -553,8 +685,8 @@ const EditStudentModal = ({ onClose, groups, studentId }) => {
           icon: "success",
           title: "Student Updated",
           text: "Student details updated successfully.",
-           background: '#181817',
-            color: '#fff',
+          background: '#181817',
+          color: '#fff',
         });
         onClose(); // Close modal
         // You might want to trigger a refresh of the student list in ManageStudents
@@ -565,8 +697,8 @@ const EditStudentModal = ({ onClose, groups, studentId }) => {
           icon: "error",
           title: "Error",
           text: errData.error || "Failed to update student.",
-           background: '#181817',
-            color: '#fff',
+          background: '#181817',
+          color: '#fff',
         });
       }
     } catch (error) {
@@ -574,8 +706,8 @@ const EditStudentModal = ({ onClose, groups, studentId }) => {
         icon: "error",
         title: "Error",
         text: error.message || "Network error.",
-         background: '#181817',
-            color: '#fff',
+        background: '#181817',
+        color: '#fff',
       });
     }
   };
@@ -744,7 +876,7 @@ const AddStudentModal = ({ onClose, groups, refreshTotalStudents }) => {
   const [errors, setErrors] = useState({});
   const [file, setFile] = useState(null);
   const [isAddingGroup, setIsAddingGroup] = useState(false);
-  const [newGroupName, setNewGroupName]   = useState("");
+  const [newGroupName, setNewGroupName] = useState("");
   const [isCreatingStudent, setIsCreatingStudent] = useState(false);
 
   const validate = () => {
@@ -756,13 +888,19 @@ const AddStudentModal = ({ onClose, groups, refreshTotalStudents }) => {
     if (!student.usn) newErrors.usn = "USN is required.";
     if (!student.groupId) newErrors.groupId = "Group selection is required.";
     if (isAddingGroup) {
-    if (!newGroupName.trim()) 
-      newErrors.newGroupName = "Please enter a group name.";
-  } else {
-    if (!student.groupId) 
-      newErrors.groupId = "Group selection is required.";
-  }
+      if (!newGroupName.trim())
+        newErrors.newGroupName = "Please enter a group name.";
+    } else {
+      if (!student.groupId)
+        newErrors.groupId = "Group selection is required.";
+    }
     return newErrors;
+  };
+
+  const modalPopup = {
+    initial: { opacity: 0, scale: 0.95, y: -30 },
+    animate: { opacity: 1, scale: 1, y: 0, transition: { type: "spring", stiffness: 220, damping: 20 } },
+    exit: { opacity: 0, scale: 0.9, y: -20, transition: { duration: 0.2 } },
   };
 
   const handleChange = (e) => {
@@ -820,7 +958,7 @@ const AddStudentModal = ({ onClose, groups, refreshTotalStudents }) => {
             html: `Successfully imported ${responseData.imported_count} students. Failed to import ${responseData.failed_count} students.<br><br>
                                             <a href="${responseData.excel_report_url}" download="import_report.xlsx" class="swal2-confirm swal2-styled" style="background-color: #3085d6; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none;">Download Report</a>`,
             showConfirmButton: true,
-             background: '#181817',
+            background: '#181817',
             color: '#fff',
           });
           if (refreshTotalStudents) await refreshTotalStudents();
@@ -831,7 +969,7 @@ const AddStudentModal = ({ onClose, groups, refreshTotalStudents }) => {
             icon: "error",
             title: "Import Failed",
             text: errData.error || "Failed to import students.",
-             background: '#181817',
+            background: '#181817',
             color: '#fff',
           });
         }
@@ -840,8 +978,8 @@ const AddStudentModal = ({ onClose, groups, refreshTotalStudents }) => {
           icon: "error",
           title: "Error",
           text: error.message || "Network error.",
-           background: '#181817',
-            color: '#fff',
+          background: '#181817',
+          color: '#fff',
         });
       }
       setIsCreatingStudent(false);
@@ -853,44 +991,44 @@ const AddStudentModal = ({ onClose, groups, refreshTotalStudents }) => {
         return;
       }
 
-       if (isAddingGroup) {
-      const res = await authFetch("/admin/groups/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: newGroupName.trim() }),
-      });
-      if (!res.ok) {
-        const err = await res.json();
-        return Swal.fire({
-          icon: "error",
-          title: "Error",
-          text: err.error || "Could not create group.",
-           background: '#181817',
-            color: '#fff',
+      if (isAddingGroup) {
+        const res = await authFetch("/admin/groups/", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name: newGroupName.trim() }),
         });
-        setIsCreatingStudent(false);
+        if (!res.ok) {
+          const err = await res.json();
+          return Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: err.error || "Could not create group.",
+            background: '#181817',
+            color: '#fff',
+          });
+          setIsCreatingStudent(false);
+        }
+        const created = await res.json();
+        // overwrite student.groupId with the new group's ID
+        student.groupId = created.id;
+        // update the local dropdown list
+        setGroups(g => [...g, created]);
+        setIsAddingGroup(false);
       }
-      const created = await res.json();
-      // overwrite student.groupId with the new group's ID
-      student.groupId = created.id;
-      // update the local dropdown list
-      setGroups(g => [...g, created]);
-      setIsAddingGroup(false);
-    }
-    // ──────────────────────────────────────────────────────────────────────────
+      // ──────────────────────────────────────────────────────────────────────────
 
-    // 3) Build the payload for student creation
-    const payload = {
-      first_name: student.firstName,
-      last_name:  student.lastName,
-      email:      student.email,
-      password:   student.password,
-      username:   student.email,
-      slNo:       student.usn,
-      group:      student.groupId,   // now either existing or newly created
-      contact:    student.contact,
-      gender:     student.gender,
-    };
+      // 3) Build the payload for student creation
+      const payload = {
+        first_name: student.firstName,
+        last_name: student.lastName,
+        email: student.email,
+        password: student.password,
+        username: student.email,
+        slNo: student.usn,
+        group: student.groupId,   // now either existing or newly created
+        contact: student.contact,
+        gender: student.gender,
+      };
 
       // const payload = {
       //   first_name: student.firstName,
@@ -916,7 +1054,7 @@ const AddStudentModal = ({ onClose, groups, refreshTotalStudents }) => {
             icon: "success",
             title: "Student Created",
             text: "Student added successfully.",
-             background: '#181817',
+            background: '#181817',
             color: '#fff',
           });
           if (refreshTotalStudents) await refreshTotalStudents();
@@ -934,8 +1072,8 @@ const AddStudentModal = ({ onClose, groups, refreshTotalStudents }) => {
           icon: "error",
           title: "Error",
           text: error.message || "Network error.",
-           background: '#181817',
-            color: '#fff',
+          background: '#181817',
+          color: '#fff',
         });
       }
       setIsCreatingStudent(false);
@@ -943,7 +1081,12 @@ const AddStudentModal = ({ onClose, groups, refreshTotalStudents }) => {
   };
 
   return (
-    <div className="modal-overlay">
+    <motion.div
+      variants={modalPopup}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      className="modal-overlay">
       <div className="modal-container">
         <h2 className="modal-title">Add Student</h2>
         {/* Tab Slider for Dataset & Add Manually */}
@@ -1121,7 +1264,7 @@ const AddStudentModal = ({ onClose, groups, refreshTotalStudents }) => {
           )}
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

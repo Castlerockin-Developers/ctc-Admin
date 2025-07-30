@@ -5,7 +5,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faRotateLeft, faSearch } from '@fortawesome/free-solid-svg-icons';
 import { authFetch } from '../scripts/AuthProvider';
 
-const AddStudents = ({ onBack, onSubmit, createExamRequest }) => {
+const AddStudents = ({ onBack, onSubmit, createExamRequest, isEditing = false, editExamData = null }) => {
     // Session storage keys
     const STORAGE_KEYS = {
         allBranch: 'addStudents_allBranch',
@@ -40,17 +40,20 @@ const AddStudents = ({ onBack, onSubmit, createExamRequest }) => {
 
     // Load session and fetch
     useEffect(() => {
-        const saved = sessionStorage.getItem(STORAGE_KEYS.addedList);
-        if (saved) {
-            const parsed = JSON.parse(saved).map(item => ({
-                studentId: item.studentId ?? item.id,
-                id: item.id,
-                name: item.name,
-                degree: item.degree || '',
-                year: item.year || '',
-                branch: item.branch,
-            }));
-            setAddedStudents(parsed);
+        // Only load from sessionStorage if not in edit mode
+        if (!isEditing) {
+            const saved = sessionStorage.getItem(STORAGE_KEYS.addedList);
+            if (saved) {
+                const parsed = JSON.parse(saved).map(item => ({
+                    studentId: item.studentId ?? item.id,
+                    id: item.id,
+                    name: item.name,
+                    degree: item.degree || '',
+                    year: item.year || '',
+                    branch: item.branch,
+                }));
+                setAddedStudents(parsed);
+            }
         }
 
         setAllBranchFilter(sessionStorage.getItem(STORAGE_KEYS.allBranch) || '');
@@ -77,12 +80,50 @@ const AddStudents = ({ onBack, onSubmit, createExamRequest }) => {
                 console.error(e);
             }
         })();
-    }, []);
+    }, [isEditing]);
+
+    // Populate students from existing exam data when editing
+    useEffect(() => {
+        if (isEditing && editExamData) {
+            console.log("AddStudents - editExamData:", editExamData);
+            console.log("AddStudents - students from exam:", editExamData.students);
+            console.log("AddStudents - user from exam:", editExamData.user);
+            
+            // Check both 'students' and 'user' fields
+            let studentsData = editExamData.students || editExamData.user || [];
+            
+            if (studentsData && studentsData.length > 0) {
+                const studentsFromExam = studentsData.map(student => {
+                    console.log("Processing student:", student);
+                    return {
+                        studentId: student.id,
+                        id: student.usn || student.slNo || student.id,
+                        name: student.name || `${student.first_name || ''} ${student.last_name || ''}`.trim() || 'Unknown Student',
+                        degree: student.degree || '',
+                        year: student.year || '',
+                        branch: student.branch || '',
+                    };
+                }).filter(student => student.name !== 'Unknown Student'); // Filter out invalid students
+                
+                console.log("Processed students from exam:", studentsFromExam);
+                setAddedStudents(studentsFromExam);
+            } else {
+                console.log("No students found in exam data");
+                setAddedStudents([]);
+            }
+        }
+    }, [isEditing, editExamData]);
 
     // Persist
     useEffect(() => {
         sessionStorage.setItem(STORAGE_KEYS.addedList, JSON.stringify(addedStudents));
     }, [addedStudents]);
+    
+    // Debug: Log addedStudents changes
+    useEffect(() => {
+        console.log("AddStudents - addedStudents state changed:", addedStudents);
+    }, [addedStudents]);
+    
     useEffect(() => {
         sessionStorage.setItem(STORAGE_KEYS.allBranch, allBranchFilter);
     }, [allBranchFilter]);
@@ -150,25 +191,67 @@ const AddStudents = ({ onBack, onSubmit, createExamRequest }) => {
 
     const createExam = async () => {
         if (!addedStudents.length) {
-            return Swal.fire({ /* … */ });
+            return Swal.fire({ 
+                title: 'No Students',
+                text: 'Please add at least one student to proceed.',
+                icon: 'error',
+                background: '#181817',
+                color: '#fff'
+            });
         }
 
         setIsCreating(true);
-        const payload = { ...createExamRequest, students: addedStudents.map(s => s.studentId) };
+        
+        // Get section_ids from sessionStorage for MCQ questions
+        const mcqQuestions = JSON.parse(sessionStorage.getItem('mcqQuestions') || '[]');
+        const section_ids = [...new Set(mcqQuestions.map(q => q.group_id))];
+        
+        const payload = { 
+            ...createExamRequest, 
+            students: addedStudents.map(s => s.studentId),
+            section_ids: section_ids
+        };
+
+        console.log("AddStudents - createExam payload:", payload);
+        console.log("AddStudents - students being sent:", payload.students);
+        console.log("AddStudents - addedStudents:", addedStudents);
 
         try {
-            const res = await authFetch('/admin/exams/create-exam/', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-            if (!res.ok) {
-                const { message } = await res.json();
-                throw new Error(message || 'Failed to create exam');
+            let res;
+            if (isEditing && editExamData) {
+                // Update existing exam
+                console.log("AddStudents - Updating exam:", editExamData.id);
+                res = await authFetch(`/admin/exams/${editExamData.id}/`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+            } else {
+                // Create new exam
+                console.log("AddStudents - Creating new exam");
+                res = await authFetch('/admin/exams/create-exam/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
             }
+            
+            console.log("AddStudents - Response status:", res.status);
+            console.log("AddStudents - Response ok:", res.ok);
+            
+            if (!res.ok) {
+                const errorData = await res.json();
+                console.log("AddStudents - Error response:", errorData);
+                throw new Error(errorData.message || 'Failed to create exam');
+            }
+            
+            const responseData = await res.json();
+            console.log("AddStudents - Success response:", responseData);
+            
+            const actionText = isEditing ? 'Updated' : 'Created';
             await Swal.fire({
-                title: 'Test Created',
-                text: 'Test has been created.',
+                title: `Test ${actionText}`,
+                text: `Test has been ${actionText.toLowerCase()}.`,
                 icon: 'success',
                 confirmButtonText: 'OK',
                 background: '#181817',
@@ -176,6 +259,7 @@ const AddStudents = ({ onBack, onSubmit, createExamRequest }) => {
             });
             onSubmit();
         } catch (err) {
+            console.error("AddStudents - Error:", err);
             Swal.fire({
                 title: 'Error',
                 text: err.message,
@@ -381,9 +465,9 @@ const AddStudents = ({ onBack, onSubmit, createExamRequest }) => {
                                     <circle className='opacity-25' cx='12' cy='12' r='10' stroke='currentColor' strokeWidth='4' />
                                     <path className='opacity-75' fill='currentColor' d='M4 12a8 8 0 018-8v8z' />
                                 </svg>
-                                Creating… 
+                                {isEditing ? 'Updating…' : 'Creating…'}
                             </span>
-                            : '+ CreateExam'
+                            : isEditing ? '+ Update Exam' : '+ CreateExam'
                         }
                     </button>
                 </div>

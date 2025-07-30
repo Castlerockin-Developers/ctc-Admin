@@ -4,15 +4,16 @@ export async function authFetch(url, options) {
   let accessToken = localStorage.getItem('access'); // Declare `let` to allow reassignment
   const refreshToken = localStorage.getItem('refresh');
 
-  const { body, method } = options;
+  const { body, method, headers = {} } = options;
 
   const requestOptions = {
     method: method,
     headers: {
       Authorization: 'Bearer ' + accessToken,
       'Content-Type': 'application/json',
+      ...headers, // Merge any additional headers
     },
-    body: body ? JSON.stringify(body) : undefined,
+    body: body, // Don't JSON.stringify here, let the caller handle it
   };
 
   // Fetch request

@@ -8,7 +8,7 @@ import Swal from 'sweetalert2';
 
 const STORAGE_KEY = 'newExam';
 
-const NewExam = ({ onBack, onNext, setCreateExamRequest }) => { //
+const NewExam = ({ onBack, onNext, setCreateExamRequest, isEditing = false, editExamData = null }) => { //
     const [isSubmitted, setIsSubmitted] = useState(false);
 
     // State variables for form fields
@@ -42,8 +42,26 @@ const NewExam = ({ onBack, onNext, setCreateExamRequest }) => { //
 
     const [errors, setErrors] = useState({}); //
 
-    // compute “YYYY-MM-DD” string for today
+    // compute "YYYY-MM-DD" string for today
   const today = new Date().toISOString().split('T')[0];
+
+    // Populate form with existing exam data when editing
+    useEffect(() => {
+        if (isEditing && editExamData) {
+            const startDateTime = new Date(editExamData.start_time);
+            const endDateTime = new Date(editExamData.end_time);
+            
+            setTestName(editExamData.name || '');
+            setExamStartDate(startDateTime.toISOString().split('T')[0]);
+            setStartTime(startDateTime.toTimeString().slice(0, 5));
+            setExamEndDate(endDateTime.toISOString().split('T')[0]);
+            setEndTime(endDateTime.toTimeString().slice(0, 5));
+            setTimedTest(editExamData.is_timed || false);
+            setTimer(editExamData.timer ? editExamData.timer.toString() : '');
+            setAttemptsAllowed(editExamData.attempts_allowed ? editExamData.attempts_allowed.toString() : '');
+            setInstructions(editExamData.instructions || '');
+        }
+    }, [isEditing, editExamData]);
 
     // 2) Write back on every change
     useEffect(() => {
@@ -214,7 +232,7 @@ const NewExam = ({ onBack, onNext, setCreateExamRequest }) => { //
     return (
         <div className='newexam-container justify-center flex flex-wrap'>
             <div className='newexam-box'>
-                <h1>Create New Exam</h1>
+                <h1>{isEditing ? 'Edit Exam' : 'Create New Exam'}</h1>
                 <img src={line} alt="line" className='w-full h-0.5' />
                 <div className='newexam-entry1'>
                     {/* Test Name Input */}
@@ -418,6 +436,8 @@ NewExam.propTypes = {
     onBack: PropTypes.func.isRequired,
     onNext: PropTypes.func.isRequired,
     setCreateExamRequest: PropTypes.func.isRequired,
+    isEditing: PropTypes.bool,
+    editExamData: PropTypes.object,
 };
 
 export default NewExam;

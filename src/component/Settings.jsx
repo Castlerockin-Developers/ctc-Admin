@@ -6,6 +6,7 @@ import "./Settings.css";
 import { authFetch } from "../scripts/AuthProvider";
 import avatar from "../assets/useravatar.jpg";
 import { FaEllipsisV } from "react-icons/fa";
+import SettingsLoader from "../loader/SettingsLoader";
 
 const Settings = ({ openAddUserModal, setOpenAddUserModal }) => {
   // Search query state
@@ -16,11 +17,13 @@ const Settings = ({ openAddUserModal, setOpenAddUserModal }) => {
   const [user, setUser] = useState({});
   const [activityHistory, setActivityHistory] = useState([]);
   const [relations, setRelations] = useState({});
+  const [loading, setLoading] = useState(true);
 
   // Modal visibility states for editing and adding users
   const [showEditUserModal, setShowEditUserModal] = useState(false);
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
   const fetchSettings = async () => {
+    setLoading(true);
     try {
       console.log("Fetching settings data...");
       const response = await authFetch("/admin/settings/", { method: "GET" });
@@ -28,6 +31,8 @@ const Settings = ({ openAddUserModal, setOpenAddUserModal }) => {
       setSettingsData(data); // Update settings data state with the response
     } catch (error) {
       console.error("Error fetching settings data:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -317,6 +322,10 @@ const Settings = ({ openAddUserModal, setOpenAddUserModal }) => {
       user.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
   }, [searchQuery, users]);
+
+  if (loading) {
+    return <SettingsLoader />;
+  }
 
   return (
     <>

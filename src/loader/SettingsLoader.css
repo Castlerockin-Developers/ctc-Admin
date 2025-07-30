@@ -1,0 +1,71 @@
+/* Base (mobile first) */
+.setting-title {
+    margin-bottom: 10px;
+  }
+  
+  .setting-profile,
+  .setting-activity {
+    margin: 16px;
+  }
+  
+  .setting-username {
+    margin: 20px 0px;
+  }
+  
+  .setting-activity {
+    padding: 12px;
+    overflow: hidden;
+  }
+  
+  .setting-activity-title {
+    margin: 12px 0px;
+  }
+  
+  .setting-activity-p {
+    margin: 8px 0px;
+  }
+  
+  .setting-manager {
+    margin: 0px 12px;
+  }
+  
+  /* Tablet breakpoint: 640px and up */
+  @media (min-width: 640px) {
+    .setting-profile,
+    .setting-activity {
+      margin: 32px;
+    }
+    .setting-manager {
+      margin: 0px 28px;
+    }
+    .setting-username {
+      margin: 32px 0px;
+    }
+    .setting-activity {
+      padding: 20px;
+    }
+    .setting-title {
+      margin-bottom: 16px;
+    }
+  }
+  
+  /* Desktop breakpoint: 768px and up */
+  @media (min-width: 768px) {
+    .setting-profile {
+      margin: 40px;
+    }
+    .setting-activity {
+      margin: 40px;
+      padding: 28px;
+    }
+    .setting-manager {
+      margin: 0px 40px;
+    }
+    .setting-username {
+      margin: 45px 0px;
+    }
+    .setting-title {
+      margin-bottom: 20px;
+    }
+  }
+  

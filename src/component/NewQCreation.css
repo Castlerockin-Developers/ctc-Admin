@@ -54,6 +54,18 @@
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
+.newmcq-wrapper input[type="number"] {
+    width: 60%;
+    padding: 0.5rem;
+    border-radius: 5px;
+    background-color: #3a3a3a;
+    color: white;
+    font-family: madina-regular;
+    font-size: 1rem;
+    border: 1px solid #6d6d6d;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
 
 .newmcq-wrapper p {
     color: white;
