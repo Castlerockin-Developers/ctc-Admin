@@ -296,6 +296,14 @@ const ManageExam = ({ onCreateNewExam, onNext, cacheAllowed, onEditExam }) => {
 const ViewExam = ({ exam, onBack, onEditExam }) => {
     const [examDetails, setExamDetails] = useState(null);  // <-- new state for detailed exam data
 
+    // Function to check if exam is completed
+    const isExamCompleted = (examData) => {
+        if (!examData || !examData.end_time) return false;
+        const endTime = new Date(examData.end_time);
+        const currentTime = new Date();
+        return endTime < currentTime;
+    };
+
     const handleEditClick = () => {
         if (onEditExam && examDetails) {
             onEditExam(examDetails);
@@ -348,7 +356,9 @@ const ViewExam = ({ exam, onBack, onEditExam }) => {
                         <h2>Exam Section</h2>
                         <div className='viewexam-header-btn'>
                             <button className='viewexam-del-btn'>Delete</button>
-                            <button className="viewexam-edit-btn" onClick={handleEditClick}>Edit</button>
+                            {!isExamCompleted(examDetails) && (
+                                <button className="viewexam-edit-btn" onClick={handleEditClick}>Edit</button>
+                            )}
                         </div>
                     </div>
                     <div className="viewexam-body flex flex-col items-center justify-start">

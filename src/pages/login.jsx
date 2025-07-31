@@ -5,6 +5,7 @@ import logo from "/logo.png";
 import Loadinggif from "../assets/Loading.gif";
 import { login } from "../scripts/AuthProvider";
 import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
 
 const boxVariants = {
   hidden: { scale: 0.8, opacity: 0 },
@@ -36,6 +37,9 @@ const LoginPage = () => {
   const [loading, setLoading] = useState(false);
   const [shakeCount, setShakeCount] = useState(0);
   const [showSplash, setShowSplash] = useState(true);
+  const [resetEmail, setResetEmail] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [resetLoading, setResetLoading] = useState(false);
 
   // on mount, load saved credentials if rememberMe
   useEffect(() => {
@@ -84,6 +88,48 @@ const LoginPage = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+    setEmailError("");
+
+    if (!resetEmail.trim()) {
+      setEmailError("Email address is required");
+      return;
+    }
+
+    if (!validateEmail(resetEmail)) {
+      setEmailError("Please enter a valid email address");
+      return;
+    }
+
+    setResetLoading(true);
+
+    // Simulate API call delay
+    setTimeout(() => {
+      // Show success alert
+      Swal.fire({
+        title: 'Reset Link Sent!',
+        text: `A password reset link has been sent to ${resetEmail}`,
+        icon: 'success',
+        confirmButtonColor: '#a294f9',
+        background: '#181817',
+        color: '#FFFFFF',
+        confirmButtonText: 'OK'
+      });
+
+      // Close popup and reset form
+      setIsPopupOpen(false);
+      setResetEmail("");
+      setEmailError("");
+      setResetLoading(false);
+    }, 2000); // 2 second delay to show the loading spinner
   };
 
   return (
@@ -180,9 +226,29 @@ const LoginPage = () => {
                   <div className="popup-box">
                     <h3>Reset Password</h3>
                     <p>Enter your email address to receive a reset link.</p>
-                    <input type="email" placeholder="Enter your email" className="popup-input" />
-                    <button className="popup-submit">Submit</button>
-                    <button className="popup-close" onClick={() => setIsPopupOpen(false)}>Close</button>
+                    <form onSubmit={handleResetPassword}>
+                      <input 
+                        type="email" 
+                        placeholder="Enter your email" 
+                        className="popup-input" 
+                        value={resetEmail} 
+                        onChange={(e) => setResetEmail(e.target.value)} 
+                      />
+                      {emailError && <p className="error-message">{emailError}</p>}
+                                             <button type="submit" className="popup-submit" disabled={resetLoading}>
+                         {resetLoading ? (
+                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                             {/* <img src={Loadinggif} alt="Loading" style={{ width: '16px', height: '16px' }} /> */}
+                             Sending...
+                           </div>
+                         ) : 'Submit'}
+                       </button>
+                      <button type="button" className="popup-close" onClick={() => {
+                        setIsPopupOpen(false);
+                        setResetEmail("");
+                        setEmailError("");
+                      }}>Close</button>
+                    </form>
                   </div>
                 </div>
               )}

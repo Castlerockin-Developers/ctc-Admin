@@ -400,7 +400,7 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed })
           <motion.button
             whileTap={{ scale: 1.1 }}
             variants={itemSlide}
-            className="create-btn"
+            className="create-btn create-students-btn"
             onClick={() => setStudentModalOpen(true)}
           >
             <FaPlus size={12} className="mr-2" /> Add New Students

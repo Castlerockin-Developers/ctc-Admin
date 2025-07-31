@@ -88,7 +88,7 @@ const ViewCourse = ({ onUnassign, onEdit, onDelete, onBack }) => {
       <div className="new-c-top new-c-top1 flex items-center gap-4">
         <button
           onClick={onBack}
-          className="back-btn text-2xl font-bold"
+          className="view-back-btn back-btn text-2xl font-bold"
           aria-label="Go back"
         >
           &lt;

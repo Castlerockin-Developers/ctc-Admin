@@ -13,7 +13,7 @@ const Sidebar = ({ activeComponent, setActiveComponent }) => {
     const navigate = useNavigate();
 
     const sidebarVariants = {
-        hidden: { x: -280 },
+        hidden: { x: -330},
         visible: {
             x: 0,
             transition: {
