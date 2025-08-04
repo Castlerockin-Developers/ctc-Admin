@@ -1,20 +1,27 @@
-export const baseUrl = 'https://api.crackthecampus.com/api';
-export const staticUrl = 'https://api.crackthecampus.com';
+export const baseUrl = 'http://localhost:8000/api';
+export const staticUrl = 'http://localhost:8000';
 export async function authFetch(url, options) {
   let accessToken = localStorage.getItem('access'); // Declare `let` to allow reassignment
   const refreshToken = localStorage.getItem('refresh');
 
   const { body, method, headers = {} } = options;
 
+  // Check if body is FormData
+  const isFormData = body instanceof FormData;
+  
   const requestOptions = {
     method: method,
     headers: {
       Authorization: 'Bearer ' + accessToken,
-      'Content-Type': 'application/json',
       ...headers, // Merge any additional headers
     },
     body: body, // Don't JSON.stringify here, let the caller handle it
   };
+
+  // Only set Content-Type for JSON, let browser set it for FormData
+  if (!isFormData) {
+    requestOptions.headers['Content-Type'] = 'application/json';
+  }
 
   // Fetch request
   let response = await fetch(baseUrl + url, requestOptions);

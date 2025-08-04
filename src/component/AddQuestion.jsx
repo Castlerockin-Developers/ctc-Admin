@@ -687,11 +687,22 @@ const AddQuestion = ({ onBack, onNexts, onCreateMCQ, onCreateCoding, isEditing =
                                     const sectionQs = mcqQuestions.filter(q => q.group_id === groupId);
                                     const sectionName = sectionQs[0]?.title || 'Unnamed Section'; // Safeguard for missing title
                                     const isSectionPlaceholder = sectionQs[0]?.is_section_placeholder;
+                                    
+                                    // Get the actual allocated question count for this section
+                                    let allocatedQuestionCount = sectionQs.length; // Default to current count
+                                    
+                                    // If editing and we have alloted_sections data, use the no_of_question from there
+                                    if (isEditing && editExamData?.alloted_sections) {
+                                        const allotedSection = editExamData.alloted_sections.find(section => section.section === groupId);
+                                        if (allotedSection && allotedSection.no_of_question) {
+                                            allocatedQuestionCount = allotedSection.no_of_question;
+                                        }
+                                    }
 
                                     return (
                                         <details key={groupId} className="mb-4 border rounded p-2">
                                             <summary className="flex justify-between items-center cursor-pointer">
-                                                <p>{`${sectionName} — ${sectionQs.length} questions`}</p>
+                                                <p>{`${sectionName} — ${allocatedQuestionCount} questions`}</p>
                                                 <div className="flex items-center gap-2">
                                                     {/* Timer input */}
                                                     <input

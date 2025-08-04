@@ -76,6 +76,7 @@
 
 .newmcq-wrapper h4 {
     display: flex;
+    flex-direction: column;
     color: white;
     font-family: madina-medium;
 }

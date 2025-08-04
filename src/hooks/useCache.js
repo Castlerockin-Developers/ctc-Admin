@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import cacheService from '../utils/cacheService';
 
 // Custom hook for managing cache state and operations
@@ -20,6 +20,10 @@ export const useCache = (cacheKey, fetchFunction, options = {}) => {
   const [cacheInfo, setCacheInfo] = useState(null);
   const [lastUpdated, setLastUpdated] = useState(null);
 
+  // Store fetchFunction in a ref to prevent infinite re-renders
+  const fetchFunctionRef = useRef(fetchFunction);
+  fetchFunctionRef.current = fetchFunction;
+
   // Get cache information
   const getCacheInfo = useCallback(() => {
     return cacheService.getInfo(cacheKey);
@@ -39,7 +43,7 @@ export const useCache = (cacheKey, fetchFunction, options = {}) => {
     setCacheUsed(false);
     
     try {
-      const freshData = await fetchFunction();
+      const freshData = await fetchFunctionRef.current();
       setData(freshData);
       setLastUpdated(new Date());
       
@@ -53,7 +57,7 @@ export const useCache = (cacheKey, fetchFunction, options = {}) => {
     } finally {
       setLoading(false);
     }
-  }, [cacheKey, fetchFunction, enabled, expiryMs, onCacheMiss, onError]);
+  }, [cacheKey, enabled, expiryMs, onCacheMiss, onError]);
 
   // Load data with cache support
   const loadData = useCallback(async (forceRefreshFlag = false) => {
@@ -80,7 +84,7 @@ export const useCache = (cacheKey, fetchFunction, options = {}) => {
     // Fetch fresh data
     setCacheUsed(false);
     try {
-      const freshData = await fetchFunction();
+      const freshData = await fetchFunctionRef.current();
       setData(freshData);
       setLastUpdated(new Date());
       
@@ -95,7 +99,7 @@ export const useCache = (cacheKey, fetchFunction, options = {}) => {
     } finally {
       setLoading(false);
     }
-  }, [cacheKey, fetchFunction, enabled, expiryMs, isCacheValid, onCacheHit, onCacheMiss, onError, getCacheInfo]);
+  }, [cacheKey, enabled, expiryMs, isCacheValid, onCacheHit, onCacheMiss, onError, getCacheInfo]);
 
   // Invalidate cache
   const invalidateCache = useCallback(() => {
@@ -120,21 +124,32 @@ export const useCache = (cacheKey, fetchFunction, options = {}) => {
   useEffect(() => {
     if (!enabled || !autoRefresh) return;
 
-    const interval = setInterval(() => {
+    const interval = setInterval(async () => {
       // Only refresh if cache is expired or about to expire
       const info = getCacheInfo();
       if (!info || info.timeRemaining < 30000) { // Refresh if less than 30 seconds remaining
-        forceRefresh();
+        try {
+          const freshData = await fetchFunctionRef.current();
+          setData(freshData);
+          setLastUpdated(new Date());
+          cacheService.set(cacheKey, freshData, expiryMs);
+          if (onCacheMiss) onCacheMiss(freshData);
+        } catch (err) {
+          setError(err);
+          if (onError) onError(err);
+        }
       }
     }, refreshInterval);
 
     return () => clearInterval(interval);
-  }, [enabled, autoRefresh, refreshInterval, forceRefresh, getCacheInfo]);
+  }, [enabled, autoRefresh, refreshInterval, cacheKey, expiryMs, onCacheMiss, onError, getCacheInfo]);
 
-  // Initial load
+  // Initial load - only run once when component mounts
   useEffect(() => {
-    loadData();
-  }, [loadData]);
+    if (enabled) {
+      loadData();
+    }
+  }, [enabled]); // Only depend on enabled, not loadData
 
   // Update cache info when data changes
   useEffect(() => {
