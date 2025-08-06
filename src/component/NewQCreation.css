@@ -92,6 +92,37 @@
     width: 57.5% !important;
 }
 
+/* Ensure images are properly displayed in ReactQuill */
+.custom-quill .ql-editor img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 10px 0;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.custom-quill .ql-editor {
+    min-height: 120px;
+    background-color: #3a3a3a;
+    color: white;
+    border: 1px solid #6d6d6d;
+    border-radius: 5px;
+    padding: 10px;
+}
+
+.custom-quill .ql-toolbar {
+    background-color: #2a2a2a;
+    border: 1px solid #6d6d6d;
+    border-radius: 5px 5px 0 0;
+}
+
+.custom-quill .ql-container {
+    border: 1px solid #6d6d6d;
+    border-top: none;
+    border-radius: 0 0 5px 5px;
+}
+
 .category-container select {
     padding: 0.5rem;
     border-radius: 5px;
