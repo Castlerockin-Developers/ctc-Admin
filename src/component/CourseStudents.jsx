@@ -20,6 +20,19 @@ const CourseStudents = ({ onBackccc, onNextccc }) => {
   const [allPage, setAllPage] = useState(1);
   const [addedPage, setAddedPage] = useState(1);
   const studentsPerPage = 20;
+  const [loading, setLoading] = useState(false);
+  const [currentModuleId, setCurrentModuleId] = useState(null);
+  const [currentModuleName, setCurrentModuleName] = useState('');
+
+  useEffect(() => {
+    // Get module ID from localStorage (set by previous steps)
+    const moduleId = localStorage.getItem('currentModuleId');
+    const moduleName = localStorage.getItem('currentModuleName');
+    if (moduleId) {
+      setCurrentModuleId(moduleId);
+      setCurrentModuleName(moduleName || 'Unknown Module');
+    }
+  }, []);
 
   // Fetch students and initialize state
   useEffect(() => {
@@ -108,10 +121,88 @@ const CourseStudents = ({ onBackccc, onNextccc }) => {
     return data.slice(start, start + studentsPerPage);
   };
 
+  // Assign module to selected students
+  const assignModuleToStudents = async () => {
+    if (addedStudents.length === 0) {
+      Swal.fire({
+        title: 'No Students Selected',
+        text: 'Please add at least one student before creating the assignment.',
+        icon: 'warning',
+        background: "#181817",
+        color: "#fff"
+      });
+      return;
+    }
+
+    if (!currentModuleId) {
+      Swal.fire({
+        title: 'Error!',
+        text: 'No module found. Please go back and create a module first.',
+        icon: 'error',
+        background: "#181817",
+        color: "#fff"
+      });
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const assignmentData = {
+        module_id: parseInt(currentModuleId),
+        student_ids: addedStudents.map(s => s.studentId),
+        assigned_branch: addedBranchFilter || 'All'
+      };
+
+      const response = await authFetch('/learning/assignments/', {
+        method: 'POST',
+        body: JSON.stringify(assignmentData),
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        
+        Swal.fire({
+          title: 'Success!',
+          text: `Module "${currentModuleName}" assigned to ${addedStudents.length} students successfully!`,
+          icon: 'success',
+          background: "#181817",
+          color: "#fff"
+        }).then(() => {
+          // Clear localStorage and go to next step
+          localStorage.removeItem('currentModuleId');
+          localStorage.removeItem('currentModuleName');
+          onNextccc();
+        });
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to assign module');
+      }
+    } catch (error) {
+      console.error('Error assigning module:', error);
+      Swal.fire({
+        title: 'Error!',
+        text: error.message || 'Failed to assign module. Please try again.',
+        icon: 'error',
+        background: "#181817",
+        color: "#fff"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="Custom-container">
       <div className="new-c-top">
         <h1>Add Students</h1>
+        {currentModuleName && (
+          <p style={{color: '#888', marginTop: '8px'}}>
+            Assigning module: <strong style={{color: '#fff'}}>{currentModuleName}</strong> to students
+          </p>
+        )}
         <img src={line} alt="line" className="w-full h-0.5" />
       </div>
 
@@ -332,8 +423,12 @@ const CourseStudents = ({ onBackccc, onNextccc }) => {
               Back
             </button>
             <p>3/3</p>
-            <button className="next-btn" onClick={onNextccc}>
-              Create
+            <button 
+              className="next-btn" 
+              onClick={assignModuleToStudents}
+              disabled={loading}
+            >
+              {loading ? 'Assigning...' : 'Create & Assign'}
             </button>
           </div>
         </div>

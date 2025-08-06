@@ -1,21 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './CustomLearning.css';
 import { motion } from "framer-motion";
 import { FaSearch } from 'react-icons/fa';
 import Swal from 'sweetalert2';
-
-// STEP 1: Add your course data here
-const initialCourses = [
-    { id: 1, title: "Python", instructor: "John", for: "CSE" },
-    { id: 2, title: "Data Structures", instructor: "Alice", for: "ECE" },
-    { id: 3, title: "React.js", instructor: "Sara", for: "IS" },
-    { id: 4, title: "Machine Learning", instructor: "Mark", for: "AD" },
-    { id: 5, title: "UI/UX Design", instructor: "Eva", for: "ML" },
-    { id: 6, title: "UI/UX Design", instructor: "Eva", for: "ML" },
-];
+import { authFetch } from '../scripts/AuthProvider';
 
 const CustomLearning = ({ onNewcourse, onView }) => {
-    const [courses, setCourses] = useState(initialCourses);
+    const [courses, setCourses] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState('');
 
     // Track selected dropdown value for each course
     const [selectedActions, setSelectedActions] = useState({});
@@ -23,6 +16,75 @@ const CustomLearning = ({ onNewcourse, onView }) => {
     const resetSelect = (courseId) => {
         setSelectedActions(prev => ({ ...prev, [courseId]: "" }));
     };
+
+    // Load custom modules from API
+    const loadCustomModules = async () => {
+        try {
+            setLoading(true);
+            const response = await authFetch('/learning/custom-modules/', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                const modules = await response.json();
+                setCourses(modules);
+            } else {
+                throw new Error('Failed to load modules');
+            }
+        } catch (error) {
+            console.error('Error loading custom modules:', error);
+            Swal.fire({
+                title: 'Error!',
+                text: 'Failed to load custom modules. Please try again.',
+                icon: 'error',
+                background: "#181817",
+                color: "#fff"
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Delete module via API
+    const deleteModule = async (moduleId) => {
+        try {
+            const response = await authFetch(`/learning/custom-modules/${moduleId}/`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                setCourses(prev => prev.filter(course => course.id !== moduleId));
+                Swal.fire({
+                    title: 'Deleted!',
+                    text: 'Your module has been deleted.',
+                    icon: 'success',
+                    background: "#181817",
+                    color: "#fff"
+                });
+            } else {
+                throw new Error('Failed to delete module');
+            }
+        } catch (error) {
+            console.error('Error deleting module:', error);
+            Swal.fire({
+                title: 'Error!',
+                text: 'Failed to delete module. Please try again.',
+                icon: 'error',
+                background: "#181817",
+                color: "#fff"
+            });
+        }
+    };
+
+    useEffect(() => {
+        loadCustomModules();
+    }, []);
 
     const handleActionChange = (e, courseId) => {
         const selectedAction = e.target.value;
@@ -36,7 +98,7 @@ const CustomLearning = ({ onNewcourse, onView }) => {
         if (selectedAction === "delete") {
             Swal.fire({
                 title: 'Are you sure?',
-                text: 'This course will be deleted!',
+                text: 'This module will be deleted permanently!',
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#3085d6',
@@ -46,17 +108,8 @@ const CustomLearning = ({ onNewcourse, onView }) => {
                 color: "#fff"
             }).then(result => {
                 if (result.isConfirmed) {
-                    setCourses(prev => prev.filter(course => course.id !== courseId));
-                    Swal.fire({
-                        title: 'Deleted!',
-                        text: 'Your course has been deleted.',
-                        icon: 'success',
-                        background: "#181817",
-                        color: "#fff"
-                    });
+                    deleteModule(courseId);
                 }
-
-                // reset select regardless
                 resetSelect(courseId);
             });
         }
@@ -94,7 +147,9 @@ const CustomLearning = ({ onNewcourse, onView }) => {
                             <FaSearch className="search-icon" />
                             <input
                                 type="text"
-                                placeholder="Search students..."
+                                placeholder="Search modules..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
                                 className="w-full sm:w-auto"
                             />
                         </div>
@@ -102,42 +157,56 @@ const CustomLearning = ({ onNewcourse, onView }) => {
                 </div>
             </div>
             <div className='course-container'>
-                <div className='course-card-container gap-4'>
-                    {/* STEP 2: Map through the courses array */}
-                    {courses.map(course => (
-                        <div key={course.id} className='flex justify-between course-card'>
-                            <div className='course-title'>
-                                <div className='c-branch flex items-center'>
-                                    <h4>{course.for}</h4>
+                {loading ? (
+                    <div className='flex justify-center items-center py-8'>
+                        <div className='text-white'>Loading modules...</div>
+                    </div>
+                ) : (
+                    <div className='course-card-container gap-4'>
+                        {courses
+                            .filter(course => 
+                                course.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                (course.author_name && course.author_name.toLowerCase().includes(searchTerm.toLowerCase()))
+                            )
+                            .map(course => (
+                            <div key={course.id} className='flex justify-between course-card'>
+                                <div className='course-title'>
+                                    <div className='c-branch flex items-center'>
+                                        <h4>{course.total_chapters} chapters</h4>
+                                    </div>
+                                    <div>
+                                        <h2>{course.name}</h2>
+                                        <p>{course.author_name ? `${course.author_name} (${course.author_designation})` : 'No Author'}</p>
+                                        <small style={{color: '#888'}}>{course.desc}</small>
+                                    </div>
                                 </div>
-                                <div>
-                                    <h2>{course.title}</h2>
-                                    <p>{course.instructor}</p>
+                                <div className='flex items-center course-view-btn '>
+                                    <select
+                                        value={selectedActions[course.id] || ""}
+                                        onChange={(e) => {
+                                            setSelectedActions(prev => ({
+                                                ...prev,
+                                                [course.id]: e.target.value
+                                            }));
+                                            handleActionChange(e, course.id);
+                                        }}
+                                    >
+                                        <option value="">Options</option>
+                                        <option value="view">View</option>
+                                        <option value="edit">Edit</option>
+                                        <option value="delete">Delete</option>
+                                        <option value="assign">Assign to Students</option>
+                                    </select>
                                 </div>
                             </div>
-                            <div className='flex items-center course-view-btn '>
-                                <select
-                                    value={selectedActions[course.id] || ""}
-                                    onChange={(e) => {
-                                        setSelectedActions(prev => ({
-                                            ...prev,
-                                            [course.id]: e.target.value
-                                        }));
-                                        handleActionChange(e, course.id);
-                                    }}
-                                >
-                                    <option value="">Options</option>
-                                    <option value="view">View</option>
-                                    <option value="edit">Edit</option>
-                                    <option value="delete">Delete</option>
-                                    <option value="assign-toggle">
-                                        {course.assigned ? "Unassign" : "Assign"}
-                                    </option>
-                                </select>
+                        ))}
+                        {courses.length === 0 && (
+                            <div className='flex justify-center items-center py-8'>
+                                <div className='text-white'>No custom modules found. Create one to get started!</div>
                             </div>
-                        </div>
-                    ))}
-                </div>
+                        )}
+                    </div>
+                )}
             </div>
         </div >
     );
