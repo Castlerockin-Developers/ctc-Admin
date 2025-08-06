@@ -6,6 +6,7 @@ import { motion } from "motion/react";
 import { authFetch } from "../scripts/AuthProvider";
 import Swal from "sweetalert2";
 import ManageLoader from "../loader/ManageLoader";
+import TableSkeleton from "../loader/TableSkeleton";
 import { useCache } from "../hooks/useCache";
 import CacheStatusIndicator from "./CacheStatusIndicator";
 import "./CacheStatusIndicator.css";
@@ -226,46 +227,50 @@ const ManageExam = ({ onCreateNewExam, onNext, cacheAllowed, onEditExam }) => {
                         </div>
                     </div>
                     <div className="m-table-container">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>#ID</th>
-                                    <th>Name</th>
-                                    <th className="start-time">Start Time</th>
-                                    <th className="start-time">End Time</th>
-                                    <th>Attempts Allowed</th>
-                                    <th>Status</th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {currentTableData.length > 0 ? (
-                                    currentTableData.map((row, idx) => (
-                                        <motion.tr
-                                            key={row.id}
-                                            initial={{ opacity: 0, y: 10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            transition={{ delay: idx * 0.03, duration: 0.2 }}
-                                            className={idx % 2 === 0 ? "even-row" : "odd-row"}>
-                                            <td>{row.id}</td>
-                                            <td>{row.name}</td>
-                                            <td>{row.startTime}</td>
-                                            <td>{row.endTime}</td>
-                                            <td>{row.attemptsAllowed}</td>
-                                            <td>{row.status}</td>
-                                            <td><motion.button className="viewexam-btn" whileTap={{ scale: 1.2 }} onClick={() => handleViewExam(row)}>View Exam</motion.button></td>
-                                        </motion.tr>
-                                    ))
-                                ) : (
+                        {loading || !examsData ? (
+                            <TableSkeleton />
+                        ) : (
+                            <table>
+                                <thead>
                                     <tr>
-                                        <td colSpan="6" className="no-data">No exams found</td>
+                                        <th>#ID</th>
+                                        <th>Name</th>
+                                        <th className="start-time">Start Time</th>
+                                        <th className="start-time">End Time</th>
+                                        <th>Attempts Allowed</th>
+                                        <th>Status</th>
+                                        <th></th>
                                     </tr>
-                                )}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    {currentTableData.length > 0 ? (
+                                        currentTableData.map((row, idx) => (
+                                            <motion.tr
+                                                key={row.id}
+                                                initial={{ opacity: 0, y: 10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                transition={{ delay: idx * 0.03, duration: 0.2 }}
+                                                className={idx % 2 === 0 ? "even-row" : "odd-row"}>
+                                                <td>{row.id}</td>
+                                                <td>{row.name}</td>
+                                                <td>{row.startTime}</td>
+                                                <td>{row.endTime}</td>
+                                                <td>{row.attemptsAllowed}</td>
+                                                <td>{row.status}</td>
+                                                <td><motion.button className="viewexam-btn" whileTap={{ scale: 1.2 }} onClick={() => handleViewExam(row)}>View Exam</motion.button></td>
+                                            </motion.tr>
+                                        ))
+                                    ) : (
+                                        <tr>
+                                            <td colSpan="7" className="no-data">No exams found</td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        )}
                     </div>
                     {/* Pagination Controls */}
-                    {filteredTableData.length > 0 && (
+                    {!loading && examsData && filteredTableData.length > 0 && (
                         <div className="pagination-controls flex justify-between items-center mt-4">
                             <motion.button
                                 whileTap={{ scale: 1.1 }}
