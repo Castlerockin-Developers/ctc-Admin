@@ -7,7 +7,7 @@ import { logout } from "../scripts/AuthProvider";
 import { Navigate, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 
-const Sidebar = ({ activeComponent, setActiveComponent }) => {
+const Sidebar = ({ activeComponent, setActiveComponent, onManageExamClick }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 1024);
     const navigate = useNavigate();
@@ -60,6 +60,10 @@ const Sidebar = ({ activeComponent, setActiveComponent }) => {
     }, [isOpen]);
 
     const handleNavigation = (componentName) => {
+        // Special handling for manageExam to clear examToView state
+        if (componentName === "manageExam" && onManageExamClick) {
+            onManageExamClick();
+        }
         setActiveComponent(componentName);
         if (isMobile) {
             setIsOpen(false);

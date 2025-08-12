@@ -469,6 +469,46 @@ const AddQuestion = ({ onBack, onNexts, onCreateMCQ, onCreateCoding, isEditing =
 
     const uniqueSections = [...new Set(sourceQuestions.map(q => q.group_id))];
     
+    // Function to clear all session storage data related to exam creation
+    const clearSessionStorage = () => {
+        console.log("AddQuestion - Clearing session storage data");
+        
+        // Clear NewExam component session storage
+        const newExamKeys = [
+            'newExam:testName',
+            'newExam:examStartDate', 
+            'newExam:startTime',
+            'newExam:examEndDate',
+            'newExam:endTime',
+            'newExam:timedTest',
+            'newExam:timer',
+            'newExam:attemptsAllowed',
+            'newExam:instructions'
+        ];
+        
+        // Clear AddQuestion component session storage
+        const addQuestionKeys = [
+            'mcqQuestions',
+            'codingQuestions', 
+            'sectionTimers'
+        ];
+        
+        // Clear AddStudents component session storage
+        const addStudentsKeys = [
+            'addStudents_allBranch',
+            'addStudents_addedBranch',
+            'addStudents_list'
+        ];
+        
+        // Clear all keys
+        [...newExamKeys, ...addQuestionKeys, ...addStudentsKeys].forEach(key => {
+            sessionStorage.removeItem(key);
+            console.log(`AddQuestion - Cleared session storage key: ${key}`);
+        });
+        
+        console.log("AddQuestion - Session storage cleared successfully");
+    };
+    
     // Skeleton loader component
     const QuestionSkeleton = () => (
         <div className="dataset-section card-gap">
@@ -815,7 +855,13 @@ const AddQuestion = ({ onBack, onNexts, onCreateMCQ, onCreateCoding, isEditing =
                     <img src={line} alt="line" className='line-bottom' />
                 </div>
                 <div className='flex w-full justify-end bottom-control gap-1'>
-                    <button onClick={onBack} className="exam-previous-btn">
+                    <button onClick={() => {
+                        // Clear session storage when going back (only if not editing)
+                        if (!isEditing) {
+                            clearSessionStorage();
+                        }
+                        onBack();
+                    }} className="exam-previous-btn">
                         <FontAwesomeIcon icon={faRotateLeft} className='left-icon' />back
                     </button>
                     <p>2/3</p>

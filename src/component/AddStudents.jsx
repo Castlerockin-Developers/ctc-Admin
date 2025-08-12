@@ -189,6 +189,46 @@ const AddStudents = ({ onBack, onSubmit, createExamRequest, isEditing = false, e
         });
     };
 
+    // Function to clear all session storage data related to exam creation
+    const clearSessionStorage = () => {
+        console.log("AddStudents - Clearing session storage data");
+        
+        // Clear NewExam component session storage
+        const newExamKeys = [
+            'newExam:testName',
+            'newExam:examStartDate', 
+            'newExam:startTime',
+            'newExam:examEndDate',
+            'newExam:endTime',
+            'newExam:timedTest',
+            'newExam:timer',
+            'newExam:attemptsAllowed',
+            'newExam:instructions'
+        ];
+        
+        // Clear AddQuestion component session storage
+        const addQuestionKeys = [
+            'mcqQuestions',
+            'codingQuestions', 
+            'sectionTimers'
+        ];
+        
+        // Clear AddStudents component session storage
+        const addStudentsKeys = [
+            STORAGE_KEYS.allBranch,
+            STORAGE_KEYS.addedBranch,
+            STORAGE_KEYS.addedList
+        ];
+        
+        // Clear all keys
+        [...newExamKeys, ...addQuestionKeys, ...addStudentsKeys].forEach(key => {
+            sessionStorage.removeItem(key);
+            console.log(`AddStudents - Cleared session storage key: ${key}`);
+        });
+        
+        console.log("AddStudents - Session storage cleared successfully");
+    };
+
     const createExam = async () => {
         if (!addedStudents.length) {
             return Swal.fire({ 
@@ -205,59 +245,64 @@ const AddStudents = ({ onBack, onSubmit, createExamRequest, isEditing = false, e
         // Get section_ids from sessionStorage for MCQ questions
         const mcqQuestions = JSON.parse(sessionStorage.getItem('mcqQuestions') || '[]');
         const section_ids = [...new Set(mcqQuestions.map(q => q.group_id))];
+
+        // Get coding question IDs from sessionStorage
+        const codingQuestions = JSON.parse(sessionStorage.getItem('codingQuestions') || '[]');
+        const coding_question_ids = codingQuestions.map(q => q.id);
         
         const payload = { 
             ...createExamRequest, 
             students: addedStudents.map(s => s.studentId),
-            section_ids: section_ids
+            section_ids: section_ids,
+            coding_question_ids: coding_question_ids
         };
 
         console.log("AddStudents - createExam payload:", payload);
         console.log("AddStudents - students being sent:", payload.students);
         console.log("AddStudents - addedStudents:", addedStudents);
+        console.log("AddStudents - coding_question_ids being sent:", payload.coding_question_ids);
+        console.log("AddStudents - codingQuestions from session:", codingQuestions);
 
         try {
-            let res;
             if (isEditing && editExamData) {
-                // Update existing exam
-                console.log("AddStudents - Updating exam:", editExamData.id);
-                res = await authFetch(`/admin/exams/${editExamData.id}/`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
+                // In edit mode, call the onSubmit prop with the payload
+                console.log("AddStudents - Edit mode, calling onSubmit with payload:", payload);
+                onSubmit(payload);
             } else {
                 // Create new exam
                 console.log("AddStudents - Creating new exam");
-                res = await authFetch('/admin/exams/create-exam/', {
+                const res = await authFetch('/admin/exams/create-exam/', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
+                
+                console.log("AddStudents - Response status:", res.status);
+                console.log("AddStudents - Response ok:", res.ok);
+                
+                if (!res.ok) {
+                    const errorData = await res.json();
+                    console.log("AddStudents - Error response:", errorData);
+                    throw new Error(errorData.message || 'Failed to create exam');
+                }
+                
+                const responseData = await res.json();
+                console.log("AddStudents - Success response:", responseData);
+                
+                await Swal.fire({
+                    title: 'Test Created',
+                    text: 'Test has been created.',
+                    icon: 'success',
+                    confirmButtonText: 'OK',
+                    background: '#181817',
+                    color: '#fff'
+                });
+                
+                // Clear all session storage data after successful exam creation
+                clearSessionStorage();
+                
+                onSubmit();
             }
-            
-            console.log("AddStudents - Response status:", res.status);
-            console.log("AddStudents - Response ok:", res.ok);
-            
-            if (!res.ok) {
-                const errorData = await res.json();
-                console.log("AddStudents - Error response:", errorData);
-                throw new Error(errorData.message || 'Failed to create exam');
-            }
-            
-            const responseData = await res.json();
-            console.log("AddStudents - Success response:", responseData);
-            
-            const actionText = isEditing ? 'Updated' : 'Created';
-            await Swal.fire({
-                title: `Test ${actionText}`,
-                text: `Test has been ${actionText.toLowerCase()}.`,
-                icon: 'success',
-                confirmButtonText: 'OK',
-                background: '#181817',
-                color: '#fff'
-            });
-            onSubmit();
         } catch (err) {
             console.error("AddStudents - Error:", err);
             Swal.fire({
@@ -450,7 +495,13 @@ const AddStudents = ({ onBack, onSubmit, createExamRequest, isEditing = false, e
                     <img src={line} alt='line' className='line-bottom' />
                 </div>
                 <div className='flex w-full justify-end bottom-control gap-1'>
-                    <button onClick={onBack} className="exam-previous-btn">
+                    <button onClick={() => {
+                        // Clear session storage when going back (only if not editing)
+                        if (!isEditing) {
+                            clearSessionStorage();
+                        }
+                        onBack();
+                    }} className="exam-previous-btn">
                         <FontAwesomeIcon icon={faRotateLeft} className='left-icon' />back
                     </button>
                     <p>3/3</p>

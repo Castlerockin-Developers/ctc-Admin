@@ -113,18 +113,22 @@ const NewExam = ({ onBack, onNext, setCreateExamRequest, isEditing = false, edit
         if (!testName.trim()) { //
             currentErrors.testName = "Test Name is required."; //
         }
-        if (!examStartDate) {
-            currentErrors.examStartDate = "Exam Start Date is required.";
-        } else {
-            const startDate = new Date(examStartDate);
-            if (isNaN(startDate.getTime())) {
-                currentErrors.examStartDate = "Invalid Start Date format.";
-            } else if (startDate.getFullYear() > 9999) {
-                currentErrors.examStartDate = "Year in Start Date must be 4 digits.";
+        
+        // Skip start date and start time validation when editing
+        if (!isEditing) {
+            if (!examStartDate) {
+                currentErrors.examStartDate = "Exam Start Date is required.";
+            } else {
+                const startDate = new Date(examStartDate);
+                if (isNaN(startDate.getTime())) {
+                    currentErrors.examStartDate = "Invalid Start Date format.";
+                } else if (startDate.getFullYear() > 9999) {
+                    currentErrors.examStartDate = "Year in Start Date must be 4 digits.";
+                }
             }
-        }
-        if (!startTime) { //
-            currentErrors.startTime = "Start Time is required."; //
+            if (!startTime) { //
+                currentErrors.startTime = "Start Time is required."; //
+            }
         }
         if (!examEndDate) {
             currentErrors.examEndDate = "Exam End Date is required.";
@@ -157,7 +161,8 @@ const NewExam = ({ onBack, onNext, setCreateExamRequest, isEditing = false, edit
         const isStartDateValidInput = examStartDate && startTime;
         const isEndDateValidInput = examEndDate && endTime;
 
-        if (isStartDateValidInput) { //
+        // Skip start date/time validation when editing
+        if (isStartDateValidInput && !isEditing) { //
             const startDateTime = new Date(`${examStartDate}T${startTime}`); //
             const currentDateTime = new Date(); // Get current date and time
 
@@ -227,6 +232,46 @@ const NewExam = ({ onBack, onNext, setCreateExamRequest, isEditing = false, edit
                 showErrorSummaryAlert("Form Incomplete", "Please fill out all required fields and correct any errors.");
             }
         }
+    };
+
+    // Function to clear all session storage data related to exam creation
+    const clearSessionStorage = () => {
+        console.log("NewExam - Clearing session storage data");
+        
+        // Clear NewExam component session storage
+        const newExamKeys = [
+            `${STORAGE_KEY}:testName`,
+            `${STORAGE_KEY}:examStartDate`, 
+            `${STORAGE_KEY}:startTime`,
+            `${STORAGE_KEY}:examEndDate`,
+            `${STORAGE_KEY}:endTime`,
+            `${STORAGE_KEY}:timedTest`,
+            `${STORAGE_KEY}:timer`,
+            `${STORAGE_KEY}:attemptsAllowed`,
+            `${STORAGE_KEY}:instructions`
+        ];
+        
+        // Clear AddQuestion component session storage
+        const addQuestionKeys = [
+            'mcqQuestions',
+            'codingQuestions', 
+            'sectionTimers'
+        ];
+        
+        // Clear AddStudents component session storage
+        const addStudentsKeys = [
+            'addStudents_allBranch',
+            'addStudents_addedBranch',
+            'addStudents_list'
+        ];
+        
+        // Clear all keys
+        [...newExamKeys, ...addQuestionKeys, ...addStudentsKeys].forEach(key => {
+            sessionStorage.removeItem(key);
+            console.log(`NewExam - Cleared session storage key: ${key}`);
+        });
+        
+        console.log("NewExam - Session storage cleared successfully");
     };
 
     return (
@@ -421,7 +466,13 @@ const NewExam = ({ onBack, onNext, setCreateExamRequest, isEditing = false, edit
                 {/* Navigation Buttons */}
                 <div className='flex w-full justify-end'>
                     <div className='flex bottom-btns'>
-                        <button className="back-btn-create" onClick={onBack}>Back</button>
+                        <button className="back-btn-create" onClick={() => {
+                            // Clear session storage when going back (only if not editing)
+                            if (!isEditing) {
+                                clearSessionStorage();
+                            }
+                            onBack();
+                        }}>Back</button>
                         <p>1/3</p>
                         <button className='next-btn' onClick={handleNext}>Next</button>
                     </div>
