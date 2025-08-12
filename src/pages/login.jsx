@@ -182,7 +182,10 @@ const LoginPage = () => {
                       placeholder="Enter your username"
                       className="input-field"
                       value={username}
-                      onChange={e => setUsername(e.target.value)}
+                      onChange={e => {
+                        setUsername(e.target.value);
+                        if (error) setError("");
+                      }}
                     />
                   </motion.div>
 
@@ -193,7 +196,10 @@ const LoginPage = () => {
                       placeholder="Enter your password"
                       className="input-field"
                       value={password}
-                      onChange={e => setPassword(e.target.value)}
+                      onChange={e => {
+                        setPassword(e.target.value);
+                        if (error) setError("");
+                      }}
                     />
                   </motion.div>
 

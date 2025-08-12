@@ -6,14 +6,15 @@ import { motion } from "motion/react";
 import { authFetch } from "../scripts/AuthProvider";
 import Swal from "sweetalert2";
 import ManageLoader from "../loader/ManageLoader";
+import TableSkeleton from "../loader/TableSkeleton";
 import { useCache } from "../hooks/useCache";
 import CacheStatusIndicator from "./CacheStatusIndicator";
 import "./CacheStatusIndicator.css";
 
-const ManageExam = ({ onCreateNewExam, onNext, cacheAllowed, onEditExam }) => {
+const ManageExam = ({ onCreateNewExam, onNext, cacheAllowed, onEditExam, examToView, onBackToDashboard }) => {
     const [activeButton, setActiveButton] = useState("all");
     const [searchQuery, setSearchQuery] = useState("");
-    const [selectedExam, setSelectedExam] = useState(null);
+    const [selectedExam, setSelectedExam] = useState(examToView || null);
     const [showFilter, setShowFilter] = useState(false);
     const filterRef = useRef(null);
     const [currentPage, setCurrentPage] = useState(1);
@@ -39,6 +40,13 @@ const ManageExam = ({ onCreateNewExam, onNext, cacheAllowed, onEditExam }) => {
         window.addEventListener('resize', onResize);
         return () => window.removeEventListener('resize', onResize);
     }, []);
+
+    // Update selectedExam when examToView changes
+    useEffect(() => {
+        if (examToView) {
+            setSelectedExam(examToView);
+        }
+    }, [examToView]);
 
 
     // Close filter dropdown on outside click
@@ -119,7 +127,7 @@ const ManageExam = ({ onCreateNewExam, onNext, cacheAllowed, onEditExam }) => {
         const startTime = new Date(exam.start_time);
         const endTime = new Date(exam.end_time);
         const now = new Date();
-        
+
         let status;
         if (startTime > now) {
             status = "Upcoming";
@@ -130,7 +138,7 @@ const ManageExam = ({ onCreateNewExam, onNext, cacheAllowed, onEditExam }) => {
         } else {
             status = "Completed";
         }
-        
+
         return {
             id: exam.id,
             name: exam.name,
@@ -166,15 +174,15 @@ const ManageExam = ({ onCreateNewExam, onNext, cacheAllowed, onEditExam }) => {
                 "Completed": 3,
                 "Results Declared": 4
             };
-            
+
             const priorityA = statusPriority[a.status] || 5;
             const priorityB = statusPriority[b.status] || 5;
-            
+
             // First sort by status priority
             if (priorityA !== priorityB) {
                 return priorityA - priorityB;
             }
-            
+
             // If same status, sort by start time (earliest first)
             const startTimeA = new Date(a.startTime);
             const startTimeB = new Date(b.startTime);
@@ -190,12 +198,15 @@ const ManageExam = ({ onCreateNewExam, onNext, cacheAllowed, onEditExam }) => {
         // Find the exam data with status information
         const examWithStatus = tableData.find(e => e.id === exam.id);
         const examWithStatusData = { ...exam, status: examWithStatus?.status };
-        
+
         setSelectedExam(examWithStatusData);
     };
 
     const handleBack = () => {
         setSelectedExam(null);
+        if (onBackToDashboard) {
+            onBackToDashboard();
+        }
         forceRefresh(); // Re-fetch exams to ensure updated data after potential edit
     };
 
@@ -270,46 +281,50 @@ const ManageExam = ({ onCreateNewExam, onNext, cacheAllowed, onEditExam }) => {
                         </div>
                     </div>
                     <div className="m-table-container">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>#ID</th>
-                                    <th>Name</th>
-                                    <th className="start-time">Start Time</th>
-                                    <th className="start-time">End Time</th>
-                                    <th>Attempts Allowed</th>
-                                    <th>Status</th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {currentTableData.length > 0 ? (
-                                    currentTableData.map((row, idx) => (
-                                        <motion.tr
-                                            key={row.id}
-                                            initial={{ opacity: 0, y: 10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            transition={{ delay: idx * 0.03, duration: 0.2 }}
-                                            className={idx % 2 === 0 ? "even-row" : "odd-row"}>
-                                            <td>{row.id}</td>
-                                            <td>{row.name}</td>
-                                            <td>{row.startTime}</td>
-                                            <td>{row.endTime}</td>
-                                            <td>{row.attemptsAllowed}</td>
-                                            <td>{row.status}</td>
-                                            <td><motion.button className="viewexam-btn" whileTap={{ scale: 1.2 }} onClick={() => handleViewExam(row)}>View Exam</motion.button></td>
-                                        </motion.tr>
-                                    ))
-                                ) : (
+                        {loading || !examsData ? (
+                            <TableSkeleton />
+                        ) : (
+                            <table>
+                                <thead>
                                     <tr>
-                                        <td colSpan="6" className="no-data">No exams found</td>
+                                        <th>#ID</th>
+                                        <th>Name</th>
+                                        <th className="start-time">Start Time</th>
+                                        <th className="start-time">End Time</th>
+                                        <th>Attempts Allowed</th>
+                                        <th>Status</th>
+                                        <th></th>
                                     </tr>
-                                )}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    {currentTableData.length > 0 ? (
+                                        currentTableData.map((row, idx) => (
+                                            <motion.tr
+                                                key={row.id}
+                                                initial={{ opacity: 0, y: 10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                transition={{ delay: idx * 0.03, duration: 0.2 }}
+                                                className={idx % 2 === 0 ? "even-row" : "odd-row"}>
+                                                <td>{row.id}</td>
+                                                <td>{row.name}</td>
+                                                <td>{row.startTime}</td>
+                                                <td>{row.endTime}</td>
+                                                <td>{row.attemptsAllowed}</td>
+                                                <td>{row.status}</td>
+                                                <td><motion.button className="viewexam-btn" whileTap={{ scale: 1.2 }} onClick={() => handleViewExam(row)}>View Exam</motion.button></td>
+                                            </motion.tr>
+                                        ))
+                                    ) : (
+                                        <tr>
+                                            <td colSpan="7" className="no-data">No exams found</td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        )}
                     </div>
                     {/* Pagination Controls */}
-                    {filteredTableData.length > 0 && (
+                    {!loading && examsData && filteredTableData.length > 0 && (
                         <div className="pagination-controls flex justify-between items-center mt-4">
                             <motion.button
                                 whileTap={{ scale: 1.1 }}
@@ -340,10 +355,28 @@ const ManageExam = ({ onCreateNewExam, onNext, cacheAllowed, onEditExam }) => {
 const ViewExam = ({ exam, onBack, onEditExam, onRefresh }) => {
     const [examDetails, setExamDetails] = useState(null);  // <-- new state for detailed exam data
 
-    // Function to check if edit button should be shown based on exam status
-    const shouldShowEditButton = (examStatus) => {
-        const canEdit = examStatus === 'Upcoming' || examStatus === 'Ongoing';
-        return canEdit;
+    // Function to check if exam is completed
+    const isExamCompleted = (examData) => {
+        if (!examData) return false;
+
+        // Check if exam has end_time
+        if (examData.end_time) {
+            const endTime = new Date(examData.end_time);
+            const currentTime = new Date();
+            return endTime < currentTime;
+        }
+
+        // Check if exam has is_result_declared field
+        if (examData.is_result_declared !== undefined) {
+            return examData.is_result_declared;
+        }
+
+        // Check if exam has status field
+        if (examData.status) {
+            return examData.status === 'completed' || examData.status === 'finished';
+        }
+
+        return false;
     };
 
     const handleEditClick = () => {
@@ -352,73 +385,69 @@ const ViewExam = ({ exam, onBack, onEditExam, onRefresh }) => {
         }
     };
 
-    const handleDeleteClick = async () => {
-        // Show confirmation dialog
-        const result = await Swal.fire({
-            title: 'Are you sure?',
-            text: `Do you want to delete the exam "${examDetails.name}"? This action cannot be undone.`,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Yes, delete it!',
-            cancelButtonText: 'Cancel',
-            background: "#181817",
-            color: "#fff",
-        });
+    const handleDeleteExam = async () => {
+        try {
+            // Show confirmation dialog
+            const result = await Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, delete it!',
+                background: '#181817',
+                color: '#fff',
+            });
 
-        if (result.isConfirmed) {
-            try {
+            if (result.isConfirmed) {
                 // Show loading state
                 Swal.fire({
-                    title: 'Deleting exam...',
+                    title: 'Deleting...',
                     text: 'Please wait while we delete the exam.',
                     allowOutsideClick: false,
                     didOpen: () => {
                         Swal.showLoading();
                     },
-                    background: "#181817",
-                    color: "#fff",
+                    background: '#181817',
+                    color: '#fff',
                 });
 
-                // Make DELETE request to backend
+                // Make API call to delete exam
                 const response = await authFetch(`/admin/exams/${examDetails.id}/`, {
-                    method: 'DELETE'
+                    method: "DELETE",
                 });
 
                 if (response.ok) {
-                    // Show success message
-                    await Swal.fire({
-                        title: 'Deleted!',
-                        text: 'The exam has been deleted successfully.',
-                        icon: 'success',
-                        background: "#181817",
-                        color: "#fff",
+                    Swal.fire({
+                        icon: "success",
+                        title: "Exam Deleted!",
+                        text: "The exam has been deleted successfully.",
+                        background: '#181817',
+                        color: '#fff',
                     });
-
-                                    // Go back to exam list
-                onBack();
-                // Force refresh the exam data to update the table
-                if (onRefresh) {
-                    console.log('Refreshing exam data after deletion...');
-                    onRefresh();
-                }
+                    // Navigate back to exam list
+                    onBack();
                 } else {
                     const errorData = await response.json();
-                    throw new Error(errorData.error || 'Failed to delete exam');
+                    Swal.fire({
+                        icon: "error",
+                        title: "Error",
+                        text: errorData.error || "Failed to delete exam.",
+                        background: '#181817',
+                        color: '#fff',
+                    });
                 }
-            } catch (error) {
-                console.error('Error deleting exam:', error);
-                
-                // Show error message
-                await Swal.fire({
-                    title: 'Error!',
-                    text: error.message || 'Failed to delete exam. Please try again.',
-                    icon: 'error',
-                    background: "#181817",
-                    color: "#fff",
-                });
             }
+        } catch (error) {
+            console.error("Error deleting exam:", error);
+            Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: error.message || "Network error occurred while deleting the exam.",
+                background: '#181817',
+                color: '#fff',
+            });
         }
     };
 
@@ -432,6 +461,12 @@ const ViewExam = ({ exam, onBack, onEditExam, onRefresh }) => {
             console.log("ManageExam - Exam details:", data);
             console.log("ManageExam - Students in exam data:", data.students);
             console.log("ManageExam - Students count:", data.students?.length || 0);
+            console.log("ManageExam - Exam completion status:", {
+                end_time: data.end_time,
+                is_result_declared: data.is_result_declared,
+                status: data.status,
+                isCompleted: isExamCompleted(data)
+            });
             setExamDetails(data);  // set detailed data here
         } catch (error) {
             console.error("Error fetching exam details:", error);
@@ -467,9 +502,11 @@ const ViewExam = ({ exam, onBack, onEditExam, onRefresh }) => {
                     <div className="viewexam-header">
                         <h2>Exam Section</h2>
                         <div className='viewexam-header-btn'>
-                            <button className='viewexam-del-btn' onClick={handleDeleteClick}>Delete</button>
-                            {shouldShowEditButton(exam.status) && (
-                                <button className="viewexam-edit-btn" onClick={handleEditClick}>Edit</button>
+                            {!isExamCompleted(examDetails) && (
+                                <>
+                                    <button className='viewexam-del-btn' onClick={handleDeleteExam}>Delete</button>
+                                    <button className="viewexam-edit-btn" onClick={handleEditClick}>Edit</button>
+                                </>
                             )}
                         </div>
                     </div>
@@ -523,7 +560,7 @@ const ViewExam = ({ exam, onBack, onEditExam, onRefresh }) => {
                         </div>
                     </div>
                 </div>
-                
+
                 {/* Students Section */}
                 <div className="viewexam-section">
                     <div className="viewexam-header">
@@ -532,20 +569,15 @@ const ViewExam = ({ exam, onBack, onEditExam, onRefresh }) => {
                     <div className="viewexam-body flex flex-col items-center justify-start">
                         <div className="viewexam-viwer">
                             <div className='viewexam-q'>
-                                <div className="viewexam-viwer-header flex justify-between">
-                                    <p className='text-xl text-bold text-white leading-loose'>Students</p>
+                                <div className="viewexam-viwer-header flex justify-between items-center">
+                                    <h2 className='text-xl'>Students</h2>
                                     <p>{examDetails?.students?.length || 0}</p>
                                 </div>
                                 <div className="viewexam-viwer-body flex justify-center">
                                     <div className="viewexams-container pb-2">
                                         {examDetails?.students && examDetails.students.length > 0 ? (
                                             examDetails.students.map((student, index) => (
-                                                <motion.div
-                                                    initial={{ opacity: 0, translateX: -10 }}
-                                                    animate={{ opacity: 1, translateX: 0 }}
-                                                    transition={{ delay: index * 0.05, duration: 0.3 }}
-                                                    key={student.id || index}
-                                                    className="question-block my-2">
+                                                <div key={student.id || index} className="question-block my-2">
                                                     <div className="flex justify-between items-center w-full text-xl py-2">
                                                         <p className='text-white'>
                                                             {index + 1}. {student.name || `${student.first_name} ${student.last_name}`}
@@ -554,7 +586,7 @@ const ViewExam = ({ exam, onBack, onEditExam, onRefresh }) => {
                                                             USN: {student.usn || student.slNo} | {student.email}
                                                         </p>
                                                     </div>
-                                                </motion.div>
+                                                </div>
                                             ))
                                         ) : (
                                             <div className="question-block my-2">

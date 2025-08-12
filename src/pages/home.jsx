@@ -32,12 +32,14 @@ const Home = () => {
     const [openAddUserModal, setOpenAddUserModal] = useState(false);
     const [createExamRequest, setCreateExamRequest] = useState([]);
     const [selectedCourse, setSelectedCourse] = useState(null);
-    
+
     // Edit exam flow states
     const [isEditingExam, setIsEditingExam] = useState(false);
     const [editExamData, setEditExamData] = useState(null);
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
-    
+
+    // Exam to view state
+    const [examToView, setExamToView] = useState(null);
+
     // Use cache consent hook
     const { cacheAllowed, showConsent, handleConsent } = useCacheConsent();
 
@@ -131,7 +133,7 @@ const Home = () => {
                 showConfirmButton: false,
                 timer: 1500,
             });
-            
+
             // Reset edit states and go back to manage exam
             setIsEditingExam(false);
             setEditExamData(null);
@@ -203,7 +205,10 @@ const Home = () => {
                             onViewexam={() => {
                                 setActiveComponent("viewexam");
                             }}
-                            onManageExam={() => {
+                            onManageExam={(exam) => {
+                                if (exam) {
+                                    setExamToView(exam);
+                                }
                                 setActiveComponent("manageExam");
                             }}
                             onSubscription={() => {
@@ -212,7 +217,11 @@ const Home = () => {
                             onManageStudents={() => {
                                 setActiveComponent("student");
                             }}
-                            cacheAllowed={effectiveCacheAllowed}
+                            cacheAllowed={cacheAllowed}
+                            onBackToDashboard={() => {
+                                setExamToView(null);
+                                setActiveComponent("dashboard");
+                            }}
                         />
                     )}
                     {activeComponent === "subcribe" && <Subcription />}
@@ -223,11 +232,12 @@ const Home = () => {
                         />
                     )}
                     {activeComponent === "manageExam" && (
-                        <ManageExam 
+                        <ManageExam
                             onCreateNewExam={() => setActiveComponent("newExam")}
                             onNext={() => setActiveComponent("viewexam")}
                             cacheAllowed={effectiveCacheAllowed}
                             onEditExam={handleEditExam}
+                            examToView={examToView}
                         />
                     )}
                     {activeComponent === "viewexam" && <ViewExam
@@ -261,8 +271,8 @@ const Home = () => {
                         />
                     )}
                     {activeComponent === "viewcourse" && (
-                        <ViewCourse 
-                            onBack={() => setActiveComponent("custom")} 
+                        <ViewCourse
+                            onBack={() => setActiveComponent("custom")}
                             selectedCourse={selectedCourse}
                         />
                     )}
