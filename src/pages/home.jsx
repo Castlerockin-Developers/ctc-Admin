@@ -14,7 +14,6 @@ import Subcription from "../component/Subcription";
 import Settings from "../component/Settings";
 import ViewResult from "../component/ViewResult";
 import PerticularResult from "../component/PerticularResult";
-import ViewExam from "../component/ViewExam";
 import NewMcq from "../component/NewMcq";
 import NewCoding from "../component/NewCoding";
 import { authFetch } from "../scripts/AuthProvider";
@@ -32,6 +31,7 @@ const Home = () => {
     const [openAddUserModal, setOpenAddUserModal] = useState(false);
     const [createExamRequest, setCreateExamRequest] = useState([]);
     const [selectedCourse, setSelectedCourse] = useState(null);
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
 
     // Edit exam flow states
     const [isEditingExam, setIsEditingExam] = useState(false);
@@ -50,7 +50,7 @@ const Home = () => {
     });
 
     // Temporary bypass for cache consent to ensure components load
-    const effectiveCacheAllowed = cacheAllowed !== false;
+    const effectiveCacheAllowed = true;
 
     // Authentication check
     useEffect(() => {
@@ -217,7 +217,7 @@ const Home = () => {
                             onManageStudents={() => {
                                 setActiveComponent("student");
                             }}
-                            cacheAllowed={cacheAllowed}
+                            cacheAllowed={effectiveCacheAllowed}
                             onBackToDashboard={() => {
                                 setExamToView(null);
                                 setActiveComponent("dashboard");

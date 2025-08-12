@@ -1,7 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { FaSearch, FaPlus, FaFilter } from "react-icons/fa";
-import filter from '../assets/filter.png';
-import line from '../assets/Line.png';
 import { motion } from "motion/react";
 import { authFetch } from "../scripts/AuthProvider";
 import Swal from "sweetalert2";
@@ -10,6 +8,7 @@ import TableSkeleton from "../loader/TableSkeleton";
 import { useCache } from "../hooks/useCache";
 import CacheStatusIndicator from "./CacheStatusIndicator";
 import "./CacheStatusIndicator.css";
+import './ViewExam.css'
 
 const ManageExam = ({ onCreateNewExam, onNext, cacheAllowed, onEditExam, examToView, onBackToDashboard }) => {
     const [activeButton, setActiveButton] = useState("all");

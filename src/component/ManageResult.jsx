@@ -67,7 +67,7 @@ const ManageResult = ({ onNext, cacheAllowed }) => {
   const fetchResultData = useCallback(async () => {
     console.log('fetchResultData: Starting API call...');
     try {
-      const response = await authFetch("/admin/results", { method: "GET" });
+      const response = await authFetch("/admin/results/", { method: "GET" });
       console.log('fetchResultData: Response status:', response.status);
       
       if (!response.ok) {

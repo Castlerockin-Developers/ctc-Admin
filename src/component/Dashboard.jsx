@@ -1,13 +1,11 @@
 import React, { useEffect, useState, useCallback } from "react";
 import closeicon from '../assets/close.png';
 import { AnimatePresence, motion } from "framer-motion";
-import EditExam from "./EditExam";
 import { authFetch } from "../scripts/AuthProvider";
 import DashboardLoader from "../loader/DashboardLoader";
 import { useCache } from "../hooks/useCache";
 import CacheStatusIndicator from "./CacheStatusIndicator";
 import "./CacheStatusIndicator.css";
-// import axios from 'axios'; // Uncomment and use axios for making HTTP requests when backend is ready
 
 const Dashboard = ({ onCreateExam, onAddStudent, onAddUser, onAddCredits, onManageExam, onSubscription, onManageStudents, cacheAllowed, onBackToDashboard }) => {
     const [showPopup, setShowPopup] = useState(false);
@@ -63,6 +61,7 @@ const Dashboard = ({ onCreateExam, onAddStudent, onAddUser, onAddCredits, onMana
 
     // Dashboard data fetch function
     const fetchDashboardData = useCallback(async () => {
+        console.log('Dashboard: fetchDashboardData -> calling /admin/home/');
         const response = await authFetch('/admin/home/', {
             method: 'GET',
         });
@@ -82,6 +81,19 @@ const Dashboard = ({ onCreateExam, onAddStudent, onAddUser, onAddCredits, onMana
             userData: responseData.logged_in_user
         };
     }, []);
+
+    // Temporary direct fetch to ensure a network request happens even if cache is disabled
+    useEffect(() => {
+        (async () => {
+            try {
+                console.log('Dashboard: direct fetch kick-off');
+                await fetchDashboardData();
+                console.log('Dashboard: direct fetch completed');
+            } catch (e) {
+                console.error('Dashboard: direct fetch failed', e);
+            }
+        })();
+    }, [fetchDashboardData]);
 
     // Cache callbacks
     const onCacheHit = useCallback((data) => {
@@ -107,7 +119,7 @@ const Dashboard = ({ onCreateExam, onAddStudent, onAddUser, onAddCredits, onMana
         invalidateCache,
         clearAllCache
     } = useCache('dashboard_data', fetchDashboardData, {
-        enabled: cacheAllowed,
+        enabled: cacheAllowed !== false,
         expiryMs: 3 * 60 * 1000, // 3 minutes
         autoRefresh: true,
         refreshInterval: 60 * 1000, // Check every minute
