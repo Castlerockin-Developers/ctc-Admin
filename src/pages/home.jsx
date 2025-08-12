@@ -35,6 +35,9 @@ const Home = () => {
     const [isEditingExam, setIsEditingExam] = useState(false);
     const [editExamData, setEditExamData] = useState(null);
     
+    // Exam to view state
+    const [examToView, setExamToView] = useState(null);
+    
     // Use cache consent hook
     const { cacheAllowed, showConsent, handleConsent } = useCacheConsent();
 
@@ -167,7 +170,10 @@ const Home = () => {
                             onViewexam={() => {
                                 setActiveComponent("viewexam");
                             }}
-                            onManageExam={() => {
+                            onManageExam={(exam) => {
+                                if (exam) {
+                                    setExamToView(exam);
+                                }
                                 setActiveComponent("manageExam");
                             }}
                             onSubscription={() => {
@@ -177,6 +183,10 @@ const Home = () => {
                                 setActiveComponent("student");
                             }}
                             cacheAllowed={cacheAllowed}
+                            onBackToDashboard={() => {
+                                setExamToView(null);
+                                setActiveComponent("dashboard");
+                            }}
                         />
                     )}
                     {activeComponent === "subcribe" && <Subcription />}
@@ -192,6 +202,7 @@ const Home = () => {
                             onNext={() => setActiveComponent("viewexam")}
                             cacheAllowed={cacheAllowed}
                             onEditExam={handleEditExam}
+                            examToView={examToView}
                         />
                     )}
                     {activeComponent === "viewexam" && <ViewExam

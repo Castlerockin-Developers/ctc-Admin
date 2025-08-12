@@ -11,10 +11,10 @@ import { useCache } from "../hooks/useCache";
 import CacheStatusIndicator from "./CacheStatusIndicator";
 import "./CacheStatusIndicator.css";
 
-const ManageExam = ({ onCreateNewExam, onNext, cacheAllowed, onEditExam }) => {
+const ManageExam = ({ onCreateNewExam, onNext, cacheAllowed, onEditExam, examToView, onBackToDashboard }) => {
     const [activeButton, setActiveButton] = useState("all");
     const [searchQuery, setSearchQuery] = useState("");
-    const [selectedExam, setSelectedExam] = useState(null);
+    const [selectedExam, setSelectedExam] = useState(examToView || null);
     const [showFilter, setShowFilter] = useState(false);
     const filterRef = useRef(null);
     const [currentPage, setCurrentPage] = useState(1);
@@ -40,6 +40,13 @@ const ManageExam = ({ onCreateNewExam, onNext, cacheAllowed, onEditExam }) => {
         window.addEventListener('resize', onResize);
         return () => window.removeEventListener('resize', onResize);
     }, []);
+
+    // Update selectedExam when examToView changes
+    useEffect(() => {
+        if (examToView) {
+            setSelectedExam(examToView);
+        }
+    }, [examToView]);
 
 
     // Close filter dropdown on outside click
@@ -153,6 +160,9 @@ const ManageExam = ({ onCreateNewExam, onNext, cacheAllowed, onEditExam }) => {
 
     const handleBack = () => {
         setSelectedExam(null);
+        if (onBackToDashboard) {
+            onBackToDashboard();
+        }
         forceRefresh(); // Re-fetch exams to ensure updated data after potential edit
     };
 
@@ -303,15 +313,97 @@ const ViewExam = ({ exam, onBack, onEditExam }) => {
 
     // Function to check if exam is completed
     const isExamCompleted = (examData) => {
-        if (!examData || !examData.end_time) return false;
-        const endTime = new Date(examData.end_time);
-        const currentTime = new Date();
-        return endTime < currentTime;
+        if (!examData) return false;
+        
+        // Check if exam has end_time
+        if (examData.end_time) {
+            const endTime = new Date(examData.end_time);
+            const currentTime = new Date();
+            return endTime < currentTime;
+        }
+        
+        // Check if exam has is_result_declared field
+        if (examData.is_result_declared !== undefined) {
+            return examData.is_result_declared;
+        }
+        
+        // Check if exam has status field
+        if (examData.status) {
+            return examData.status === 'completed' || examData.status === 'finished';
+        }
+        
+        return false;
     };
 
     const handleEditClick = () => {
         if (onEditExam && examDetails) {
             onEditExam(examDetails);
+        }
+    };
+
+    const handleDeleteExam = async () => {
+        try {
+            // Show confirmation dialog
+            const result = await Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, delete it!',
+                background: '#181817',
+                color: '#fff',
+            });
+
+            if (result.isConfirmed) {
+                // Show loading state
+                Swal.fire({
+                    title: 'Deleting...',
+                    text: 'Please wait while we delete the exam.',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    },
+                    background: '#181817',
+                    color: '#fff',
+                });
+
+                // Make API call to delete exam
+                const response = await authFetch(`/admin/exams/${examDetails.id}/`, {
+                    method: "DELETE",
+                });
+
+                if (response.ok) {
+                    Swal.fire({
+                        icon: "success",
+                        title: "Exam Deleted!",
+                        text: "The exam has been deleted successfully.",
+                        background: '#181817',
+                        color: '#fff',
+                    });
+                    // Navigate back to exam list
+                    onBack();
+                } else {
+                    const errorData = await response.json();
+                    Swal.fire({
+                        icon: "error",
+                        title: "Error",
+                        text: errorData.error || "Failed to delete exam.",
+                        background: '#181817',
+                        color: '#fff',
+                    });
+                }
+            }
+        } catch (error) {
+            console.error("Error deleting exam:", error);
+            Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: error.message || "Network error occurred while deleting the exam.",
+                background: '#181817',
+                color: '#fff',
+            });
         }
     };
 
@@ -325,6 +417,12 @@ const ViewExam = ({ exam, onBack, onEditExam }) => {
             console.log("ManageExam - Exam details:", data);
             console.log("ManageExam - Students in exam data:", data.students);
             console.log("ManageExam - Students count:", data.students?.length || 0);
+            console.log("ManageExam - Exam completion status:", {
+                end_time: data.end_time,
+                is_result_declared: data.is_result_declared,
+                status: data.status,
+                isCompleted: isExamCompleted(data)
+            });
             setExamDetails(data);  // set detailed data here
         } catch (error) {
             console.error("Error fetching exam details:", error);
@@ -360,9 +458,11 @@ const ViewExam = ({ exam, onBack, onEditExam }) => {
                     <div className="viewexam-header">
                         <h2>Exam Section</h2>
                         <div className='viewexam-header-btn'>
-                            <button className='viewexam-del-btn'>Delete</button>
-                            {!isExamCompleted(examDetails) && (
+                        {!isExamCompleted(examDetails) && (
+                            <>
+                                <button className='viewexam-del-btn' onClick={handleDeleteExam}>Delete</button>
                                 <button className="viewexam-edit-btn" onClick={handleEditClick}>Edit</button>
+                            </>
                             )}
                         </div>
                     </div>
@@ -425,20 +525,15 @@ const ViewExam = ({ exam, onBack, onEditExam }) => {
                     <div className="viewexam-body flex flex-col items-center justify-start">
                         <div className="viewexam-viwer">
                             <div className='viewexam-q'>
-                                <div className="viewexam-viwer-header flex justify-between">
-                                    <p className='text-xl text-bold text-white leading-loose'>Students</p>
+                                <div className="viewexam-viwer-header flex justify-between items-center">
+                                    <h2 className='text-xl'>Students</h2>
                                     <p>{examDetails?.students?.length || 0}</p>
                                 </div>
                                 <div className="viewexam-viwer-body flex justify-center">
                                     <div className="viewexams-container pb-2">
                                         {examDetails?.students && examDetails.students.length > 0 ? (
                                             examDetails.students.map((student, index) => (
-                                                <motion.div
-                                                    initial={{ opacity: 0, translateX: -10 }}
-                                                    animate={{ opacity: 1, translateX: 0 }}
-                                                    transition={{ delay: index * 0.05, duration: 0.3 }}
-                                                    key={student.id || index}
-                                                    className="question-block my-2">
+                                                <div key={student.id || index} className="question-block my-2">
                                                     <div className="flex justify-between items-center w-full text-xl py-2">
                                                         <p className='text-white'>
                                                             {index + 1}. {student.name || `${student.first_name} ${student.last_name}`}
@@ -447,7 +542,7 @@ const ViewExam = ({ exam, onBack, onEditExam }) => {
                                                             USN: {student.usn || student.slNo} | {student.email}
                                                         </p>
                                                     </div>
-                                                </motion.div>
+                                                </div>
                                             ))
                                         ) : (
                                             <div className="question-block my-2">

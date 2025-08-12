@@ -4,7 +4,6 @@
     height: 87vh;
     transition: width 0.3s ease-in-out, margin-left 0.3s ease-in-out;
     padding: 1.2rem;
-    overflow-y: hidden;
 }
 
 .viewexam-box {
@@ -29,6 +28,7 @@
 
 .viewexam-section {
     width: 100%;
+    margin: 20px 0px;
 }
 
 .viewexam-header {
@@ -92,6 +92,7 @@ button.viewexam-edit-btn:hover {
     border-bottom-right-radius: 5px;
     border-bottom-left-radius: 5px;
     overflow-y: auto;
+    padding-bottom: 20px;
 }
 
 .viewexam-viwer {
