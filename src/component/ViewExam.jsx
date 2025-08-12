@@ -6,12 +6,28 @@ import { authFetch } from '../scripts/AuthProvider'
 const ViewExam = ({ exam, onBack }) => {
     const [examDetails, setExamDetails] = useState(null);  // <-- new state for detailed exam data
 
-    // Function to check if exam is completed
-    const isExamCompleted = (examData) => {
-        if (!examData || !examData.end_time) return false;
+
+    // Function to determine exam status
+    const getExamStatus = (examData) => {
+        if (!examData) return 'unknown';
+        
+        const now = new Date();
+        const startTime = new Date(examData.start_time);
         const endTime = new Date(examData.end_time);
-        const currentTime = new Date();
-        return endTime < currentTime;
+        
+        if (startTime > now) {
+            return 'upcoming';
+        } else if (endTime > now) {
+            return 'active';
+        } else {
+            return 'completed';
+        }
+    };
+
+    // Function to check if edit button should be shown
+    const shouldShowEditButton = (examData) => {
+        const status = getExamStatus(examData);
+        return status === 'upcoming' || status === 'active';
     };
 
     const handleViewExam = async (exam) => {
@@ -58,7 +74,8 @@ const ViewExam = ({ exam, onBack }) => {
                         <h2>Exam Section</h2>
                         <div className='viewexam-header-btn'>
                             <button className='viewexam-del-btn'>Delete</button>
-                            {!isExamCompleted(examDetails) && (
+                            {shouldShowEditButton(examDetails) && (
+
                                 <button className='viewexam-edit-btn'>Edit</button>
                             )}
                         </div>

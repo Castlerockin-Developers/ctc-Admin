@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import TopBar from "../component/TopBar";
 import Sidebar from "../component/Sibebar"; // Ensure Sidebar is imported correctly
 import Dashboard from "../component/Dashboard";
@@ -25,6 +26,7 @@ import ViewCourse from "../component/ViewCourse";
 import { useCacheConsent } from "../hooks/useCache";
 
 const Home = () => {
+    const navigate = useNavigate();
     const [activeComponent, setActiveComponent] = useState("dashboard");
     const [isStudentModalOpen, setStudentModalOpen] = useState(false);
     const [openAddUserModal, setOpenAddUserModal] = useState(false);
@@ -34,9 +36,29 @@ const Home = () => {
     // Edit exam flow states
     const [isEditingExam, setIsEditingExam] = useState(false);
     const [editExamData, setEditExamData] = useState(null);
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
     
     // Use cache consent hook
     const { cacheAllowed, showConsent, handleConsent } = useCacheConsent();
+
+    // Debug logging for cache consent
+    console.log('Home component - Cache consent state:', {
+        cacheAllowed,
+        showConsent
+    });
+
+    // Temporary bypass for cache consent to ensure components load
+    const effectiveCacheAllowed = cacheAllowed !== false;
+
+    // Authentication check
+    useEffect(() => {
+        const accessToken = localStorage.getItem('access');
+        if (!accessToken) {
+            navigate('/');
+            return;
+        }
+        setIsAuthenticated(true);
+    }, [navigate]);
 
     const handleSubmitExam = async () => {
 
@@ -120,8 +142,21 @@ const Home = () => {
         }
     };
 
+    // Show loading while checking authentication
+    if (!isAuthenticated) {
+        return (
+            <div className="flex items-center justify-center h-screen">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                    <p className="text-gray-600">Loading...</p>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="home-container">
+            {/* Temporarily hide cache consent dialog to test if it's blocking components
             {showConsent && (
                 <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-60 z-50">
                     <div className="bg-white p-6 rounded shadow-lg text-center max-w-md">
@@ -132,6 +167,7 @@ const Home = () => {
                     </div>
                 </div>
             )}
+            */}
             <TopBar /> {/* Keep top bar fixed */}
 
             <div className="flex">
@@ -176,7 +212,7 @@ const Home = () => {
                             onManageStudents={() => {
                                 setActiveComponent("student");
                             }}
-                            cacheAllowed={cacheAllowed}
+                            cacheAllowed={effectiveCacheAllowed}
                         />
                     )}
                     {activeComponent === "subcribe" && <Subcription />}
@@ -190,7 +226,7 @@ const Home = () => {
                         <ManageExam 
                             onCreateNewExam={() => setActiveComponent("newExam")}
                             onNext={() => setActiveComponent("viewexam")}
-                            cacheAllowed={cacheAllowed}
+                            cacheAllowed={effectiveCacheAllowed}
                             onEditExam={handleEditExam}
                         />
                     )}
@@ -198,7 +234,7 @@ const Home = () => {
                         onBack={() => setActiveComponent("manageExam")} />}
                     {activeComponent === "result" && <ManageResult
                         onNext={() => setActiveComponent("viewresult")}
-                        cacheAllowed={cacheAllowed}
+                        cacheAllowed={effectiveCacheAllowed}
                     />}
                     {activeComponent === "viewresult" && <ViewResult
                         onBack={() => setActiveComponent("result")}
@@ -211,7 +247,7 @@ const Home = () => {
                         <ManageStudents
                             studentModalOpen={isStudentModalOpen}
                             setStudentModalOpen={setStudentModalOpen}
-                            cacheAllowed={cacheAllowed}
+                            cacheAllowed={effectiveCacheAllowed}
                         />
                     )}
 

@@ -114,14 +114,32 @@ const ManageExam = ({ onCreateNewExam, onNext, cacheAllowed, onEditExam }) => {
     });
 
     // Process exams data for display
-    const tableData = examsData ? examsData.map((exam) => ({
-        id: exam.id,
-        name: exam.name,
-        startTime: new Date(exam.start_time).toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short', hour12: true }),
-        endTime: new Date(exam.end_time).toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short', hour12: true }),
-        attemptsAllowed: exam.attempts_allowed,
-        status: new Date(exam.start_time) > new Date() ? "Upcoming" : exam.is_result_declared ? "Results Declared" : new Date(exam.end_time) > new Date() ? "Ongoing" : "Completed",
-    })) : [];
+    const tableData = examsData ? examsData.map((exam) => {
+        // Parse the datetime strings from backend (they are in ISO format)
+        const startTime = new Date(exam.start_time);
+        const endTime = new Date(exam.end_time);
+        const now = new Date();
+        
+        let status;
+        if (startTime > now) {
+            status = "Upcoming";
+        } else if (endTime > now && startTime <= now) {
+            status = "Ongoing";
+        } else if (exam.is_result_declared) {
+            status = "Results Declared";
+        } else {
+            status = "Completed";
+        }
+        
+        return {
+            id: exam.id,
+            name: exam.name,
+            startTime: startTime.toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short', hour12: true }),
+            endTime: endTime.toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short', hour12: true }),
+            attemptsAllowed: exam.attempts_allowed,
+            status: status,
+        };
+    }) : [];
 
     const filteredTableData = tableData
         .filter(row => {
@@ -139,7 +157,29 @@ const ManageExam = ({ onCreateNewExam, onNext, cacheAllowed, onEditExam }) => {
             row.endTime.toLowerCase().includes(searchQuery.toLowerCase()) ||
             row.attemptsAllowed.toString().includes(searchQuery) ||
             row.status.toLowerCase().includes(searchQuery.toLowerCase())
-        );
+        )
+        .sort((a, b) => {
+            // Define status priority: Active (Ongoing) > Upcoming > Completed > Results Declared
+            const statusPriority = {
+                "Ongoing": 1,
+                "Upcoming": 2,
+                "Completed": 3,
+                "Results Declared": 4
+            };
+            
+            const priorityA = statusPriority[a.status] || 5;
+            const priorityB = statusPriority[b.status] || 5;
+            
+            // First sort by status priority
+            if (priorityA !== priorityB) {
+                return priorityA - priorityB;
+            }
+            
+            // If same status, sort by start time (earliest first)
+            const startTimeA = new Date(a.startTime);
+            const startTimeB = new Date(b.startTime);
+            return startTimeA - startTimeB;
+        });
 
     const totalPages = Math.ceil(filteredTableData.length / itemsPerPage);
     const indexOfLast = currentPage * itemsPerPage;
@@ -147,7 +187,11 @@ const ManageExam = ({ onCreateNewExam, onNext, cacheAllowed, onEditExam }) => {
     const currentTableData = filteredTableData.slice(indexOfFirst, indexOfLast);
 
     const handleViewExam = (exam) => {
-        setSelectedExam(exam);
+        // Find the exam data with status information
+        const examWithStatus = tableData.find(e => e.id === exam.id);
+        const examWithStatusData = { ...exam, status: examWithStatus?.status };
+        
+        setSelectedExam(examWithStatusData);
     };
 
     const handleBack = () => {
@@ -167,7 +211,7 @@ const ManageExam = ({ onCreateNewExam, onNext, cacheAllowed, onEditExam }) => {
             animate="animate"
             className="lg:w-3xl justify-center flex flex-wrap exam-container">
             {selectedExam ? (
-                <ViewExam exam={selectedExam} onBack={handleBack} onEditExam={onEditExam} />
+                <ViewExam exam={selectedExam} onBack={handleBack} onEditExam={onEditExam} onRefresh={forceRefresh} />
             ) : (
                 <div className="exam-greeting">
                     <div className="flex justify-between items-center mb-4">
@@ -293,20 +337,88 @@ const ManageExam = ({ onCreateNewExam, onNext, cacheAllowed, onEditExam }) => {
 };
 
 
-const ViewExam = ({ exam, onBack, onEditExam }) => {
+const ViewExam = ({ exam, onBack, onEditExam, onRefresh }) => {
     const [examDetails, setExamDetails] = useState(null);  // <-- new state for detailed exam data
 
-    // Function to check if exam is completed
-    const isExamCompleted = (examData) => {
-        if (!examData || !examData.end_time) return false;
-        const endTime = new Date(examData.end_time);
-        const currentTime = new Date();
-        return endTime < currentTime;
+    // Function to check if edit button should be shown based on exam status
+    const shouldShowEditButton = (examStatus) => {
+        const canEdit = examStatus === 'Upcoming' || examStatus === 'Ongoing';
+        return canEdit;
     };
 
     const handleEditClick = () => {
         if (onEditExam && examDetails) {
             onEditExam(examDetails);
+        }
+    };
+
+    const handleDeleteClick = async () => {
+        // Show confirmation dialog
+        const result = await Swal.fire({
+            title: 'Are you sure?',
+            text: `Do you want to delete the exam "${examDetails.name}"? This action cannot be undone.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Yes, delete it!',
+            cancelButtonText: 'Cancel',
+            background: "#181817",
+            color: "#fff",
+        });
+
+        if (result.isConfirmed) {
+            try {
+                // Show loading state
+                Swal.fire({
+                    title: 'Deleting exam...',
+                    text: 'Please wait while we delete the exam.',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    },
+                    background: "#181817",
+                    color: "#fff",
+                });
+
+                // Make DELETE request to backend
+                const response = await authFetch(`/admin/exams/${examDetails.id}/`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    // Show success message
+                    await Swal.fire({
+                        title: 'Deleted!',
+                        text: 'The exam has been deleted successfully.',
+                        icon: 'success',
+                        background: "#181817",
+                        color: "#fff",
+                    });
+
+                                    // Go back to exam list
+                onBack();
+                // Force refresh the exam data to update the table
+                if (onRefresh) {
+                    console.log('Refreshing exam data after deletion...');
+                    onRefresh();
+                }
+                } else {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to delete exam');
+                }
+            } catch (error) {
+                console.error('Error deleting exam:', error);
+                
+                // Show error message
+                await Swal.fire({
+                    title: 'Error!',
+                    text: error.message || 'Failed to delete exam. Please try again.',
+                    icon: 'error',
+                    background: "#181817",
+                    color: "#fff",
+                });
+            }
         }
     };
 
@@ -355,8 +467,8 @@ const ViewExam = ({ exam, onBack, onEditExam }) => {
                     <div className="viewexam-header">
                         <h2>Exam Section</h2>
                         <div className='viewexam-header-btn'>
-                            <button className='viewexam-del-btn'>Delete</button>
-                            {!isExamCompleted(examDetails) && (
+                            <button className='viewexam-del-btn' onClick={handleDeleteClick}>Delete</button>
+                            {shouldShowEditButton(exam.status) && (
                                 <button className="viewexam-edit-btn" onClick={handleEditClick}>Edit</button>
                             )}
                         </div>
