@@ -261,9 +261,13 @@ const Home = () => {
                         />
                     )}
                     {activeComponent === "viewcourse" && (
-                        <ViewCourse />
+                        <ViewCourse 
+                            onBack={() => setActiveComponent("custom")} 
+                            selectedCourse={selectedCourse}
+                        />
                     )}
 
+                    {/* Custom Learning Creation Flow */}
                     {activeComponent === "partone" && (
                         <NewCoursefirst
                             onNextc={() => setActiveComponent("parttwo")}

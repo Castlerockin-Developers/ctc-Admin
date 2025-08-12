@@ -6,6 +6,7 @@ import { authFetch } from '../scripts/AuthProvider'
 const ViewExam = ({ exam, onBack }) => {
     const [examDetails, setExamDetails] = useState(null);  // <-- new state for detailed exam data
 
+
     // Function to determine exam status
     const getExamStatus = (examData) => {
         if (!examData) return 'unknown';
@@ -74,6 +75,7 @@ const ViewExam = ({ exam, onBack }) => {
                         <div className='viewexam-header-btn'>
                             <button className='viewexam-del-btn'>Delete</button>
                             {shouldShowEditButton(examDetails) && (
+
                                 <button className='viewexam-edit-btn'>Edit</button>
                             )}
                         </div>

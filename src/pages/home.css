@@ -1949,6 +1949,7 @@ body {
         cursor: pointer;       
         position: relative;
         top: 1.5rem;
+
   /* optionally: accent-color: #4F46E5; to match your theme */
 }
 .mid-display2{
@@ -1970,6 +1971,7 @@ body {
 .create-btn {
 min-width: 100%;
 }
+
 
 }
 

@@ -1,7 +1,9 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import './CustomLearning.css';
 import { motion } from "framer-motion";
 import line from '../assets/Line.png'
+import { authFetch } from '../scripts/AuthProvider';
+import Swal from 'sweetalert2';
 
 const ChapterAdding = ({ onBackcc, onNextcc }) => {
     const fileInputRef = useRef(null);
@@ -16,6 +18,19 @@ const ChapterAdding = ({ onBackcc, onNextcc }) => {
 
     const [chapterList, setChapterList] = useState([]);
     const [expandedIndex, setExpandedIndex] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [currentModuleId, setCurrentModuleId] = useState(null);
+    const [currentModuleName, setCurrentModuleName] = useState('');
+
+    useEffect(() => {
+        // Get module ID from localStorage (set by NewCoursefirst)
+        const moduleId = localStorage.getItem('currentModuleId');
+        const moduleName = localStorage.getItem('currentModuleName');
+        if (moduleId) {
+            setCurrentModuleId(moduleId);
+            setCurrentModuleName(moduleName || 'Unknown Module');
+        }
+    }, []);
 
     const handleFileChange = (event) => {
         const selectedFiles = Array.from(event.target.files);
@@ -34,30 +49,95 @@ const ChapterAdding = ({ onBackcc, onNextcc }) => {
         setChapterInput({ ...chapterInput, [name]: value });
     };
 
-    const handleSaveChapter = () => {
-        const { chapterName, description, priority, question, expectedOutput } = chapterInput;
+    const handleSaveChapter = async () => {
+        const { chapterName, description, question, expectedOutput } = chapterInput;
 
-        if (chapterName && description && priority && question && expectedOutput) {
-            const prioritizedChapter = {
-                chapterName,
-                description,
+        if (!chapterName || !description || !question || !expectedOutput) {
+            Swal.fire({
+                title: 'Error!',
+                text: 'Please fill out all fields',
+                icon: 'error',
+                background: "#181817",
+                color: "#fff"
+            });
+            return;
+        }
+
+        if (!currentModuleId) {
+            Swal.fire({
+                title: 'Error!',
+                text: 'No module selected. Please go back and create a module first.',
+                icon: 'error',
+                background: "#181817",
+                color: "#fff"
+            });
+            return;
+        }
+
+        try {
+            setLoading(true);
+            const chapterData = {
+                module: parseInt(currentModuleId),
+                name: chapterName,
+                desc: description,
                 priority: chapterList.length + 1,
-                question,
-                expectedOutput
+                question: question,
+                expected_output: expectedOutput
             };
 
-            setChapterList([...chapterList, prioritizedChapter]);
-
-            // Clear the input fields after save
-            setChapterInput({
-                chapterName: '',
-                description: '',
-                priority: '',
-                question: '',
-                expectedOutput: ''
+            const response = await authFetch('/learning/chapters/', {
+                method: 'POST',
+                body: JSON.stringify(chapterData),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
             });
-        } else {
-            alert('Please fill out all fields');
+
+            if (response.ok) {
+                const result = await response.json();
+                
+                const newChapter = {
+                    id: result.chapter_id,
+                    chapterName,
+                    description,
+                    priority: chapterList.length + 1,
+                    question,
+                    expectedOutput
+                };
+
+                setChapterList([...chapterList, newChapter]);
+
+                // Clear the input fields after save
+                setChapterInput({
+                    chapterName: '',
+                    description: '',
+                    priority: '',
+                    question: '',
+                    expectedOutput: ''
+                });
+
+                Swal.fire({
+                    title: 'Success!',
+                    text: 'Chapter added successfully!',
+                    icon: 'success',
+                    background: "#181817",
+                    color: "#fff"
+                });
+            } else {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to create chapter');
+            }
+        } catch (error) {
+            console.error('Error creating chapter:', error);
+            Swal.fire({
+                title: 'Error!',
+                text: error.message || 'Failed to create chapter. Please try again.',
+                icon: 'error',
+                background: "#181817",
+                color: "#fff"
+            });
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -70,10 +150,40 @@ const ChapterAdding = ({ onBackcc, onNextcc }) => {
         setExpandedIndex(index === expandedIndex ? null : index);
     };
 
+    // Save all chapters and proceed to next step
+    const handleFinishAndNext = async () => {
+        if (chapterList.length === 0) {
+            Swal.fire({
+                title: 'Warning!',
+                text: 'Please add at least one chapter before proceeding.',
+                icon: 'warning',
+                background: "#181817",
+                color: "#fff"
+            });
+            return;
+        }
+
+        Swal.fire({
+            title: 'Success!',
+            text: `Module "${currentModuleName}" created with ${chapterList.length} chapters!`,
+            icon: 'success',
+            background: "#181817",
+            color: "#fff"
+        }).then(() => {
+            // Don't clear localStorage here - CourseStudents component needs it
+            onNextcc();
+        });
+    };
+
     return (
         <div className='Custom-container'>
             <div className='new-c-top'>
                 <h1>Add Chapters</h1>
+                {currentModuleName && (
+                    <p style={{color: '#888', marginTop: '8px'}}>
+                        Adding chapters to: <strong style={{color: '#fff'}}>{currentModuleName}</strong>
+                    </p>
+                )}
                 <img src={line} alt="line" className='w-full h-0.5' />
             </div>
             <div className='add-import'>
@@ -181,8 +291,12 @@ const ChapterAdding = ({ onBackcc, onNextcc }) => {
                             ></textarea>
                         </div>
 
-                        <button onClick={handleSaveChapter} className="save-btn">
-                            Save Chapter
+                        <button 
+                            onClick={handleSaveChapter} 
+                            className="save-btn"
+                            disabled={loading}
+                        >
+                            {loading ? 'Saving...' : 'Save Chapter'}
                         </button>
                     </div>
 
@@ -218,7 +332,12 @@ const ChapterAdding = ({ onBackcc, onNextcc }) => {
                     <div className='flex items-center gap-8 bottom-course'>
                         <button className='back-btn-create' onClick={onBackcc}>Back</button>
                         <p>2/3</p>
-                        <button className='next-btn' onClick={onNextcc}>Next</button>
+                        <button 
+                            className='next-btn' 
+                            onClick={handleFinishAndNext}
+                        >
+                            Finish & Next
+                        </button>
                     </div>
                 </div>
             </div>

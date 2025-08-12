@@ -1,12 +1,31 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import './CustomLearning.css';
 import { motion } from "framer-motion";
 import line from '../assets/Line.png'
+import { authFetch } from '../scripts/AuthProvider';
+import Swal from 'sweetalert2';
 
 const NewCoursefirst = ({ onBackc, onNextc }) => {
     const fileInputRef = useRef(null);
     // State to store uploaded image files (you may limit to one image or multiple)
     const [files, setFiles] = useState([]);
+    const [formData, setFormData] = useState({
+        name: '',
+        faculty: '',
+        description: ''
+    });
+    const [loading, setLoading] = useState(false);
+
+    // No need to load authors - using logged in user
+
+    // Handle form input changes
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
 
     // Handle file selection
     const handleFileChange = (event) => {
@@ -20,6 +39,117 @@ const NewCoursefirst = ({ onBackc, onNextc }) => {
             fileInputRef.current.click();
         }
     };
+
+    // Create module via API
+    const createModule = async () => {
+        if (!formData.name || !formData.description) {
+            Swal.fire({
+                title: 'Error!',
+                text: 'Please fill all required fields.',
+                icon: 'error',
+                background: "#181817",
+                color: "#fff"
+            });
+            return false;
+        }
+
+        if (files.length === 0) {
+            Swal.fire({
+                title: 'Error!',
+                text: 'Please upload an image for the module.',
+                icon: 'error',
+                background: "#181817",
+                color: "#fff"
+            });
+            return false;
+        }
+
+        try {
+            setLoading(true);
+            const moduleData = new FormData();
+            moduleData.append('name', formData.name);
+            moduleData.append('desc', formData.description);
+            moduleData.append('image', files[0]);
+
+            // For FormData uploads, we need to handle headers differently
+            const accessToken = localStorage.getItem('access');
+            let response = await fetch('http://localhost:8000/api/learning/custom-modules/', {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + accessToken,
+                    // Don't set Content-Type - let browser set it automatically for FormData
+                },
+                body: moduleData
+            });
+
+            // Handle token refresh if needed
+            if (response.status === 401) {
+                const refreshToken = localStorage.getItem('refresh');
+                const refreshResponse = await fetch('http://localhost:8000/api/auth/token/refresh/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ refresh: refreshToken })
+                });
+
+                if (refreshResponse.ok) {
+                    const data = await refreshResponse.json();
+                    localStorage.setItem('access', data.access);
+                    
+                    // Retry the original request
+                    response = await fetch('http://localhost:8000/api/learning/custom-modules/', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': 'Bearer ' + data.access,
+                        },
+                        body: moduleData
+                    });
+                }
+            }
+
+            if (response.ok) {
+                const result = await response.json();
+                localStorage.setItem('currentModuleId', result.module_id);
+                localStorage.setItem('currentModuleName', formData.name);
+                
+                Swal.fire({
+                    title: 'Success!',
+                    text: 'Module created successfully!',
+                    icon: 'success',
+                    background: "#181817",
+                    color: "#fff"
+                });
+                
+                return true;
+            } else {
+                const errorText = await response.text();
+                console.error('Response status:', response.status);
+                console.error('Response text:', errorText);
+                throw new Error(errorText || 'Failed to create module');
+            }
+        } catch (error) {
+            console.error('Error creating module:', error);
+            Swal.fire({
+                title: 'Error!',
+                text: error.message || 'Failed to create module. Please try again.',
+                icon: 'error',
+                background: "#181817",
+                color: "#fff"
+            });
+            return false;
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Handle next button click
+    const handleNext = async () => {
+        const success = await createModule();
+        if (success) {
+            onNextc();
+        }
+    };
     return (
         <div className='Custom-container'>
             <div className='new-c-top'>
@@ -28,28 +158,43 @@ const NewCoursefirst = ({ onBackc, onNextc }) => {
             </div>
             <div className='c-input-containers'>
                 <div className='create-course'>
-                    <h4>Module Name:</h4>
+                    <h4>Module Name: <span style={{color: 'red'}}>*</span></h4>
                     <input
                         type="text"
-                        placeholder="Search students..."
+                        name="name"
+                        value={formData.name}
+                        onChange={handleInputChange}
+                        placeholder="Enter module name..."
                         className="w-full sm:w-auto"
+                        required
                     />
                 </div>
                 <div className='create-course'>
                     <h4>Faculty Name:</h4>
                     <input
                         type="text"
-                        placeholder="Search students..."
+                        name="faculty"
+                        value={formData.faculty}
+                        onChange={handleInputChange}
+                        placeholder="Enter faculty name (optional)..."
                         className="w-full sm:w-auto"
                     />
                 </div>
                 <img src={line} alt="line" className='w-full h-0.5' />
                 <div className='create-course'>
-                    <h4>Module Description:</h4>
-                    <textarea name="description" id="description" placeholder='Enter Description' cols={55} rows={5}></textarea>
+                    <h4>Module Description: <span style={{color: 'red'}}>*</span></h4>
+                    <textarea 
+                        name="description" 
+                        value={formData.description}
+                        onChange={handleInputChange}
+                        placeholder='Enter module description...' 
+                        cols={55} 
+                        rows={5}
+                        required
+                    ></textarea>
                 </div>
                 <div className='create-course'>
-                    <h4>Upload Image:</h4>
+                    <h4>Upload Image: <span style={{color: 'red'}}>*</span></h4>
                     <div
                         style={{
                             color: files.length ? '#fff' : '#b7aacd',
@@ -67,7 +212,6 @@ const NewCoursefirst = ({ onBackc, onNextc }) => {
                         ref={fileInputRef}
                         type="file"
                         accept="image/*"
-                        multiple
                         style={{ display: 'none' }}
                         onChange={handleFileChange}
                     />
@@ -87,7 +231,13 @@ const NewCoursefirst = ({ onBackc, onNextc }) => {
                     <div className='flex items-center gap-8 bottom-course'>
                         <button className='back-btn-create' onClick={onBackc}>Back</button>
                         <p>1/3</p>
-                        <button className='next-btn' onClick={onNextc}>Next</button>
+                        <button 
+                            className='next-btn' 
+                            onClick={handleNext}
+                            disabled={loading}
+                        >
+                            {loading ? 'Creating...' : 'Next'}
+                        </button>
                     </div>
                 </div>
             </div>
