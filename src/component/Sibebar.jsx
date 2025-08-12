@@ -93,6 +93,7 @@ const Sidebar = ({ activeComponent, setActiveComponent }) => {
                     title: 'Logged Out!',
                     text: 'You have been successfully logged out.',
                     icon: 'success',
+        iconColor: "#A294F9", // Set the icon color to purple
                     background: '#181817', // Apply the same dark background
                     color: '#FFFFFF'       // Apply white text color
                 }

@@ -168,6 +168,7 @@ const CourseStudents = ({ onBackccc, onNextccc }) => {
           title: 'Success!',
           text: `Module "${currentModuleName}" assigned to ${addedStudents.length} students successfully!`,
           icon: 'success',
+        iconColor: "#A294F9", // Set the icon color to purple
           background: "#181817",
           color: "#fff"
         }).then(() => {

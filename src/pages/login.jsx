@@ -118,6 +118,7 @@ const LoginPage = () => {
         title: 'Reset Link Sent!',
         text: `A password reset link has been sent to ${resetEmail}`,
         icon: 'success',
+        iconColor: "#A294F9", // Set the icon color to purple
         confirmButtonColor: '#a294f9',
         background: '#181817',
         color: '#FFFFFF',

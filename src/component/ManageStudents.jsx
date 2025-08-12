@@ -308,6 +308,7 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed })
         Swal.fire({
           icon: "success",
           title: "Student Deleted",
+        iconColor: "#A294F9", // Set the icon color to purple
           text: "Student deleted successfully.",
           background: '#181817',
           color: '#fff',
@@ -683,6 +684,7 @@ const EditStudentModal = ({ onClose, groups, studentId }) => {
       if (response.ok) {
         Swal.fire({
           icon: "success",
+        iconColor: "#A294F9", // Set the icon color to purple
           title: "Student Updated",
           text: "Student details updated successfully.",
           background: '#181817',
@@ -954,6 +956,7 @@ const AddStudentModal = ({ onClose, groups, refreshTotalStudents }) => {
           const responseData = await response.json();
           Swal.fire({
             icon: "success",
+        iconColor: "#A294F9", // Set the icon color to purple
             title: "Import Successful",
             html: `Successfully imported ${responseData.imported_count} students. Failed to import ${responseData.failed_count} students.<br><br>
                                             <a href="${responseData.excel_report_url}" download="import_report.xlsx" class="swal2-confirm swal2-styled" style="background-color: #3085d6; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none;">Download Report</a>`,
@@ -1052,6 +1055,7 @@ const AddStudentModal = ({ onClose, groups, refreshTotalStudents }) => {
         if (response.ok) {
           Swal.fire({
             icon: "success",
+        iconColor: "#A294F9", // Set the icon color to purple
             title: "Student Created",
             text: "Student added successfully.",
             background: '#181817',

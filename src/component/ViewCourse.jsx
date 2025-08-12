@@ -166,6 +166,7 @@ const ViewCourse = ({ onUnassign, onEdit, onDelete, onBack, selectedCourse }) =>
               title: 'Deleted!',
               text: 'Module has been deleted.',
               icon: 'success',
+        iconColor: "#A294F9", // Set the icon color to purple
               background: "#181817",
               color: "#fff"
             }).then(() => {
@@ -237,6 +238,7 @@ const ViewCourse = ({ onUnassign, onEdit, onDelete, onBack, selectedCourse }) =>
         Swal.fire({
           title: 'Success!',
           text: 'Module updated successfully!',
+        iconColor: "#A294F9", // Set the icon color to purple
           icon: 'success',
           background: "#181817",
           color: "#fff"
@@ -342,6 +344,7 @@ const ViewCourse = ({ onUnassign, onEdit, onDelete, onBack, selectedCourse }) =>
         Swal.fire({
           title: 'Success!',
           text: 'Chapter updated successfully!',
+        iconColor: "#A294F9", // Set the icon color to purple
           icon: 'success',
           background: "#181817",
           color: "#fff"
@@ -411,6 +414,7 @@ const ViewCourse = ({ onUnassign, onEdit, onDelete, onBack, selectedCourse }) =>
         Swal.fire({
           title: 'Success!',
           text: 'Student assignments updated successfully!',
+        iconColor: "#A294F9", // Set the icon color to purple
           icon: 'success',
           background: "#181817",
           color: "#fff"

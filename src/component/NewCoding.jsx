@@ -73,6 +73,7 @@ const NewCoding = ({ setActiveComponent, onSave, onBack }) => {
                 Swal.fire({
                     icon: 'success',
                     title: 'Saved Successfully!',
+        iconColor: "#A294F9", // Set the icon color to purple
                     text: 'Your coding question has been saved.',
                     background: "#181817",
                     color: "#fff",

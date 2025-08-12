@@ -132,6 +132,7 @@ const EditExam = ({ onClose, examDetails }) => {
             title: "Saved!",
             text: "Your changes have been saved.",
             icon: "success",
+            iconColor: "#A294F9", // Set the icon color to purple
             background: "#181817",
             color: "#fff",
             showConfirmButton: false,
@@ -174,6 +175,7 @@ const EditExam = ({ onClose, examDetails }) => {
                     title: "Deleted!",
                     text: "Your item has been deleted.",
                     icon: "success",
+                    iconColor: "#A294F9", // Set the icon color to purple
                     background: "#181817", // Keep background color consistent
                     color: "#fff",
                     showConfirmButton: false, // Hide OK button
