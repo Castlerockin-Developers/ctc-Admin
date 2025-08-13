@@ -33,7 +33,7 @@ const Subscription = () => {
 
     // Navigate to plan change URL
     const handleChangePlan = () => {
-        window.location.href = "https://castlerockin.com";
+        window.open("https://crackthecampus.com/", "_blank");
     };
 
     useEffect(() => {

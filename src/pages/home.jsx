@@ -92,6 +92,7 @@ const Home = () => {
             title: "Saved!",
             text: "Exam has been created.",
             icon: "success",
+        iconColor: "#A294F9", // Set the icon color to purple
             background: "#181817",
             color: "#fff",
             showConfirmButton: false,
@@ -128,6 +129,7 @@ const Home = () => {
                 title: "Updated!",
                 text: "Exam has been updated successfully.",
                 icon: "success",
+        iconColor: "#A294F9", // Set the icon color to purple
                 background: "#181817",
                 color: "#fff",
                 showConfirmButton: false,

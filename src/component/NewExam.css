@@ -735,6 +735,15 @@ details {
     font-size: 1rem;
 }
 
+/* Disabled (not-allowed) state for desktop section timer */
+.section-timer-desktop input:disabled {
+    /* border-color: #ff4d4f; red border */
+    /* background-color: #3b2a2a; subtle red-tinted bg */
+    /* color: #ffb3b3; light red text */
+    cursor: not-allowed;
+    opacity: 0.9;
+}
+
 .section-timer {
     padding: 4px;
     background-color: #434343;
@@ -744,6 +753,15 @@ details {
     width: 5vw;
     border-radius: 5px;
     font-size: 1rem;
+}
+
+/* Disabled (not-allowed) state for inline section timer */
+.section-timer:disabled {
+    /* border-color: #ff4d4f; red border */
+    /* background-color: #3b2a2a; subtle red-tinted bg */
+    /* color: #ffb3b3; light red text */
+    cursor: not-allowed;
+    opacity: 0.9;
 }
 
 /* Hide filter button by default */
@@ -1369,6 +1387,105 @@ details {
   font-size: 1rem !important;     /* ~16px */
   line-height: 1.4 !important;
 }
+
+.tooltip-container {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+    outline: none;
+  }
+  
+  .info-badge {
+    width: 20px;
+    height: 20px;
+    color: #ccc;
+    margin-top: 5px;
+    transition: transform 0.15s ease, color 0.15s ease;
+  }
+  
+  .tooltip-container:hover .info-badge,
+  .tooltip-container:focus .info-badge {
+    transform: scale(1.1);
+    color: #fff;
+  }
+  
+  .tooltip-text {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%) translateY(8px);
+    bottom: 45px;
+    background: #2b2b2b;
+    color: #fff;
+    border: 1px solid #3d3d3d;
+    border-radius: 6px;
+    padding: 6px 8px;
+    font-size: 12px;
+    line-height: 1.4;
+    white-space: normal;
+    width: 220px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+    opacity: 0;
+    visibility: hidden;
+    z-index: 50;
+    pointer-events: none;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+  }
+  
+  .tooltip-container:hover .tooltip-text,
+  .tooltip-container:focus .tooltip-text {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(12px);
+  }
+  
+  .tooltip-text::after {
+    content: "";
+    position: absolute;
+    top: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 6px;
+    border-style: solid;
+    border-color: transparent transparent #2b2b2b transparent;
+  }
+  .section-filter-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+  
+  .filter-icon {
+    position: absolute;
+    left: 10px;
+    color: #bbb;
+    font-size: 14px;
+    pointer-events: none; /* icon shouldn't block select clicks */
+  }
+  
+  .section-filter {
+    appearance: none;
+    background: #1f1f1f;
+    color: #fff;
+    border: 1px solid #3a3a3a;
+    border-radius: 6px;
+    padding: 6px 10px 6px 30px; /* left padding for icon space */
+    font-size: 0.875rem;
+    min-width: 180px;
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    cursor: pointer;
+  }
+  
+  .section-filter:hover {
+    border-color: #5a5a5a;
+  }
+  
+  .section-filter:focus {
+    border-color: #8b5cf6;
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.25);
+  }
+  
 
 
 @media(min-width:0px) and (max-width:425px) {
