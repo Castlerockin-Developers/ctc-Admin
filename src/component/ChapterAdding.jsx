@@ -120,6 +120,7 @@ const ChapterAdding = ({ onBackcc, onNextcc }) => {
                     title: 'Success!',
                     text: 'Chapter added successfully!',
                     icon: 'success',
+                    iconColor: "#A294F9", // Set the icon color to purple
                     background: "#181817",
                     color: "#fff"
                 });
@@ -167,6 +168,7 @@ const ChapterAdding = ({ onBackcc, onNextcc }) => {
             title: 'Success!',
             text: `Module "${currentModuleName}" created with ${chapterList.length} chapters!`,
             icon: 'success',
+            iconColor: "#A294F9", // Set the icon color to purple
             background: "#181817",
             color: "#fff"
         }).then(() => {

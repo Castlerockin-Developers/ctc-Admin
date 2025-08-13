@@ -40,7 +40,16 @@ const ViewResult = ({ result, onBack, onNext }) => {
       onNext(examData);
     } else {
       console.error("Failed to fetch exam data:", response.statusText);
-      alert("Failed to fetch exam data. Please try again later.");
+      // alert("Failed to fetch exam data. Please try again later.");
+      swal({
+        title: "Error",
+        text: "Failed to fetch exam data. Please try again later.",
+        icon: "error",
+        background: "#1F1F1F",
+        color: "#fff",
+        confirmButtonColor: "#A294F9",
+        showCloseButton: true,
+      });
     }
   };
 
@@ -51,7 +60,16 @@ const ViewResult = ({ result, onBack, onNext }) => {
     });
     if (!response.ok) {
       console.error("Failed to fetch data for export:", response.statusText);
-      alert("Failed to export data. Please try again later.");
+      // alert("Failed to export data. Please try again later.");
+        swal({
+        title: "Error",
+        text: "Failed to export data. Please try again later.",
+        icon: "error",
+        background: "#1F1F1F",
+        color: "#fff",
+        confirmButtonColor: "#A294F9",
+        showCloseButton: true,
+      });
       return;
     }
     const blob = await response.blob();

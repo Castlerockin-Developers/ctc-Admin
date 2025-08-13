@@ -1,8 +1,7 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { FaSearch, FaPlus, FaFilter } from "react-icons/fa";
 import { motion } from "motion/react";
 import { authFetch } from "../scripts/AuthProvider";
-import Swal from "sweetalert2";
 import ManageLoader from "../loader/ManageLoader";
 import TableSkeleton from "../loader/TableSkeleton";
 import { useCache } from "../hooks/useCache";
@@ -22,15 +21,15 @@ const ManageExam = ({ onCreateNewExam, cacheAllowed, onEditExam, examToView, onB
         () => window.innerWidth >= 2560 ? 15 : 10
     );
 
-    const pageFade = {
-        initial: { opacity: 0 },
-        animate: { opacity: 1, transition: { duration: 0.4 } }
-    };
+  const pageFade = {
+    initial: { opacity: 0 },
+    animate: { opacity: 1, transition: { duration: 0.4 } },
+  };
 
-    const slideUp = {
-        initial: { y: 20, opacity: 0 },
-        animate: { y: 0, opacity: 1, transition: { duration: 0.3 } }
-    };
+  const slideUp = {
+    initial: { y: 20, opacity: 0 },
+    animate: { y: 0, opacity: 1, transition: { duration: 0.3 } },
+  };
 
     useEffect(() => {
         const onResize = () => {
@@ -52,77 +51,67 @@ const ManageExam = ({ onCreateNewExam, cacheAllowed, onEditExam, examToView, onB
     }, [examToView]);
 
 
-    // Close filter dropdown on outside click
-    useEffect(() => {
-        const handleClickOutside = (e) => {
-            if (filterRef.current && !filterRef.current.contains(e.target)) {
-                setShowFilter(false);
-            }
-        };
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, []);
-
-    // Close filter dropdown on Escape key press
-    useEffect(() => {
-        const handleEsc = (e) => {
-            if (e.key === 'Escape') {
-                setShowFilter(false);
-            }
-        };
-        document.addEventListener('keydown', handleEsc);
-        return () => document.removeEventListener('keydown', handleEsc);
-    }, []);
-
-    const toggleFilter = () => {
-        setShowFilter(prev => !prev);
-    };
-
-    const handleFilterSelect = (key) => {
-        setActiveButton(key);
-        setCurrentPage(1); // Reset to first page when filter is applied
+  // Close filter dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (filterRef.current && !filterRef.current.contains(e.target)) {
         setShowFilter(false);
+      }
     };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
+  // Close filter dropdown on Escape key press
+  useEffect(() => {
+    const handleEsc = (e) => {
+      if (e.key === "Escape") {
+        setShowFilter(false);
+      }
+    };
+    document.addEventListener("keydown", handleEsc);
+    return () => document.removeEventListener("keydown", handleEsc);
+  }, []);
 
-    // Exams data fetch function
-    const fetchExams = useCallback(async () => {
-        const response = await authFetch('/admin/exams/', { method: "GET" });
-        const data = await response.json();
-        return data;
-    }, []);
+  const toggleFilter = () => {
+    setShowFilter((prev) => !prev);
+  };
 
-    // Cache callbacks
-    const onCacheHit = useCallback((data) => {
-        console.log('Exams data loaded from cache');
-    }, []);
+  const handleFilterSelect = (key) => {
+    setActiveButton(key);
+    setCurrentPage(1); // Reset to first page when filter is applied
+    setShowFilter(false);
+  };
 
-    const onCacheMiss = useCallback((data) => {
-        console.log('Exams data fetched fresh');
-    }, []);
+  // Exams data fetch function
+  const fetchExams = useCallback(async () => {
+    const response = await authFetch("/admin/exams/", { method: "GET" });
+    const data = await response.json();
+    return data;
+  }, []);
 
-    const onError = useCallback((err) => {
-        console.error('Exams fetch error:', err);
-    }, []);
+  // Cache callbacks
+  const onCacheHit = useCallback(() => {
+    console.log("Exams data loaded from cache");
+  }, []);
 
-    // Use cache hook for exams data
-    const {
-        data: examsData,
-        loading,
-        error,
-        cacheUsed,
-        cacheInfo,
-        forceRefresh,
-        invalidateCache,
-        clearAllCache
-    } = useCache('exam_data', fetchExams, {
-        enabled: cacheAllowed,
-        expiryMs: 5 * 60 * 1000, // 5 minutes
-        autoRefresh: false,
-        onCacheHit,
-        onCacheMiss,
-        onError
-    });
+  const onCacheMiss = useCallback(() => {
+    console.log("Exams data fetched fresh");
+  }, []);
+
+  const onError = useCallback((err) => {
+    console.error("Exams fetch error:", err);
+  }, []);
+
+  // Use cache hook for exams data
+  const { data: examsData, forceRefresh } = useCache("exam_data", fetchExams, {
+    enabled: cacheAllowed,
+    expiryMs: 5 * 60 * 1000, // 5 minutes
+    autoRefresh: false,
+    onCacheHit,
+    onCacheMiss,
+    onError,
+  });
 
     // Process exams data for display
     const tableData = examsData ? examsData.map((exam) => {
@@ -192,10 +181,24 @@ const ManageExam = ({ onCreateNewExam, cacheAllowed, onEditExam, examToView, onB
             return startTimeA - startTimeB;
         });
 
-    const totalPages = Math.ceil(filteredTableData.length / itemsPerPage);
-    const indexOfLast = currentPage * itemsPerPage;
-    const indexOfFirst = indexOfLast - itemsPerPage;
-    const currentTableData = filteredTableData.slice(indexOfFirst, indexOfLast);
+  // Sort so that Ongoing first, then Upcoming, then others by start time
+  const statusPriority = {
+    Ongoing: 0,
+    Upcoming: 1,
+    "Results Declared": 2,
+    Completed: 3,
+  };
+  const sortedFilteredData = filteredTableData.slice().sort((a, b) => {
+    const aPriority = statusPriority[a.status] ?? 99;
+    const bPriority = statusPriority[b.status] ?? 99;
+    if (aPriority !== bPriority) return aPriority - bPriority;
+    return (a.startTimestamp || 0) - (b.startTimestamp || 0);
+  });
+
+  const totalPages = Math.ceil(sortedFilteredData.length / itemsPerPage);
+  const indexOfLast = currentPage * itemsPerPage;
+  const indexOfFirst = indexOfLast - itemsPerPage;
+  const currentTableData = sortedFilteredData.slice(indexOfFirst, indexOfLast);
 
     const handleViewExam = (exam) => {
         // Find the exam data with status information
@@ -217,10 +220,10 @@ const ManageExam = ({ onCreateNewExam, cacheAllowed, onEditExam, examToView, onB
         forceRefresh(); // Re-fetch exams to ensure updated data after potential edit
     };
 
-    const handlePageChange = (pageNumber) => {
-        if (pageNumber < 1 || pageNumber > totalPages) return;
-        setCurrentPage(pageNumber);
-    };
+  const handlePageChange = (pageNumber) => {
+    if (pageNumber < 1 || pageNumber > totalPages) return;
+    setCurrentPage(pageNumber);
+  };
 
     return (
         <motion.div
@@ -358,7 +361,6 @@ const ManageExam = ({ onCreateNewExam, cacheAllowed, onEditExam, examToView, onB
     );
 };
 
-
 const ViewExam = ({ exam, onBack, onEditExam, onRefresh }) => {
     const [examDetails, setExamDetails] = useState(null);  // <-- new state for detailed exam data
 
@@ -481,18 +483,15 @@ const ViewExam = ({ exam, onBack, onEditExam, onRefresh }) => {
         }
     };
 
-    useEffect(() => {
-        if (exam && !examDetails) {
-            handleViewExam(exam);
-        }
+  useEffect(() => {
+    if (exam && !examDetails) {
+      handleViewExam(exam);
     }
-        , [exam, examDetails]);
+  }, [exam, examDetails]);
 
-    if (!examDetails) {
-        return (
-            <ManageLoader />
-        );
-    }
+  if (!examDetails) {
+    return <ManageLoader />;
+  }
 
     return (
         <div className='viewexam-container justify-center flex flex-wrap'>
@@ -615,3 +614,18 @@ const ViewExam = ({ exam, onBack, onEditExam, onRefresh }) => {
 
 export default ManageExam;
 
+// PropTypes
+ManageExam.propTypes = {
+  onCreateNewExam: PropTypes.func.isRequired,
+  cacheAllowed: PropTypes.bool,
+  onEditExam: PropTypes.func,
+};
+
+ViewExam.propTypes = {
+  exam: PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
+    name: PropTypes.string,
+  }).isRequired,
+  onBack: PropTypes.func.isRequired,
+  onEditExam: PropTypes.func,
+};

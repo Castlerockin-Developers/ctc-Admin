@@ -147,6 +147,7 @@ const NewMcq = ({ setActiveComponent, onSave, onCancel }) => {
 
             Swal.fire({
                 icon: 'success',
+        iconColor: "#A294F9", // Set the icon color to purple
                 title: 'Category added',
                 background: "#181817",
                 color: "#fff",
@@ -248,6 +249,7 @@ const NewMcq = ({ setActiveComponent, onSave, onCancel }) => {
                 Swal.fire({
                     icon: 'success',
                     title: 'Saved Successfully!',
+        iconColor: "#A294F9", // Set the icon color to purple
                     text: 'Your MCQ has been saved.',
                     background: "#181817",
                     color: "#fff",
