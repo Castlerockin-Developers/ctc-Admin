@@ -172,8 +172,8 @@ const NewMcq = ({ setActiveComponent, onSave, onCancel }) => {
         // Validate inputs
         if (
             !selectedCategory ||
-            !questionText.trim() ||
-            !options.every(option => option.text.trim()) ||
+            (!questionText.trim() && !file) ||
+            !options.every(option => option.text.trim() || option.file) ||
             !options.some(option => option.isCorrect)
         ) {
             Swal.fire({
@@ -187,37 +187,65 @@ const NewMcq = ({ setActiveComponent, onSave, onCancel }) => {
         }
 
         try {
-            // Prepare form data for file upload (if question image or option files present)
-            const formData = new FormData();
+            // Check if we have any files to upload
+            const hasFiles = file || options.some(option => option.file);
+            let response;
+            
+            if (hasFiles) {
+                // Use FormData for file uploads
+                const formData = new FormData();
 
-            // Add question data
-            formData.append('question', questionText);
-            formData.append('category', selectedCategory);
+                // Add question data
+                formData.append('question', questionText);
+                formData.append('category', selectedCategory);
 
-            // Add question image if present
-            if (file) formData.append('questionImage', file);
+                // Add question image if present
+                if (file) formData.append('questionImage', file);
 
-            // Prepare options data (text, correct, files)
-            options.forEach((option, index) => {
-                formData.append(`options[${index}][text]`, option.text);
-                formData.append(`options[${index}][isCorrect]`, option.isCorrect);
-                if (option.file) formData.append(`options[${index}][file]`, option.file);
-            });
+                // Prepare options data (text, correct, files)
+                options.forEach((option, index) => {
+                    formData.append(`options[${index}][text]`, option.text);
+                    formData.append(`options[${index}][isCorrect]`, option.isCorrect);
+                    if (option.file) formData.append(`options[${index}][file]`, option.file);
+                });
 
-            // Use the correct endpoint for creating MCQ questions
-            const response = await authFetch('/admin/mcq/', {
-                method: 'POST',
-                body: JSON.stringify({
+                console.log('Sending FormData with files:', {
                     question: questionText,
                     category: selectedCategory,
-                    options: options.map(option => ({
-                        text: option.text,
-                        isCorrect: option.isCorrect
+                    hasQuestionImage: !!file,
+                    options: options.map(opt => ({
+                        text: opt.text,
+                        hasFile: !!opt.file,
+                        isCorrect: opt.isCorrect
                     }))
-                }),
-            });
+                });
 
+                // Use FormData for file upload
+                response = await authFetch('/admin/mcq/', {
+                    method: 'POST',
+                    body: formData,
+                });
+            } else {
+                // Use JSON for text-only data
+                response = await authFetch('/admin/mcq/', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        question: questionText,
+                        category: selectedCategory,
+                        options: options.map(option => ({
+                            text: option.text,
+                            isCorrect: option.isCorrect
+                        }))
+                    }),
+                });
+            }
+
+            console.log('Response status:', response.status);
+            console.log('Response ok:', response.ok);
+            
             if (response.ok) {
+                const successData = await response.json();
+                console.log('Success response:', successData);
                 Swal.fire({
                     icon: 'success',
                     title: 'Saved Successfully!',
@@ -232,10 +260,11 @@ const NewMcq = ({ setActiveComponent, onSave, onCancel }) => {
                 });
             } else {
                 const errorData = await response.json();
+                console.log('Error response:', errorData);
                 Swal.fire({
                     icon: 'error',
                     title: 'Save Failed',
-                    text: errorData.message || 'An error occurred while saving.',
+                    text: errorData.error || errorData.message || 'An error occurred while saving.',
                     background: "#181817",
                     color: "#fff",
                 });

@@ -21,16 +21,18 @@ const CustomLearning = ({ onNewcourse, onView }) => {
     const loadCustomModules = async () => {
         try {
             setLoading(true);
-            const response = await authFetch('/learning/custom-modules/', {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
+            // Backend exposes list endpoint at /learning/list/
+            const response = await authFetch('/learning/list/', {
+                method: 'GET'
             });
 
             if (response.ok) {
                 const modules = await response.json();
-                setCourses(modules);
+                // Keep only custom modules on the client side
+                const customModules = Array.isArray(modules)
+                    ? modules.filter(m => m?.is_custom)
+                    : [];
+                setCourses(customModules);
             } else {
                 throw new Error('Failed to load modules');
             }
@@ -48,39 +50,15 @@ const CustomLearning = ({ onNewcourse, onView }) => {
         }
     };
 
-    // Delete module via API
+    // Delete not supported by backend yet — show info
     const deleteModule = async (moduleId) => {
-        try {
-            const response = await authFetch(`/learning/custom-modules/${moduleId}/`, {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            if (response.ok) {
-                setCourses(prev => prev.filter(course => course.id !== moduleId));
-                Swal.fire({
-                    title: 'Deleted!',
-                    text: 'Your module has been deleted.',
-                    icon: 'success',
-                    iconColor: "#A294F9", // Set the icon color to purple
-                    background: "#181817",
-                    color: "#fff"
-                });
-            } else {
-                throw new Error('Failed to delete module');
-            }
-        } catch (error) {
-            console.error('Error deleting module:', error);
-            Swal.fire({
-                title: 'Error!',
-                text: 'Failed to delete module. Please try again.',
-                icon: 'error',
-                background: "#181817",
-                color: "#fff"
-            });
-        }
+        Swal.fire({
+            title: 'Not available',
+            text: 'Delete is not supported yet. Please contact the administrator.',
+            icon: 'info',
+            background: "#181817",
+            color: "#fff"
+        });
     };
 
     useEffect(() => {

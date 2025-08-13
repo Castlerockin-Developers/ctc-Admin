@@ -896,169 +896,87 @@ const AddQuestion = ({
                           );
                         })}
 
-                      {/* Coding Section once, outside the loop */}
-                      {/* <div className="dataset-section card-gap">
-                        <div className="question-templet-wrapper">
-                          <div className="question-templet-header flex justify-between">
-                            <p>{`Coding Questions - ${
-                              sourceQuestions.filter((q) => q.type === "coding")
-                                .length
-                            } questions`}</p>
-                            <button
-                              className="bg-green-500 rounded-sm hover:bg-green-900 px-2"
-                              onClick={() => handleAddAllClick(null, "coding")}
-                            >
-                              + Add
-                            </button>
-                          </div>
-                          <div className="question-templet-body">
-                            <div className="question">
-                              {sourceQuestions
-                                .filter((q) => q.type === "coding")
-                                .slice(0, 10)
-                                .map((question) => (
-                                  <details
-                                    key={question.id}
-                                    draggable
-                                    onDragStart={(e) =>
-                                      handleDragStart(e, question)
-                                    }
-                                    onDragEnd={handleDragEnd}
-                                  >
-                                    <summary className="flex justify-between">
-                                      {windowWidth <= 1024
-                                        ? truncateTitle(question.title, 2)
-                                        : question.title}
-                                      <div className="flex items-center gap-2 exam-type">
-                                        <span className="text-sm">
-                                          {question.type.toUpperCase()}
-                                        </span>
-                                      </div>
-                                    </summary>
-                                    <p>{question.content}</p>
-                                  </details>
-                                ))}
-                            </div>
-                          </div>
-                        </div>
-                      </div> */}
-                      {(() => {
-                        const showAllCoding =
-                          selectedSectionId === "all" ||
-                          selectedSectionId === "coding";
-                        const showSpecificCodingGroup =
-                          selectedSectionId.startsWith?.("coding:");
-
-                        // Build the coding question list based on selection
-                        const codingList = showSpecificCodingGroup
-                          ? sourceQuestions.filter(
-                              (q) =>
-                                q.type === "coding" &&
-                                String(q.group_id) ===
-                                  selectedSectionId.split(":")[1]
-                            )
-                          : sourceQuestions.filter((q) => q.type === "coding");
-
-                        if (!showAllCoding && !showSpecificCodingGroup)
-                          return null;
-
-                        return (
-                          <div className="dataset-section card-gap">
-                            <div className="question-templet-wrapper">
-                              <div className="question-templet-header flex justify-between">
-                                <p>{`Coding Questions - ${codingList.length} questions`}</p>
-                                <button
-                                  className="bg-green-500 rounded-sm hover:bg-green-900 px-2"
-                                  onClick={() =>
-                                    handleAddAllClick(
-                                      showSpecificCodingGroup
-                                        ? Number(
-                                            selectedSectionId.split(":")[1]
-                                          )
-                                        : null,
-                                      "coding"
-                                    )
-                                  }
-                                >
-                                  + Add
-                                </button>
-                              </div>
-                              <div className="question-templet-body">
-                                <div className="question">
-                                  {codingList.slice(0, 10).map((question) => (
-                                    <details
-                                      key={question.id}
-                                      draggable
-                                      onDragStart={(e) =>
-                                        handleDragStart(e, question)
-                                      }
-                                      onDragEnd={handleDragEnd}
-                                    >
-                                      <summary className="flex justify-between">
-                                        {windowWidth <= 1024
-                                          ? truncateTitle(question.title, 2)
-                                          : question.title}
-                                        <div className="flex items-center gap-2 exam-type">
-                                          <span className="text-sm">
-                                            {question.type.toUpperCase()}
-                                          </span>
+                                        {/* Coding Section once, outside the loop */}
+                                        <div className="dataset-section card-gap">
+                                            <div className="question-templet-wrapper">
+                                                <div className="question-templet-header flex justify-between">
+                                                    <p>{`Coding Questions - ${sourceQuestions.filter(q => q.type === 'coding').length} questions`}</p>
+                                                    <button
+                                                        className="bg-green-500 rounded-sm hover:bg-green-900 px-2"
+                                                        onClick={() => handleAddAllClick(null, 'coding')}
+                                                    >
+                                                        + Add
+                                                    </button>
+                                                </div>
+                                                <div className="question-templet-body">
+                                                    <div className="question">
+                                                        {sourceQuestions
+                                                            .filter(q => q.type === 'coding')
+                                                            .slice(0, 10)
+                                                            .map(question => (
+                                                                <details
+                                                                    key={question.id}
+                                                                    draggable
+                                                                    onDragStart={e => handleDragStart(e, question)}
+                                                                    onDragEnd={handleDragEnd}
+                                                                >
+                                                                    <summary className="flex justify-between">
+                                                                        {windowWidth <= 1024
+                                                                            ? truncateTitle(question.title, 2)
+                                                                            : question.title}
+                                                                        <div className="flex items-center gap-2 exam-type">
+                                                                            <span className="text-sm">
+                                                                                {question.type.toUpperCase()}
+                                                                            </span>
+                                                                        </div>
+                                                                    </summary>
+                                                                    <p>{question.content}</p>
+                                                                </details>
+                                                            ))}
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
-                                      </summary>
-                                      <p>{question.content}</p>
-                                    </details>
-                                  ))}
-                                </div>
-                              </div>
+                                    </>
+                                )}
                             </div>
-                          </div>
-                        );
-                      })()}
-                    </>
-                  )
-                )}
-              </div>
-            </div>
-          </div>
-          <div className="questionbank-added-container">
-            <div className="question-bank">
-              <div className="addedquestion-bank-head flex justify-between">
-                <h3>MCQ</h3>
-              </div>
-              <div className="addedquestion-bank-body">
-                {[...new Set(mcqQuestions.map((q) => q.group_id))].map(
-                  (groupId) => {
-                    const sectionQs = mcqQuestions.filter(
-                      (q) => q.group_id === groupId
-                    );
-                    const sectionName =
-                      sectionQs[0]?.title || "Unnamed Section"; // Safeguard for missing title
-                    const isSectionPlaceholder =
-                      sectionQs[0]?.is_section_placeholder;
+                        </div>
+                    </div>
+                    <div className='questionbank-added-container'>
+                        <div className='question-bank'>
+                            <div className='addedquestion-bank-head flex justify-between'>
+                                <h3>MCQ</h3>
+                            </div>
+                            <div className='addedquestion-bank-body'>
+                                {[...new Set(mcqQuestions.map(q => q.group_id))].map(groupId => {
+                                    const sectionQs = mcqQuestions.filter(q => q.group_id === groupId);
+                                    const sectionName = sectionQs[0]?.title || 'Unnamed Section'; // Safeguard for missing title
+                                    const isSectionPlaceholder = sectionQs[0]?.is_section_placeholder;
+                                    
+                                    // Get the actual allocated question count for this section
+                                    let allocatedQuestionCount = sectionQs.length; // Default to current count
+                                    
+                                    // If editing and we have alloted_sections data, use the no_of_question from there
+                                    if (isEditing && editExamData?.alloted_sections) {
+                                        const allotedSection = editExamData.alloted_sections.find(section => section.section === groupId);
+                                        if (allotedSection && allotedSection.no_of_question) {
+                                            allocatedQuestionCount = allotedSection.no_of_question;
+                                        }
+                                    }
 
-                    return (
-                      <details
-                        key={groupId}
-                        className="mb-4 border rounded p-2"
-                      >
-                        <summary className="flex justify-between items-center cursor-pointer">
-                          <p>{`${sectionName} — ${sectionQs.length} questions`}</p>
-                          <div className="flex items-center gap-2">
-                            {/* Timer input (disabled if overall timer is active) */}
-                            <input
-                              type="number"
-                              placeholder="Timer"
-                              value={sectionTimers[groupId] || ""}
-                              onChange={(e) =>
-                                handleTimerChange(groupId, e.target.value)
-                              }
-                              className="section-timer"
-                              disabled={isOverallTimerActive}
-                              title={
-                                isOverallTimerActive
-                                  ? "Overall exam timer is enabled"
-                                  : "Set section timer (minutes)"
-                              }
-                            />
+                                    return (
+                                        <details key={groupId} className="mb-4 border rounded p-2">
+                                            <summary className="flex justify-between items-center cursor-pointer">
+                                                <p>{`${sectionName} — ${allocatedQuestionCount} questions`}</p>
+                                                <div className="flex items-center gap-2">
+                                                    {/* Timer input */}
+                                                    <input
+                                                        type="number"
+                                                        placeholder="Timer"
+                                                        value={sectionTimers[groupId] || ''}
+                                                        onChange={e => handleTimerChange(groupId, e.target.value)}
+                                                        className="section-timer"
+                                                    />
 
                             {/* Edit Score */}
                             <button

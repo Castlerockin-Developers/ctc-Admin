@@ -284,7 +284,7 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed })
 
   const fetchGroups = async () => {
     try {
-      const response = await authFetch("/admin/groups", { method: "GET" });
+      const response = await authFetch("/admin/groups/", { method: "GET" });
       if (response.ok) {
         const groupsData = await response.json();
         return groupsData;
@@ -598,7 +598,7 @@ const EditStudentModal = ({ onClose, groups, studentId }) => {
     // Fetch student data if studentId is available
     const fetchStudentData = async () => {
       try {
-        const response = await authFetch(`/admin/students/${studentId}`, {
+        const response = await authFetch(`/admin/students/${studentId}/`, {
           method: "GET",
         });
         if (response.ok) {

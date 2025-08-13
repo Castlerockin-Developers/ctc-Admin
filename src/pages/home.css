@@ -1539,8 +1539,7 @@ body {
         padding: 0.5rem;
         margin-bottom: 20px;
     }
-
-    .result-container {
+    .result-container{
         height: auto;
         max-height: 91vh;
     }
@@ -1605,63 +1604,54 @@ body {
     } */
 
     .sidebar-container {
-        position: fixed;
-        left: 5px;
-        top: 0;
-        height: 100vh;
-        /* Full viewport height */
-        width: 330px;
-        background-color: #181817;
-        transform: translateX(-100%);
-        transition: transform 0.3s ease-in-out;
-        z-index: 1000;
-        display: flex;
-        flex-direction: column;
-        /* Stack children vertically */
-        justify-content: flex-start;
-        overflow-y: auto;
-        /* Enable vertical scrolling */
-    }
+    position: fixed;
+    left: 5px;
+    top: 0;
+    height: 100vh; /* Full viewport height */
+    width: 330px;
+    background-color: #181817;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease-in-out;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column; /* Stack children vertically */
+    justify-content: flex-start;
+    overflow-y: auto; /* Enable vertical scrolling */
+}
 
-    .sidebar-top {
-        padding-top: 40px;
-        /* Adjust padding for the top section */
-        flex-shrink: 0;
-        /* Prevent shrinking of the top part */
-    }
+.sidebar-top {
+    padding-top: 40px; /* Adjust padding for the top section */
+    flex-shrink: 0; /* Prevent shrinking of the top part */
+}
 
-    .sidebar-content {
-        flex-grow: 1;
-        /* Allow content to expand and take available space */
-        overflow-y: auto;
-        /* Allow scrolling if content exceeds */
-    }
+.sidebar-content {
+    flex-grow: 1; /* Allow content to expand and take available space */
+    overflow-y: auto; /* Allow scrolling if content exceeds */
+}
 
-    .sidebar-bottom {
-        margin-top: auto;
-        /* Push the bottom part to the bottom */
-        flex-shrink: 0;
-        /* Prevent shrinking of the bottom part */
-        margin-bottom: 50px;
-    }
+.sidebar-bottom {
+    margin-top: auto; /* Push the bottom part to the bottom */
+    flex-shrink: 0; /* Prevent shrinking of the bottom part */
+    margin-bottom: 50px;
+}
 
-    .sidebar-item {
-        font-size: 1.3rem;
-    }
+.sidebar-item {
+    font-size: 1.3rem;
+}
 
-    .sidebar-container.open {
-        transform: translateX(0);
-    }
+.sidebar-container.open {
+    transform: translateX(0);
+}
 
-    .sidebar-button {
-        width: 100%;
-        padding: 10px 15px;
-    }
+.sidebar-button {
+    width: 100%;
+    padding: 10px 15px;
+}
 
-    .bottom-sidebar-button {
-        width: 100%;
-        border-radius: 0px;
-    }
+.bottom-sidebar-button {
+    width: 100%;
+    border-radius: 0px;
+}
 
     .menu-toggle {
         display: block;
@@ -1702,7 +1692,7 @@ body {
         font-size: 0.75rem;
     }
 
-    .tablee {
+    .tablee{
         max-height: 37vh;
     }
 
@@ -1955,37 +1945,33 @@ body {
         overflow-y: auto;
     }
 
-    .form-group input[type="checkbox"] {
-        cursor: pointer;
+    .form-group input[type="checkbox"] {         
+        cursor: pointer;       
         position: relative;
         top: 1.5rem;
-        /* optionally: accent-color: #4F46E5; to match your theme */
-    }
 
-    .mid-display2 {
-        height: auto;
-    }
+  /* optionally: accent-color: #4F46E5; to match your theme */
+}
+.mid-display2{
+    height: auto;
+}
+.modal-overlay {
+    z-index: 2000;
+}
+.pagination-controls{
+    margin-top: 3px;
+    margin-bottom: 50px;
+}
+.total-students-card{
+    min-width: 100%;
+}
+.branch-filter-select{
+    width: 122% !important;
+}
+.create-btn {
+min-width: 100%;
+}
 
-    .modal-overlay {
-        z-index: 2000;
-    }
-
-    .pagination-controls {
-        margin-top: 3px;
-        margin-bottom: 50px;
-    }
-
-    .total-students-card {
-        min-width: 100%;
-    }
-
-    .branch-filter-select {
-        width: 122% !important;
-    }
-
-    .create-students-btn {
-        min-width: 100%;
-    }
 
 }
 
@@ -2002,11 +1988,10 @@ body {
         padding: 0.5rem;
 
     }
-
-    .result-container {
+    .result-container{
         margin-bottom: 5px;
     }
-
+    
 
     .result-header,
     .greeting {
@@ -2352,13 +2337,12 @@ body {
         height: 600px;
         overflow-y: auto;
     }
-
-    .form-group input[type="checkbox"] {
-        cursor: pointer;
+     .form-group input[type="checkbox"] {         
+        cursor: pointer;       
         position: relative;
         top: 1.65rem;
-        /* optionally: accent-color: #4F46E5; to match your theme */
-    }
+  /* optionally: accent-color: #4F46E5; to match your theme */
+}
 }
 
 @media(max-width:1023px) and (min-width:801px) {
@@ -2718,13 +2702,12 @@ body {
         height: 600px;
         overflow-y: auto;
     }
-
-    .form-group input[type="checkbox"] {
-        cursor: pointer;
+    .form-group input[type="checkbox"] {         
+        cursor: pointer;       
         position: relative;
         top: 1.65rem;
-        /* optionally: accent-color: #4F46E5; to match your theme */
-    }
+  /* optionally: accent-color: #4F46E5; to match your theme */
+}
 }
 
 @media(max-width:1199px) and (min-width:1024px) {
@@ -2782,13 +2765,12 @@ body {
     .mid-display3 {
         padding: 13px 0px;
     }
-
-    .form-group input[type="checkbox"] {
-        cursor: pointer;
+    .form-group input[type="checkbox"] {         
+        cursor: pointer;       
         position: relative;
         top: 1.75rem;
-        /* optionally: accent-color: #4F46E5; to match your theme */
-    }
+  /* optionally: accent-color: #4F46E5; to match your theme */
+}
 }
 
 @media(max-width:1499px) and (min-width:1200px) {
@@ -2832,13 +2814,12 @@ body {
     .m-table-container {
         overflow-x: auto;
     }
-
-    .form-group input[type="checkbox"] {
-        cursor: pointer;
+     .form-group input[type="checkbox"] {         
+        cursor: pointer;       
         position: relative;
         top: 1.75rem;
-        /* optionally: accent-color: #4F46E5; to match your theme */
-    }
+  /* optionally: accent-color: #4F46E5; to match your theme */
+}
 
 }
 
@@ -2979,18 +2960,15 @@ body {
 
 
 @media(max-width:2560px) and (min-width:1921px) {
-
     .greeting h1,
     .exam-greeting h1,
     .result-header h1 {
         font-size: 5rem;
     }
-
     .tablee {
         height: 46vh;
         max-height: 46vh;
     }
-
     .top-display h4 {
         font-size: 3.2rem;
     }
@@ -2998,150 +2976,117 @@ body {
     .top-display h2 {
         font-size: 3.9rem;
     }
-
     .mid-display2 ul li,
     .tablee-content h6,
     .tablee-new h6 {
         font-size: 2rem;
     }
-
+    
     .mid-display h4,
     .mid-display2 h4,
     .mid-display3 h4 {
         font-size: 3.2rem;
     }
-
-    .top-display-pop-title h2 {
+    .top-display-pop-title h2{
         font-size: 3.6rem;
     }
-
-    .pop-up-table thead th {
+    .pop-up-table thead th{
         font-size: 2rem;
     }
-
-    .pop-up-table tbody td {
+    .pop-up-table tbody td{
         font-size: 1.5rem;
     }
-
     .top-display-pop-title button img {
         width: 40px;
     }
-
-    .viewexam-body {
+    .viewexam-body{
         height: 72vh;
     }
-
-    .viewexam-box h1 {
+    .viewexam-box h1{
         font-size: 3.3rem;
     }
-
-    .viewexam-header h2 {
+    .viewexam-header h2{
         font-size: 2.5rem;
     }
-
-    .viewexam-header-btn button {
+    .viewexam-header-btn button{
         font-size: 2rem;
     }
-
     .viewexam-viwer-header p {
         font-size: 2rem;
     }
-
-    .viewexam-viwer-header h2 {
+    .viewexam-viwer-header h2{
         font-size: 2rem;
     }
-
-    .text-white {
+    .text-white{
         font-size: 1.5rem;
     }
-
-    .viewexam-viwer-header {
+    .viewexam-viwer-header{
         height: 4vh;
     }
-
-    .viewexam-header {
+    .viewexam-header{
         margin-top: 10px;
     }
-
-    .search-box1 {
+    .search-box1{
         width: 25rem;
         padding: 9px 10px;
         font-size: 1.5rem;
     }
-
-    .search-box1 input {
+    .search-box1 input{
         font-size: 1.5rem;
     }
-
-    .filter-btn {
+    .filter-btn{
         padding: 12px 15px;
     }
-
-    .pagination-controls .pagination-btn {
+    .pagination-controls .pagination-btn{
         font-size: 1.7rem;
     }
-
-    .pagination-controls span {
+    .pagination-controls span{
         font-size: 1.7rem;
     }
-
-    .modal-container {
+    .modal-container{
         width: 700px;
     }
-
-    .form-group label {
+    .form-group label{
         font-size: 27px !important;
         width: 170px;
     }
-
-    .modal-title {
+    .modal-title{
         font-size: 3rem;
     }
-
-    .form-group input {
+    .form-group input{
         font-size: 25px !important;
     }
-
     .form-group input[type="checkbox"] {
         cursor: pointer;
         position: relative;
         top: 3rem;
-    }
-
+            }
     .back-btn {
+    font-size: 1.5rem;
+    }
+    .create-btn-student{
+    font-size: 1.5rem;
+        
+    }
+    .branch-filter-select{
         font-size: 1.5rem;
     }
-
-    .create-btn-student {
-        font-size: 1.5rem;
-
-    }
-
-    .branch-filter-select {
-        font-size: 1.5rem;
-    }
-
-    .search-box {
+    .search-box{
         padding: 9px 20px;
     }
-
-    .form-input {
+    .form-input{
         font-size: 25px;
     }
-
-    .toggle-btn {
+    .toggle-btn{
         font-size: 1.5rem;
     }
-
     .subscribe-bottom button {
         font-size: 1.8rem;
     }
-
-    .settings-box h1 {
+    .settings-box h1{
         font-size: 4rem !important;
     }
-
-    .result-container {
+    .result-container{
         padding: 1.3rem;
     }
 

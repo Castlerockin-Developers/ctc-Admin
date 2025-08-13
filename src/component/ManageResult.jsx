@@ -19,6 +19,7 @@ const ManageResult = ({ onNext, cacheAllowed }) => {
   const [resultsPerPage, setResultsPerPage] = useState(() =>
     window.innerWidth >= 2560 ? 15 : 10
   );
+  const [loadingResultId, setLoadingResultId] = useState(null);
 
   const pageVariant = {
     hidden: { opacity: 0 },
@@ -64,44 +65,58 @@ const ManageResult = ({ onNext, cacheAllowed }) => {
 
   // Results data fetch function
   const fetchResultData = useCallback(async () => {
-    const response = await authFetch("/admin/results", { method: "GET" });
-    if (!response.ok) throw new Error("Failed to fetch results");
-    const data = await response.json();
-    
-    // Map and format data
-    const now = new Date();
-    const mapped = data.map((res) => {
-      const start = new Date(res.start_time);
-      const end = new Date(res.end_time);
-      let status = "";
-      if (start > now) {
-        status = "Upcoming";
-      } else if (!res.is_result_declared && end > now) {
-        status = "Ongoing";
-      } else if (res.is_result_declared) {
-        status = "Results Declared";
-      } else {
-        status = "Completed";
+    console.log('fetchResultData: Starting API call...');
+    try {
+      const response = await authFetch("/admin/results/", { method: "GET" });
+      console.log('fetchResultData: Response status:', response.status);
+      
+      if (!response.ok) {
+        console.error('fetchResultData: Response not ok:', response.status, response.statusText);
+        throw new Error("Failed to fetch results");
       }
-      return {
-        id: res.id,
-        name: res.name,
-        startTime: start.toLocaleString([], {
-          dateStyle: "short",
-          timeStyle: "short",
-          hour12: true,
-        }),
-        endTime: end.toLocaleString([], {
-          dateStyle: "short",
-          timeStyle: "short",
-          hour12: true,
-        }),
-        analytics: `${res.attempts_allowed} Attempts`,
-        status,
-      };
-    });
-    
-    return mapped;
+      
+      const data = await response.json();
+      console.log('fetchResultData: Raw data received:', data);
+      
+      // Map and format data
+      const now = new Date();
+      const mapped = data.map((res) => {
+        const start = new Date(res.start_time);
+        const end = new Date(res.end_time);
+        let status = "";
+        if (start > now) {
+          status = "Upcoming";
+        } else if (!res.is_result_declared && end > now) {
+          status = "Ongoing";
+        } else if (res.is_result_declared) {
+          status = "Results Declared";
+        } else {
+          status = "Completed";
+        }
+        return {
+          id: res.id,
+          name: res.name,
+          startTime: start.toLocaleString([], {
+            dateStyle: "short",
+            timeStyle: "short",
+            hour12: true,
+          }),
+          endTime: end.toLocaleString([], {
+            dateStyle: "short",
+            timeStyle: "short",
+            hour12: true,
+          }),
+          analytics: `${res.attempts_allowed} Attempts`,
+          status,
+        };
+      });
+      
+      console.log('fetchResultData: Mapped data:', mapped);
+      return mapped;
+    } catch (error) {
+      console.error('fetchResultData: Error occurred:', error);
+      throw error;
+    }
   }, []);
 
   // Cache callbacks
@@ -128,7 +143,7 @@ const ManageResult = ({ onNext, cacheAllowed }) => {
     invalidateCache,
     clearAllCache
   } = useCache('result_data', fetchResultData, {
-    enabled: cacheAllowed,
+    enabled: cacheAllowed !== false, // Allow cache if not explicitly disabled
     expiryMs: 5 * 60 * 1000, // 5 minutes
     autoRefresh: false,
     onCacheHit,
@@ -136,11 +151,58 @@ const ManageResult = ({ onNext, cacheAllowed }) => {
     onError
   });
 
-  if (loading) return <ManageLoader />;
-  if (error) {
+  // Debug logging
+  console.log('ManageResult render:', {
+    cacheAllowed,
+    loading,
+    error: error?.message,
+    resultsData: resultsData ? resultsData.length : null,
+    cacheUsed,
+    cacheInfo
+  });
+
+  // Fallback: If cache is taking too long or failing, try direct fetch
+  const [fallbackData, setFallbackData] = useState(null);
+  const [fallbackLoading, setFallbackLoading] = useState(false);
+  const [fallbackError, setFallbackError] = useState(null);
+
+  useEffect(() => {
+    // If cache is not working after 5 seconds, try direct fetch
+    const timeout = setTimeout(async () => {
+      if (!resultsData && !loading && !error) {
+        console.log('ManageResult: Cache taking too long, trying direct fetch...');
+        setFallbackLoading(true);
+        try {
+          const data = await fetchResultData();
+          setFallbackData(data);
+          setFallbackError(null);
+        } catch (err) {
+          setFallbackError(err);
+          console.error('ManageResult: Direct fetch failed:', err);
+        } finally {
+          setFallbackLoading(false);
+        }
+      }
+    }, 5000);
+
+    return () => clearTimeout(timeout);
+  }, [resultsData, loading, error, fetchResultData]);
+
+  // Use fallback data if cache data is not available
+  const effectiveData = resultsData || fallbackData;
+  const effectiveLoading = loading || fallbackLoading;
+  const effectiveError = error || fallbackError;
+
+  if (effectiveLoading) {
+    console.log('ManageResult: Loading...');
+    return <ManageLoader />;
+  }
+  
+  if (effectiveError) {
+    console.log('ManageResult: Error occurred:', effectiveError);
     return (
       <div className="text-center">
-        <p className="text-red-500 mb-4">{error.message || "Failed to load results"}</p>
+        <p className="text-red-500 mb-4">{effectiveError.message || "Failed to load results"}</p>
         <button 
           onClick={forceRefresh}
           className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
@@ -152,12 +214,13 @@ const ManageResult = ({ onNext, cacheAllowed }) => {
   }
 
   // Don't render the main content if data is not available yet
-  if (!resultsData) {
+  if (!effectiveData) {
+    console.log('ManageResult: No results data available');
     return <ManageLoader />;
   }
 
   // Filter results by tab and search
-  const filteredResults = resultsData ? resultsData
+  const filteredResults = effectiveData
     .filter((row) => {
       if (activeTab === "all") return true;
       if (activeTab === "active") return row.status === "Ongoing";
@@ -171,7 +234,7 @@ const ManageResult = ({ onNext, cacheAllowed }) => {
       return [row.id, row.name, row.analytics, row.status].some((field) =>
         String(field).toLowerCase().includes(q)
       );
-    }) : [];
+    });
 
   // Pagination Logic
   const indexOfLastResult = currentPage * resultsPerPage;
@@ -198,6 +261,10 @@ const ManageResult = ({ onNext, cacheAllowed }) => {
   };
 
   const handleViewResult = async (row) => {
+    // Prevent multiple clicks
+    if (loadingResultId === row.id) return;
+    
+    setLoadingResultId(row.id);
     try {
       const resp = await authFetch(`/admin/results/${row.id}/`, {
         method: "GET",
@@ -230,6 +297,8 @@ const ManageResult = ({ onNext, cacheAllowed }) => {
       });
     } catch (err) {
       console.error(err);
+    } finally {
+      setLoadingResultId(null);
     }
   };
 
@@ -260,7 +329,6 @@ const ManageResult = ({ onNext, cacheAllowed }) => {
         <div className="result-header">
           <div className="flex justify-between items-center mb-4">
             <h1>Results</h1>
-            
           </div>
 
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
@@ -311,7 +379,7 @@ const ManageResult = ({ onNext, cacheAllowed }) => {
           </div>
 
           {/* Results Table */}
-          {resultsData ? (
+          {effectiveData ? (
             <div className="m-table-container">
               <table>
                 <thead>
@@ -353,8 +421,16 @@ const ManageResult = ({ onNext, cacheAllowed }) => {
                             className="viewexam-btn"
                             whileTap={{ scale: 1.2 }}
                             onClick={() => handleViewResult(row)}
+                            disabled={loadingResultId === row.id}
                           >
-                            View Result
+                            {loadingResultId === row.id ? (
+                              <div className="flex items-center gap-2">
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                <span>Loading...</span>
+                              </div>
+                            ) : (
+                              "View Result"
+                            )}
                           </motion.button>
                         </td>
                       </motion.tr>

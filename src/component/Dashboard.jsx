@@ -1,19 +1,15 @@
 import React, { useEffect, useState, useCallback } from "react";
 import closeicon from '../assets/close.png';
 import { AnimatePresence, motion } from "framer-motion";
-import EditExam from "./EditExam";
-import ViewExam from "./ViewExam"; // Import ViewExam component
 import { authFetch } from "../scripts/AuthProvider";
 import DashboardLoader from "../loader/DashboardLoader";
 import { useCache } from "../hooks/useCache";
 import CacheStatusIndicator from "./CacheStatusIndicator";
 import "./CacheStatusIndicator.css";
-// import axios from 'axios'; // Uncomment and use axios for making HTTP requests when backend is ready
 
-const Dashboard = ({ onCreateExam, onAddStudent, onAddUser, onAddCredits, onManageExam, onSubscription, onManageStudents, cacheAllowed }) => {
+const Dashboard = ({ onCreateExam, onAddStudent, onAddUser, onAddCredits, onManageExam, onSubscription, onManageStudents, cacheAllowed, onBackToDashboard }) => {
     const [showPopup, setShowPopup] = useState(false);
     const [showEditPopup, setShowEditPopup] = useState(false);
-    const [selectedExam, setSelectedExam] = useState(null);
     const [showSubscription, setShowSubscription] = useState(false);
     const [showCompletedPopup, setShowCompletedPopup] = useState(false);
 
@@ -65,6 +61,7 @@ const Dashboard = ({ onCreateExam, onAddStudent, onAddUser, onAddCredits, onMana
 
     // Dashboard data fetch function
     const fetchDashboardData = useCallback(async () => {
+        console.log('Dashboard: fetchDashboardData -> calling /admin/home/');
         const response = await authFetch('/admin/home/', {
             method: 'GET',
         });
@@ -84,6 +81,19 @@ const Dashboard = ({ onCreateExam, onAddStudent, onAddUser, onAddCredits, onMana
             userData: responseData.logged_in_user
         };
     }, []);
+
+    // Temporary direct fetch to ensure a network request happens even if cache is disabled
+    useEffect(() => {
+        (async () => {
+            try {
+                console.log('Dashboard: direct fetch kick-off');
+                await fetchDashboardData();
+                console.log('Dashboard: direct fetch completed');
+            } catch (e) {
+                console.error('Dashboard: direct fetch failed', e);
+            }
+        })();
+    }, [fetchDashboardData]);
 
     // Cache callbacks
     const onCacheHit = useCallback((data) => {
@@ -109,7 +119,7 @@ const Dashboard = ({ onCreateExam, onAddStudent, onAddUser, onAddCredits, onMana
         invalidateCache,
         clearAllCache
     } = useCache('dashboard_data', fetchDashboardData, {
-        enabled: cacheAllowed,
+        enabled: cacheAllowed !== false,
         expiryMs: 3 * 60 * 1000, // 3 minutes
         autoRefresh: true,
         refreshInterval: 60 * 1000, // Check every minute
@@ -137,15 +147,13 @@ const Dashboard = ({ onCreateExam, onAddStudent, onAddUser, onAddCredits, onMana
     }
 
     const handleViewExam = (exam) => {
-        setSelectedExam(exam);
-    };
-
-    const handleBack = () => {
-        setSelectedExam(null);
+        // Route to ManageExam with the selected exam
+        onManageExam(exam);
     };
 
     const onViewexam = (test) => {
-        setSelectedExam({ id: test.id, title: test.title });
+        // Route to ManageExam with the selected test
+        onManageExam(test);
     };
 
     const togglePopup = () => setShowPopup((prev) => !prev);
@@ -165,9 +173,6 @@ const Dashboard = ({ onCreateExam, onAddStudent, onAddUser, onAddCredits, onMana
             initial="hidden"
             animate="visible"
             className="lg:w-full xl:w-3xl justify-center flex flex-wrap dashboard">
-            {selectedExam ? (
-                <ViewExam exam={selectedExam} onBack={handleBack} />
-            ) : (
                 <div className="greeting">
                     <div className="flex justify-between items-center mb-4">
                         <motion.h1
@@ -427,7 +432,6 @@ const Dashboard = ({ onCreateExam, onAddStudent, onAddUser, onAddCredits, onMana
                         </div>
                     </div>
                 </div>
-            )}
         </motion.div>
     );
 };
