@@ -9,7 +9,7 @@ import CacheStatusIndicator from "./CacheStatusIndicator";
 import "./CacheStatusIndicator.css";
 import './ViewExam.css'
 
-const ManageExam = ({ onCreateNewExam, onNext, cacheAllowed, onEditExam, examToView, onBackToDashboard }) => {
+const ManageExam = ({ onCreateNewExam, cacheAllowed, onEditExam, examToView, onBackToDashboard, onClearExamToView }) => {
     const [activeButton, setActiveButton] = useState("all");
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedExam, setSelectedExam] = useState(examToView || null);
@@ -43,6 +43,10 @@ const ManageExam = ({ onCreateNewExam, onNext, cacheAllowed, onEditExam, examToV
     useEffect(() => {
         if (examToView) {
             setSelectedExam(examToView);
+        } else {
+            // Clear selectedExam when examToView is null/undefined
+            // This happens when navigating from sidebar to Manage Exam
+            setSelectedExam(null);
         }
     }, [examToView]);
 
@@ -206,6 +210,10 @@ const ManageExam = ({ onCreateNewExam, onNext, cacheAllowed, onEditExam, examToV
 
     const handleBack = () => {
         setSelectedExam(null);
+        // Clear examToView in parent component
+        if (onClearExamToView) {
+            onClearExamToView();
+        }
         if (onBackToDashboard) {
             onBackToDashboard();
         }

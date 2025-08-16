@@ -605,72 +605,142 @@ const AddQuestion = ({
       name: derivedName,
       kind: "coding-group",
     };
-  });
 
-  // If coding has no groups at all, offer a single "Coding" option
-  const hasAnyCoding = sourceQuestions.some((q) => q.type === "coding");
-  const codingTopOption = hasAnyCoding
-    ? [{ id: "coding", name: "Coding", kind: "coding" }]
-    : [];
+    const handleReturnQuestion = (questionToReturn) => {
+        if (questionToReturn.type === 'mcq') {
+            setMcqQuestions(mcqQuestions.filter(q => q.id !== questionToReturn.id));
+        } else if (questionToReturn.type === 'coding') {
+            setCodingQuestions(codingQuestions.filter(q => q.id !== questionToReturn.id));
+        }
+        setSourceQuestions(prev => [...prev, questionToReturn]);
+        setIsQuestionBankVisible(true);
+    };
 
-  // Final dropdown options
-  const sectionOptions = [
-    { id: "all", name: "All Sections", kind: "all" },
-    ...mcqOptions,
-    ...(codingOptionsByGroup.length > 0
-      ? codingOptionsByGroup
-      : codingTopOption),
-  ];
+    const handleRemoveSection = (groupId) => {
+        const toReturn = mcqQuestions.filter(q => q.group_id === groupId);
+        setMcqQuestions(prev => prev.filter(q => q.group_id !== groupId));
+        setSourceQuestions(prev => [...prev, ...toReturn]);
+        setIsQuestionBankVisible(true);
+    };
 
-  // Skeleton loader component
-  const QuestionSkeleton = () => (
-    <div className="dataset-section card-gap">
-      <div className="question-templet-wrapper">
-        <div className="question-templet-header flex justify-between">
-          <div className="skeleton-text skeleton-header"></div>
-          <div className="skeleton-button"></div>
-        </div>
-        <div className="question-templet-body">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="skeleton-question-line"></div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
+    const handleTimerChange = (groupId, value) => {
+        setSectionTimers(prev => ({ ...prev, [groupId]: value }));
+    };
 
-  return (
-    <div className="addq-container justify-center flex flex-wrap">
-      <div className="addquestion-box">
-        <h1>Add Questions</h1>
-        <div className="flex gap-4 new-question-buttons">
-          <button onClick={handleCreateClick}>Create MCQ/Coding</button>
-          <button onClick={handleImport}>Import MCQ/Coding</button>
-          {showCreatePopup && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-              <div className="create-popup">
-                <button
-                  onClick={handleCloseCreatePopup}
-                  className="absolute top-1 right-2 text-white font-bold hover:text-gray-700"
-                >
-                  ✕
-                </button>
-                <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">
-                  Create new question
-                </h2>
-                <div className="flex gap-2 justify-between create-popup-btn">
-                  <button
-                    onClick={() => handleCreateType("mcq")}
-                    className="flex-1"
-                  >
-                    MCQ
-                  </button>
-                  <button
-                    onClick={() => handleCreateType("coding")}
-                    className="flex-1"
-                  >
-                    Coding
-                  </button>
+
+    const handleNextButtonClick = () => {
+        // 0) Make sure at least one question is added
+        if (mcqQuestions.length === 0 && codingQuestions.length === 0) {
+            return Swal.fire({
+                title: "Error",
+                text: "Please add at least one question from the Question Bank to proceed.",
+                icon: "error",
+                background: "#181817",
+                color: "#fff",
+                timer: 1500,
+                showConfirmButton: false,
+            });
+        }
+
+        // 1) Ensure all scores are > 0
+        const allQs = [...mcqQuestions, ...codingQuestions];
+        const hasZeroScore = allQs.some(q => q.score === 0 || q.score == null);
+        if (hasZeroScore) {
+            return Swal.fire({
+                title: "Scores Incomplete",
+                text: "Please assign a non-zero score to every question before proceeding.",
+                icon: "error",
+                background: "#181817",
+                color: "#fff",
+                timer: 1500,
+                showConfirmButton: false,
+            });
+        }
+
+        // 2) Warn if one type is missing
+        if (mcqQuestions.length > 0 && codingQuestions.length === 0) {
+            return Swal.fire({
+                title: "Warning",
+                text: "You have not added any Coding questions. Do you want to proceed?",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Yes",
+                cancelButtonText: "No",
+                background: "#181817",
+                color: "#fff",
+            }).then(result => {
+                if (result.isConfirmed) onNexts();
+            });
+        }
+        if (codingQuestions.length > 0 && mcqQuestions.length === 0) {
+            return Swal.fire({
+                title: "Warning",
+                text: "You have not added any MCQ questions. Do you want to proceed?",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Yes",
+                cancelButtonText: "No",
+                background: "#181817",
+                color: "#fff",
+            }).then(result => {
+                if (result.isConfirmed) onNexts();
+            });
+        }
+
+        // 3) All good — go next
+        onNexts();
+    };
+
+
+    const uniqueSections = [...new Set(sourceQuestions.map(q => q.group_id))];
+    
+    // Function to clear all session storage data related to exam creation
+    const clearSessionStorage = () => {
+        console.log("AddQuestion - Clearing session storage data");
+        
+        // Clear NewExam component session storage
+        const newExamKeys = [
+            'newExam:testName',
+            'newExam:examStartDate', 
+            'newExam:startTime',
+            'newExam:examEndDate',
+            'newExam:endTime',
+            'newExam:timedTest',
+            'newExam:timer',
+            'newExam:attemptsAllowed',
+            'newExam:instructions'
+        ];
+        
+        // Clear AddQuestion component session storage
+        const addQuestionKeys = [
+            'mcqQuestions',
+            'codingQuestions', 
+            'sectionTimers'
+        ];
+        
+        // Clear AddStudents component session storage
+        const addStudentsKeys = [
+            'addStudents_allBranch',
+            'addStudents_addedBranch',
+            'addStudents_list'
+        ];
+        
+        // Clear all keys
+        [...newExamKeys, ...addQuestionKeys, ...addStudentsKeys].forEach(key => {
+            sessionStorage.removeItem(key);
+            console.log(`AddQuestion - Cleared session storage key: ${key}`);
+        });
+        
+        console.log("AddQuestion - Session storage cleared successfully");
+    };
+    
+    // Skeleton loader component
+    const QuestionSkeleton = () => (
+        <div className="dataset-section card-gap">
+            <div className="question-templet-wrapper">
+                <div className="question-templet-header flex justify-between">
+                    <div className="skeleton-text skeleton-header"></div>
+                    <div className="skeleton-button"></div>
                 </div>
               </div>
             </div>
@@ -1018,22 +1088,31 @@ const AddQuestion = ({
                             </div>
                           ))}
                         </div>
-                      </details>
-                    );
-                  }
-                )}
+                    </div>
 
-                {/* Show message if no MCQ sections are added */}
-                {mcqQuestions.length === 0 && (
-                  <div className="text-center text-gray-400 py-4">
-                    <p>No MCQ sections added yet.</p>
-                    <p className="text-sm">
-                      Add questions from the Question Bank to get started.
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
+                </div>
+                <div className='flex justify-center'>
+                    <img src={line} alt="line" className='line-bottom' />
+                </div>
+                <div className='flex w-full justify-end bottom-control gap-1'>
+                    <button onClick={() => {
+                        // Clear session storage when going back (only if not editing)
+                        if (!isEditing) {
+                            clearSessionStorage();
+                        }
+                        onBack();
+                    }} className="exam-previous-btn">
+                        <FontAwesomeIcon icon={faRotateLeft} className='left-icon' />back
+                    </button>
+                    <p>2/3</p>
+                    <button
+                        className='exam-next-btn'
+                        onClick={handleNextButtonClick}
+                        disabled={[...mcqQuestions, ...codingQuestions].some(q => q.score === 0 || q.score == null)}
+                        style={{ opacity: ([...mcqQuestions, ...codingQuestions].some(q => q.score === 0 || q.score == null) ? 0.5 : 1) }}
+                    >
+                        Next
+                    </button>
 
             {/* Coding Section */}
             <div className="question-bank">

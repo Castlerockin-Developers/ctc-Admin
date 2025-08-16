@@ -250,8 +250,134 @@ const AddStudents = ({
         });
       }
 
-      console.log("AddStudents - Response status:", res.status);
-      console.log("AddStudents - Response ok:", res.ok);
+    // Function to clear all session storage data related to exam creation
+    const clearSessionStorage = () => {
+        console.log("AddStudents - Clearing session storage data");
+        
+        // Clear NewExam component session storage
+        const newExamKeys = [
+            'newExam:testName',
+            'newExam:examStartDate', 
+            'newExam:startTime',
+            'newExam:examEndDate',
+            'newExam:endTime',
+            'newExam:timedTest',
+            'newExam:timer',
+            'newExam:attemptsAllowed',
+            'newExam:instructions'
+        ];
+        
+        // Clear AddQuestion component session storage
+        const addQuestionKeys = [
+            'mcqQuestions',
+            'codingQuestions', 
+            'sectionTimers'
+        ];
+        
+        // Clear AddStudents component session storage
+        const addStudentsKeys = [
+            STORAGE_KEYS.allBranch,
+            STORAGE_KEYS.addedBranch,
+            STORAGE_KEYS.addedList
+        ];
+        
+        // Clear all keys
+        [...newExamKeys, ...addQuestionKeys, ...addStudentsKeys].forEach(key => {
+            sessionStorage.removeItem(key);
+            console.log(`AddStudents - Cleared session storage key: ${key}`);
+        });
+        
+        console.log("AddStudents - Session storage cleared successfully");
+    };
+
+    const createExam = async () => {
+        if (!addedStudents.length) {
+            return Swal.fire({ 
+                title: 'No Students',
+                text: 'Please add at least one student to proceed.',
+                icon: 'error',
+                background: '#181817',
+                color: '#fff'
+            });
+        }
+
+        setIsCreating(true);
+        
+        // Get section_ids from sessionStorage for MCQ questions
+        const mcqQuestions = JSON.parse(sessionStorage.getItem('mcqQuestions') || '[]');
+        const section_ids = [...new Set(mcqQuestions.map(q => q.group_id))];
+
+        // Get coding question IDs from sessionStorage
+        const codingQuestions = JSON.parse(sessionStorage.getItem('codingQuestions') || '[]');
+        const coding_question_ids = codingQuestions.map(q => q.id);
+        
+        const payload = { 
+            ...createExamRequest, 
+            students: addedStudents.map(s => s.studentId),
+            section_ids: section_ids,
+            coding_question_ids: coding_question_ids
+        };
+
+        console.log("AddStudents - createExam payload:", payload);
+        console.log("AddStudents - students being sent:", payload.students);
+        console.log("AddStudents - addedStudents:", addedStudents);
+        console.log("AddStudents - coding_question_ids being sent:", payload.coding_question_ids);
+        console.log("AddStudents - codingQuestions from session:", codingQuestions);
+
+        try {
+            if (isEditing && editExamData) {
+                // In edit mode, call the onSubmit prop with the payload
+                console.log("AddStudents - Edit mode, calling onSubmit with payload:", payload);
+                onSubmit(payload);
+            } else {
+                // Create new exam
+                console.log("AddStudents - Creating new exam");
+                const res = await authFetch('/admin/exams/create-exam/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                console.log("AddStudents - Response status:", res.status);
+                console.log("AddStudents - Response ok:", res.ok);
+                
+                if (!res.ok) {
+                    const errorData = await res.json();
+                    console.log("AddStudents - Error response:", errorData);
+                    throw new Error(errorData.message || 'Failed to create exam');
+                }
+                
+                const responseData = await res.json();
+                console.log("AddStudents - Success response:", responseData);
+                
+                await Swal.fire({
+                    title: 'Test Created',
+                    text: 'Test has been created.',
+                    icon: 'success',
+                    confirmButtonText: 'OK',
+                    background: '#181817',
+                    color: '#fff'
+                });
+                
+                // Clear all session storage data after successful exam creation
+                clearSessionStorage();
+                
+                onSubmit();
+            }
+        } catch (err) {
+            console.error("AddStudents - Error:", err);
+            Swal.fire({
+                title: 'Error',
+                text: err.message,
+                icon: 'error',
+                confirmButtonText: 'OK',
+                background: '#181817',
+                color: '#fff'
+            });
+        } finally {
+            setIsCreating(false);
+        }
+    };
 
       if (!res.ok) {
         const errorData = await res.json();
@@ -319,112 +445,33 @@ const AddStudents = ({
                     onChange={(e) => setAllSearchQuery(e.target.value)}
                   />
                 </div>
-              </div>
-            </div>
-            <div className="all-s-body">
-              <div className="adds-table-wrapper">
-                <table>
-                  <thead>
-                    <tr>
-                      <td colSpan={2} align="left">
-                        All Students
-                      </td>
-                      <td colSpan={2} align="right">
-                        <button
-                          onClick={addAll}
-                          className="bg-green-500 rounded hover:bg-green-900 adds-branch"
-                        >
-                          + Add Batch
-                        </button>
-                      </td>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {paginateData(filteredAll, allPage).length ? (
-                      paginateData(filteredAll, allPage).map((s) => (
-                        <tr key={s.studentId} className="border-1 border-white">
-                          <td>{s.id}</td>
-                          <td>{s.name}</td>
-                          <td>{s.branch}</td>
-                          <td>
-                            <button
-                              onClick={() => addOne(s)}
-                              className="bg-green-500 hover:bg-green-900 rounded adds-btn"
-                            >
-                              +Add
-                            </button>
-                          </td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan={4} className="text-center">
-                          No students found
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Pagination Controls */}
-              <div className="pagination flex justify-center items-center gap-2 mt-2">
-                <button
-                  disabled={filteredAll.length === 0 || allPage === 1}
-                  onClick={() => setAllPage((p) => Math.max(1, p - 1))}
-                  className="px-3 py-1 bg-gray-700 rounded disabled:opacity-50"
-                >
-                  Prev
-                </button>
-                <span>
-                  {filteredAll.length ? allPage : 0} /{" "}
-                  {Math.ceil(filteredAll.length / studentsPerPage) || 0}
-                </span>
-                <button
-                  disabled={
-                    filteredAll.length === 0 ||
-                    allPage >= Math.ceil(filteredAll.length / studentsPerPage)
-                  }
-                  onClick={() =>
-                    setAllPage((p) =>
-                      Math.min(
-                        Math.ceil(filteredAll.length / studentsPerPage),
-                        p + 1
-                      )
-                    )
-                  }
-                  className="px-3 py-1 bg-gray-700 rounded disabled:opacity-50"
-                >
-                  Next
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Added Students Section */}
-          <div className="all-student-added">
-            <div className="all-s-header-added flex justify-between">
-              <h3>Added Students</h3>
-              <div className="flex gap-1.5 r-header-search">
-                <select
-                  className="filter-select-branch"
-                  value={addedBranchFilter}
-                  onChange={(e) => setAddedBranchFilter(e.target.value)}
-                >
-                  <option value="">Branch</option>
-                  {branches.map((b) => (
-                    <option key={b} value={b}>
-                      {b}
-                    </option>
-                  ))}
-                </select>
-                <div className="flex relative s-search-container">
-                  <FontAwesomeIcon icon={faSearch} className="s-icon" />
-                  <input
-                    type="text"
-                    placeholder="Search Added Students"
-                    onChange={(e) => setAddedSearchQuery(e.target.value)}
-                  />
+                <div className='flex w-full justify-end bottom-control gap-1'>
+                    <button onClick={() => {
+                        // Clear session storage when going back (only if not editing)
+                        if (!isEditing) {
+                            clearSessionStorage();
+                        }
+                        onBack();
+                    }} className="exam-previous-btn">
+                        <FontAwesomeIcon icon={faRotateLeft} className='left-icon' />back
+                    </button>
+                    <p>3/3</p>
+                    <button
+                        className='exam-next-btn'
+                        onClick={createExam}
+                        disabled={isCreating}
+                    >
+                        {isCreating
+                            ? <span className='flex items-center gap-2'>
+                                <svg className='animate-spin h-5 w-5' viewBox='0 0 24 24'>
+                                    <circle className='opacity-25' cx='12' cy='12' r='10' stroke='currentColor' strokeWidth='4' />
+                                    <path className='opacity-75' fill='currentColor' d='M4 12a8 8 0 018-8v8z' />
+                                </svg>
+                                {isEditing ? 'Updating…' : 'Creating…'}
+                            </span>
+                            : isEditing ? '+ Update Exam' : '+ CreateExam'
+                        }
+                    </button>
                 </div>
               </div>
             </div>

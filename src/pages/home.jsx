@@ -103,9 +103,6 @@ const Home = () => {
 
     // Function to handle edit exam
     const handleEditExam = (examDetails) => {
-        console.log("Home - handleEditExam called with:", examDetails);
-        console.log("Home - examDetails.students:", examDetails?.students);
-        console.log("Home - examDetails.user:", examDetails?.user);
         setEditExamData(examDetails);
         setIsEditingExam(true);
         setActiveComponent("editExam");
@@ -114,16 +111,35 @@ const Home = () => {
     // Function to handle exam update
     const handleUpdateExam = async (updatedData) => {
         try {
-            const response = await authFetch(`/admin/exams/${editExamData.id}/`, {
+            console.log("Home - handleUpdateExam called with:", updatedData);
+            console.log("Home - editExamData:", editExamData);
+            
+            if (!editExamData || !editExamData.id) {
+                throw new Error("Exam ID not found. Cannot update exam.");
+            }
+
+            const url = `/admin/exams/${editExamData.id}/`;
+            console.log("Home - Making PUT request to:", url);
+            console.log("Home - Request payload:", JSON.stringify(updatedData, null, 2));
+
+            const response = await authFetch(url, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(updatedData),
             });
 
+            console.log("Home - Update response status:", response.status);
+            console.log("Home - Update response ok:", response.ok);
+            console.log("Home - Update response headers:", response.headers);
+
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.error || "Failed to update exam");
+                console.log("Home - Update error response:", errorData);
+                throw new Error(errorData.error || errorData.message || `Failed to update exam (${response.status})`);
             }
+
+            const responseData = await response.json();
+            console.log("Home - Update success response:", responseData);
 
             Swal.fire({
                 title: "Updated!",
@@ -184,6 +200,7 @@ const Home = () => {
                     }
                         setActiveComponent={setActiveComponent}
                         onCreateExam={() => setActiveComponent("newExam")}
+                        onManageExamClick={() => setExamToView(null)}
                     />
                 </div>
 
@@ -203,9 +220,6 @@ const Home = () => {
                             }}
                             onAddCredits={() => {
                                 setActiveComponent("subcribe");
-                            }}
-                            onViewexam={() => {
-                                setActiveComponent("viewexam");
                             }}
                             onManageExam={(exam) => {
                                 if (exam) {
@@ -236,14 +250,12 @@ const Home = () => {
                     {activeComponent === "manageExam" && (
                         <ManageExam
                             onCreateNewExam={() => setActiveComponent("newExam")}
-                            onNext={() => setActiveComponent("viewexam")}
                             cacheAllowed={effectiveCacheAllowed}
                             onEditExam={handleEditExam}
                             examToView={examToView}
+                            onClearExamToView={() => setExamToView(null)}
                         />
                     )}
-                    {activeComponent === "viewexam" && <ViewExam
-                        onBack={() => setActiveComponent("manageExam")} />}
                     {activeComponent === "result" && <ManageResult
                         onNext={() => setActiveComponent("viewresult")}
                         cacheAllowed={effectiveCacheAllowed}
@@ -304,7 +316,50 @@ const Home = () => {
                     {/* Exam Flow Navigation */}
                     {activeComponent === "newExam" && (
                         <NewExam
-                            onBack={() => setActiveComponent("manageExam")}
+                            onBack={() => {
+                                // Clear session storage when going back to manage exam
+                                const clearSessionStorage = () => {
+                                    console.log("Home - Clearing session storage when navigating back to manage exam");
+                                    
+                                    // Clear NewExam component session storage
+                                    const newExamKeys = [
+                                        'newExam:testName',
+                                        'newExam:examStartDate', 
+                                        'newExam:startTime',
+                                        'newExam:examEndDate',
+                                        'newExam:endTime',
+                                        'newExam:timedTest',
+                                        'newExam:timer',
+                                        'newExam:attemptsAllowed',
+                                        'newExam:instructions'
+                                    ];
+                                    
+                                    // Clear AddQuestion component session storage
+                                    const addQuestionKeys = [
+                                        'mcqQuestions',
+                                        'codingQuestions', 
+                                        'sectionTimers'
+                                    ];
+                                    
+                                    // Clear AddStudents component session storage
+                                    const addStudentsKeys = [
+                                        'addStudents_allBranch',
+                                        'addStudents_addedBranch',
+                                        'addStudents_list'
+                                    ];
+                                    
+                                    // Clear all keys
+                                    [...newExamKeys, ...addQuestionKeys, ...addStudentsKeys].forEach(key => {
+                                        sessionStorage.removeItem(key);
+                                        console.log(`Home - Cleared session storage key: ${key}`);
+                                    });
+                                    
+                                    console.log("Home - Session storage cleared successfully");
+                                };
+                                
+                                clearSessionStorage();
+                                setActiveComponent("manageExam");
+                            }}
                             onNext={() => setActiveComponent("addQuestion")}
                             createExamRequest={createExamRequest}
                             setCreateExamRequest={setCreateExamRequest}
