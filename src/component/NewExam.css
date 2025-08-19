@@ -742,6 +742,9 @@ details {
     /* color: #ffb3b3; light red text */
     cursor: not-allowed;
     opacity: 0.9;
+    background-color: #2a2a2a;
+    border-color: #666;
+    color: #999;
 }
 
 .section-timer {
@@ -762,6 +765,9 @@ details {
     /* color: #ffb3b3; light red text */
     cursor: not-allowed;
     opacity: 0.9;
+    background-color: #2a2a2a;
+    border-color: #666;
+    color: #999;
 }
 
 /* Hide filter button by default */
@@ -830,6 +836,44 @@ details {
     font-family: madina-regular;
     font-size: 0.9rem;
     color: white;
+}
+
+/* Section Filter Styles */
+.section-filter-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.filter-icon {
+    position: absolute;
+    left: 10px;
+    color: #bbb;
+    font-size: 14px;
+    pointer-events: none; /* icon shouldn't block select clicks */
+}
+
+.section-filter {
+    appearance: none;
+    background: #1f1f1f;
+    color: #fff;
+    border: 1px solid #3a3a3a;
+    border-radius: 6px;
+    padding: 6px 10px 6px 30px; /* left padding for icon space */
+    font-size: 0.875rem;
+    min-width: 180px;
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    cursor: pointer;
+}
+
+.section-filter:hover {
+    border-color: #5a5a5a;
+}
+
+.section-filter:focus {
+    border-color: #8b5cf6;
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.25);
 }
 
 .filter-dropdown2 .dropdown-item:hover {
@@ -1449,43 +1493,7 @@ details {
     border-style: solid;
     border-color: transparent transparent #2b2b2b transparent;
   }
-  .section-filter-wrapper {
-    position: relative;
-    display: flex;
-    align-items: center;
-  }
-  
-  .filter-icon {
-    position: absolute;
-    left: 10px;
-    color: #bbb;
-    font-size: 14px;
-    pointer-events: none; /* icon shouldn't block select clicks */
-  }
-  
-  .section-filter {
-    appearance: none;
-    background: #1f1f1f;
-    color: #fff;
-    border: 1px solid #3a3a3a;
-    border-radius: 6px;
-    padding: 6px 10px 6px 30px; /* left padding for icon space */
-    font-size: 0.875rem;
-    min-width: 180px;
-    outline: none;
-    transition: border-color 0.15s ease, box-shadow 0.15s ease;
-    cursor: pointer;
-  }
-  
-  .section-filter:hover {
-    border-color: #5a5a5a;
-  }
-  
-  .section-filter:focus {
-    border-color: #8b5cf6;
-    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.25);
-  }
-  
+ 
 
 
 @media(min-width:0px) and (max-width:425px) {
