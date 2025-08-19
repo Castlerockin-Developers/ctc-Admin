@@ -190,12 +190,6 @@ const AddQuestion = ({
   const [isEditingScoreCoding] = useState(false);
   const [isQuestionBankVisible, setIsQuestionBankVisible] = useState(true);
 
-  useEffect(() => {
-    const handleResize = () => setWindowWidth(window.innerWidth);
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
   const truncateTitle = (title, wordLimit = 5) => {
     const words = title.split(" ");
     if (words.length > wordLimit) {
@@ -233,7 +227,7 @@ const AddQuestion = ({
     // find a "default" current score
     const current =
       mcqQuestions.find((q) => q.group_id === groupId)?.score ?? 0;
-
+    
     Swal.fire({
       title: "Set score for each question.",
       text: "Enter a score between 0 and 10",
@@ -545,26 +539,6 @@ const AddQuestion = ({
     onNexts();
   };
 
-  // const uniqueSections = [...new Set(sourceQuestions.map(q => q.group_id))];
-  // Only MCQ sections
-  //   const uniqueMcqSections = [
-  //     ...new Set(
-  //       sourceQuestions.filter((q) => q.type === "mcq").map((q) => q.group_id)
-  //     ),
-  //   ];
-
-  //   // Build options with best-guess names from questions in each section
-  //   const sectionOptions = uniqueMcqSections.map((sectionId) => {
-  //     const sectionQs = sourceQuestions.filter(
-  //       (q) => q.type === "mcq" && q.group_id === sectionId
-  //     );
-  //     // Try to extract a readable section name (fallback to ID)
-  //     const derivedName =
-  //       sectionQs[0]?.group_name || // if your API ever sends it
-  //       sectionQs[0]?.title || // fallback to first question title
-  //       `Section ${sectionId}`; // final fallback
-  //     return { id: sectionId, name: derivedName };
-  //   });
   // MCQ sections
   const uniqueMcqSections = [
     ...new Set(
@@ -605,195 +579,193 @@ const AddQuestion = ({
       name: derivedName,
       kind: "coding-group",
     };
+  });
 
-    const handleReturnQuestion = (questionToReturn) => {
-        if (questionToReturn.type === 'mcq') {
-            setMcqQuestions(mcqQuestions.filter(q => q.id !== questionToReturn.id));
-        } else if (questionToReturn.type === 'coding') {
-            setCodingQuestions(codingQuestions.filter(q => q.id !== questionToReturn.id));
-        }
-        setSourceQuestions(prev => [...prev, questionToReturn]);
-        setIsQuestionBankVisible(true);
-    };
-
-    const handleRemoveSection = (groupId) => {
-        const toReturn = mcqQuestions.filter(q => q.group_id === groupId);
-        setMcqQuestions(prev => prev.filter(q => q.group_id !== groupId));
-        setSourceQuestions(prev => [...prev, ...toReturn]);
-        setIsQuestionBankVisible(true);
-    };
-
-    const handleTimerChange = (groupId, value) => {
-        setSectionTimers(prev => ({ ...prev, [groupId]: value }));
-    };
-
-
-    const handleNextButtonClick = () => {
-        // 0) Make sure at least one question is added
-        if (mcqQuestions.length === 0 && codingQuestions.length === 0) {
-            return Swal.fire({
-                title: "Error",
-                text: "Please add at least one question from the Question Bank to proceed.",
-                icon: "error",
-                background: "#181817",
-                color: "#fff",
-                timer: 1500,
-                showConfirmButton: false,
-            });
-        }
-
-        // 1) Ensure all scores are > 0
-        const allQs = [...mcqQuestions, ...codingQuestions];
-        const hasZeroScore = allQs.some(q => q.score === 0 || q.score == null);
-        if (hasZeroScore) {
-            return Swal.fire({
-                title: "Scores Incomplete",
-                text: "Please assign a non-zero score to every question before proceeding.",
-                icon: "error",
-                background: "#181817",
-                color: "#fff",
-                timer: 1500,
-                showConfirmButton: false,
-            });
-        }
-
-        // 2) Warn if one type is missing
-        if (mcqQuestions.length > 0 && codingQuestions.length === 0) {
-            return Swal.fire({
-                title: "Warning",
-                text: "You have not added any Coding questions. Do you want to proceed?",
-                icon: "warning",
-                showCancelButton: true,
-                confirmButtonText: "Yes",
-                cancelButtonText: "No",
-                background: "#181817",
-                color: "#fff",
-            }).then(result => {
-                if (result.isConfirmed) onNexts();
-            });
-        }
-        if (codingQuestions.length > 0 && mcqQuestions.length === 0) {
-            return Swal.fire({
-                title: "Warning",
-                text: "You have not added any MCQ questions. Do you want to proceed?",
-                icon: "warning",
-                showCancelButton: true,
-                confirmButtonText: "Yes",
-                cancelButtonText: "No",
-                background: "#181817",
-                color: "#fff",
-            }).then(result => {
-                if (result.isConfirmed) onNexts();
-            });
-        }
-
-        // 3) All good — go next
-        onNexts();
-    };
-
-
-    const uniqueSections = [...new Set(sourceQuestions.map(q => q.group_id))];
+  const uniqueSections = [...new Set(sourceQuestions.map(q => q.group_id))];
+  
+  // Function to clear all session storage data related to exam creation
+  const clearSessionStorage = () => {
+    console.log("AddQuestion - Clearing session storage data");
     
-    // Function to clear all session storage data related to exam creation
-    const clearSessionStorage = () => {
-        console.log("AddQuestion - Clearing session storage data");
-        
-        // Clear NewExam component session storage
-        const newExamKeys = [
-            'newExam:testName',
-            'newExam:examStartDate', 
-            'newExam:startTime',
-            'newExam:examEndDate',
-            'newExam:endTime',
-            'newExam:timedTest',
-            'newExam:timer',
-            'newExam:attemptsAllowed',
-            'newExam:instructions'
-        ];
-        
-        // Clear AddQuestion component session storage
-        const addQuestionKeys = [
-            'mcqQuestions',
-            'codingQuestions', 
-            'sectionTimers'
-        ];
-        
-        // Clear AddStudents component session storage
-        const addStudentsKeys = [
-            'addStudents_allBranch',
-            'addStudents_addedBranch',
-            'addStudents_list'
-        ];
-        
-        // Clear all keys
-        [...newExamKeys, ...addQuestionKeys, ...addStudentsKeys].forEach(key => {
-            sessionStorage.removeItem(key);
-            console.log(`AddQuestion - Cleared session storage key: ${key}`);
-        });
-        
-        console.log("AddQuestion - Session storage cleared successfully");
-    };
+    // Clear NewExam component session storage
+    const newExamKeys = [
+      'newExam:testName',
+      'newExam:examStartDate', 
+      'newExam:startTime',
+      'newExam:examEndDate',
+      'newExam:endTime',
+      'newExam:timedTest',
+      'newExam:timer',
+      'newExam:attemptsAllowed',
+      'newExam:instructions'
+    ];
     
-    // Skeleton loader component
-    const QuestionSkeleton = () => (
-        <div className="dataset-section card-gap">
-            <div className="question-templet-wrapper">
-                <div className="question-templet-header flex justify-between">
-                    <div className="skeleton-text skeleton-header"></div>
-                    <div className="skeleton-button"></div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {showImportPopup && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-              <div className="create-popup">
-                <button
-                  onClick={handleCloseCreatePopup}
-                  className="absolute top-1 right-2 text-white font-bold hover:text-gray-700"
-                >
-                  ✕
-                </button>
-                <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">
-                  Import questions from excel
-                </h2>
-
-                <div className="flex gap-2 import-btn">
-                  {/* MCQ Button */}
-                  <button
-                    className="px-4 py-2 bg-blue-500 text-white rounded-md mb-2 w-full"
-                    onClick={() => handleFileSelection("mcq")}
-                  >
-                    MCQ Questions
-                  </button>
-
-                  {/* Coding Button */}
-                  <button
-                    className="px-4 py-2 bg-green-500 text-white rounded-md w-full"
-                    onClick={() => handleFileSelection("coding")}
-                  >
-                    Coding Questions
-                  </button>
-                </div>
-
-                {/* File Input (hidden, triggered by buttons) */}
-                <input
-                  type="file"
-                  accept=".xlsx, .xls"
-                  onChange={handleFileUpload}
-                  id="excelFileInput"
-                  className="hidden"
-                />
-              </div>
-            </div>
-          )}
+    // Clear AddQuestion component session storage
+    const addQuestionKeys = [
+      'mcqQuestions',
+      'codingQuestions', 
+      'sectionTimers'
+    ];
+    
+    // Clear AddStudents component session storage
+    const addStudentsKeys = [
+      'addStudents_allBranch',
+      'addStudents_addedBranch',
+      'addStudents_list'
+    ];
+    
+    // Clear all keys
+    [...newExamKeys, ...addQuestionKeys, ...addStudentsKeys].forEach(key => {
+      sessionStorage.removeItem(key);
+      console.log(`AddQuestion - Cleared session storage key: ${key}`);
+    });
+    
+    console.log("AddQuestion - Session storage cleared successfully");
+  };
+  
+  // Skeleton loader component
+  const QuestionSkeleton = () => (
+    <div className="dataset-section card-gap">
+      <div className="question-templet-wrapper">
+        <div className="question-templet-header flex justify-between">
+          <div className="skeleton-text skeleton-header"></div>
+          <div className="skeleton-button"></div>
         </div>
-        <div className="grid xl:grid-cols-2 lg:grid-cols-1 md:grid-cols-1 add-q-container xl:gap-1.5 lg:gap-10 gap-14">
-          <div className="questionbank-container">
-            <div className="question-bank">
-              {/* <div className="question-bank-head flex justify-between">
-                <h3>Question Bank</h3>
+      </div>
+    </div>
+  );
+
+  const sectionOptions = mcqOptions;
+
+  return (
+    <div className="addquestion">
+      <div className="add-question-top mb-2">
+        <div className="flex justify-between">
+          <div>
+            <h2>Add Question</h2>
+            <p>Add questions to your exam</p>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <button
+              onClick={handleCreateClick}
+              className="bg-blue-500 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md"
+            >
+              Create Question
+            </button>
+            <button
+              onClick={handleImport}
+              className="bg-green-500 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-md"
+            >
+              Import Question
+            </button>
+          </div>
+        </div>
+
+        {/* Create Question Popup */}
+        {showCreatePopup && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="create-popup">
+              <button
+                onClick={handleCloseCreatePopup}
+                className="absolute top-1 right-2 text-white font-bold hover:text-gray-700"
+              >
+                ✕
+              </button>
+              <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">
+                Choose Question Type
+              </h2>
+
+              <div className="flex gap-2">
+                {/* MCQ Button */}
+                <button
+                  className="px-4 py-2 bg-blue-500 text-white rounded-md mb-2 w-full"
+                  onClick={() => handleCreateType("mcq")}
+                >
+                  MCQ Question
+                </button>
+
+                {/* Coding Button */}
+                <button
+                  className="px-4 py-2 bg-green-500 text-white rounded-md w-full"
+                  onClick={() => handleCreateType("coding")}
+                >
+                  Coding Question
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showImportPopup && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="create-popup">
+              <button
+                onClick={handleCloseCreatePopup}
+                className="absolute top-1 right-2 text-white font-bold hover:text-gray-700"
+              >
+                ✕
+              </button>
+              <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">
+                Import questions from excel
+              </h2>
+
+              <div className="flex gap-2 import-btn">
+                {/* MCQ Button */}
+                <button
+                  className="px-4 py-2 bg-blue-500 text-white rounded-md mb-2 w-full"
+                  onClick={() => handleFileSelection("mcq")}
+                >
+                  MCQ Questions
+                </button>
+
+                {/* Coding Button */}
+                <button
+                  className="px-4 py-2 bg-green-500 text-white rounded-md w-full"
+                  onClick={() => handleFileSelection("coding")}
+                >
+                  Coding Questions
+                </button>
+              </div>
+
+              {/* File Input (hidden, triggered by buttons) */}
+              <input
+                type="file"
+                accept=".xlsx, .xls"
+                onChange={handleFileUpload}
+                id="excelFileInput"
+                className="hidden"
+              />
+            </div>
+          </div>
+        )}
+      </div>
+      
+      <div className="grid xl:grid-cols-2 lg:grid-cols-1 md:grid-cols-1 add-q-container xl:gap-1.5 lg:gap-10 gap-14">
+        <div className="questionbank-container">
+          <div className="question-bank">
+            <div className="question-bank-head flex justify-between items-center gap-2">
+              <h3>Question Bank</h3>
+
+              <div className="flex items-center gap-2">
+                <div className="section-filter-wrapper">
+                  <FontAwesomeIcon icon={faFilter} className="filter-icon" />
+                  <select
+                    className="section-filter"
+                    value={selectedSectionId}
+                    onChange={(e) => setSelectedSectionId(e.target.value)}
+                    title="Filter sections"
+                  >
+                    <option value="all">All Sections</option>
+                    {sectionOptions.map((opt) => (
+                      <option key={opt.id} value={String(opt.id)}>
+                        {opt.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Refresh */}
                 <button
                   onClick={fetchQuestions}
                   disabled={isRefreshing}
@@ -808,79 +780,43 @@ const AddQuestion = ({
                     className={`${isRefreshing ? "animate-spin" : ""}`}
                   />
                 </button>
-              </div> */}
-              <div className="question-bank-head flex justify-between items-center gap-2">
-                <h3>Question Bank</h3>
-
-                <div className="flex items-center gap-2">
-                  {/* NEW: Section Filter */}
-                  {/* <select
-                    className="section-filter"
-                    value={selectedSectionId}
-                    onChange={(e) => setSelectedSectionId(e.target.value)}
-                    title="Filter MCQ sections"
-                  >
-                    <option value="all">All Sections</option>
-                    {sectionOptions.map((opt) => (
-                      <option key={opt.id} value={String(opt.id)}>
-                        {opt.name}
-                      </option>
-                    ))}
-                  </select> */}
-                  <div className="section-filter-wrapper">
-                    <FontAwesomeIcon icon={faFilter} className="filter-icon" />
-                    <select
-                      className="section-filter"
-                      value={selectedSectionId}
-                      onChange={(e) => setSelectedSectionId(e.target.value)}
-                      title="Filter sections"
-                    >
-                      <option value="all">All Sections</option>
-                      {sectionOptions.map((opt) => (
-                        <option key={opt.id} value={String(opt.id)}>
-                          {opt.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Refresh */}
-                  <button
-                    onClick={fetchQuestions}
-                    disabled={isRefreshing}
-                    className={`flex items-center gap-2 px-3 py-1 rounded text-sm text-white transition-all duration-200 ${
-                      isRefreshing
-                        ? "bg-gray-400 cursor-not-allowed"
-                        : "bg-blue-500 hover:bg-blue-700"
-                    }`}
-                  >
-                    <FontAwesomeIcon
-                      icon={faRefresh}
-                      className={`${isRefreshing ? "animate-spin" : ""}`}
-                    />
-                  </button>
-                </div>
               </div>
-              <div className="question-bank-body">
-                {isLoading ? (
-                  // Show skeleton loaders while loading
+            </div>
+            <div className="question-bank-body">
+              {isLoading ? (
+                // Show skeleton loaders while loading
+                <>
+                  <QuestionSkeleton />
+                  <QuestionSkeleton />
+                  <QuestionSkeleton />
+                </>
+              ) : (
+                isQuestionBankVisible && (
                   <>
-                    <QuestionSkeleton />
-                    <QuestionSkeleton />
-                    <QuestionSkeleton />
-                  </>
-                ) : (
-                  isQuestionBankVisible && (
-                    <>
-                      {/* MCQ Sections by group_id */}
-                      {/* {uniqueSections.map((sectionId) => {
+                    {uniqueMcqSections
+                      .filter((sectionId) => {
+                        if (selectedSectionId === "all") return true;
+                        if (
+                          selectedSectionId === "coding" ||
+                          selectedSectionId.startsWith("coding:")
+                        )
+                          return false;
+                        return String(sectionId) === selectedSectionId;
+                      })
+                      .map((sectionId) => {
                         const sectionQs = sourceQuestions.filter(
                           (q) => q.group_id === sectionId && q.type === "mcq"
                         );
                         if (!sectionQs.length) return null;
-                        const sectionName = sectionQs[0].title;
+
+                        const sectionName =
+                          sectionQs[0]?.group_name ||
+                          sectionQs[0]?.title ||
+                          `MCQ Section ${sectionId}`;
+
                         const total = sectionQs.length;
                         const list = sectionQs.slice(0, 10);
+
                         return (
                           <div
                             key={sectionId}
@@ -910,312 +846,240 @@ const AddQuestion = ({
                             </div>
                           </div>
                         );
-                      })} */}
-                      {uniqueMcqSections
-                        .filter((sectionId) => {
-                          if (selectedSectionId === "all") return true;
-                          if (
-                            selectedSectionId === "coding" ||
-                            selectedSectionId.startsWith("coding:")
-                          )
-                            return false;
-                          return String(sectionId) === selectedSectionId;
-                        })
-                        .map((sectionId) => {
-                          const sectionQs = sourceQuestions.filter(
-                            (q) => q.group_id === sectionId && q.type === "mcq"
-                          );
-                          if (!sectionQs.length) return null;
+                      })}
 
-                          const sectionName =
-                            sectionQs[0]?.group_name ||
-                            sectionQs[0]?.title ||
-                            `MCQ Section ${sectionId}`;
-
-                          const total = sectionQs.length;
-                          const list = sectionQs.slice(0, 10);
-
-                          return (
-                            <div
-                              key={sectionId}
-                              className="dataset-section card-gap"
-                            >
-                              <div className="question-templet-wrapper">
-                                <div className="question-templet-header flex justify-between">
-                                  <p>{`${sectionName} - ${total} questions`}</p>
-                                  <button
-                                    className="bg-green-500 rounded-sm hover:bg-green-900 px-2"
-                                    onClick={() =>
-                                      handleAddAllClick(sectionId, "mcq")
-                                    }
-                                  >
-                                    + Add
-                                  </button>
-                                </div>
-                                <div className="question-templet-body">
-                                  {list.map((q) => (
-                                    <p key={q.id} className="cardin-q">
-                                      {windowWidth <= 1024
-                                        ? truncateContent(q.content, 10)
-                                        : q.content}
-                                    </p>
-                                  ))}
-                                </div>
-                              </div>
-                            </div>
-                          );
-                        })}
-
-                                        {/* Coding Section once, outside the loop */}
-                                        <div className="dataset-section card-gap">
-                                            <div className="question-templet-wrapper">
-                                                <div className="question-templet-header flex justify-between">
-                                                    <p>{`Coding Questions - ${sourceQuestions.filter(q => q.type === 'coding').length} questions`}</p>
-                                                    <button
-                                                        className="bg-green-500 rounded-sm hover:bg-green-900 px-2"
-                                                        onClick={() => handleAddAllClick(null, 'coding')}
-                                                    >
-                                                        + Add
-                                                    </button>
-                                                </div>
-                                                <div className="question-templet-body">
-                                                    <div className="question">
-                                                        {sourceQuestions
-                                                            .filter(q => q.type === 'coding')
-                                                            .slice(0, 10)
-                                                            .map(question => (
-                                                                <details
-                                                                    key={question.id}
-                                                                    draggable
-                                                                    onDragStart={e => handleDragStart(e, question)}
-                                                                    onDragEnd={handleDragEnd}
-                                                                >
-                                                                    <summary className="flex justify-between">
-                                                                        {windowWidth <= 1024
-                                                                            ? truncateTitle(question.title, 2)
-                                                                            : question.title}
-                                                                        <div className="flex items-center gap-2 exam-type">
-                                                                            <span className="text-sm">
-                                                                                {question.type.toUpperCase()}
-                                                                            </span>
-                                                                        </div>
-                                                                    </summary>
-                                                                    <p>{question.content}</p>
-                                                                </details>
-                                                            ))}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                    <div className='questionbank-added-container'>
-                        <div className='question-bank'>
-                            <div className='addedquestion-bank-head flex justify-between'>
-                                <h3>MCQ</h3>
-                            </div>
-                            <div className='addedquestion-bank-body'>
-                                {[...new Set(mcqQuestions.map(q => q.group_id))].map(groupId => {
-                                    const sectionQs = mcqQuestions.filter(q => q.group_id === groupId);
-                                    const sectionName = sectionQs[0]?.title || 'Unnamed Section'; // Safeguard for missing title
-                                    const isSectionPlaceholder = sectionQs[0]?.is_section_placeholder;
-                                    
-                                    // Get the actual allocated question count for this section
-                                    let allocatedQuestionCount = sectionQs.length; // Default to current count
-                                    
-                                    // If editing and we have alloted_sections data, use the no_of_question from there
-                                    if (isEditing && editExamData?.alloted_sections) {
-                                        const allotedSection = editExamData.alloted_sections.find(section => section.section === groupId);
-                                        if (allotedSection && allotedSection.no_of_question) {
-                                            allocatedQuestionCount = allotedSection.no_of_question;
-                                        }
-                                    }
-
-                                    return (
-                                        <details key={groupId} className="mb-4 border rounded p-2">
-                                            <summary className="flex justify-between items-center cursor-pointer">
-                                                <p>{`${sectionName} — ${allocatedQuestionCount} questions`}</p>
-                                                <div className="flex items-center gap-2">
-                                                    {/* Timer input */}
-                                                    <input
-                                                        type="number"
-                                                        placeholder="Timer"
-                                                        value={sectionTimers[groupId] || ''}
-                                                        onChange={e => handleTimerChange(groupId, e.target.value)}
-                                                        className="section-timer"
-                                                    />
-
-                            {/* Edit Score */}
+                    {/* Coding Section */}
+                    {sourceQuestions.filter(q => q.type === 'coding').length > 0 && (
+                      <div className="dataset-section card-gap">
+                        <div className="question-templet-wrapper">
+                          <div className="question-templet-header flex justify-between">
+                            <p>{`Coding Questions - ${sourceQuestions.filter(q => q.type === 'coding').length} questions`}</p>
                             <button
-                              onClick={() => handleEditSectionScore(groupId)}
-                              className="bg-[#A294F9] hover:bg-[#826fff] px-2 py-1 rounded text-sm text-white"
+                              className="bg-green-500 rounded-sm hover:bg-green-900 px-2"
+                              onClick={() => handleAddAllClick(null, 'coding')}
                             >
-                              Edit Score
-                            </button>
-
-                            {/* Remove */}
-                            <button
-                              onClick={() => handleRemoveSection(groupId)}
-                              className="bg-red-500 hover:bg-red-700 px-2 py-1 rounded text-sm"
-                            >
-                              Remove
+                              + Add
                             </button>
                           </div>
-                        </summary>
-
-                        {/* Display the content of each question in the section */}
-                        <div>
-                          {sectionQs.map((question, index) => (
-                            <div key={question.id} className="score-alloted">
-                              <p>{`${index + 1}. ${
-                                question.content || "No content available"
-                              }`}</p>
-                              <p className="text-sm text-white-500">
-                                Score:{" "}
-                                {question.score !== undefined
-                                  ? question.score
-                                  : "N/A"}
-                              </p>
-                              {isSectionPlaceholder && (
-                                <p className="text-sm text-blue-400">
-                                  Section placeholder - questions will be loaded
-                                  from question bank
-                                </p>
-                              )}
+                          <div className="question-templet-body">
+                            <div className="question">
+                              {sourceQuestions
+                                .filter(q => q.type === 'coding')
+                                .slice(0, 10)
+                                .map(question => (
+                                  <details
+                                    key={question.id}
+                                    draggable
+                                    onDragStart={e => handleDragStart(e, question)}
+                                    onDragEnd={handleDragEnd}
+                                  >
+                                    <summary className="flex justify-between">
+                                      {windowWidth <= 1024
+                                        ? truncateTitle(question.title, 2)
+                                        : question.title}
+                                      <div className="flex items-center gap-2 exam-type">
+                                        <span className="text-sm">
+                                          {question.type.toUpperCase()}
+                                        </span>
+                                      </div>
+                                    </summary>
+                                    <p>{question.content}</p>
+                                  </details>
+                                ))}
                             </div>
-                          ))}
+                          </div>
                         </div>
-                    </div>
+                      </div>
+                    )}
+                  </>
+                )
+              )}
+            </div>
+          </div>
+        </div>
+        
+        <div className='questionbank-added-container'>
+          <div className='question-bank'>
+            <div className='addedquestion-bank-head flex justify-between'>
+              <h3>MCQ</h3>
+            </div>
+            <div className='addedquestion-bank-body'>
+              {[...new Set(mcqQuestions.map(q => q.group_id))].map(groupId => {
+                const sectionQs = mcqQuestions.filter(q => q.group_id === groupId);
+                const sectionName = sectionQs[0]?.title || 'Unnamed Section';
+                const isSectionPlaceholder = sectionQs[0]?.is_section_placeholder;
+                
+                // Get the actual allocated question count for this section
+                let allocatedQuestionCount = sectionQs.length;
+                
+                // If editing and we have alloted_sections data, use the no_of_question from there
+                if (isEditing && editExamData?.alloted_sections) {
+                  const allotedSection = editExamData.alloted_sections.find(section => section.section === groupId);
+                  if (allotedSection && allotedSection.no_of_question) {
+                    allocatedQuestionCount = allotedSection.no_of_question;
+                  }
+                }
 
-                </div>
-                <div className='flex justify-center'>
-                    <img src={line} alt="line" className='line-bottom' />
-                </div>
-                <div className='flex w-full justify-end bottom-control gap-1'>
-                    <button onClick={() => {
-                        // Clear session storage when going back (only if not editing)
-                        if (!isEditing) {
-                            clearSessionStorage();
-                        }
-                        onBack();
-                    }} className="exam-previous-btn">
-                        <FontAwesomeIcon icon={faRotateLeft} className='left-icon' />back
-                    </button>
-                    <p>2/3</p>
-                    <button
-                        className='exam-next-btn'
-                        onClick={handleNextButtonClick}
-                        disabled={[...mcqQuestions, ...codingQuestions].some(q => q.score === 0 || q.score == null)}
-                        style={{ opacity: ([...mcqQuestions, ...codingQuestions].some(q => q.score === 0 || q.score == null) ? 0.5 : 1) }}
-                    >
-                        Next
-                    </button>
-
-            {/* Coding Section */}
-            <div className="question-bank">
-              <div className="addedquestion-bank-head flex justify-between">
-                <h3>Coding</h3>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={handleEditCodingSectionScore}
-                    className="bg-blue-500 hover:bg-blue-700 px-2 py-1 rounded text-sm text-white"
-                  >
-                    Edit Score
-                  </button>
-                  <div className="section-timer-desktop">
-                    <span>Section timer: </span>
-                    <input
-                      type="number"
-                      placeholder="In minutes"
-                      disabled={isOverallTimerActive}
-                      title={
-                        isOverallTimerActive
-                          ? "Overall exam timer is enabled"
-                          : "Set section timer (minutes)"
-                      }
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div
-                className="addedquestion-bank-body"
-                onDragOver={handleDragOver}
-                onDrop={(e) => handleDrop(e, "coding")}
-              >
-                {codingQuestions.map((question) => (
-                  <details key={question.id}>
-                    <summary className="flex justify-between">
-                      {windowWidth <= 1024
-                        ? truncateTitle(question.title, 3)
-                        : question.title}
-                      <div className="flex items-center gap-4">
+                return (
+                  <details key={groupId} className="mb-4 border rounded p-2">
+                    <summary className="flex justify-between items-center cursor-pointer">
+                      <p>{`${sectionName} — ${allocatedQuestionCount} questions`}</p>
+                      <div className="flex items-center gap-2">
+                        {/* Timer input */}
                         <input
                           type="number"
-                          value={question.score ?? 0}
-                          disabled={!isEditingScoreCoding}
-                          onChange={(e) =>
-                            handleScoreChangeCoding(question.id, e.target.value)
-                          }
-                          className={`${
-                            isEditingScoreCoding ? "w-16" : "w-8"
-                          } mr-2 text-black rounded-sm text-white text-center ${
-                            isEditingScoreCoding
-                              ? "[background-color:oklch(0.42_0_0)]"
-                              : ""
-                          }`}
+                          placeholder="Timer"
+                          value={sectionTimers[groupId] || ''}
+                          onChange={e => handleTimerChange(groupId, e.target.value)}
+                          className="section-timer"
                         />
-                        {!isEditingScoreCoding && (
-                          <span className="ml-1">score</span>
-                        )}
+
+                        {/* Edit Score */}
                         <button
-                          onClick={() => handleReturnQuestion(question)}
-                          className="bg-red-500 hover:bg-red-700 px-2 py-1 rounded"
+                          onClick={() => handleEditSectionScore(groupId)}
+                          className="bg-[#A294F9] hover:bg-[#826fff] px-2 py-1 rounded text-sm text-white"
+                        >
+                          Edit Score
+                        </button>
+
+                        {/* Remove */}
+                        <button
+                          onClick={() => handleRemoveSection(groupId)}
+                          className="bg-red-500 hover:bg-red-700 px-2 py-1 rounded text-sm"
                         >
                           Remove
                         </button>
                       </div>
                     </summary>
-                    <p>{question.content}</p>
+
+                    {/* Display the content of each question in the section */}
+                    <div>
+                      {sectionQs.map((question, index) => (
+                        <div key={question.id} className="score-alloted">
+                          <p>{`${index + 1}. ${
+                            question.content || "No content available"
+                          }`}</p>
+                          <p className="text-sm text-white-500">
+                            Score:{" "}
+                            {question.score !== undefined
+                              ? question.score
+                              : "N/A"}
+                          </p>
+                          {isSectionPlaceholder && (
+                            <p className="text-sm text-blue-400">
+                              Section placeholder - questions will be loaded
+                              from question bank
+                            </p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
                   </details>
-                ))}
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Coding Section */}
+          <div className="question-bank">
+            <div className="addedquestion-bank-head flex justify-between">
+              <h3>Coding</h3>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleEditCodingSectionScore}
+                  className="bg-blue-500 hover:bg-blue-700 px-2 py-1 rounded text-sm text-white"
+                >
+                  Edit Score
+                </button>
+                <div className="section-timer-desktop">
+                  <span>Section timer: </span>
+                  <input
+                    type="number"
+                    placeholder="In minutes"
+                    disabled={isOverallTimerActive}
+                    title={
+                      isOverallTimerActive
+                        ? "Overall exam timer is enabled"
+                        : "Set section timer (minutes)"
+                    }
+                  />
+                </div>
               </div>
+            </div>
+
+            <div
+              className="addedquestion-bank-body"
+              onDragOver={handleDragOver}
+              onDrop={(e) => handleDrop(e, "coding")}
+            >
+              {codingQuestions.map((question) => (
+                <details key={question.id}>
+                  <summary className="flex justify-between">
+                    {windowWidth <= 1024
+                      ? truncateTitle(question.title, 3)
+                      : question.title}
+                    <div className="flex items-center gap-4">
+                      <input
+                        type="number"
+                        value={question.score ?? 0}
+                        disabled={!isEditingScoreCoding}
+                        onChange={(e) =>
+                          handleScoreChangeCoding(question.id, e.target.value)
+                        }
+                        className={`${
+                          isEditingScoreCoding ? "w-16" : "w-8"
+                        } mr-2 text-black rounded-sm text-white text-center ${
+                          isEditingScoreCoding
+                            ? "[background-color:oklch(0.42_0_0)]"
+                            : ""
+                        }`}
+                      />
+                      {!isEditingScoreCoding && (
+                        <span className="ml-1">score</span>
+                      )}
+                      <button
+                        onClick={() => handleReturnQuestion(question)}
+                        className="bg-red-500 hover:bg-red-700 px-2 py-1 rounded"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </summary>
+                  <p>{question.content}</p>
+                </details>
+              ))}
             </div>
           </div>
         </div>
-        <div className="flex justify-center">
-          <img src={line} alt="line" className="line-bottom" />
-        </div>
-        <div className="flex w-full justify-end bottom-control gap-1">
-          <button onClick={onBack} className="exam-previous-btn">
-            <FontAwesomeIcon icon={faRotateLeft} className="left-icon" />
-            back
-          </button>
-          <p>2/3</p>
-          <button
-            className="exam-next-btn"
-            onClick={handleNextButtonClick}
-            disabled={[...mcqQuestions, ...codingQuestions].some(
-              (q) => q.score === 0 || q.score == null
-            )}
-            style={{
-              opacity: [...mcqQuestions, ...codingQuestions].some(
-                (q) => q.score === 0 || q.score == null
-              )
-                ? 0.5
-                : 1,
-            }}
-          >
-            Next
-          </button>
-        </div>
+      </div>
+      
+      <div className="flex justify-center">
+        <img src={line} alt="line" className="line-bottom" />
+      </div>
+      <div className="flex w-full justify-end bottom-control gap-1">
+        <button onClick={() => {
+          // Clear session storage when going back (only if not editing)
+          if (!isEditing) {
+            clearSessionStorage();
+          }
+          onBack();
+        }} className="exam-previous-btn">
+          <FontAwesomeIcon icon={faRotateLeft} className='left-icon' />back
+        </button>
+        <p>2/3</p>
+        <button
+          className='exam-next-btn'
+          onClick={handleNextButtonClick}
+          disabled={[...mcqQuestions, ...codingQuestions].some(q => q.score === 0 || q.score == null)}
+          style={{ opacity: ([...mcqQuestions, ...codingQuestions].some(q => q.score === 0 || q.score == null) ? 0.5 : 1) }}
+        >
+          Next
+        </button>
       </div>
     </div>
   );
 };
+
 export default AddQuestion;
 
 AddQuestion.propTypes = {

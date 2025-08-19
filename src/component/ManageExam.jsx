@@ -5,6 +5,7 @@ import { authFetch } from "../scripts/AuthProvider";
 import ManageLoader from "../loader/ManageLoader";
 import TableSkeleton from "../loader/TableSkeleton";
 import { useCache } from "../hooks/useCache";
+import PropTypes from "prop-types";
 import CacheStatusIndicator from "./CacheStatusIndicator";
 import "./CacheStatusIndicator.css";
 import './ViewExam.css'
@@ -104,7 +105,7 @@ const ManageExam = ({ onCreateNewExam, cacheAllowed, onEditExam, examToView, onB
   }, []);
 
   // Use cache hook for exams data
-  const { data: examsData, forceRefresh } = useCache("exam_data", fetchExams, {
+  const { data: examsData, forceRefresh, loading } = useCache("exam_data", fetchExams, {
     enabled: cacheAllowed,
     expiryMs: 5 * 60 * 1000, // 5 minutes
     autoRefresh: false,

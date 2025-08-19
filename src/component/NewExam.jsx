@@ -298,7 +298,7 @@ const NewExam = ({ onBack, onNext, setCreateExamRequest, isEditing = false, edit
                             placeholder="e.g., Mid-Term Exam"
                         />
                     </div>
-
+    
                     {/* Exam Start Date Input (Calendar) */}
                     <div className='createexam-col1 flex'>
                         <h4 className='flex justify-between'>
@@ -308,7 +308,7 @@ const NewExam = ({ onBack, onNext, setCreateExamRequest, isEditing = false, edit
                         </h4>
                         <input
                             type="date"
-                             min={today}
+                            min={today}
                             value={examStartDate}
                             onChange={(e) => {
                                 setExamStartDate(e.target.value);
@@ -317,7 +317,7 @@ const NewExam = ({ onBack, onNext, setCreateExamRequest, isEditing = false, edit
                             onBlur={runAllValidations} // Re-run all validations on blur
                         />
                     </div>
-
+    
                     {/* Start Time Input */}
                     <div className='createexam-col1 flex'>
                         <h4 className='flex justify-between'>
@@ -335,7 +335,7 @@ const NewExam = ({ onBack, onNext, setCreateExamRequest, isEditing = false, edit
                             onBlur={runAllValidations} // Re-run all validations on blur
                         />
                     </div>
-
+    
                     {/* Exam End Date Input (Calendar) */}
                     <div className='createexam-col1 flex'>
                         <h4 className='flex justify-between'>
@@ -346,7 +346,7 @@ const NewExam = ({ onBack, onNext, setCreateExamRequest, isEditing = false, edit
                         <input
                             type="date"
                             value={examEndDate}
-                             min={today}
+                            min={today}
                             onChange={(e) => {
                                 setExamEndDate(e.target.value);
                                 runAllValidations(); // Re-run all validations on change
@@ -354,7 +354,7 @@ const NewExam = ({ onBack, onNext, setCreateExamRequest, isEditing = false, edit
                             onBlur={runAllValidations} // Re-run all validations on blur
                         />
                     </div>
-
+    
                     {/* End Time Input */}
                     <div className='createexam-col1 flex'>
                         <h4 className='flex justify-between'>
@@ -372,7 +372,7 @@ const NewExam = ({ onBack, onNext, setCreateExamRequest, isEditing = false, edit
                             onBlur={runAllValidations} // Re-run all validations on blur
                         />
                     </div>
-
+    
                     {/* Timed Test Toggle and Timer Input */}
                     <div className='createexam-col1 flex'>
                         <h4 className='flex justify-between'>
@@ -419,7 +419,7 @@ const NewExam = ({ onBack, onNext, setCreateExamRequest, isEditing = false, edit
                 </div>
                 <br />
                 <img src={line} alt="line" className='w-full h-0.5' />
-
+    
                 <div className='newexam-entry1'>
                     {/* Attempts Allowed Input */}
                     <div className='createexam-col1 flex'>
@@ -440,6 +440,7 @@ const NewExam = ({ onBack, onNext, setCreateExamRequest, isEditing = false, edit
                             placeholder="e.g., 1 or 3"
                         />
                     </div>
+                    
                     {/* Instructions ReactQuill Editor */}
                     <div className='createexam-col1 flex items-start'>
                         <h4 className='flex justify-between pt-2'>
@@ -449,20 +450,20 @@ const NewExam = ({ onBack, onNext, setCreateExamRequest, isEditing = false, edit
                             )}
                         </h4>
                         <div className='flex-1 min-w-0 new-exam-quill'>
-                        <ReactQuill
-                            value={instructions}
-                            onChange={(value) => {
-                                setInstructions(value);
-                                runAllValidations(); // Re-run all validations on change
-                            }}
-                            onBlur={runAllValidations} // Re-run all validations on blur
-                            theme="snow"
-                            placeholder="Enter exam instructions here..."
-                        />
+                            <ReactQuill
+                                value={instructions}
+                                onChange={(value) => {
+                                    setInstructions(value);
+                                    runAllValidations(); // Re-run all validations on change
+                                }}
+                                onBlur={runAllValidations} // Re-run all validations on blur
+                                theme="snow"
+                                placeholder="Enter exam instructions here..."
+                            />
                         </div>
                     </div>
                 </div>
-
+    
                 {/* Navigation Buttons */}
                 <div className='flex w-full justify-end'>
                     <div className='flex bottom-btns'>
@@ -478,98 +479,16 @@ const NewExam = ({ onBack, onNext, setCreateExamRequest, isEditing = false, edit
                     </div>
                 </div>
             </div>
-            {timedTest && (
-              <>
-                <h4 className="timer-h4">
-                  Timer <span>:</span>
-                </h4>
-                <input
-                  type="number"
-                  placeholder="Time in minutes"
-                  min="1"
-                  className="timer-input"
-                  value={timer}
-                  onChange={(e) => {
-                    setTimer(e.target.value);
-                    runAllValidations(); // Re-run all validations on change
-                  }}
-                  onBlur={runAllValidations} // Re-run all validations on blur
-                />
-              </>
-            )}
-          </div>
         </div>
-        <br />
-        <img src={line} alt="line" className="w-full h-0.5" />
-
-        <div className="newexam-entry1">
-          {/* Attempts Allowed Input */}
-          <div className="createexam-col1 flex">
-            <h4 className="flex justify-between">
-              Attempts Allowed{" "}
-              {isSubmitted && errors.attemptsAllowed && (
-                <span style={{ color: "red" }}>*</span>
-              )}
-            </h4>
-            <input
-              type="number"
-              min="1"
-              value={attemptsAllowed}
-              onChange={(e) => {
-                setAttemptsAllowed(e.target.value);
-                runAllValidations(); // Re-run all validations on change
-              }}
-              onBlur={runAllValidations} // Re-run all validations on blur
-              placeholder="e.g., 1 or 3"
-            />
-          </div>
-          {/* Instructions ReactQuill Editor */}
-          <div className="createexam-col1 flex items-start">
-            <h4 className="flex justify-between pt-2">
-              Instructions
-              {isSubmitted && errors.instructions && (
-                <span style={{ color: "red" }}>*</span>
-              )}
-            </h4>
-            <div className="flex-1 min-w-0 new-exam-quill">
-              <ReactQuill
-                value={instructions}
-                onChange={(value) => {
-                  setInstructions(value);
-                  runAllValidations(); // Re-run all validations on change
-                }}
-                onBlur={runAllValidations} // Re-run all validations on blur
-                theme="snow"
-                placeholder="Enter exam instructions here..."
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Navigation Buttons */}
-        <div className="flex w-full justify-end">
-          <div className="flex bottom-btns">
-            <button className="back-btn-create" onClick={onBack}>
-              Back
-            </button>
-            <p>1/3</p>
-            <button className="next-btn" onClick={handleNext}>
-              Next
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// PropType definitions to resolve ESLint 'missing in props validation' warnings
-NewExam.propTypes = {
-  onBack: PropTypes.func.isRequired,
-  onNext: PropTypes.func.isRequired,
-  setCreateExamRequest: PropTypes.func.isRequired,
-  isEditing: PropTypes.bool,
-  editExamData: PropTypes.object,
-};
-
-export default NewExam;
+    )};
+    
+    // PropType definitions to resolve ESLint 'missing in props validation' warnings
+    NewExam.propTypes = {
+        onBack: PropTypes.func.isRequired,
+        onNext: PropTypes.func.isRequired,
+        setCreateExamRequest: PropTypes.func.isRequired,
+        isEditing: PropTypes.bool,
+        editExamData: PropTypes.object,
+    };
+    
+    export default NewExam;
