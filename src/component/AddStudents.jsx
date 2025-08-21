@@ -82,6 +82,30 @@ const AddStudents = ({ onBack, onSubmit, createExamRequest, isEditing = false, e
         })();
     }, [isEditing]);
 
+    // Clear session storage when component unmounts (only if not editing)
+    useEffect(() => {
+        return () => {
+            if (!isEditing) {
+                // Clear AddStudents session storage
+                Object.values(STORAGE_KEYS).forEach(key => {
+                    sessionStorage.removeItem(key);
+                });
+                console.log('AddStudents - Session storage cleared on unmount');
+            }
+        };
+    }, [isEditing]);
+
+    // Clear session storage on component mount if not editing (fresh form)
+    useEffect(() => {
+        if (!isEditing) {
+            // Clear any existing session storage data on fresh form load
+            Object.values(STORAGE_KEYS).forEach(key => {
+                sessionStorage.removeItem(key);
+            });
+            console.log('AddStudents - Session storage cleared on fresh form load');
+        }
+    }, [isEditing]);
+
     // Populate students from existing exam data when editing
     useEffect(() => {
         if (isEditing && editExamData) {
