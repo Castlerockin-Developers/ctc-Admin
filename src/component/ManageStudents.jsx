@@ -35,8 +35,8 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed })
   const [activeTab, setActiveTab] = useState("all"); // default to first branch after load
   const [studentsData, setStudentsData] = useState({}); // expect object with branch keys
   const [groups, setGroups] = useState([]);
-  const [editModalOpen, setEditModalOpen] = useState(false);
-  const [selectedStudent, setSelectedStudent] = useState(null); // Store selected student data
+
+
   // State to track screen width for responsive rendering
   const [screenWidth, setScreenWidth] = useState(window.innerWidth);
 
@@ -89,11 +89,7 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed })
     return () => window.removeEventListener('resize', onResize);
   }, []);
 
-  // **NEW STATE FOR SORTING**
-  const [sortConfig, setSortConfig] = useState({
-    key: "name",
-    direction: "ascending",
-  });
+
 
   const [loading, setLoading] = useState(true); // State to track loading
 
@@ -142,8 +138,7 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed })
     cacheUsed,
     cacheInfo,
     forceRefresh,
-    invalidateCache,
-    clearAllCache
+    invalidateCache
   } = useCache('students_data', fetchStudentsData, {
     enabled: cacheAllowed,
     expiryMs: 5 * 60 * 1000, // 5 minutes
@@ -152,6 +147,23 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed })
     onCacheMiss,
     onError
   });
+
+  // Create a refresh function that forces cache refresh
+  const refreshStudentsData = useCallback(async () => {
+    if (cacheAllowed) {
+      // First invalidate the cache to ensure fresh data
+      invalidateCache();
+      // Then force refresh to get new data
+      await forceRefresh();
+    } else {
+      // If cache is disabled, just fetch fresh data
+      const freshData = await fetchStudentsData();
+      setTotalStudents(freshData.user_count || 0);
+      totalAllowedStudents.current = freshData.max_users;
+      setStudentsData(freshData.data || {});
+      setCurrentPage(1);
+    }
+  }, [cacheAllowed, forceRefresh, fetchStudentsData, invalidateCache]);
 
   console.log('Cache debug:', {
     cacheAllowed,
@@ -166,6 +178,9 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed })
   if (!cacheAllowed) {
     console.log('Cache is disabled - this might be causing the issue');
   }
+
+  // Add cache status display for debugging
+  const cacheStatus = cacheAllowed ? (cacheUsed ? 'Using Cache' : 'Fresh Data') : 'Cache Disabled';
 
   // Update local state when cache data changes
   useEffect(() => {
@@ -187,14 +202,7 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed })
     loadGroups();
   }, []);
 
-  // **NEW FUNCTION FOR SORTING**
-  const handleSort = (key) => {
-    let direction = "ascending";
-    if (sortConfig.key === key && sortConfig.direction === "ascending") {
-      direction = "descending";
-    }
-    setSortConfig({ key, direction });
-  };
+
 
   // Filter students based on search query
   const filteredAndSortedStudents = () => {
@@ -225,25 +233,7 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed })
       );
     });
 
-    // Apply sorting
-    if (sortConfig.key) {
-      filtered.sort((a, b) => {
-        const aValue = a[sortConfig.key]
-          ? String(a[sortConfig.key]).toLowerCase()
-          : "";
-        const bValue = b[sortConfig.key]
-          ? String(b[sortConfig.key]).toLowerCase()
-          : "";
 
-        if (aValue < bValue) {
-          return sortConfig.direction === "ascending" ? -1 : 1;
-        }
-        if (aValue > bValue) {
-          return sortConfig.direction === "ascending" ? 1 : -1;
-        }
-        return 0;
-      });
-    }
     return filtered;
   };
 
@@ -259,7 +249,7 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed })
 
   const totalPages = Math.ceil(studentsToDisplay.length / studentsPerPage);
 
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
 
   const goToNextPage = () => {
     if (currentPage < totalPages) {
@@ -274,13 +264,9 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed })
   };
 
   // Calculate max students from response or props
-  const maxStudents = totalAllowedStudents.current || 500;
 
-  // Function to open the modal with selected student data
-  const handleEditClick = (student) => {
-    setSelectedStudent(student);
-    setEditModalOpen(true);
-  };
+
+
 
   const fetchGroups = async () => {
     try {
@@ -298,42 +284,7 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed })
     }
   };
 
-  const handleDeleteStudent = async (id) => {
-    try {
-      const response = await authFetch(`/admin/students/${id}/`, {
-        method: "DELETE",
-      });
 
-      if (response.ok) {
-        Swal.fire({
-          icon: "success",
-          title: "Student Deleted",
-        iconColor: "#A294F9", // Set the icon color to purple
-          text: "Student deleted successfully.",
-          background: '#181817',
-          color: '#fff',
-        });
-        fetchStudentsData(); // Refresh data after deletion
-      } else {
-        const errorData = await response.json();
-        Swal.fire({
-          icon: "error",
-          title: "Error",
-          text: errorData.error || "Failed to delete student.",
-          background: '#181817',
-          color: '#fff',
-        });
-      }
-    } catch (error) {
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: error.message || "Network error.",
-        background: '#181817',
-        color: '#fff',
-      });
-    }
-  };
 
   return (
     <motion.div
@@ -563,16 +514,10 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed })
         <AddStudentModal
           onClose={() => setStudentModalOpen(false)}
           groups={groups}
-          refreshTotalStudents={fetchStudentsData} // <-- pass callback
+          refreshTotalStudents={refreshStudentsData} // <-- pass callback
         />
       )}
-      {editModalOpen && selectedStudent && (
-        <EditStudentModal
-          studentId={selectedStudent.id}
-          groups={groups}
-          onClose={() => setEditModalOpen(false)}
-        />
-      )}
+
     </motion.div>
   );
 };
@@ -580,7 +525,7 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed })
 // -----------------------------------------------------------------------------
 // EditStudentModal Component (no changes needed for this specific request)
 // -----------------------------------------------------------------------------
-const EditStudentModal = ({ onClose, groups, studentId }) => {
+const EditStudentModal = ({ onClose, groups, studentId, refreshTotalStudents }) => {
   const [student, setStudent] = useState({
     firstName: "",
     lastName: "",
@@ -690,9 +635,8 @@ const EditStudentModal = ({ onClose, groups, studentId }) => {
           background: '#181817',
           color: '#fff',
         });
+        if (refreshTotalStudents) await refreshTotalStudents();
         onClose(); // Close modal
-        // You might want to trigger a refresh of the student list in ManageStudents
-        // A prop can be passed down for this, e.g., onStudentUpdated()
       } else {
         const errData = await response.json();
         Swal.fire({

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cache Test</title>
+</head>
+<body>
+    <h1>Cache Test</h1>
+    <p>This page helps test the cache functionality.</p>
+    <p>Open browser console to see cache operations.</p>
+    
+    <script>
+        // Test cache service functionality
+        class CacheService {
+            constructor() {
+                this.cachePrefix = 'ctc_';
+                this.defaultExpiry = 5 * 60 * 1000; // 5 minutes
+            }
+
+            generateKey(key) {
+                return `${this.cachePrefix}${key}`;
+            }
+
+            set(key, data, expiryMs = this.defaultExpiry) {
+                try {
+                    const cacheData = {
+                        data: data,
+                        timestamp: Date.now(),
+                        expiry: expiryMs
+                    };
+                    localStorage.setItem(this.generateKey(key), JSON.stringify(cacheData));
+                    console.log('Cache set:', key, data);
+                    return true;
+                } catch (error) {
+                    console.error('Cache set error:', error);
+                    return false;
+                }
+            }
+
+            get(key) {
+                try {
+                    const cached = localStorage.getItem(this.generateKey(key));
+                    if (!cached) return null;
+
+                    const cacheData = JSON.parse(cached);
+                    const now = Date.now();
+                    const isExpired = (now - cacheData.timestamp) > cacheData.expiry;
+
+                    if (isExpired) {
+                        this.remove(key);
+                        console.log('Cache expired:', key);
+                        return null;
+                    }
+
+                    console.log('Cache hit:', key, cacheData.data);
+                    return cacheData.data;
+                } catch (error) {
+                    console.error('Cache get error:', error);
+                    this.remove(key);
+                    return null;
+                }
+            }
+
+            remove(key) {
+                try {
+                    localStorage.removeItem(this.generateKey(key));
+                    console.log('Cache removed:', key);
+                    return true;
+                } catch (error) {
+                    console.error('Cache remove error:', error);
+                    return false;
+                }
+            }
+
+            has(key) {
+                return this.get(key) !== null;
+            }
+        }
+
+        const cacheService = new CacheService();
+
+        // Test cache operations
+        console.log('Testing cache functionality...');
+        
+        // Set test data
+        cacheService.set('test_data', { students: ['John', 'Jane'], count: 2 });
+        
+        // Get test data
+        const data = cacheService.get('test_data');
+        console.log('Retrieved data:', data);
+        
+        // Check if exists
+        console.log('Cache has test_data:', cacheService.has('test_data'));
+        
+        // Remove test data
+        cacheService.remove('test_data');
+        console.log('Cache has test_data after removal:', cacheService.has('test_data'));
+        
+        console.log('Cache test completed!');
+    </script>
+</body>
+</html>
