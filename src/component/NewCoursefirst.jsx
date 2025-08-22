@@ -66,50 +66,33 @@ const NewCoursefirst = ({ onBackc, onNextc }) => {
 
         try {
             setLoading(true);
+            
+            // Debug logging
+            console.log('Creating module with data:', {
+                name: formData.name,
+                description: formData.description,
+                imageFile: files[0]?.name,
+                accessToken: localStorage.getItem('access') ? 'Present' : 'Missing'
+            });
+            
             const moduleData = new FormData();
             moduleData.append('name', formData.name);
             moduleData.append('desc', formData.description);
             moduleData.append('image', files[0]);
 
-            // For FormData uploads, we need to handle headers differently
-            const accessToken = localStorage.getItem('access');
-            let response = await fetch('http://localhost:8000/api/learning/custom-modules/', {
+            // Use authFetch for proper error handling and token management
+            console.log('Making API request to:', '/learning/custom-modules/');
+            let response = await authFetch('/learning/custom-modules/', {
                 method: 'POST',
-                headers: {
-                    'Authorization': 'Bearer ' + accessToken,
-                    // Don't set Content-Type - let browser set it automatically for FormData
-                },
                 body: moduleData
             });
 
-            // Handle token refresh if needed
-            if (response.status === 401) {
-                const refreshToken = localStorage.getItem('refresh');
-                const refreshResponse = await fetch('http://localhost:8000/api/auth/token/refresh/', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ refresh: refreshToken })
-                });
-
-                if (refreshResponse.ok) {
-                    const data = await refreshResponse.json();
-                    localStorage.setItem('access', data.access);
-                    
-                    // Retry the original request
-                    response = await fetch('http://localhost:8000/api/learning/custom-modules/', {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': 'Bearer ' + data.access,
-                        },
-                        body: moduleData
-                    });
-                }
-            }
+            console.log('API response status:', response.status);
+            console.log('API response ok:', response.ok);
 
             if (response.ok) {
                 const result = await response.json();
+                console.log('Module created successfully:', result);
                 localStorage.setItem('currentModuleId', result.module_id);
                 localStorage.setItem('currentModuleName', formData.name);
                 
@@ -132,9 +115,30 @@ const NewCoursefirst = ({ onBackc, onNextc }) => {
             }
         } catch (error) {
             console.error('Error creating module:', error);
+            console.error('Error details:', {
+                message: error.message,
+                stack: error.stack,
+                name: error.name
+            });
+            
+            // Provide more specific error messages
+            let errorMessage = 'Failed to create module. Please try again.';
+            
+            if (error.message.includes('Failed to fetch')) {
+                errorMessage = 'Network error: Unable to connect to the server. Please check your internet connection and try again.';
+            } else if (error.message.includes('401')) {
+                errorMessage = 'Authentication error: Please log in again.';
+            } else if (error.message.includes('403')) {
+                errorMessage = 'Permission denied: You may not have permission to create modules.';
+            } else if (error.message.includes('500')) {
+                errorMessage = 'Server error: Please try again later or contact support.';
+            } else if (error.message) {
+                errorMessage = error.message;
+            }
+            
             Swal.fire({
                 title: 'Error!',
-                text: error.message || 'Failed to create module. Please try again.',
+                text: errorMessage,
                 icon: 'error',
                 background: "#181817",
                 color: "#fff"

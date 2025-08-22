@@ -139,7 +139,7 @@ const ViewResult = ({ result, onBack, onNext }) => {
           </div>
           <div className="view-r-cards">
             <p>Average Score</p>
-            <h4>{result.averageScore}</h4>
+            <h4>{typeof result.averageScore === 'number' ? result.averageScore.toFixed(2) : result.averageScore}</h4>
           </div>
         </div>
 
@@ -192,8 +192,8 @@ const ViewResult = ({ result, onBack, onNext }) => {
                       <td>{student.name}</td>
                       <td>{student.startTime}</td>
                       <td>{student.endTime}</td>
-                      <td>{student.score}</td>
-                      <td>{student.trustScore}</td>
+                      <td>{typeof student.score === 'number' ? student.score.toFixed(2) : student.score}</td>
+                      <td>{typeof student.trustScore === 'number' ? student.trustScore.toFixed(2) : student.trustScore}</td>
                       <td>
                         <button className="viewexam-btn" onClick={() => viewExam(student)}>
                           View

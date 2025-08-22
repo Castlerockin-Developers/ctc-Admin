@@ -62,6 +62,87 @@ const Home = () => {
         setIsAuthenticated(true);
     }, [navigate]);
 
+    // Clear session storage on page refresh/load to ensure clean form state
+    useEffect(() => {
+        const clearSessionStorageOnLoad = () => {
+            console.log("Home - Clearing session storage on page load/refresh");
+            
+            // Clear all exam creation related session storage
+            const allKeys = [
+                'newExam:testName',
+                'newExam:examStartDate', 
+                'newExam:startTime',
+                'newExam:examEndDate',
+                'newExam:endTime',
+                'newExam:timedTest',
+                'newExam:timer',
+                'newExam:attemptsAllowed',
+                'newExam:instructions',
+                'mcqQuestions',
+                'codingQuestions', 
+                'sectionTimers',
+                'addStudents_allBranch',
+                'addStudents_addedBranch',
+                'addStudents_list'
+            ];
+            
+            allKeys.forEach(key => {
+                sessionStorage.removeItem(key);
+            });
+            
+            console.log("Home - Session storage cleared on page load/refresh");
+        };
+        
+        clearSessionStorageOnLoad();
+        
+        // Also clear session storage when user navigates away from the page
+        const handleBeforeUnload = () => {
+            console.log("Home - Clearing session storage before page unload");
+            clearSessionStorageOnLoad();
+        };
+        
+        window.addEventListener('beforeunload', handleBeforeUnload);
+        
+        return () => {
+            window.removeEventListener('beforeunload', handleBeforeUnload);
+        };
+    }, []);
+
+    // Clear session storage when user navigates back to home component
+    useEffect(() => {
+        const clearSessionStorageOnFocus = () => {
+            console.log("Home - Clearing session storage when component gains focus");
+            const allKeys = [
+                'newExam:testName',
+                'newExam:examStartDate', 
+                'newExam:startTime',
+                'newExam:examEndDate',
+                'newExam:endTime',
+                'newExam:timedTest',
+                'newExam:timer',
+                'newExam:attemptsAllowed',
+                'newExam:instructions',
+                'mcqQuestions',
+                'codingQuestions', 
+                'sectionTimers',
+                'addStudents_allBranch',
+                'addStudents_addedBranch',
+                'addStudents_list'
+            ];
+            
+            allKeys.forEach(key => {
+                sessionStorage.removeItem(key);
+            });
+        };
+        
+        // Clear session storage when the window gains focus (user comes back to the tab)
+        window.addEventListener('focus', clearSessionStorageOnFocus);
+        
+        return () => {
+            window.removeEventListener('focus', clearSessionStorageOnFocus);
+        };
+    }, []);
+
     const handleSubmitExam = async () => {
 
         try {
@@ -88,6 +169,48 @@ const Home = () => {
 
     // Function to handle exam creation alert
     const handleCreateExam = () => {
+        // Clear all session storage when exam is successfully created
+        const clearAllSessionStorage = () => {
+            console.log("Home - Clearing all session storage after successful exam creation");
+            
+            // Clear NewExam component session storage
+            const newExamKeys = [
+                'newExam:testName',
+                'newExam:examStartDate', 
+                'newExam:startTime',
+                'newExam:examEndDate',
+                'newExam:endTime',
+                'newExam:timedTest',
+                'newExam:timer',
+                'newExam:attemptsAllowed',
+                'newExam:instructions'
+            ];
+            
+            // Clear AddQuestion component session storage
+            const addQuestionKeys = [
+                'mcqQuestions',
+                'codingQuestions', 
+                'sectionTimers'
+            ];
+            
+            // Clear AddStudents component session storage
+            const addStudentsKeys = [
+                'addStudents_allBranch',
+                'addStudents_addedBranch',
+                'addStudents_list'
+            ];
+            
+            // Clear all keys
+            [...newExamKeys, ...addQuestionKeys, ...addStudentsKeys].forEach(key => {
+                sessionStorage.removeItem(key);
+                console.log(`Home - Cleared session storage key: ${key}`);
+            });
+            
+            console.log("Home - All session storage cleared after successful exam creation");
+        };
+        
+        clearAllSessionStorage();
+        
         Swal.fire({
             title: "Saved!",
             text: "Exam has been created.",
@@ -379,7 +502,16 @@ const Home = () => {
                     )}
                     {activeComponent === "addQuestion" && (
                         <AddQuestion
-                            onBack={() => setActiveComponent("newExam")}
+                            onBack={() => {
+                                // Clear session storage when going back to newExam
+                                const clearSessionStorage = () => {
+                                    console.log("Home - Clearing session storage when going back to newExam");
+                                    const keys = ['mcqQuestions', 'codingQuestions', 'sectionTimers'];
+                                    keys.forEach(key => sessionStorage.removeItem(key));
+                                };
+                                clearSessionStorage();
+                                setActiveComponent("newExam");
+                            }}
                             onNexts={() => setActiveComponent("addStudents")}
                             onCreateMCQ={() => setActiveComponent("newMcq")}
                             onCreateCoding={() => setActiveComponent("newCoding")}
@@ -389,7 +521,16 @@ const Home = () => {
                     )}
                     {activeComponent === "addStudents" && (
                         <AddStudents
-                            onBack={() => setActiveComponent("addQuestion")}
+                            onBack={() => {
+                                // Clear session storage when going back to addQuestion
+                                const clearSessionStorage = () => {
+                                    console.log("Home - Clearing session storage when going back to addQuestion");
+                                    const keys = ['addStudents_allBranch', 'addStudents_addedBranch', 'addStudents_list'];
+                                    keys.forEach(key => sessionStorage.removeItem(key));
+                                };
+                                clearSessionStorage();
+                                setActiveComponent("addQuestion");
+                            }}
                             onSubmit={handleCreateExam}
                             createExamRequest={createExamRequest}
                             setCreateExamRequest={setCreateExamRequest}

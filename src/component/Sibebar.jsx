@@ -60,6 +60,38 @@ const Sidebar = ({ activeComponent, setActiveComponent, onManageExamClick }) => 
     }, [isOpen]);
 
     const handleNavigation = (componentName) => {
+        // Clear session storage when navigating away from exam creation flow
+        if (["newExam", "addQuestion", "addStudents", "newMcq", "newCoding"].includes(activeComponent) && 
+            !["newExam", "addQuestion", "addStudents", "newMcq", "newCoding"].includes(componentName)) {
+            
+            console.log("Sidebar - Clearing session storage when navigating away from exam creation");
+            
+            // Clear all exam creation related session storage
+            const allKeys = [
+                'newExam:testName',
+                'newExam:examStartDate', 
+                'newExam:startTime',
+                'newExam:examEndDate',
+                'newExam:endTime',
+                'newExam:timedTest',
+                'newExam:timer',
+                'newExam:attemptsAllowed',
+                'newExam:instructions',
+                'mcqQuestions',
+                'codingQuestions', 
+                'sectionTimers',
+                'addStudents_allBranch',
+                'addStudents_addedBranch',
+                'addStudents_list'
+            ];
+            
+            allKeys.forEach(key => {
+                sessionStorage.removeItem(key);
+            });
+            
+            console.log("Sidebar - Session storage cleared when navigating away from exam creation");
+        }
+        
         // Special handling for manageExam to clear examToView state
         if (componentName === "manageExam" && onManageExamClick) {
             onManageExamClick();

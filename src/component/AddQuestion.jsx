@@ -100,6 +100,30 @@ const AddQuestion = ({ onBack, onNexts, onCreateMCQ, onCreateCoding, isEditing =
         sessionStorage.setItem('codingQuestions', JSON.stringify(codingQuestions));
     }, [codingQuestions]);
 
+    // Clear session storage when component unmounts (only if not editing)
+    useEffect(() => {
+        return () => {
+            if (!isEditing) {
+                // Clear AddQuestion session storage
+                sessionStorage.removeItem('mcqQuestions');
+                sessionStorage.removeItem('codingQuestions');
+                sessionStorage.removeItem('sectionTimers');
+                console.log('AddQuestion - Session storage cleared on unmount');
+            }
+        };
+    }, [isEditing]);
+
+    // Clear session storage on component mount if not editing (fresh form)
+    useEffect(() => {
+        if (!isEditing) {
+            // Clear any existing session storage data on fresh form load
+            sessionStorage.removeItem('mcqQuestions');
+            sessionStorage.removeItem('codingQuestions');
+            sessionStorage.removeItem('sectionTimers');
+            console.log('AddQuestion - Session storage cleared on fresh form load');
+        }
+    }, [isEditing]);
+
     // Save sectionTimers
     useEffect(() => {
         sessionStorage.setItem('sectionTimers', JSON.stringify(sectionTimers));

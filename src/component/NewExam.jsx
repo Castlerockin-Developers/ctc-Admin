@@ -79,8 +79,53 @@ const NewExam = ({
           : ""
       );
       setInstructions(editExamData.instructions || "");
+    } else if (!isEditing) {
+      // Clear form state when not editing (fresh form)
+      setTestName("");
+      setExamStartDate("");
+      setStartTime("");
+      setExamEndDate("");
+      setEndTime("");
+      setTimedTest(false);
+      setTimer("");
+      setAttemptsAllowed("");
+      setInstructions("");
+      setErrors({});
+      setIsSubmitted(false);
     }
   }, [isEditing, editExamData]);
+
+  // Clear session storage when component unmounts (only if not editing)
+  useEffect(() => {
+    return () => {
+      if (!isEditing) {
+        clearSessionStorage();
+      }
+    };
+  }, [isEditing]);
+
+  // Clear session storage when exam is successfully created
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (!isEditing) {
+        clearSessionStorage();
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [isEditing]);
+
+  // Clear session storage on component mount if not editing (fresh form)
+  useEffect(() => {
+    if (!isEditing) {
+      // Clear any existing session storage data on fresh form load
+      clearSessionStorage();
+    }
+  }, [isEditing]);
 
   // 2) Write back on every change
   useEffect(() => {
@@ -266,6 +311,12 @@ const NewExam = ({
           instructions, //
         },
       });
+      
+      // Clear session storage when moving to next step (only if not editing)
+      if (!isEditing) {
+        clearSessionStorage();
+      }
+      
       onNext(); //
     } else {
       // If the form is not valid, the 'errors' state is already updated by runAllValidations().

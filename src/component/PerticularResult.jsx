@@ -64,11 +64,11 @@ const ParticularResult = ({ student, onBack }) => {
           <div className="flex gap-10 justify-between marks-r-cards-container">
             <div className="marks-r-cards">
               <p>Obtained Score</p>
-              <h4>{student.score}</h4>
+              <h4>{typeof student.score === 'number' ? student.score.toFixed(2) : student.score}</h4>
             </div>
             <div className="marks-r-cards">
               <p>Trust Score</p>
-              <h4>{student.trustScore}</h4>
+              <h4>{typeof student.trustScore === 'number' ? student.trustScore.toFixed(2) : student.trustScore}</h4>
             </div>
           </div>
         </div>
