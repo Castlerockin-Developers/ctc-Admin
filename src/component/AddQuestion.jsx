@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import line from '../assets/Line.png';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -100,30 +100,6 @@ const AddQuestion = ({ onBack, onNexts, onCreateMCQ, onCreateCoding, isEditing =
         sessionStorage.setItem('codingQuestions', JSON.stringify(codingQuestions));
     }, [codingQuestions]);
 
-    // Clear session storage when component unmounts (only if not editing)
-    useEffect(() => {
-        return () => {
-            if (!isEditing) {
-                // Clear AddQuestion session storage
-                sessionStorage.removeItem('mcqQuestions');
-                sessionStorage.removeItem('codingQuestions');
-                sessionStorage.removeItem('sectionTimers');
-                console.log('AddQuestion - Session storage cleared on unmount');
-            }
-        };
-    }, [isEditing]);
-
-    // Clear session storage on component mount if not editing (fresh form)
-    useEffect(() => {
-        if (!isEditing) {
-            // Clear any existing session storage data on fresh form load
-            sessionStorage.removeItem('mcqQuestions');
-            sessionStorage.removeItem('codingQuestions');
-            sessionStorage.removeItem('sectionTimers');
-            console.log('AddQuestion - Session storage cleared on fresh form load');
-        }
-    }, [isEditing]);
-
     // Save sectionTimers
     useEffect(() => {
         sessionStorage.setItem('sectionTimers', JSON.stringify(sectionTimers));
@@ -178,7 +154,7 @@ const AddQuestion = ({ onBack, onNexts, onCreateMCQ, onCreateCoding, isEditing =
     const [selectedQuestionType, setSelectedQuestionType] = useState(null);
 
     //   Import Question Bank Popup
-    const [isEditingScoreCoding, setIsEditingScoreCoding] = useState(false);
+    const [isEditingScoreCoding] = useState(false);
     const [isQuestionBankVisible, setIsQuestionBankVisible] = useState(true);
     const [selectedSectionFilter, setSelectedSectionFilter] = useState('all');
 
@@ -208,7 +184,12 @@ const AddQuestion = ({ onBack, onNexts, onCreateMCQ, onCreateCoding, isEditing =
     const handleCloseCreatePopup = () => {
         setShowCreatePopup(false);
         setShowImportPopup(false);
-
+        
+        // Clear the file input
+        const fileInput = document.getElementById('excelFileInput');
+        if (fileInput) {
+            fileInput.value = '';
+        }
     };
 
     const handleCreateType = (type) => {
@@ -296,19 +277,189 @@ const AddQuestion = ({ onBack, onNexts, onCreateMCQ, onCreateCoding, isEditing =
         document.getElementById('excelFileInput').click();  // Trigger file input click
     };
 
-    const handleFileUpload = (e) => {
+    const getUserDetails = async () => {
+        try {
+            const response = await authFetch('/getUserDetails/', {
+                method: 'GET',
+            });
+            
+            if (response.ok) {
+                const userData = await response.json();
+                return userData;
+            }
+        } catch (error) {
+            console.error('Error fetching user details:', error);
+        }
+        return null;
+    };
+
+    const downloadTemplate = async (questionType) => {
+        try {
+            const path = `/download-question-template/?type=${questionType}`;
+            const response = await authFetch(path, {
+                method: 'GET',
+            });
+            
+            if (response.ok) {
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${questionType}_question_template.xlsx`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            } else {
+                throw new Error('Failed to download template');
+            }
+        } catch (error) {
+            console.error('Error downloading template:', error);
+            Swal.fire({
+                title: 'Download Failed',
+                text: 'Failed to download template. Please try again.',
+                icon: 'error',
+                background: "#181817",
+                color: "#fff",
+            });
+        }
+    };
+
+    const handleFileUpload = async (e) => {
         const file = e.target.files[0];
         if (file) {
-            // Handle the file processing based on the selected question type (MCQ or Coding)
-            if (selectedQuestionType === 'mcq') {
-                // Process MCQ file
-                console.log('Uploading MCQ questions file:', file);
-            } else if (selectedQuestionType === 'coding') {
-                // Process Coding file
-                console.log('Uploading Coding questions file:', file);
+            // Validate file type
+            const allowedTypes = ['.xlsx', '.xls', '.csv'];
+            const fileExtension = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
+            
+            if (!allowedTypes.includes(fileExtension)) {
+                Swal.fire({
+                    title: 'Invalid File Type',
+                    text: 'Please upload an Excel (.xlsx, .xls) or CSV file.',
+                    icon: 'error',
+                    background: "#181817",
+                    color: "#fff",
+                });
+                return;
             }
-            // Optionally, you can close the popup after file selection
-            handleCloseCreatePopup();
+
+            // Validate file size (max 10MB)
+            const maxSize = 10 * 1024 * 1024; // 10MB
+            if (file.size > maxSize) {
+                Swal.fire({
+                    title: 'File Too Large',
+                    text: 'Please upload a file smaller than 10MB.',
+                    icon: 'error',
+                    background: "#181817",
+                    color: "#fff",
+                });
+                return;
+            }
+            try {
+                // Show loading state
+                Swal.fire({
+                    title: 'Uploading...',
+                    text: `Processing ${selectedQuestionType.toUpperCase()} questions from ${file.name}`,
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    showConfirmButton: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    },
+                    background: "#181817",
+                    color: "#fff",
+                });
+
+                // Create FormData for file upload
+                const formData = new FormData();
+                formData.append('file', file);
+                
+                // Get organization ID from user data
+                let orgId = '1'; // Default fallback
+                try {
+                    const userData = JSON.parse(localStorage.getItem('userdata') || '{}');
+                    if (userData.org_id || userData.org?.id) {
+                        orgId = userData.org_id || userData.org.id;
+                    } else {
+                        // If not in localStorage, fetch from API
+                        const userDetails = await getUserDetails();
+                        if (userDetails && userDetails.org) {
+                            // The org field might be the organization name, so we need to get the ID
+                            // For now, we'll use a default value and let the backend handle it
+                            orgId = '1';
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error getting organization ID:', error);
+                }
+                formData.append('org_id', orgId);
+
+                // Upload file to the API
+                console.log('Uploading file:', file.name, 'Size:', file.size, 'Type:', file.type);
+                console.log('Organization ID:', orgId);
+                
+                const response = await authFetch('/import-questions/', {
+                    method: 'POST',
+                    body: formData,
+                    // Don't set Content-Type header, let the browser set it with boundary for FormData
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    
+                    // Show success message
+                    const successMessage = result.detail || 'Questions imported successfully!';
+                    Swal.fire({
+                        title: 'Success!',
+                        text: `${selectedQuestionType.toUpperCase()} questions imported successfully! ${successMessage}`,
+                        icon: 'success',
+                        background: "#181817",
+                        color: "#fff",
+                        timer: 3000,
+                        showConfirmButton: false,
+                    });
+
+                    // Refresh the question bank to show newly imported questions
+                    await fetchQuestions();
+                    
+                    // Close the popup
+                    handleCloseCreatePopup();
+                } else {
+                    const errorData = await response.json();
+                    console.error('Upload failed:', errorData);
+                    
+                    // Show more specific error messages
+                    let errorMessage = 'Upload failed';
+                    if (errorData.detail) {
+                        errorMessage = errorData.detail;
+                    } else if (errorData.errors && Array.isArray(errorData.errors)) {
+                        errorMessage = `Import failed with ${errorData.errors.length} errors. Please check your file format.`;
+                    }
+                    
+                    // Add specific guidance based on question type
+                    if (selectedQuestionType === 'mcq') {
+                        errorMessage += '\n\nFor MCQ questions, ensure you have: kind, question, category, score, reason, and all answer fields.';
+                    } else if (selectedQuestionType === 'coding') {
+                        errorMessage += '\n\nFor coding questions, ensure you have: kind, coding_name, score, short_desc, statement, input, expected_output.';
+                    }
+                    
+                    throw new Error(errorMessage);
+                }
+            } catch (error) {
+                console.error('Error uploading file:', error);
+                
+                // Show error message
+                Swal.fire({
+                    title: 'Upload Failed',
+                    text: error.message || 'An error occurred while uploading the file. Please check the file format and try again.',
+                    icon: 'error',
+                    background: "#181817",
+                    color: "#fff",
+                });
+            } finally {
+                // Clear the file input to allow re-uploading the same file
+                e.target.value = '';
+            }
         }
     };
 
@@ -825,28 +976,57 @@ const AddQuestion = ({ onBack, onNexts, onCreateMCQ, onCreateCoding, isEditing =
                                     Import questions from excel
                                 </h2>
 
+                                <div className="mb-4">
+                                    <div className="grid grid-cols-2 gap-2">
+                                                                                 <button
+                                             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 border-b-2 border-white hover:border-blue-300 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+                                             onClick={() => downloadTemplate('mcq')}
+                                         >
+                                             <span className="underline decoration-2 underline-offset-4" style={{ textDecorationColor: '#A294F9' }}>Download MCQ Template</span>
+                                         </button>
+                                        <button
+                                            className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 border-b-2 border-white hover:border-green-300 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+                                            onClick={() => downloadTemplate('coding')}
+                                        >
+                                            <span className="underline decoration-2 underline-offset-4" style={{ textDecorationColor: '#A294F9' }}>Download Coding Template</span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div className="mb-4 text-sm text-white">
+                                    <p>Upload an Excel file (.xlsx, .xls) or CSV file with questions.</p>
+                                    <p>Download the appropriate template for your question type and follow the format.</p>
+                                    <div className="text-xs mt-2">
+                                        <p><strong>MCQ Questions:</strong> kind, question, category, group (optional), score, reason, 
+                                        answer_1, answer_1_is_correct, answer_2, answer_2_is_correct, 
+                                        answer_3, answer_3_is_correct, answer_4, answer_4_is_correct</p>
+                                        <p><strong>Coding Questions:</strong> kind, coding_name, score, short_desc, statement, 
+                                        input, expected_output, testcases (optional)</p>
+                                    </div>
+                                </div>
+
                                 <div className='flex gap-2 import-btn'>
                                     {/* MCQ Button */}
                                     <button
-                                        className="px-4 py-2 bg-blue-500 text-white rounded-md mb-2 w-full"
+                                        className="px-4 py-2 bg-blue-500 text-white rounded-md mb-2 w-full hover:bg-blue-700"
                                         onClick={() => handleFileSelection('mcq')}
                                     >
-                                        MCQ Questions
+                                        Upload MCQ Questions
                                     </button>
 
                                     {/* Coding Button */}
                                     <button
-                                        className="px-4 py-2 bg-green-500 text-white rounded-md w-full"
+                                        className="px-4 py-2 bg-green-500 text-white rounded-md w-full hover:bg-green-700"
                                         onClick={() => handleFileSelection('coding')}
                                     >
-                                        Coding Questions
+                                        Upload Coding Questions
                                     </button>
                                 </div>
 
                                 {/* File Input (hidden, triggered by buttons) */}
                                 <input
                                     type="file"
-                                    accept=".xlsx, .xls"
+                                    accept=".xlsx, .xls, .csv"
                                     onChange={handleFileUpload}
                                     id="excelFileInput"
                                     className="hidden"
