@@ -226,9 +226,16 @@ const AddStudents = ({ onBack, onSubmit, createExamRequest, isEditing = false, e
 
         setIsCreating(true);
         
-        // Get section_ids from sessionStorage for MCQ questions
+        // Get section_ids and question counts from sessionStorage for MCQ questions
         const mcqQuestions = JSON.parse(sessionStorage.getItem('mcqQuestions') || '[]');
         const section_ids = [...new Set(mcqQuestions.map(q => q.group_id))];
+        
+        // Create section_question_counts mapping
+        const section_question_counts = {};
+        section_ids.forEach(sectionId => {
+            const questionsInSection = mcqQuestions.filter(q => q.group_id === sectionId);
+            section_question_counts[sectionId] = questionsInSection.length;
+        });
         
         // Get coding_question_ids from sessionStorage for coding questions
         const codingQuestions = JSON.parse(sessionStorage.getItem('codingQuestions') || '[]');
@@ -238,11 +245,13 @@ const AddStudents = ({ onBack, onSubmit, createExamRequest, isEditing = false, e
             ...createExamRequest, 
             students: addedStudents.map(s => s.studentId),
             section_ids: section_ids,
+            section_question_counts: section_question_counts,
             coding_question_ids: coding_question_ids
         };
 
         console.log("AddStudents - createExam payload:", payload);
         console.log("AddStudents - students being sent:", payload.students);
+        console.log("AddStudents - section_question_counts:", section_question_counts);
         console.log("AddStudents - addedStudents:", addedStudents);
 
         try {
