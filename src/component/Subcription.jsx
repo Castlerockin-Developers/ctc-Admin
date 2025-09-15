@@ -13,7 +13,7 @@ const Subscription = () => {
     // Fetch subscription details and billing history
     const fetchSubscriptionDetails = async () => {
         try {
-            const response = await authFetch('/admin/subscribtion', { method: 'GET' });
+            const response = await authFetch('/admin/subscribe', { method: 'GET' });
             const data = await response.json();
             setExpiryDate((data.expires_in || 0) + " days");
             setPlanName(data.current_plan);
