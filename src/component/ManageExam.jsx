@@ -589,7 +589,7 @@ const ViewExam = ({ exam, onBack, onEditExam, onRefresh }) => {
                                                         <p className='text-white'>
                                                             {index + 1}. {student.name || `${student.first_name} ${student.last_name}`}
                                                         </p>
-                                                        <p className="text-sm text-white whitespace-nowrap">
+                                                        <p className="student-info text-sm text-white whitespace-nowrap">
                                                             USN: {student.usn || student.slNo} | {student.email}
                                                         </p>
                                                     </div>
