@@ -239,5 +239,9 @@ button.viewexam-edit-btn:hover {
     border: 1px solid white;
     width: 87vw;
 }
+.student-info {
+    margin-left: 10px;
+    white-space: wrap;
+}
 
 }

@@ -556,7 +556,7 @@ const Settings = ({ openAddUserModal, setOpenAddUserModal }) => {
                   </button>
                   <button
                     onClick={handleCreateUser}
-                    className="create-btn"
+                    className="create-btn settings-create-btn"
                     disabled={isCreatingUser}
                   >
                     {isCreatingUser ? "Creating..." : "Create"}

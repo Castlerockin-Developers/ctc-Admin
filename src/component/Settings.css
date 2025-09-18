@@ -538,6 +538,9 @@
     .e-p-container {
         flex-direction: column;
     }
+    .settings-create-btn{
+        min-width: 20%;
+    }
 }
 
 @media(max-width:1023px) and (min-width:801px) {

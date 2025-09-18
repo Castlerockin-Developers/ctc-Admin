@@ -9,7 +9,7 @@ import Swal from "sweetalert2";
 
 const Sidebar = ({ activeComponent, setActiveComponent, onManageExamClick }) => {
     const [isOpen, setIsOpen] = useState(false);
-    const [isMobile, setIsMobile] = useState(window.innerWidth <= 1024);
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
     const navigate = useNavigate();
 
     const sidebarVariants = {
@@ -48,7 +48,7 @@ const Sidebar = ({ activeComponent, setActiveComponent, onManageExamClick }) => 
 
     useEffect(() => {
         const handleResize = () => {
-            const isNowMobile = window.innerWidth <= 1024;
+            const isNowMobile = window.innerWidth <= 768;
             setIsMobile(isNowMobile);
             if (!isNowMobile && isOpen) {
                 setIsOpen(false);
@@ -169,7 +169,12 @@ const Sidebar = ({ activeComponent, setActiveComponent, onManageExamClick }) => 
                             stroke="white"
                             strokeWidth="4"
                             strokeLinecap="round"
-                            animate={{ rotate: isOpen ? 45 : 0, translateY: isOpen ? 10 : 0 }}
+                            animate={{ 
+                                rotate: isOpen ? 45 : 0,
+                                x: isOpen ? 0 : 0,
+                                y: isOpen ? 10 : 0
+                            }}
+                            transformOrigin="25 15"
                             transition={{ duration: 0.3 }}
                         />
                         {/* Middle Bar */}
@@ -193,7 +198,12 @@ const Sidebar = ({ activeComponent, setActiveComponent, onManageExamClick }) => 
                             stroke="white"
                             strokeWidth="4"
                             strokeLinecap="round"
-                            animate={{ rotate: isOpen ? -45 : 0, translateY: isOpen ? -10 : 0 }}
+                            animate={{ 
+                                rotate: isOpen ? -45 : 0,
+                                x: isOpen ? 0 : 0,
+                                y: isOpen ? -10 : 0
+                            }}
+                            transformOrigin="25 35"
                             transition={{ duration: 0.3 }}
                         />
                     </motion.svg>
