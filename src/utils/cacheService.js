@@ -1,6 +1,8 @@
 // Cache Service Utility for CTC Admin Dashboard
 // Handles localStorage caching with expiration, invalidation, and force refresh
 
+import { error as logError } from './logger';
+
 class CacheService {
   constructor() {
     this.cachePrefix = 'ctc_';
@@ -23,7 +25,7 @@ class CacheService {
       localStorage.setItem(this.generateKey(key), JSON.stringify(cacheData));
       return true;
     } catch (error) {
-      console.error('Cache set error:', error);
+      logError('Cache set error:', error);
       return false;
     }
   }
@@ -45,7 +47,7 @@ class CacheService {
 
       return cacheData.data;
     } catch (error) {
-      console.error('Cache get error:', error);
+      logError('Cache get error:', error);
       this.remove(key);
       return null;
     }
@@ -57,7 +59,7 @@ class CacheService {
       localStorage.removeItem(this.generateKey(key));
       return true;
     } catch (error) {
-      console.error('Cache remove error:', error);
+      logError('Cache remove error:', error);
       return false;
     }
   }
@@ -73,7 +75,7 @@ class CacheService {
       });
       return true;
     } catch (error) {
-      console.error('Cache clear error:', error);
+      logError('Cache clear error:', error);
       return false;
     }
   }
@@ -143,7 +145,7 @@ class CacheService {
         }
       });
     } catch (error) {
-      console.error('Cache cleanup error:', error);
+      logError('Cache cleanup error:', error);
     }
   }
 

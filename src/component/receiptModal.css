@@ -1,5 +1,5 @@
-/* Overlay Background */
-.fixed {
+/* Overlay Background - use unique class to avoid overriding Tailwind's fixed utility */
+.receipt-modal-overlay {
     position: fixed;
     top: 0;
     left: 0;

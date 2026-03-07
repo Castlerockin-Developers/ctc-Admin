@@ -1,47 +1,41 @@
 import React, { useEffect, useState } from "react";
-import "./CustomLearning.css";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSearch } from "@fortawesome/free-solid-svg-icons";
+import { error as logError } from "../utils/logger";
+import { FaSearch, FaChevronLeft } from "react-icons/fa";
 import Swal from "sweetalert2";
-import line from "../assets/Line.png";
 import { motion } from "framer-motion";
-import { authFetch } from "../scripts/AuthProvider"; // Adjust import path as needed
+import { authFetch } from "../scripts/AuthProvider";
 
 const CourseStudents = ({ onBackccc, onNextccc }) => {
   const [allStudents, setAllStudents] = useState([]);
   const [addedStudents, setAddedStudents] = useState([]);
-
   const [allSearchQuery, setAllSearchQuery] = useState("");
   const [addedSearchQuery, setAddedSearchQuery] = useState("");
   const [allBranchFilter, setAllBranchFilter] = useState("");
   const [addedBranchFilter, setAddedBranchFilter] = useState("");
   const [branches, setBranches] = useState([]);
-
   const [allPage, setAllPage] = useState(1);
   const [addedPage, setAddedPage] = useState(1);
   const studentsPerPage = 20;
   const [loading, setLoading] = useState(false);
   const [currentModuleId, setCurrentModuleId] = useState(null);
-  const [currentModuleName, setCurrentModuleName] = useState('');
+  const [currentModuleName, setCurrentModuleName] = useState("");
 
   useEffect(() => {
-    // Get module ID from localStorage (set by previous steps)
-    const moduleId = localStorage.getItem('currentModuleId');
-    const moduleName = localStorage.getItem('currentModuleName');
+    const moduleId = localStorage.getItem("currentModuleId");
+    const moduleName = localStorage.getItem("currentModuleName");
     if (moduleId) {
       setCurrentModuleId(moduleId);
-      setCurrentModuleName(moduleName || 'Unknown Module');
+      setCurrentModuleName(moduleName || "Unknown Module");
     }
   }, []);
 
-  // Fetch students and initialize state
   useEffect(() => {
     (async () => {
       try {
         const res = await authFetch("/admin/students/", { method: "GET" });
         const data = await res.json();
-        const list = Object.keys(data.data).flatMap((branch) =>
-          data.data[branch]
+        const list = Object.keys(data.data || {}).flatMap((branch) =>
+          (data.data[branch] || [])
             .filter((s) => s.usn)
             .map((s) => ({
               studentId: s.id,
@@ -53,34 +47,31 @@ const CourseStudents = ({ onBackccc, onNextccc }) => {
             }))
         );
         setAllStudents(list);
-        setBranches(Object.keys(data.data));
+        setBranches(Object.keys(data.data || {}));
       } catch (e) {
-        console.error("Failed to fetch students:", e);
+        logError("Failed to fetch students:", e);
       }
     })();
   }, []);
 
-  // Filter all students
   const filteredAll = allStudents
     .filter(
       (s) =>
         (!allBranchFilter ||
-          s.branch.toLowerCase() === allBranchFilter.toLowerCase()) &&
-        (s.name.toLowerCase().includes(allSearchQuery.toLowerCase()) ||
-          s.id.toLowerCase().includes(allSearchQuery.toLowerCase()))
+          s.branch?.toLowerCase() === allBranchFilter.toLowerCase()) &&
+        (s.name?.toLowerCase().includes(allSearchQuery.toLowerCase()) ||
+          s.id?.toLowerCase().includes(allSearchQuery.toLowerCase()))
     )
-    .filter((s) => !addedStudents.some((a) => a.studentId === s.studentId)); // Only show not-added students
+    .filter((s) => !addedStudents.some((a) => a.studentId === s.studentId));
 
-  // Filter added students
   const filteredAdded = addedStudents.filter(
     (s) =>
       (!addedBranchFilter ||
-        s.branch.toLowerCase() === addedBranchFilter.toLowerCase()) &&
-      (s.name.toLowerCase().includes(addedSearchQuery.toLowerCase()) ||
-        s.id.toLowerCase().includes(addedSearchQuery.toLowerCase()))
+        s.branch?.toLowerCase() === addedBranchFilter.toLowerCase()) &&
+      (s.name?.toLowerCase().includes(addedSearchQuery.toLowerCase()) ||
+        s.id?.toLowerCase().includes(addedSearchQuery.toLowerCase()))
   );
 
-  // Add all filtered students
   const addAll = () => {
     setAddedStudents((prev) => [...prev, ...filteredAll]);
     setAddedBranchFilter("");
@@ -88,17 +79,14 @@ const CourseStudents = ({ onBackccc, onNextccc }) => {
     setAllPage(1);
   };
 
-  // Add a single student
   const addOne = (s) =>
     setAddedStudents((prev) =>
       prev.some((a) => a.studentId === s.studentId) ? prev : [...prev, s]
     );
 
-  // Remove a student
   const removeOne = (s) =>
     setAddedStudents((prev) => prev.filter((a) => a.studentId !== s.studentId));
 
-  // Remove all added students with confirmation
   const removeAll = () => {
     Swal.fire({
       title: "Are you sure?",
@@ -116,322 +104,321 @@ const CourseStudents = ({ onBackccc, onNextccc }) => {
       }
     });
   };
+
   const paginateData = (data, page) => {
     const start = (page - 1) * studentsPerPage;
     return data.slice(start, start + studentsPerPage);
   };
 
-  // Assign module to selected students
   const assignModuleToStudents = async () => {
     if (addedStudents.length === 0) {
       Swal.fire({
-        title: 'No Students Selected',
-        text: 'Please add at least one student before creating the assignment.',
-        icon: 'warning',
+        title: "No Students Selected",
+        text: "Please add at least one student before creating the assignment.",
+        icon: "warning",
         background: "#181817",
-        color: "#fff"
+        color: "#fff",
       });
       return;
     }
-
     if (!currentModuleId) {
       Swal.fire({
-        title: 'Error!',
-        text: 'No module found. Please go back and create a module first.',
-        icon: 'error',
+        title: "Error!",
+        text: "No module found. Please go back and create a module first.",
+        icon: "error",
         background: "#181817",
-        color: "#fff"
+        color: "#fff",
       });
       return;
     }
 
     try {
       setLoading(true);
-      const assignmentData = {
-        module_id: parseInt(currentModuleId),
-        student_ids: addedStudents.map(s => s.studentId),
-        assigned_branch: addedBranchFilter || 'All'
-      };
-
-      const response = await authFetch('/learning/assignments/', {
-        method: 'POST',
-        body: JSON.stringify(assignmentData),
-        headers: {
-          'Content-Type': 'application/json'
-        }
+      const response = await authFetch("/learning/assignments/", {
+        method: "POST",
+        body: JSON.stringify({
+          module_id: parseInt(currentModuleId, 10),
+          student_ids: addedStudents.map((s) => s.studentId),
+          assigned_branch: addedBranchFilter || "All",
+        }),
+        headers: { "Content-Type": "application/json" },
       });
 
       if (response.ok) {
-        const result = await response.json();
-        
         Swal.fire({
-          title: 'Success!',
+          title: "Success!",
           text: `Module "${currentModuleName}" assigned to ${addedStudents.length} students successfully!`,
-          icon: 'success',
-        iconColor: "#A294F9", // Set the icon color to purple
+          icon: "success",
+          iconColor: "#A294F9",
           background: "#181817",
-          color: "#fff"
+          color: "#fff",
         }).then(() => {
-          // Clear localStorage and go to next step
-          localStorage.removeItem('currentModuleId');
-          localStorage.removeItem('currentModuleName');
+          localStorage.removeItem("currentModuleId");
+          localStorage.removeItem("currentModuleName");
           onNextccc();
         });
       } else {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to assign module');
+        throw new Error(errorData.error || "Failed to assign module");
       }
     } catch (error) {
-      console.error('Error assigning module:', error);
+      logError("Error assigning module:", error);
       Swal.fire({
-        title: 'Error!',
-        text: error.message || 'Failed to assign module. Please try again.',
-        icon: 'error',
+        title: "Error!",
+        text: error.message || "Failed to assign module. Please try again.",
+        icon: "error",
         background: "#181817",
-        color: "#fff"
+        color: "#fff",
       });
     } finally {
       setLoading(false);
     }
   };
 
-  return (
-    <div className="Custom-container">
-      <div className="new-c-top">
-        <h1>Add Students</h1>
-        {currentModuleName && (
-          <p style={{color: '#888', marginTop: '8px'}}>
-            Assigning module: <strong style={{color: '#fff'}}>{currentModuleName}</strong> to students
-          </p>
-        )}
-        <img src={line} alt="line" className="w-full h-0.5" />
-      </div>
+  const searchInputClass =
+    "min-h-[40px] w-full min-w-0 rounded-lg border border-[#5a5a5a] bg-[#3d3d3d] px-3 py-2 pl-9 text-sm text-white outline-none placeholder:text-gray-500 focus:border-[#A294F9] focus:ring-2 focus:ring-[#A294F9]/30";
+  const selectClass =
+    "min-h-[40px] rounded-lg border border-[#5a5a5a] bg-[#3d3d3d] px-3 py-2 text-sm text-white outline-none focus:border-[#A294F9]";
 
-      <div className="add-import">
-        <div className="grid lg:grid-cols-2 md:grid-cols-1 gap-2.5 add-s-container">
-          {/* All Students Section */}
-          <div className="all-student learning-all-student">
-            <div className="all-s-header flex justify-between">
-              <h3>All Students</h3>
-              <div className="flex gap-1.5 r-header-search">
+  return (
+    <div className="flex h-[87vh] min-h-[calc(100dvh-4.5rem)] w-full max-w-full flex-col overflow-y-auto rounded-lg bg-[#282828] p-4 sm:p-5 md:p-6 md:pb-8">
+      <div className="mx-auto w-full max-w-7xl space-y-6">
+        <div className="flex items-center gap-4">
+          <button
+            type="button"
+            onClick={onBackccc}
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-[#5a5a5a] bg-[#3d3d3d] text-white transition-colors hover:bg-[#4a4a4a]"
+            aria-label="Back"
+          >
+            <FaChevronLeft className="h-5 w-5" />
+          </button>
+          <div className="min-w-0 flex-1">
+            <h1 className="text-xl font-semibold text-white sm:text-2xl">
+              Add Students
+            </h1>
+            {currentModuleName && (
+              <p className="mt-1 text-sm text-gray-400">
+                Assigning module: <span className="text-white">{currentModuleName}</span> to students
+              </p>
+            )}
+            <div className="mt-2 h-0.5 w-full rounded bg-[#5a5a5a]" />
+          </div>
+        </div>
+
+        <div className="grid gap-6 lg:grid-cols-2">
+          {/* All Students */}
+          <div className="flex flex-col rounded-xl border border-[#5a5a5a] bg-[#353535] overflow-hidden">
+            <div className="flex flex-col gap-3 border-b border-[#5a5a5a] p-4 sm:flex-row sm:items-center sm:gap-4">
+              <h3 className="font-semibold text-white">All Students</h3>
+              <div className="flex flex-1 flex-col gap-2 sm:flex-row sm:items-center">
                 <select
-                  className="learning-filter-select-branch filter-select-branch"
+                  className={selectClass}
                   value={allBranchFilter}
                   onChange={(e) => setAllBranchFilter(e.target.value)}
                 >
                   <option value="">Branch</option>
                   {branches.map((b) => (
-                    <option key={b} value={b}>
-                      {b}
-                    </option>
+                    <option key={b} value={b}>{b}</option>
                   ))}
                 </select>
-                <div className="flex relative learning-s-search-container s-search-container">
-                  <FontAwesomeIcon icon={faSearch} className="s-icon" />
+                <div className="relative flex-1">
+                  <FaSearch className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                   <input
                     type="text"
-                    placeholder="Search All Students"
+                    placeholder="Search all students"
+                    value={allSearchQuery}
                     onChange={(e) => setAllSearchQuery(e.target.value)}
+                    className={searchInputClass}
                   />
                 </div>
+                <motion.button
+                  whileTap={{ scale: 1.02 }}
+                  type="button"
+                  onClick={addAll}
+                  className="whitespace-nowrap rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
+                >
+                  + Add Batch
+                </motion.button>
               </div>
             </div>
-
-            <div className="all-s-body">
-              <div className="adds-table-wrapper">
-                <>
-                  <table>
-                    <thead>
-                      <tr>
-                        <td colSpan={2} align="left">
-                          All Students
-                        </td>
-                        <td colSpan={2} align="right">
+            <div className="min-h-[200px] overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="sticky top-0 bg-[#4a4a4a]">
+                  <tr>
+                    <th className="border-b border-[#666] px-3 py-2 text-left font-medium text-white">USN</th>
+                    <th className="border-b border-[#666] px-3 py-2 text-left font-medium text-white">Name</th>
+                    <th className="border-b border-[#666] px-3 py-2 text-left font-medium text-white">Branch</th>
+                    <th className="border-b border-[#666] px-3 py-2 text-right font-medium text-white"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredAll.length > 0 ? (
+                    paginateData(filteredAll, allPage).map((s) => (
+                      <tr key={s.studentId} className="border-b border-[#555] hover:bg-[#404040]">
+                        <td className="px-3 py-2 text-white">{s.id}</td>
+                        <td className="max-w-[120px] truncate px-3 py-2 text-white">{s.name}</td>
+                        <td className="px-3 py-2 text-gray-300">{s.branch}</td>
+                        <td className="px-3 py-2 text-right">
                           <button
-                            onClick={addAll}
-                            className="bg-green-500 rounded hover:bg-green-900 adds-branch"
+                            type="button"
+                            onClick={() => addOne(s)}
+                            className="rounded-lg bg-green-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-green-700"
                           >
-                            + Add Batch
+                            + Add
                           </button>
                         </td>
                       </tr>
-                    </thead>
-                    <tbody>
-                      {filteredAll.length > 0 ? (
-                        paginateData(filteredAll, allPage).map((s) => (
-                          <tr key={s.studentId}>
-                            <td>{s.id}</td>
-                            <td>{s.name}</td>
-                            <td>{s.branch}</td>
-                            <td>
-                              <button
-                                onClick={() => addOne(s)}
-                                className="bg-green-500 hover:bg-green-900 rounded adds-btn"
-                              >
-                                +Add
-                              </button>
-                            </td>
-                          </tr>
-                        ))
-                      ) : (
-                        <tr>
-                          <td colSpan={4} className="text-center">
-                            No students found
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-
-                  {/* ── Pagination for All Students ── */}
-                  <div className="pagination flex justify-center items-center gap-2 mt-2">
-                    <button
-                      disabled={allPage === 1}
-                      onClick={() => setAllPage((p) => p - 1)}
-                      className="px-3 py-1 bg-gray-700 rounded disabled:opacity-50"
-                    >
-                      Prev
-                    </button>
-
-                    <span>
-                      {allPage} /{" "}
-                      {Math.ceil(filteredAll.length / studentsPerPage)}
-                    </span>
-
-                    <button
-                      disabled={
-                        allPage >=
-                        Math.ceil(filteredAll.length / studentsPerPage)
-                      }
-                      onClick={() => setAllPage((p) => p + 1)}
-                      className="px-3 py-1 bg-gray-700 rounded disabled:opacity-50"
-                    >
-                      Next
-                    </button>
-                  </div>
-                </>
-              </div>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={4} className="px-3 py-6 text-center text-gray-400">
+                        No students found
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
             </div>
+            {filteredAll.length > studentsPerPage && (
+              <div className="flex items-center justify-center gap-2 border-t border-[#5a5a5a] p-2">
+                <button
+                  type="button"
+                  disabled={allPage === 1}
+                  onClick={() => setAllPage((p) => p - 1)}
+                  className="rounded-lg border border-[#5a5a5a] bg-transparent px-3 py-1.5 text-sm text-white hover:bg-white/5 disabled:opacity-50"
+                >
+                  Prev
+                </button>
+                <span className="text-sm text-gray-400">
+                  {allPage} / {Math.ceil(filteredAll.length / studentsPerPage)}
+                </span>
+                <button
+                  type="button"
+                  disabled={allPage >= Math.ceil(filteredAll.length / studentsPerPage)}
+                  onClick={() => setAllPage((p) => p + 1)}
+                  className="rounded-lg border border-[#5a5a5a] bg-transparent px-3 py-1.5 text-sm text-white hover:bg-white/5 disabled:opacity-50"
+                >
+                  Next
+                </button>
+              </div>
+            )}
           </div>
 
-          {/* Added Students Section */}
-          <div className=" learning-all-student-added all-student-added">
-            <div className="all-s-header-added flex justify-between">
-              <h3>Added</h3>
-              <div className="flex gap-1.5 r-header-search">
+          {/* Added Students */}
+          <div className="flex flex-col rounded-xl border border-[#5a5a5a] bg-[#353535] overflow-hidden">
+            <div className="flex flex-col gap-3 border-b border-[#5a5a5a] p-4 sm:flex-row sm:items-center sm:gap-4">
+              <h3 className="font-semibold text-white">Added</h3>
+              <div className="flex flex-1 flex-col gap-2 sm:flex-row sm:items-center">
                 <select
-                  className="learning-filter-select-branch filter-select-branch"
+                  className={selectClass}
                   value={addedBranchFilter}
                   onChange={(e) => setAddedBranchFilter(e.target.value)}
                 >
                   <option value="">Branch</option>
                   {branches.map((b) => (
-                    <option key={b} value={b}>
-                      {b}
-                    </option>
+                    <option key={b} value={b}>{b}</option>
                   ))}
                 </select>
-                <div className="flex relative learning-s-search-container s-search-container">
-                  <FontAwesomeIcon icon={faSearch} className="s-icon" />
+                <div className="relative flex-1">
+                  <FaSearch className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                   <input
                     type="text"
-                    placeholder="Search Added Students"
+                    placeholder="Search added students"
+                    value={addedSearchQuery}
                     onChange={(e) => setAddedSearchQuery(e.target.value)}
+                    className={searchInputClass}
                   />
                 </div>
+                <button
+                  type="button"
+                  onClick={removeAll}
+                  className="whitespace-nowrap rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+                >
+                  Remove all
+                </button>
               </div>
             </div>
-            <div className="all-s-body">
-              <div className="addeds-table-wrapper">
-                {filteredAdded.length ? (
-                  <>
-                    <table>
-                      <thead>
-                        <tr>
-                          <td colSpan={5} align="left">
-                            Added Students
-                          </td>
-                          <td>
+            <div className="min-h-[200px] overflow-x-auto">
+              {filteredAdded.length > 0 ? (
+                <>
+                  <table className="w-full text-sm">
+                    <thead className="sticky top-0 bg-[#4a4a4a]">
+                      <tr>
+                        <th className="border-b border-[#666] px-3 py-2 text-left font-medium text-white">USN</th>
+                        <th className="border-b border-[#666] px-3 py-2 text-left font-medium text-white">Name</th>
+                        <th className="border-b border-[#666] px-3 py-2 text-left font-medium text-white">Branch</th>
+                        <th className="border-b border-[#666] px-3 py-2 text-right font-medium text-white"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {paginateData(filteredAdded, addedPage).map((s) => (
+                        <tr key={s.studentId} className="border-b border-[#555] hover:bg-[#404040]">
+                          <td className="px-3 py-2 text-white">{s.id}</td>
+                          <td className="max-w-[120px] truncate px-3 py-2 text-white">{s.name}</td>
+                          <td className="px-3 py-2 text-gray-300">{s.branch}</td>
+                          <td className="px-3 py-2 text-right">
                             <button
-                              onClick={removeAll}
-                              className="bg-red-500 hover:bg-red-900 rounded adds-btn"
+                              type="button"
+                              onClick={() => removeOne(s)}
+                              className="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-red-700"
                             >
-                              Remove all
+                              Remove
                             </button>
                           </td>
                         </tr>
-                      </thead>
-                      <tbody>
-                        {paginateData(filteredAdded, addedPage).map((s) => (
-                          <tr key={s.studentId}>
-                            <td>{s.id}</td>
-                            <td className="whitespace-nowrap">{s.name}</td>
-                            <td>{s.degree}</td>
-                            <td>{s.year}</td>
-                            <td>{s.branch}</td>
-                            <td>
-                              <button
-                                onClick={() => removeOne(s)}
-                                className="bg-red-500 hover:bg-red-900 rounded adds-btn"
-                              >
-                                Remove
-                              </button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-
-                    {/* Pagination controls for Added Students */}
-                    <div className="pagination flex justify-center items-center gap-2 mt-2">
+                      ))}
+                    </tbody>
+                  </table>
+                  {filteredAdded.length > studentsPerPage && (
+                    <div className="flex items-center justify-center gap-2 border-t border-[#5a5a5a] p-2">
                       <button
+                        type="button"
                         disabled={addedPage === 1}
                         onClick={() => setAddedPage((p) => p - 1)}
-                        className="px-3 py-1 bg-gray-700 rounded disabled:opacity-50"
+                        className="rounded-lg border border-[#5a5a5a] bg-transparent px-3 py-1.5 text-sm text-white hover:bg-white/5 disabled:opacity-50"
                       >
                         Prev
                       </button>
-
-                      <span>
-                        {addedPage} /{" "}
-                        {Math.ceil(filteredAdded.length / studentsPerPage)}
+                      <span className="text-sm text-gray-400">
+                        {addedPage} / {Math.ceil(filteredAdded.length / studentsPerPage)}
                       </span>
-
                       <button
-                        disabled={
-                          addedPage >=
-                          Math.ceil(filteredAdded.length / studentsPerPage)
-                        }
+                        type="button"
+                        disabled={addedPage >= Math.ceil(filteredAdded.length / studentsPerPage)}
                         onClick={() => setAddedPage((p) => p + 1)}
-                        className="px-3 py-1 bg-gray-700 rounded disabled:opacity-50"
+                        className="rounded-lg border border-[#5a5a5a] bg-transparent px-3 py-1.5 text-sm text-white hover:bg-white/5 disabled:opacity-50"
                       >
                         Next
                       </button>
                     </div>
-                  </>
-                ) : (
-                  <p className="text-center text-white">
-                    No students added yet.
-                  </p>
-                )}
-              </div>
+                  )}
+                </>
+              ) : (
+                <div className="flex flex-1 items-center justify-center py-12 text-gray-400">
+                  No students added yet.
+                </div>
+              )}
             </div>
           </div>
         </div>
-        <div className="flex justify-end third-step">
-          <div className="flex items-center gap-8 bottom-course">
-            <button className="back-btn-create" onClick={onBackccc}>
-              Back
-            </button>
-            <p>3/3</p>
-            <button 
-              className="next-btn" 
-              onClick={assignModuleToStudents}
-              disabled={loading}
-            >
-              {loading ? 'Assigning...' : 'Create & Assign'}
-            </button>
-          </div>
+
+        <div className="flex flex-col items-center justify-between gap-4 border-t border-[#5a5a5a] pt-6 sm:flex-row">
+          <button
+            type="button"
+            onClick={onBackccc}
+            className="w-full rounded-lg border border-[#5a5a5a] bg-transparent py-2.5 text-sm font-medium text-white hover:bg-white/5 sm:w-auto sm:px-6"
+          >
+            Back
+          </button>
+          <span className="text-sm text-gray-400">Step 3/3</span>
+          <button
+            type="button"
+            onClick={assignModuleToStudents}
+            disabled={loading}
+            className="w-full rounded-lg bg-[#8E5DAF] py-2.5 text-sm font-medium text-white hover:bg-[#7421ac] disabled:opacity-50 disabled:cursor-not-allowed sm:w-auto sm:px-6"
+          >
+            {loading ? "Assigning..." : "Create & Assign"}
+          </button>
         </div>
       </div>
     </div>

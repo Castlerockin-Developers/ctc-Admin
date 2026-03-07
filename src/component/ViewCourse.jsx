@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { log, error as logError } from "../utils/logger";
 import AvatarEditor from "react-avatar-editor";
 import "./ViewCourse.css";
 import { authFetch } from '../scripts/AuthProvider';
@@ -62,7 +63,7 @@ const ViewCourse = ({ onUnassign, onEdit, onDelete, onBack, selectedCourse }) =>
         setAllStudents(students);
       }
     } catch (error) {
-      console.error('Error loading students:', error);
+      logError('Error loading students:', error);
     }
   };
 
@@ -124,7 +125,7 @@ const ViewCourse = ({ onUnassign, onEdit, onDelete, onBack, selectedCourse }) =>
       }
 
     } catch (error) {
-      console.error('Error loading course data:', error);
+      logError('Error loading course data:', error);
       Swal.fire({
         title: 'Error!',
         text: 'Failed to load course data. Please try again.',
@@ -176,7 +177,7 @@ const ViewCourse = ({ onUnassign, onEdit, onDelete, onBack, selectedCourse }) =>
             throw new Error('Failed to delete module');
           }
         } catch (error) {
-          console.error('Error deleting module:', error);
+          logError('Error deleting module:', error);
           Swal.fire({
             title: 'Error!',
             text: 'Failed to delete module. Please try again.',
@@ -248,7 +249,7 @@ const ViewCourse = ({ onUnassign, onEdit, onDelete, onBack, selectedCourse }) =>
         throw new Error(errorData.error || 'Failed to update module');
       }
     } catch (error) {
-      console.error('Error updating module:', error);
+      logError('Error updating module:', error);
       Swal.fire({
         title: 'Error!',
         text: error.message || 'Failed to update module. Please try again.',
@@ -354,7 +355,7 @@ const ViewCourse = ({ onUnassign, onEdit, onDelete, onBack, selectedCourse }) =>
         throw new Error(errorData.error || 'Failed to update chapter');
       }
     } catch (error) {
-      console.error('Error updating chapter:', error);
+      logError('Error updating chapter:', error);
       Swal.fire({
         title: 'Error!',
         text: error.message || 'Failed to update chapter. Please try again.',
@@ -424,7 +425,7 @@ const ViewCourse = ({ onUnassign, onEdit, onDelete, onBack, selectedCourse }) =>
         throw new Error(errorData.error || 'Failed to update assignments');
       }
     } catch (error) {
-      console.error('Error updating assignments:', error);
+      logError('Error updating assignments:', error);
       Swal.fire({
         title: 'Error!',
         text: error.message || 'Failed to update assignments. Please try again.',
@@ -449,7 +450,7 @@ const ViewCourse = ({ onUnassign, onEdit, onDelete, onBack, selectedCourse }) =>
   const saveEditedImage = () => {
     if (editorRef.current) {
       const canvas = editorRef.current.getImageScaledToCanvas().toDataURL();
-      console.log("Cropped image base64:", canvas);
+      log("Cropped image base64:", canvas);
       alert("Avatar saved! Check console for base64 string.");
     }
   };

@@ -1,136 +1,86 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { FaSearch, FaPlus, FaFilter } from "react-icons/fa";
-import { motion } from "motion/react";
+import { log, error as logError } from "../utils/logger";
+import { FaSearch, FaPlus, FaFilter, FaEllipsisV } from "react-icons/fa";
+import Swal from "sweetalert2";
 import { authFetch } from "../scripts/AuthProvider";
-import ManageLoader from "../loader/ManageLoader";
-import TableSkeleton from "../loader/TableSkeleton";
+import Spinner from "../loader/Spinner";
 import { useCache } from "../hooks/useCache";
 import PropTypes from "prop-types";
-import CacheStatusIndicator from "./CacheStatusIndicator";
-import "./CacheStatusIndicator.css";
-import './ViewExam.css'
 
 const ManageExam = ({ onCreateNewExam, cacheAllowed, onEditExam, examToView, onBackToDashboard, onClearExamToView }) => {
     const [activeButton, setActiveButton] = useState("all");
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedExam, setSelectedExam] = useState(examToView || null);
     const [showFilter, setShowFilter] = useState(false);
+    const [showActionsMenu, setShowActionsMenu] = useState(false);
     const filterRef = useRef(null);
+    const actionsMenuRef = useRef(null);
     const [currentPage, setCurrentPage] = useState(1);
-    // const itemsPerPage = 10;
-    const [itemsPerPage, setItemsPerPage] = useState(
-        () => window.innerWidth >= 2560 ? 15 : 10
-    );
+    const [itemsPerPage, setItemsPerPage] = useState(() => window.innerWidth >= 2560 ? 15 : 10);
 
-  const pageFade = {
-    initial: { opacity: 0 },
-    animate: { opacity: 1, transition: { duration: 0.4 } },
-  };
+  useEffect(() => {
+    const onResize = () => setItemsPerPage(window.innerWidth >= 2560 ? 15 : 10);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
 
-  const slideUp = {
-    initial: { y: 20, opacity: 0 },
-    animate: { y: 0, opacity: 1, transition: { duration: 0.3 } },
-  };
-
-    useEffect(() => {
-        const onResize = () => {
-            setItemsPerPage(window.innerWidth >= 2560 ? 15 : 10);
-        };
-        window.addEventListener('resize', onResize);
-        return () => window.removeEventListener('resize', onResize);
-    }, []);
-
-    // Update selectedExam when examToView changes
     useEffect(() => {
         if (examToView) {
             setSelectedExam(examToView);
         } else {
-            // Clear selectedExam when examToView is null/undefined
-            // This happens when navigating from sidebar to Manage Exam
             setSelectedExam(null);
         }
     }, [examToView]);
 
-
-  // Close filter dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (e) => {
-      if (filterRef.current && !filterRef.current.contains(e.target)) {
-        setShowFilter(false);
-      }
+      if (filterRef.current && !filterRef.current.contains(e.target)) setShowFilter(false);
+      if (actionsMenuRef.current && !actionsMenuRef.current.contains(e.target)) setShowActionsMenu(false);
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Close filter dropdown on Escape key press
   useEffect(() => {
     const handleEsc = (e) => {
       if (e.key === "Escape") {
         setShowFilter(false);
+        setShowActionsMenu(false);
       }
     };
     document.addEventListener("keydown", handleEsc);
     return () => document.removeEventListener("keydown", handleEsc);
   }, []);
 
-  const toggleFilter = () => {
-    setShowFilter((prev) => !prev);
-  };
+  const toggleFilter = () => setShowFilter((prev) => !prev);
 
   const handleFilterSelect = (key) => {
     setActiveButton(key);
-    setCurrentPage(1); // Reset to first page when filter is applied
+    setCurrentPage(1);
     setShowFilter(false);
   };
 
-  // Exams data fetch function
   const fetchExams = useCallback(async () => {
     const response = await authFetch("/admin/exams/", { method: "GET" });
     const data = await response.json();
     return data;
   }, []);
 
-  // Cache callbacks
-  const onCacheHit = useCallback(() => {
-    console.log("Exams data loaded from cache");
-  }, []);
-
-  const onCacheMiss = useCallback(() => {
-    console.log("Exams data fetched fresh");
-  }, []);
-
-  const onError = useCallback((err) => {
-    console.error("Exams fetch error:", err);
-  }, []);
-
-  // Use cache hook for exams data
   const { data: examsData, forceRefresh, loading } = useCache("exam_data", fetchExams, {
     enabled: cacheAllowed,
-    expiryMs: 5 * 60 * 1000, // 5 minutes
+    expiryMs: 5 * 60 * 1000,
     autoRefresh: false,
-    onCacheHit,
-    onCacheMiss,
-    onError,
   });
 
-    // Process exams data for display
     const tableData = examsData ? examsData.map((exam) => {
-        // Parse the datetime strings from backend (they are in ISO format)
         const startTime = new Date(exam.start_time);
         const endTime = new Date(exam.end_time);
         const now = new Date();
-
         let status;
-        if (startTime > now) {
-            status = "Upcoming";
-        } else if (endTime > now && startTime <= now) {
-            status = "Ongoing";
-        } else if (exam.is_result_declared) {
-            status = "Results Declared";
-        } else {
-            status = "Completed";
-        }
+        if (startTime > now) status = "Upcoming";
+        else if (endTime > now && startTime <= now) status = "Ongoing";
+        else if (exam.is_result_declared) status = "Results Declared";
+        else status = "Completed";
 
         return {
             id: exam.id,
@@ -138,7 +88,7 @@ const ManageExam = ({ onCreateNewExam, cacheAllowed, onEditExam, examToView, onB
             startTime: startTime.toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short', hour12: true }),
             endTime: endTime.toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short', hour12: true }),
             attemptsAllowed: exam.attempts_allowed,
-            status: status,
+            status,
         };
     }) : [];
 
@@ -160,39 +110,18 @@ const ManageExam = ({ onCreateNewExam, cacheAllowed, onEditExam, examToView, onB
             row.status.toLowerCase().includes(searchQuery.toLowerCase())
         )
         .sort((a, b) => {
-            // Define status priority: Active (Ongoing) > Upcoming > Completed > Results Declared
-            const statusPriority = {
-                "Ongoing": 1,
-                "Upcoming": 2,
-                "Completed": 3,
-                "Results Declared": 4
-            };
-
+            const statusPriority = { "Ongoing": 1, "Upcoming": 2, "Completed": 3, "Results Declared": 4 };
             const priorityA = statusPriority[a.status] || 5;
             const priorityB = statusPriority[b.status] || 5;
-
-            // First sort by status priority
-            if (priorityA !== priorityB) {
-                return priorityA - priorityB;
-            }
-
-            // If same status, sort by start time (earliest first)
-            const startTimeA = new Date(a.startTime);
-            const startTimeB = new Date(b.startTime);
-            return startTimeA - startTimeB;
+            if (priorityA !== priorityB) return priorityA - priorityB;
+            return new Date(a.startTime) - new Date(b.startTime);
         });
 
-  // Sort so that Ongoing first, then Upcoming, then others by start time
-  const statusPriority = {
-    Ongoing: 0,
-    Upcoming: 1,
-    "Results Declared": 2,
-    Completed: 3,
-  };
+  const statusPriority = { Ongoing: 0, Upcoming: 1, "Results Declared": 2, Completed: 3 };
   const sortedFilteredData = filteredTableData.slice().sort((a, b) => {
-    const aPriority = statusPriority[a.status] ?? 99;
-    const bPriority = statusPriority[b.status] ?? 99;
-    if (aPriority !== bPriority) return aPriority - bPriority;
+    const aP = statusPriority[a.status] ?? 99;
+    const bP = statusPriority[b.status] ?? 99;
+    if (aP !== bP) return aP - bP;
     return (a.startTimestamp || 0) - (b.startTimestamp || 0);
   });
 
@@ -201,203 +130,246 @@ const ManageExam = ({ onCreateNewExam, cacheAllowed, onEditExam, examToView, onB
   const indexOfFirst = indexOfLast - itemsPerPage;
   const currentTableData = sortedFilteredData.slice(indexOfFirst, indexOfLast);
 
-    const handleViewExam = (exam) => {
-        // Find the exam data with status information
-        const examWithStatus = tableData.find(e => e.id === exam.id);
-        const examWithStatusData = { ...exam, status: examWithStatus?.status };
+  const handlePageChange = (pageNumber) => {
+    if (pageNumber >= 1 && pageNumber <= totalPages) setCurrentPage(pageNumber);
+  };
 
-        setSelectedExam(examWithStatusData);
+    const handleViewExam = (exam) => {
+        const examWithStatus = tableData.find(e => e.id === exam.id);
+        setSelectedExam(examWithStatus ? { ...exam, status: examWithStatus.status } : exam);
     };
 
     const handleBack = () => {
         setSelectedExam(null);
-        // Clear examToView in parent component
-        if (onClearExamToView) {
-            onClearExamToView();
-        }
-        if (onBackToDashboard) {
-            onBackToDashboard();
-        }
-        forceRefresh(); // Re-fetch exams to ensure updated data after potential edit
+        if (onClearExamToView) onClearExamToView();
+        if (onBackToDashboard) onBackToDashboard();
+        forceRefresh();
     };
 
-  const handlePageChange = (pageNumber) => {
-    if (pageNumber < 1 || pageNumber > totalPages) return;
-    setCurrentPage(pageNumber);
-  };
-
     return (
-        <motion.div
-            variants={pageFade}
-            initial="initial"
-            animate="animate"
-            className="lg:w-3xl justify-center flex flex-wrap exam-container">
+        <div className="flex h-[87vh] min-h-[calc(100dvh-4.5rem)] w-full max-w-full flex-col overflow-hidden rounded-lg bg-[#282828] p-4 sm:p-5 md:h-[87vh] md:min-h-0 md:p-6 md:pb-8">
             {selectedExam ? (
                 <ViewExam exam={selectedExam} onBack={handleBack} onEditExam={onEditExam} onRefresh={forceRefresh} />
             ) : (
-                <div className="exam-greeting">
-                    <div className="flex justify-between items-center mb-4">
-                        <motion.h1 variants={slideUp}>Exams</motion.h1>
-
-                    </div>
-                    <div className="flex sm:flex-row justify-self-end items-center gap-4">
-                        <div className="m-btn-right flex sm:flex-row flex-col-reverse sm:justify-end justify-center items-center gap-2 w-full sm:w-auto">
-                            {/* Filter dropdown */}
-                            <motion.div variants={slideUp} ref={filterRef} className="relative">
-                                <button className="filter-btn" onClick={toggleFilter}>
-                                    <FaFilter
-                                        className="h-6 w-6 cursor-pointer text-white"
+                <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto overflow-x-hidden sm:gap-6">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                        <h1 className="text-xl font-semibold text-white sm:text-2xl md:text-3xl">Exams</h1>
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+                            <div ref={filterRef} className="relative flex-1 min-w-0">
+                                <div className="flex min-h-[44px] items-center gap-2 rounded-lg border border-gray-500 bg-[#3d3d3d] px-4 py-2.5 transition-colors focus-within:border-[#A294F9] focus-within:ring-2 focus-within:ring-[#A294F9]/30">
+                                    <FaSearch className="h-5 w-5 shrink-0 text-gray-300" />
+                                    <input
+                                        type="text"
+                                        placeholder="Search exams..."
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        className="min-w-0 flex-1 border-none bg-transparent text-white outline-none placeholder:text-gray-400"
                                     />
-                                </button>
-                                {showFilter && (
-                                    <motion.div
-                                        initial={{ opacity: 0, scale: 0.95 }}
-                                        animate={{ opacity: 1, scale: 1 }}
-                                        className="absolute mt-2 left-0 bg-[#1F1F1F] border border-gray-200 rounded shadow-lg z-10"
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setShowActionsMenu(false);
+                                            toggleFilter();
+                                        }}
+                                        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-md transition-colors sm:h-8 sm:w-8 ${showFilter ? "bg-[#A294F9] text-white" : "bg-[#4a4a4a] text-gray-300 hover:bg-[#5a5a5a]"}`}
                                     >
-                                        <ul className="py-2 text-white filter-btn-options">
-                                            <li
-                                                className={`px-4 py-3 hover:bg-[#535353] cursor-pointer ${activeButton === 'all' ? 'font-semibold' : ''}`}
-                                                onClick={() => handleFilterSelect('all')}
-                                            >All Exams</li>
-                                            <li
-                                                className={`px-4 py-3 hover:bg-[#535353] cursor-pointer ${activeButton === 'active' ? 'font-semibold' : ''}`}
-                                                onClick={() => handleFilterSelect('active')}
-                                            >Active</li>
-                                            <li
-                                                className={`px-4 py-3 hover:bg-[#535353] cursor-pointer ${activeButton === 'upcoming' ? 'font-semibold' : ''}`}
-                                                onClick={() => handleFilterSelect('upcoming')}
-                                            >Upcoming</li>
-                                            <li
-                                                className={`px-4 py-3 hover:bg-[#535353] cursor-pointer ${activeButton === 'completed' ? 'font-semibold' : ''}`}
-                                                onClick={() => handleFilterSelect('completed')}
-                                            >Completed</li>
+                                        <FaFilter className="h-4 w-4" />
+                                    </button>
+                                    {/* Mobile: 3-dot menu with Create New Exam */}
+                                    <div ref={actionsMenuRef} className="relative md:hidden">
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setShowFilter(false);
+                                                setShowActionsMenu((prev) => !prev);
+                                            }}
+                                            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-md transition-colors sm:h-8 sm:w-8 ${showActionsMenu ? "bg-[#A294F9] text-white" : "bg-[#4a4a4a] text-gray-300 hover:bg-[#5a5a5a]"}`}
+                                        >
+                                            <FaEllipsisV className="h-4 w-4" />
+                                        </button>
+                                        {showActionsMenu && (
+                                            <div className="absolute right-0 top-full z-20 mt-2 min-w-[180px] rounded-lg border border-gray-600 bg-[#1F1F1F] py-1 shadow-xl">
+                                                <button
+                                                    onClick={() => {
+                                                        onCreateNewExam();
+                                                        setShowActionsMenu(false);
+                                                    }}
+                                                    className="flex w-full items-center gap-3 px-4 py-3 text-left text-white transition-colors hover:bg-[#535353]"
+                                                >
+                                                    <FaPlus className="h-5 w-5 shrink-0" />
+                                                    Create New Exam
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                                {showFilter && (
+                                    <div className="absolute left-0 right-0 top-full z-20 mt-2 rounded-lg border border-gray-600 bg-[#1F1F1F] py-1 shadow-xl sm:left-auto sm:right-0 sm:min-w-[160px]">
+                                        <ul className="text-white">
+                                            {["all", "active", "upcoming", "completed"].map((key) => (
+                                                <li
+                                                    key={key}
+                                                    className={`cursor-pointer px-4 py-3 transition-colors hover:bg-[#535353] ${activeButton === key ? "bg-[#535353] font-semibold" : ""}`}
+                                                    onClick={() => handleFilterSelect(key)}
+                                                >
+                                                    {key === "all" ? "All Exams" : key.charAt(0).toUpperCase() + key.slice(1)}
+                                                </li>
+                                            ))}
                                         </ul>
-                                    </motion.div>
+                                    </div>
                                 )}
-                            </motion.div>
-                            <motion.div variants={slideUp} className="search-box1 flex">
-                                <FaSearch className="search-icon" />
-                                <input
-                                    type="text"
-                                    placeholder="Search exams..."
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="w-full sm:w-auto"
-                                />
-                            </motion.div>
-                            <motion.button variants={slideUp} whileTap={{ scale: 1.2 }} className="create-btn w-full sm:w-auto" onClick={onCreateNewExam}>
-                                <FaPlus className="icon" /> Create New Exam
-                            </motion.button>
+                            </div>
+                            {/* Desktop: Create New Exam button outside search bar */}
+                            <button
+                                onClick={onCreateNewExam}
+                                className="hidden min-h-[44px] shrink-0 items-center justify-center gap-2 rounded-lg bg-[#A294F9] px-5 py-2.5 font-medium text-white transition-colors hover:bg-[#8E5DAF] md:flex"
+                            >
+                                <FaPlus className="h-5 w-5" /> Create New Exam
+                            </button>
                         </div>
                     </div>
-                    <div className="m-table-container">
+
+                    <div className="min-h-0 flex-1 overflow-hidden rounded-lg">
                         {loading || !examsData ? (
-                            <TableSkeleton />
-                        ) : (
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>#ID</th>
-                                        <th>Name</th>
-                                        <th className="start-time">Start Time</th>
-                                        <th className="start-time">End Time</th>
-                                        <th>Attempts Allowed</th>
-                                        <th>Status</th>
-                                        <th></th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {currentTableData.length > 0 ? (
-                                        currentTableData.map((row, idx) => (
-                                            <motion.tr
+                            <Spinner className="min-h-[280px]" />
+                        ) : currentTableData.length > 0 ? (
+                            <>
+                                {/* Mobile: card layout */}
+                                <div className="flex flex-col gap-3 overflow-y-auto pb-2 md:hidden">
+                                    {currentTableData.map((row) => {
+                                        const statusColor =
+                                            row.status === "Ongoing"
+                                                ? "bg-emerald-600/80 text-white"
+                                                : row.status === "Upcoming"
+                                                  ? "bg-amber-600/80 text-white"
+                                                  : row.status === "Results Declared"
+                                                    ? "bg-blue-600/80 text-white"
+                                                    : "bg-gray-500/80 text-white";
+                                        return (
+                                            <div
                                                 key={row.id}
-                                                initial={{ opacity: 0, y: 10 }}
-                                                animate={{ opacity: 1, y: 0 }}
-                                                transition={{ delay: idx * 0.03, duration: 0.2 }}
-                                                className={idx % 2 === 0 ? "even-row" : "odd-row"}>
-                                                <td>{row.id}</td>
-                                                <td>{row.name}</td>
-                                                <td>{row.startTime}</td>
-                                                <td>{row.endTime}</td>
-                                                <td>{row.attemptsAllowed}</td>
-                                                <td>{row.status}</td>
-                                                <td><motion.button className="viewexam-btn" whileTap={{ scale: 1.2 }} onClick={() => handleViewExam(row)}>View Exam</motion.button></td>
-                                            </motion.tr>
-                                        ))
-                                    ) : (
-                                        <tr>
-                                            <td colSpan="7" className="no-data">No exams found</td>
-                                        </tr>
-                                    )}
-                                </tbody>
-                            </table>
+                                                className="flex flex-col gap-3 rounded-lg border border-[#5a5a5a] bg-[#3a3a3a] p-4 active:bg-[#404040]"
+                                            >
+                                                <div className="flex items-start justify-between gap-3">
+                                                    <div className="min-w-0 flex-1">
+                                                        <p className="truncate font-medium text-white">{row.name}</p>
+                                                        <p className="mt-0.5 text-xs text-gray-400">#{row.id}</p>
+                                                    </div>
+                                                    <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColor}`}>
+                                                        {row.status}
+                                                    </span>
+                                                </div>
+                                                <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-gray-300">
+                                                    <span className="text-gray-500">Start</span>
+                                                    <span className="text-right">{row.startTime}</span>
+                                                    <span className="text-gray-500">End</span>
+                                                    <span className="text-right">{row.endTime}</span>
+                                                    <span className="text-gray-500">Attempts</span>
+                                                    <span className="text-right text-white">{row.attemptsAllowed}</span>
+                                                </div>
+                                                <button
+                                                    onClick={() => handleViewExam(row)}
+                                                    className="mt-1 w-full rounded-lg bg-[#8E5DAF] py-3 text-sm font-medium text-white transition-colors hover:bg-[#7421ac] active:bg-[#5a1a85]"
+                                                >
+                                                    View Exam
+                                                </button>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                                {/* Desktop: table layout */}
+                                <div className="hidden h-full overflow-x-auto overflow-y-auto rounded-lg border border-[#5a5a5a] [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden md:block">
+                                    <table className="w-full min-w-[600px] table-auto border-collapse">
+                                        <thead className="sticky top-0 z-10 bg-[#4a4a4a]">
+                                            <tr>
+                                                <th className="whitespace-nowrap border-b border-[#666] px-4 py-4 text-center text-sm font-medium text-white">#ID</th>
+                                                <th className="whitespace-nowrap border-b border-[#666] px-4 py-4 text-left text-sm font-medium text-white">Name</th>
+                                                <th className="whitespace-nowrap border-b border-[#666] px-4 py-4 text-center text-sm font-medium text-white">Start Time</th>
+                                                <th className="whitespace-nowrap border-b border-[#666] px-4 py-4 text-center text-sm font-medium text-white">End Time</th>
+                                                <th className="whitespace-nowrap border-b border-[#666] px-4 py-4 text-center text-sm font-medium text-white">Attempts</th>
+                                                <th className="whitespace-nowrap border-b border-[#666] px-4 py-4 text-center text-sm font-medium text-white">Status</th>
+                                                <th className="whitespace-nowrap border-b border-[#666] px-4 py-4 text-center text-sm font-medium text-white"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {currentTableData.map((row, idx) => (
+                                                <tr
+                                                    key={row.id}
+                                                    className={`border-b border-[#555] transition-colors hover:bg-[#404040] ${idx % 2 === 0 ? "bg-[#3a3a3a]" : "bg-[#353535]"}`}
+                                                >
+                                                    <td className="px-4 py-3.5 text-center text-sm text-white">{row.id}</td>
+                                                    <td className="max-w-[180px] truncate px-4 py-3.5 text-left text-sm text-white md:max-w-none">{row.name}</td>
+                                                    <td className="whitespace-nowrap px-4 py-3.5 text-center text-sm text-white">{row.startTime}</td>
+                                                    <td className="whitespace-nowrap px-4 py-3.5 text-center text-sm text-white">{row.endTime}</td>
+                                                    <td className="px-4 py-3.5 text-center text-sm text-white">{row.attemptsAllowed}</td>
+                                                    <td className="px-4 py-3.5 text-center text-sm text-white">{row.status}</td>
+                                                    <td className="px-4 py-3.5">
+                                                        <button
+                                                            onClick={() => handleViewExam(row)}
+                                                            className="whitespace-nowrap rounded-lg bg-[#8E5DAF] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#7421ac]"
+                                                        >
+                                                            View Exam
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </>
+                        ) : (
+                            <div className="flex h-32 items-center justify-center rounded-lg border border-[#5a5a5a] bg-[#353535] text-gray-400 md:h-40">
+                                No exams found
+                            </div>
                         )}
                     </div>
-                    {/* Pagination Controls */}
-                    {!loading && examsData && filteredTableData.length > 0 && (
-                        <div className="pagination-controls flex justify-between items-center mt-4">
-                            <motion.button
-                                whileTap={{ scale: 1.1 }}
+
+                    {!loading && examsData && sortedFilteredData.length > 0 && (
+                        <div className="flex items-center justify-center gap-4 pt-2 sm:gap-6">
+                            <button
                                 onClick={() => handlePageChange(currentPage - 1)}
                                 disabled={currentPage === 1}
-                                className="pagination-btn"
+                                className="min-h-[44px] rounded border border-gray-500 bg-transparent px-4 py-2.5 text-sm text-white transition-colors hover:border-gray-400 hover:bg-white/5 disabled:cursor-not-allowed disabled:border-gray-600 disabled:opacity-50 disabled:hover:bg-transparent"
                             >
-                                Previous
-                            </motion.button>
-                            <span>Page {currentPage} of {totalPages}</span>
-                            <motion.button
-                                whileTap={{ scale: 1.1 }}
+                                ‹ Previous
+                            </button>
+                            <span className="flex min-h-[44px] items-center text-sm text-gray-300">
+                                {currentPage} / {totalPages}
+                            </span>
+                            <button
                                 onClick={() => handlePageChange(currentPage + 1)}
                                 disabled={currentPage === totalPages}
-                                className="pagination-btn"
+                                className="min-h-[44px] rounded border border-gray-500 bg-transparent px-4 py-2.5 text-sm text-white transition-colors hover:border-gray-400 hover:bg-white/5 disabled:cursor-not-allowed disabled:border-gray-600 disabled:opacity-50 disabled:hover:bg-transparent"
                             >
-                                Next
-                            </motion.button>
+                                Next ›
+                            </button>
                         </div>
                     )}
                 </div>
             )}
-        </motion.div>
+        </div>
     );
 };
 
 const ViewExam = ({ exam, onBack, onEditExam, onRefresh }) => {
-    const [examDetails, setExamDetails] = useState(null);  // <-- new state for detailed exam data
+    const [examDetails, setExamDetails] = useState(null);
 
-    // Function to check if exam is completed
     const isExamCompleted = (examData) => {
         if (!examData) return false;
-
-        // Check if exam has end_time
         if (examData.end_time) {
-            const endTime = new Date(examData.end_time);
-            const currentTime = new Date();
-            return endTime < currentTime;
+            return new Date(examData.end_time) < new Date();
         }
-
-        // Check if exam has is_result_declared field
-        if (examData.is_result_declared !== undefined) {
-            return examData.is_result_declared;
-        }
-
-        // Check if exam has status field
-        if (examData.status) {
-            return examData.status === 'completed' || examData.status === 'finished';
-        }
-
+        if (examData.is_result_declared !== undefined) return examData.is_result_declared;
+        if (examData.status) return ["completed", "finished"].includes(examData.status);
         return false;
     };
 
     const handleEditClick = () => {
-        if (onEditExam && examDetails) {
-            onEditExam(examDetails);
-        }
+        if (onEditExam && examDetails) onEditExam(examDetails);
     };
 
     const handleDeleteExam = async () => {
         try {
-            // Show confirmation dialog
             const result = await Swal.fire({
                 title: 'Are you sure?',
                 text: "You won't be able to revert this!",
@@ -411,211 +383,162 @@ const ViewExam = ({ exam, onBack, onEditExam, onRefresh }) => {
             });
 
             if (result.isConfirmed) {
-                // Show loading state
                 Swal.fire({
                     title: 'Deleting...',
-                    text: 'Please wait while we delete the exam.',
                     allowOutsideClick: false,
-                    didOpen: () => {
-                        Swal.showLoading();
-                    },
+                    didOpen: () => Swal.showLoading(),
                     background: '#181817',
                     color: '#fff',
                 });
 
-                // Make API call to delete exam
-                const response = await authFetch(`/admin/exams/${examDetails.id}/`, {
-                    method: "DELETE",
-                });
+                const response = await authFetch(`/admin/exams/${examDetails.id}/`, { method: "DELETE" });
 
                 if (response.ok) {
-                    Swal.fire({
-                        icon: "success",
-                        title: "Exam Deleted!",
-                        text: "The exam has been deleted successfully.",
-                        background: '#181817',
-                        color: '#fff',
-                    });
-                    // Navigate back to exam list
+                    Swal.fire({ icon: "success", title: "Exam Deleted!", text: "The exam has been deleted successfully.", background: '#181817', color: '#fff' });
                     onBack();
                 } else {
                     const errorData = await response.json();
-                    Swal.fire({
-                        icon: "error",
-                        title: "Error",
-                        text: errorData.error || "Failed to delete exam.",
-                        background: '#181817',
-                        color: '#fff',
-                    });
+                    Swal.fire({ icon: "error", title: "Error", text: errorData.error || "Failed to delete exam.", background: '#181817', color: '#fff' });
                 }
             }
         } catch (error) {
-            console.error("Error deleting exam:", error);
-            Swal.fire({
-                icon: "error",
-                title: "Error",
-                text: error.message || "Network error occurred while deleting the exam.",
-                background: '#181817',
-                color: '#fff',
-            });
+            logError("Error deleting exam:", error);
+            Swal.fire({ icon: "error", title: "Error", text: error.message || "Network error.", background: '#181817', color: '#fff' });
         }
     };
 
-    const handleViewExam = async (exam) => {
+    const handleViewExam = async (examData) => {
         try {
-            const response = await authFetch(`/admin/exams/${exam.id}/`, { method: "GET" });
-            if (!response.ok) {
-                throw new Error("Failed to fetch exam details");
-            }
+            const response = await authFetch(`/admin/exams/${examData.id}/`, { method: "GET" });
+            if (!response.ok) throw new Error("Failed to fetch exam details");
             const data = await response.json();
-            console.log("ManageExam - Exam details:", data);
-            console.log("ManageExam - Students in exam data:", data.students);
-            console.log("ManageExam - Students count:", data.students?.length || 0);
-            console.log("ManageExam - Exam completion status:", {
-                end_time: data.end_time,
-                is_result_declared: data.is_result_declared,
-                status: data.status,
-                isCompleted: isExamCompleted(data)
-            });
-            setExamDetails(data);  // set detailed data here
+            setExamDetails(data);
         } catch (error) {
-            console.error("Error fetching exam details:", error);
+            logError("Error fetching exam details:", error);
             alert("Failed to load exam details");
         }
     };
 
   useEffect(() => {
-    if (exam && !examDetails) {
-      handleViewExam(exam);
-    }
+    if (exam && !examDetails) handleViewExam(exam);
   }, [exam, examDetails]);
 
-  if (!examDetails) {
-    return <ManageLoader />;
-  }
+  if (!examDetails) return <Spinner className="min-h-[200px]" />;
 
     return (
-        <div className='viewexam-container justify-center flex flex-wrap'>
-            <motion.div
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ duration: 0.4 }}
-                className='viewexam-box'>
-                <div className='flex'>
-                    <button onClick={onBack}>&lt;</button>
-                    <h1>#{examDetails.id} {examDetails.name}</h1>
+        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden rounded-lg bg-[#282828] p-4 sm:p-5 md:p-6">
+            <div className="flex flex-col gap-6">
+                <div className="flex items-center gap-4">
+                    <button
+                        onClick={onBack}
+                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#404040] text-2xl font-bold text-white transition-colors hover:bg-[#505050]"
+                    >
+                        &lt;
+                    </button>
+                    <h1 className="min-w-0 truncate text-xl font-semibold text-white sm:text-2xl md:text-3xl">
+                        #{examDetails.id} {examDetails.name}
+                    </h1>
                 </div>
-                <div className="viewexam-section">
-                    <div className="viewexam-header">
-                        <h2>Exam Section</h2>
-                        <div className='viewexam-header-btn'>
-                            {!isExamCompleted(examDetails) && (
-                                <>
-                                    <button className='viewexam-del-btn' onClick={handleDeleteExam}>Delete</button>
-                                    <button className="viewexam-edit-btn" onClick={handleEditClick}>Edit</button>
-                                </>
-                            )}
+
+                <div className="flex flex-col gap-6">
+                    <div className="overflow-hidden rounded-lg border border-[#5a5a5a]">
+                        <div className="flex flex-col gap-4 border-b border-[#5a5a5a] bg-[#4a4a4a] p-4 sm:flex-row sm:items-center sm:justify-between">
+                            <h2 className="text-lg font-medium text-white sm:text-xl">Exam Section</h2>
+                            <div className="flex flex-wrap gap-3">
+                                {!isExamCompleted(examDetails) && (
+                                    <>
+                                        <button
+                                            onClick={handleDeleteExam}
+                                            className="rounded-lg bg-red-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-red-700"
+                                        >
+                                            Delete
+                                        </button>
+                                        <button
+                                            onClick={handleEditClick}
+                                            className="rounded-lg bg-[#65979B] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#0098a3]"
+                                        >
+                                            Edit
+                                        </button>
+                                    </>
+                                )}
+                            </div>
                         </div>
-                    </div>
-                    <div className="viewexam-body flex flex-col items-center justify-start">
-                        <div className="viewexam-viwer">
-                            <div className='viewexam-q'>
-                                <div className="viewexam-viwer-header flex justify-between">
-                                    <p className='text-xl text-bold text-white leading-loose'>MCQ</p>
-                                    <p>{examDetails?.alloted_sections?.length || 0}</p>
-                                </div>
-                                <div className="viewexam-viwer-body flex justify-center">
-                                    <div className="viewexams-container pb-2">
+                        <div className="max-h-[50vh] overflow-y-auto bg-[#353535] p-4">
+                            <div className="flex flex-col gap-6">
+                                <div className="overflow-hidden rounded-lg border border-[#555]">
+                                    <div className="flex items-center justify-between bg-[#404040] px-4 py-3">
+                                        <p className="font-medium text-white">MCQ</p>
+                                        <span className="rounded-full bg-[#5a5a5a] px-3 py-0.5 text-sm text-white">
+                                            {examDetails?.alloted_sections?.length || 0}
+                                        </span>
+                                    </div>
+                                    <div className="divide-y divide-[#555] bg-[#3a3a3a] px-4">
                                         {examDetails?.alloted_sections?.map((section, index) => (
-                                            <motion.div
-                                                initial={{ opacity: 0, translateX: -10 }}
-                                                animate={{ opacity: 1, translateX: 0 }}
-                                                transition={{ delay: index * 0.05, duration: 0.3 }}
-                                                key={section.id || index}
-                                                className="question-block my-2">
-                                                <div className="flex justify-between items-center w-full text-xl py-2">
-                                                    <p className='text-white'>
-                                                        {index + 1}. {section.section_name || "Sample Question"}
-                                                    </p>
-                                                    <p className="text-sm text-white whitespace-nowrap">
-                                                        Timed: {section.is_timed ? "Yes" : "No"} {section.is_timed && `| Time: ${section.section_time} min`} | Total: {section.no_of_question}
-                                                    </p>
-                                                </div>
-                                            </motion.div>
+                                            <div key={section.id || index} className="flex flex-wrap items-center justify-between gap-3 py-3">
+                                                <p className="text-white">{index + 1}. {section.section_name || "Sample Question"}</p>
+                                                <p className="text-sm text-gray-300">
+                                                    Timed: {section.is_timed ? "Yes" : "No"} {section.is_timed && `| ${section.section_time} min`} | Total: {section.no_of_question}
+                                                </p>
+                                            </div>
                                         ))}
                                     </div>
                                 </div>
-                            </div>
-                            <div className='viewexam-q'>
-                                <div className="viewexam-viwer-header flex justify-between">
-                                    <p className='text-xl font-bold text-white leading-loose'>Coding</p>
-                                    <p className='pb-0'>{examDetails.selected_coding_questions?.length || 0}</p>
-                                </div>
-                                <div className="viewexam-viwer-body flex justify-center">
-                                    <div className="viewexams-container pb-2">
+                                <div className="overflow-hidden rounded-lg border border-[#555]">
+                                    <div className="flex items-center justify-between bg-[#404040] px-4 py-3">
+                                        <p className="font-medium text-white">Coding</p>
+                                        <span className="rounded-full bg-[#5a5a5a] px-3 py-0.5 text-sm text-white">
+                                            {examDetails.selected_coding_questions?.length || 0}
+                                        </span>
+                                    </div>
+                                    <div className="divide-y divide-[#555] bg-[#3a3a3a] px-4">
                                         {examDetails.selected_coding_questions?.map(({ id, question_name }, index) => (
-                                            <div key={id} className="question-block my-2">
-                                                <div className="flex justify-between items-center w-full py-2 text-xl">
-                                                    <p className='text-white text-md'>{index + 1}. {question_name}</p>
-                                                </div>
+                                            <div key={id} className="py-3">
+                                                <p className="text-white">{index + 1}. {question_name}</p>
                                             </div>
                                         ))}
                                     </div>
                                 </div>
                             </div>
-
                         </div>
                     </div>
-                </div>
 
-                {/* Students Section */}
-                <div className="viewexam-section">
-                    <div className="viewexam-header">
-                        <h2>Assigned Students</h2>
-                    </div>
-                    <div className="viewexam-body flex flex-col items-center justify-start">
-                        <div className="viewexam-viwer">
-                            <div className='viewexam-q'>
-                                <div className="viewexam-viwer-header flex justify-between items-center">
-                                    <h2 className='text-xl'>Students</h2>
-                                    <p>{examDetails?.students?.length || 0}</p>
+                    <div className="overflow-hidden rounded-lg border border-[#5a5a5a]">
+                        <div className="border-b border-[#5a5a5a] bg-[#4a4a4a] px-4 py-3">
+                            <h2 className="text-lg font-medium text-white sm:text-xl">Assigned Students</h2>
+                        </div>
+                        <div className="max-h-[40vh] overflow-y-auto bg-[#353535] p-4">
+                            <div className="overflow-hidden rounded-lg border border-[#555]">
+                                <div className="flex items-center justify-between bg-[#404040] px-4 py-3">
+                                    <h2 className="font-medium text-white">Students</h2>
+                                    <span className="rounded-full bg-[#5a5a5a] px-3 py-0.5 text-sm text-white">
+                                        {examDetails?.students?.length || 0}
+                                    </span>
                                 </div>
-                                <div className="viewexam-viwer-body flex justify-center">
-                                    <div className="viewexams-container pb-2">
-                                        {examDetails?.students && examDetails.students.length > 0 ? (
-                                            examDetails.students.map((student, index) => (
-                                                <div key={student.id || index} className="question-block my-2">
-                                                    <div className="flex justify-between items-center w-full text-xl py-2">
-                                                        <p className='text-white'>
-                                                            {index + 1}. {student.name || `${student.first_name} ${student.last_name}`}
-                                                        </p>
-                                                        <p className="student-info text-sm text-white whitespace-nowrap">
-                                                            USN: {student.usn || student.slNo} | {student.email}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            ))
-                                        ) : (
-                                            <div className="question-block my-2">
-                                                <div className="flex justify-center items-center w-full text-xl py-2">
-                                                    <p className='text-white text-center'>No students assigned to this exam</p>
-                                                </div>
+                                <div className="divide-y divide-[#555] bg-[#3a3a3a] px-4">
+                                    {examDetails?.students && examDetails.students.length > 0 ? (
+                                        examDetails.students.map((student, index) => (
+                                            <div key={student.id || index} className="flex flex-wrap items-center justify-between gap-3 py-3">
+                                                <p className="text-white">{index + 1}. {student.name || `${student.first_name || ""} ${student.last_name || ""}`.trim()}</p>
+                                                <p className="text-sm text-gray-300">
+                                                    USN: {student.usn || student.slNo} | {student.email}
+                                                </p>
                                             </div>
-                                        )}
-                                    </div>
+                                        ))
+                                    ) : (
+                                        <div className="py-8 text-center text-gray-400">No students assigned to this exam</div>
+                                    )}
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </motion.div>
+            </div>
         </div>
     );
 };
 
 export default ManageExam;
 
-// PropTypes
 ManageExam.propTypes = {
   onCreateNewExam: PropTypes.func.isRequired,
   cacheAllowed: PropTypes.bool,
