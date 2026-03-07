@@ -1,7 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { log, error as logError } from "../utils/logger";
 import TopBar from "../component/TopBar";
-import Sidebar from "../component/Sibebar"; // Ensure Sidebar is imported correctly
+import Sidebar from "../component/Sibebar";
+import Swal from "sweetalert2";
+import { authFetch } from "../scripts/AuthProvider";
+import { useCacheConsent } from "../hooks/useCache";
+
 import Dashboard from "../component/Dashboard";
 import ManageExam from "../component/ManageExam";
 import NewExam from "../component/NewExam";
@@ -9,20 +14,17 @@ import ManageResult from "../component/ManageResult";
 import ManageStudents from "../component/ManageStudents";
 import AddQuestion from "../component/AddQuestion";
 import AddStudents from "../component/AddStudents";
-import Swal from "sweetalert2";
 import Subcription from "../component/Subcription";
 import Settings from "../component/Settings";
 import ViewResult from "../component/ViewResult";
 import PerticularResult from "../component/PerticularResult";
 import NewMcq from "../component/NewMcq";
 import NewCoding from "../component/NewCoding";
-import { authFetch } from "../scripts/AuthProvider";
 import CustomLearning from "../component/CustomLearning";
 import NewCoursefirst from "../component/NewCoursefirst";
 import ChapterAdding from "../component/ChapterAdding";
 import CourseStudents from "../component/CourseStudents";
 import ViewCourse from "../component/ViewCourse";
-import { useCacheConsent } from "../hooks/useCache";
 
 const Home = () => {
     const navigate = useNavigate();
@@ -44,7 +46,7 @@ const Home = () => {
     const { cacheAllowed, showConsent, handleConsent } = useCacheConsent();
 
     // Debug logging for cache consent
-    console.log('Home component - Cache consent state:', {
+    log('Home component - Cache consent state:', {
         cacheAllowed,
         showConsent
     });
@@ -65,7 +67,7 @@ const Home = () => {
     // Clear session storage on page refresh/load to ensure clean form state
     useEffect(() => {
         const clearSessionStorageOnLoad = () => {
-            console.log("Home - Clearing session storage on page load/refresh");
+            log("Home - Clearing session storage on page load/refresh");
             
             // Clear all exam creation related session storage
             const allKeys = [
@@ -90,14 +92,14 @@ const Home = () => {
                 sessionStorage.removeItem(key);
             });
             
-            console.log("Home - Session storage cleared on page load/refresh");
+            log("Home - Session storage cleared on page load/refresh");
         };
         
         clearSessionStorageOnLoad();
         
         // Also clear session storage when user navigates away from the page
         const handleBeforeUnload = () => {
-            console.log("Home - Clearing session storage before page unload");
+            log("Home - Clearing session storage before page unload");
             clearSessionStorageOnLoad();
         };
         
@@ -105,41 +107,6 @@ const Home = () => {
         
         return () => {
             window.removeEventListener('beforeunload', handleBeforeUnload);
-        };
-    }, []);
-
-    // Clear session storage when user navigates back to home component
-    useEffect(() => {
-        const clearSessionStorageOnFocus = () => {
-            console.log("Home - Clearing session storage when component gains focus");
-            const allKeys = [
-                'newExam:testName',
-                'newExam:examStartDate', 
-                'newExam:startTime',
-                'newExam:examEndDate',
-                'newExam:endTime',
-                'newExam:timedTest',
-                'newExam:timer',
-                'newExam:attemptsAllowed',
-                'newExam:instructions',
-                'mcqQuestions',
-                'codingQuestions', 
-                'sectionTimers',
-                'addStudents_allBranch',
-                'addStudents_addedBranch',
-                'addStudents_list'
-            ];
-            
-            allKeys.forEach(key => {
-                sessionStorage.removeItem(key);
-            });
-        };
-        
-        // Clear session storage when the window gains focus (user comes back to the tab)
-        window.addEventListener('focus', clearSessionStorageOnFocus);
-        
-        return () => {
-            window.removeEventListener('focus', clearSessionStorageOnFocus);
         };
     }, []);
 
@@ -154,7 +121,7 @@ const Home = () => {
 
             if (!response.ok) {
                 const errorData = await response.json();
-                console.error("Failed:", errorData);
+                logError("Failed:", errorData);
                 Swal.fire("Error", "Exam creation failed", "error");
                 return;
             }
@@ -162,7 +129,7 @@ const Home = () => {
             Swal.fire("Success", "Exam created successfully", "success");
             onNext();
         } catch (error) {
-            console.error("Error:", error);
+            logError("Error:", error);
             Swal.fire("Error", "Something went wrong", "error");
         }
     };
@@ -171,7 +138,7 @@ const Home = () => {
     const handleCreateExam = () => {
         // Clear all session storage when exam is successfully created
         const clearAllSessionStorage = () => {
-            console.log("Home - Clearing all session storage after successful exam creation");
+            log("Home - Clearing all session storage after successful exam creation");
             
             // Clear NewExam component session storage
             const newExamKeys = [
@@ -203,10 +170,10 @@ const Home = () => {
             // Clear all keys
             [...newExamKeys, ...addQuestionKeys, ...addStudentsKeys].forEach(key => {
                 sessionStorage.removeItem(key);
-                console.log(`Home - Cleared session storage key: ${key}`);
+                log(`Home - Cleared session storage key: ${key}`);
             });
             
-            console.log("Home - All session storage cleared after successful exam creation");
+            log("Home - All session storage cleared after successful exam creation");
         };
         
         clearAllSessionStorage();
@@ -234,16 +201,16 @@ const Home = () => {
     // Function to handle exam update
     const handleUpdateExam = async (updatedData) => {
         try {
-            console.log("Home - handleUpdateExam called with:", updatedData);
-            console.log("Home - editExamData:", editExamData);
+            log("Home - handleUpdateExam called with:", updatedData);
+            log("Home - editExamData:", editExamData);
             
             if (!editExamData || !editExamData.id) {
                 throw new Error("Exam ID not found. Cannot update exam.");
             }
 
             const url = `/admin/exams/${editExamData.id}/`;
-            console.log("Home - Making PUT request to:", url);
-            console.log("Home - Request payload:", JSON.stringify(updatedData, null, 2));
+            log("Home - Making PUT request to:", url);
+            log("Home - Request payload:", JSON.stringify(updatedData, null, 2));
 
             const response = await authFetch(url, {
                 method: "PUT",
@@ -251,18 +218,18 @@ const Home = () => {
                 body: JSON.stringify(updatedData),
             });
 
-            console.log("Home - Update response status:", response.status);
-            console.log("Home - Update response ok:", response.ok);
-            console.log("Home - Update response headers:", response.headers);
+            log("Home - Update response status:", response.status);
+            log("Home - Update response ok:", response.ok);
+            log("Home - Update response headers:", response.headers);
 
             if (!response.ok) {
                 const errorData = await response.json();
-                console.log("Home - Update error response:", errorData);
+                log("Home - Update error response:", errorData);
                 throw new Error(errorData.error || errorData.message || `Failed to update exam (${response.status})`);
             }
 
             const responseData = await response.json();
-            console.log("Home - Update success response:", responseData);
+            log("Home - Update success response:", responseData);
 
             Swal.fire({
                 title: "Updated!",
@@ -280,7 +247,7 @@ const Home = () => {
             setEditExamData(null);
             setActiveComponent("manageExam");
         } catch (error) {
-            console.error("Error updating exam:", error);
+            logError("Error updating exam:", error);
             Swal.fire("Error", error.message || "Failed to update exam", "error");
         }
     };
@@ -298,7 +265,7 @@ const Home = () => {
     }
 
     return (
-        <div className="home-container">
+        <div className="home-container flex h-screen flex-col overflow-hidden">
             {/* Temporarily hide cache consent dialog to test if it's blocking components
             {showConsent && (
                 <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-60 z-50">
@@ -313,9 +280,9 @@ const Home = () => {
             */}
             <TopBar /> {/* Keep top bar fixed */}
 
-            <div className="flex">
-                {/* Sidebar */}
-                <div className="xl:w-2/10 lg:w-[25%] md:w-0/10 sm:w-0">
+            <div className="flex min-h-0 flex-1 w-full gap-0 overflow-hidden">
+                {/* Sidebar - fixed height column so right-side content (e.g. skeleton) never pushes it */}
+                <div className="flex h-full min-h-0 shrink-0 flex-col md:w-0 sm:w-0 lg:w-[25%] xl:w-[20%] 2xl:w-[18%]">
                     <Sidebar activeComponent={
                         ["editExam", "editAddQuestion", "editAddStudents"].includes(activeComponent)
                             ? "manageExam"
@@ -327,8 +294,8 @@ const Home = () => {
                     />
                 </div>
 
-                {/* Main Content Area */}
-                <div className="xl:w-8/10 lg:w-[75%] md:w-10/10 sm:w-full">
+                {/* Main Content Area - scrolls internally; tall content (e.g. skeleton) does not affect sidebar */}
+                <div className="min-h-0 flex-1 min-w-0 overflow-y-auto pl-0 md:pl-1 lg:pl-0 sm:w-full md:w-full lg:w-[75%] xl:w-[80%] 2xl:w-[82%]">
                     {/* Main Navigation Components */}
                     {activeComponent === "dashboard" && (
                         <Dashboard
@@ -442,7 +409,7 @@ const Home = () => {
                             onBack={() => {
                                 // Clear session storage when going back to manage exam
                                 const clearSessionStorage = () => {
-                                    console.log("Home - Clearing session storage when navigating back to manage exam");
+                                    log("Home - Clearing session storage when navigating back to manage exam");
                                     
                                     // Clear NewExam component session storage
                                     const newExamKeys = [
@@ -474,10 +441,10 @@ const Home = () => {
                                     // Clear all keys
                                     [...newExamKeys, ...addQuestionKeys, ...addStudentsKeys].forEach(key => {
                                         sessionStorage.removeItem(key);
-                                        console.log(`Home - Cleared session storage key: ${key}`);
+                                        log(`Home - Cleared session storage key: ${key}`);
                                     });
                                     
-                                    console.log("Home - Session storage cleared successfully");
+                                    log("Home - Session storage cleared successfully");
                                 };
                                 
                                 clearSessionStorage();
@@ -503,13 +470,7 @@ const Home = () => {
                     {activeComponent === "addQuestion" && (
                         <AddQuestion
                             onBack={() => {
-                                // Clear session storage when going back to newExam
-                                const clearSessionStorage = () => {
-                                    console.log("Home - Clearing session storage when going back to newExam");
-                                    const keys = ['mcqQuestions', 'codingQuestions', 'sectionTimers'];
-                                    keys.forEach(key => sessionStorage.removeItem(key));
-                                };
-                                clearSessionStorage();
+                                // Do not clear mcqQuestions/codingQuestions/sectionTimers so returning to step 2 preserves added questions (same as step 1)
                                 setActiveComponent("newExam");
                             }}
                             onNexts={() => setActiveComponent("addStudents")}
@@ -524,7 +485,7 @@ const Home = () => {
                             onBack={() => {
                                 // Clear session storage when going back to addQuestion
                                 const clearSessionStorage = () => {
-                                    console.log("Home - Clearing session storage when going back to addQuestion");
+                                    log("Home - Clearing session storage when going back to addQuestion");
                                     const keys = ['addStudents_allBranch', 'addStudents_addedBranch', 'addStudents_list'];
                                     keys.forEach(key => sessionStorage.removeItem(key));
                                 };
@@ -566,7 +527,7 @@ const Home = () => {
                     )}
                     {activeComponent === "editAddStudents" && (
                         (() => {
-                            console.log("Home - editAddStudents component - editExamData:", editExamData);
+                            log("Home - editAddStudents component - editExamData:", editExamData);
                             return (
                                 <AddStudents
                                     isEditing={true}

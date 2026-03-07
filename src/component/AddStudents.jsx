@@ -1,517 +1,542 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { log, error as logError } from '../utils/logger';
 import Swal from 'sweetalert2';
-import line from '../assets/Line.png';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faRotateLeft, faSearch } from '@fortawesome/free-solid-svg-icons';
+import { faRotateLeft, faSearch, faPlus, faUserPlus, faTrashAlt } from '@fortawesome/free-solid-svg-icons';
 import { authFetch } from '../scripts/AuthProvider';
 
-const AddStudents = ({ onBack, onSubmit, createExamRequest, isEditing = false, editExamData = null }) => {
-    // Session storage keys
-    const STORAGE_KEYS = {
-        allBranch: 'addStudents_allBranch',
-        addedBranch: 'addStudents_addedBranch',
-        addedList: 'addStudents_list',
-    };
+const STORAGE_KEYS = {
+  allBranch: 'addStudents_allBranch',
+  addedBranch: 'addStudents_addedBranch',
+  addedList: 'addStudents_list',
+};
 
-    // Student lists
-    const [allStudents, setAllStudents] = useState([]);
-    const [addedStudents, setAddedStudents] = useState([]);
+const STUDENTS_PER_PAGE = 20;
 
-    // Filters
-    const [allBranchFilter, setAllBranchFilter] = useState('');
-    const [addedBranchFilter, setAddedBranchFilter] = useState('');
+/** Read added students from session (for initial state and when returning to step 3). */
+function loadAddedStudentsFromSession() {
+  try {
+    const saved = sessionStorage.getItem(STORAGE_KEYS.addedList);
+    if (!saved) return [];
+    const parsed = JSON.parse(saved);
+    return (Array.isArray(parsed) ? parsed : []).map((item) => ({
+      studentId: item.studentId ?? item.id,
+      id: item.id,
+      name: item.name,
+      degree: item.degree || '',
+      year: item.year || '',
+      branch: item.branch,
+    }));
+  } catch {
+    return [];
+  }
+}
 
-    // Search queries
-    const [allSearchQuery, setAllSearchQuery] = useState('');
-    const [addedSearchQuery, setAddedSearchQuery] = useState('');
+function clearStep3Session() {
+  Object.values(STORAGE_KEYS).forEach((key) => sessionStorage.removeItem(key));
+  log('AddStudents - Step 3 session cleared (after submit or explicit clear)');
+}
+const SWAL_THEME = { background: '#181817', color: '#fff' };
 
-    // Pagination States (one for each table)
-    const [allPage, setAllPage]     = useState(1);
-    const [addedPage, setAddedPage] = useState(1);
-    const studentsPerPage = 20;
+const cardClass = 'rounded-xl border border-[#5a5a5a] bg-[#353535] overflow-hidden flex flex-col';
+const cardHead = 'flex items-center justify-between gap-2 px-4 py-3 bg-[#313131] border-b border-[#5a5a5a]';
+const inputClass = 'w-full rounded-lg border border-[#5a5a5a] bg-[#404040] px-3 py-2 text-sm text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#A294F9] focus:border-transparent';
+const selectClass = 'rounded-lg border border-[#5a5a5a] bg-[#404040] px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-[#A294F9] cursor-pointer';
+const btnPrimary = 'rounded-lg bg-[#A294F9] hover:bg-[#8E7AE6] text-white px-4 py-2.5 text-sm font-medium transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed';
+const btnSecondary = 'rounded-lg border border-[#5a5a5a] bg-[#404040] text-gray-200 hover:bg-[#4a4a4a] px-4 py-2.5 text-sm font-medium transition-colors cursor-pointer';
+const btnSuccess = 'inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer';
+const btnDanger = 'inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-lg bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer';
 
-    // Derive branches dynamically
-    const branches = useMemo(
-        () => Array.from(new Set(allStudents.map(s => s.branch))).sort(),
-        [allStudents]
+const AddStudents = ({
+  onBack,
+  onSubmit,
+  createExamRequest,
+  isEditing = false,
+  editExamData = null,
+}) => {
+  const [allStudents, setAllStudents] = useState([]);
+  const [addedStudents, setAddedStudents] = useState(loadAddedStudentsFromSession);
+  const [allBranchFilter, setAllBranchFilter] = useState(() =>
+    typeof sessionStorage !== 'undefined' ? sessionStorage.getItem(STORAGE_KEYS.allBranch) || '' : ''
+  );
+  const [addedBranchFilter, setAddedBranchFilter] = useState(() =>
+    typeof sessionStorage !== 'undefined' ? sessionStorage.getItem(STORAGE_KEYS.addedBranch) || '' : ''
+  );
+  const [allSearchQuery, setAllSearchQuery] = useState('');
+  const [addedSearchQuery, setAddedSearchQuery] = useState('');
+  const [allPage, setAllPage] = useState(1);
+  const [addedPage, setAddedPage] = useState(1);
+  const [isCreating, setIsCreating] = useState(false);
+
+  const branches = useMemo(
+    () => Array.from(new Set(allStudents.map((s) => s.branch))).filter(Boolean).sort(),
+    [allStudents]
+  );
+
+  // Re-hydrate from session when returning to step 3 (non-edit) and fetch students list
+  useEffect(() => {
+    if (!isEditing) {
+      setAddedStudents(loadAddedStudentsFromSession());
+      setAllBranchFilter(sessionStorage.getItem(STORAGE_KEYS.allBranch) || '');
+      setAddedBranchFilter(sessionStorage.getItem(STORAGE_KEYS.addedBranch) || '');
+    }
+
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await authFetch('/admin/students/', { method: 'GET' });
+        const data = await res.json();
+        const list = (data.data && typeof data.data === 'object')
+          ? Object.keys(data.data).flatMap((branch) =>
+              (data.data[branch] || [])
+                .filter((s) => s.usn)
+                .map((s) => ({
+                  studentId: s.id,
+                  id: s.usn,
+                  name: s.name,
+                  degree: s.degree || '',
+                  year: s.year || '',
+                  branch,
+                }))
+            )
+          : [];
+        if (!cancelled) setAllStudents(list);
+      } catch (e) {
+        logError(e);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [isEditing]);
+
+  useEffect(() => {
+    if (isEditing && editExamData) {
+      const studentsData = editExamData.students || editExamData.user || [];
+      if (studentsData?.length > 0) {
+        const mapped = studentsData
+          .map((s) => ({
+            studentId: s.id,
+            id: s.usn || s.slNo || s.id,
+            name: s.name || `${s.first_name || ''} ${s.last_name || ''}`.trim() || 'Unknown',
+            degree: s.degree || '',
+            year: s.year || '',
+            branch: s.branch || '',
+          }))
+          .filter((s) => s.name !== 'Unknown');
+        setAddedStudents(mapped);
+      } else {
+        setAddedStudents([]);
+      }
+    }
+  }, [isEditing, editExamData]);
+
+  useEffect(() => {
+    sessionStorage.setItem(STORAGE_KEYS.addedList, JSON.stringify(addedStudents));
+  }, [addedStudents]);
+  useEffect(() => {
+    sessionStorage.setItem(STORAGE_KEYS.allBranch, allBranchFilter);
+  }, [allBranchFilter]);
+  useEffect(() => {
+    sessionStorage.setItem(STORAGE_KEYS.addedBranch, addedBranchFilter);
+  }, [addedBranchFilter]);
+
+  const filteredAll = useMemo(
+    () =>
+      allStudents.filter(
+        (s) =>
+          (!allBranchFilter || s.branch === allBranchFilter) &&
+          !addedStudents.some((a) => a.studentId === s.studentId) &&
+          (s.id?.toLowerCase().includes(allSearchQuery.toLowerCase()) ||
+            s.name?.toLowerCase().includes(allSearchQuery.toLowerCase()))
+      ),
+    [allStudents, addedStudents, allBranchFilter, allSearchQuery]
+  );
+
+  const filteredAdded = useMemo(
+    () =>
+      addedStudents.filter(
+        (s) =>
+          (!addedBranchFilter || s.branch === addedBranchFilter) &&
+          (s.id?.toLowerCase().includes(addedSearchQuery.toLowerCase()) ||
+            s.name?.toLowerCase().includes(addedSearchQuery.toLowerCase()))
+      ),
+    [addedStudents, addedBranchFilter, addedSearchQuery]
+  );
+
+  const paginate = (data, page) => {
+    const start = (page - 1) * STUDENTS_PER_PAGE;
+    return data.slice(start, start + STUDENTS_PER_PAGE);
+  };
+
+  const totalAllPages = Math.max(1, Math.ceil(filteredAll.length / STUDENTS_PER_PAGE));
+  const totalAddedPages = Math.max(1, Math.ceil(filteredAdded.length / STUDENTS_PER_PAGE));
+
+  const addAll = () => {
+    setAddedStudents((prev) => [...prev, ...filteredAll]);
+    setAddedBranchFilter('');
+    setAddedSearchQuery('');
+    setAddedPage(1);
+  };
+
+  const addOne = (s) => {
+    setAddedStudents((prev) =>
+      prev.some((a) => a.studentId === s.studentId) ? prev : [...prev, s]
     );
+  };
 
-    const [isCreating, setIsCreating] = useState(false);
+  const removeOne = (s) => {
+    setAddedStudents((prev) => prev.filter((a) => a.studentId !== s.studentId));
+  };
 
-    // Load session and fetch
-    useEffect(() => {
-        // Only load from sessionStorage if not in edit mode
-        if (!isEditing) {
-            const saved = sessionStorage.getItem(STORAGE_KEYS.addedList);
-            if (saved) {
-                const parsed = JSON.parse(saved).map(item => ({
-                    studentId: item.studentId ?? item.id,
-                    id: item.id,
-                    name: item.name,
-                    degree: item.degree || '',
-                    year: item.year || '',
-                    branch: item.branch,
-                }));
-                setAddedStudents(parsed);
-            }
-        }
+  const removeAll = () => {
+    Swal.fire({
+      title: 'Remove all students?',
+      text: 'This will clear the added students list.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, remove all',
+      cancelButtonText: 'Cancel',
+      ...SWAL_THEME,
+    }).then((result) => {
+      if (result.isConfirmed) setAddedStudents([]);
+    });
+  };
 
-        setAllBranchFilter(sessionStorage.getItem(STORAGE_KEYS.allBranch) || '');
-        setAddedBranchFilter(sessionStorage.getItem(STORAGE_KEYS.addedBranch) || '');
+  const createExam = async () => {
+    if (!addedStudents.length) {
+      return Swal.fire({
+        title: 'No Students',
+        text: 'Please add at least one student to proceed.',
+        icon: 'error',
+        ...SWAL_THEME,
+      });
+    }
 
-        (async () => {
-            try {
-                const res = await authFetch('/admin/students/', { method: 'GET' });
-                const data = await res.json();
-                const list = Object.keys(data.data).flatMap(branch =>
-                    data.data[branch]
-                        .filter(s => s.usn)
-                        .map(s => ({
-                            studentId: s.id,
-                            id: s.usn,
-                            name: s.name,
-                            degree: s.degree || '',
-                            year: s.year || '',
-                            branch,
-                        }))
-                );
-                setAllStudents(list);
-            } catch (e) {
-                console.error(e);
-            }
-        })();
-    }, [isEditing]);
+    setIsCreating(true);
+    const mcqQuestions = JSON.parse(sessionStorage.getItem('mcqQuestions') || '[]');
+    const section_ids = [...new Set(mcqQuestions.map((q) => q.group_id))];
+    const section_question_counts = {};
+    section_ids.forEach((id) => {
+      section_question_counts[id] = mcqQuestions.filter((q) => q.group_id === id).length;
+    });
+    const codingQuestions = JSON.parse(sessionStorage.getItem('codingQuestions') || '[]');
+    const coding_question_ids = codingQuestions.map((q) => q.id);
 
-    // Clear session storage when component unmounts (only if not editing)
-    useEffect(() => {
-        return () => {
-            if (!isEditing) {
-                // Clear AddStudents session storage
-                Object.values(STORAGE_KEYS).forEach(key => {
-                    sessionStorage.removeItem(key);
-                });
-                console.log('AddStudents - Session storage cleared on unmount');
-            }
-        };
-    }, [isEditing]);
-
-    // Clear session storage on component mount if not editing (fresh form)
-    useEffect(() => {
-        if (!isEditing) {
-            // Clear any existing session storage data on fresh form load
-            Object.values(STORAGE_KEYS).forEach(key => {
-                sessionStorage.removeItem(key);
-            });
-            console.log('AddStudents - Session storage cleared on fresh form load');
-        }
-    }, [isEditing]);
-
-    // Populate students from existing exam data when editing
-    useEffect(() => {
-        if (isEditing && editExamData) {
-            console.log("AddStudents - editExamData:", editExamData);
-            console.log("AddStudents - students from exam:", editExamData.students);
-            console.log("AddStudents - user from exam:", editExamData.user);
-            
-            // Check both 'students' and 'user' fields
-            let studentsData = editExamData.students || editExamData.user || [];
-            
-            if (studentsData && studentsData.length > 0) {
-                const studentsFromExam = studentsData.map(student => {
-                    console.log("Processing student:", student);
-                    return {
-                        studentId: student.id,
-                        id: student.usn || student.slNo || student.id,
-                        name: student.name || `${student.first_name || ''} ${student.last_name || ''}`.trim() || 'Unknown Student',
-                        degree: student.degree || '',
-                        year: student.year || '',
-                        branch: student.branch || '',
-                    };
-                }).filter(student => student.name !== 'Unknown Student'); // Filter out invalid students
-                
-                console.log("Processed students from exam:", studentsFromExam);
-                setAddedStudents(studentsFromExam);
-            } else {
-                console.log("No students found in exam data");
-                setAddedStudents([]);
-            }
-        }
-    }, [isEditing, editExamData]);
-
-    // Persist
-    useEffect(() => {
-        sessionStorage.setItem(STORAGE_KEYS.addedList, JSON.stringify(addedStudents));
-    }, [addedStudents]);
-    
-    // Debug: Log addedStudents changes
-    useEffect(() => {
-        console.log("AddStudents - addedStudents state changed:", addedStudents);
-    }, [addedStudents]);
-    
-    useEffect(() => {
-        sessionStorage.setItem(STORAGE_KEYS.allBranch, allBranchFilter);
-    }, [allBranchFilter]);
-    useEffect(() => {
-        sessionStorage.setItem(STORAGE_KEYS.addedBranch, addedBranchFilter);
-    }, [addedBranchFilter]);
-
-    // Filter logic including branch + search
-    const filteredAll = allStudents.filter(s =>
-        (!allBranchFilter || s.branch === allBranchFilter) &&
-        !addedStudents.some(a => a.studentId === s.studentId) &&
-        (
-            s.id.toLowerCase().includes(allSearchQuery.toLowerCase()) ||
-            s.name.toLowerCase().includes(allSearchQuery.toLowerCase())
-        )
-    );
-
-    const filteredAdded = addedStudents.filter(s =>
-        (!addedBranchFilter || s.branch === addedBranchFilter) &&
-        (
-            s.id.toLowerCase().includes(addedSearchQuery.toLowerCase()) ||
-            s.name.toLowerCase().includes(addedSearchQuery.toLowerCase())
-        )
-    );
-
-    // Pagination Logic
-    const paginateData = (data, currentPage) => {
-        const startIndex = (currentPage - 1) * studentsPerPage;
-        return data.slice(startIndex, startIndex + studentsPerPage);
+    const payload = {
+      ...createExamRequest,
+      students: addedStudents.map((s) => s.studentId),
+      section_ids,
+      section_question_counts,
+      coding_question_ids,
     };
 
-    // Actions
-    const addAll = () => {
-        setAddedStudents(prev => [...prev, ...filteredAll]);
-        setAddedBranchFilter('');
-        setAddedSearchQuery('');
-    };
-    const addOne = s =>
-        setAddedStudents(prev =>
-            prev.some(a => a.studentId === s.studentId)
-                ? prev
-                : [...prev, s]
-        );
-    const removeOne = s =>
-        setAddedStudents(prev =>
-            prev.filter(a => a.studentId !== s.studentId)
-        );
+    try {
+      const url =
+        isEditing && editExamData
+          ? `/admin/exams/${editExamData.id}/`
+          : '/admin/exams/create-exam/';
+      const method = isEditing && editExamData ? 'PUT' : 'POST';
+      const res = await authFetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
 
-    const removeAll = () => {
-        Swal.fire({
-            title: 'Are you sure?',
-            text: 'This will remove all added students.',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Yes, remove all',
-            cancelButtonText: 'Cancel',
-            background: '#181817',
-            color: '#fff'
-        }).then(result => {
-            if (result.isConfirmed) {
-                setAddedStudents([]);  // clear the array
-            }
-        });
-    };
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.message || 'Failed to save exam');
+      }
 
-    const createExam = async () => {
-        if (!addedStudents.length) {
-            return Swal.fire({ 
-                title: 'No Students',
-                text: 'Please add at least one student to proceed.',
-                icon: 'error',
-                background: '#181817',
-                color: '#fff'
-            });
-        }
+      const actionText = isEditing ? 'Updated' : 'Created';
+      await Swal.fire({
+        title: `Test ${actionText}`,
+        text: `Test has been ${actionText.toLowerCase()}.`,
+        icon: 'success',
+        confirmButtonText: 'OK',
+        ...SWAL_THEME,
+      });
+      clearStep3Session();
+      onSubmit();
+    } catch (err) {
+      logError('AddStudents - Error:', err);
+      Swal.fire({
+        title: 'Error',
+        text: err.message,
+        icon: 'error',
+        confirmButtonText: 'OK',
+        ...SWAL_THEME,
+      });
+    } finally {
+      setIsCreating(false);
+    }
+  };
 
-        setIsCreating(true);
-        
-        // Get section_ids and question counts from sessionStorage for MCQ questions
-        const mcqQuestions = JSON.parse(sessionStorage.getItem('mcqQuestions') || '[]');
-        const section_ids = [...new Set(mcqQuestions.map(q => q.group_id))];
-        
-        // Create section_question_counts mapping
-        const section_question_counts = {};
-        section_ids.forEach(sectionId => {
-            const questionsInSection = mcqQuestions.filter(q => q.group_id === sectionId);
-            section_question_counts[sectionId] = questionsInSection.length;
-        });
-        
-        // Get coding_question_ids from sessionStorage for coding questions
-        const codingQuestions = JSON.parse(sessionStorage.getItem('codingQuestions') || '[]');
-        const coding_question_ids = codingQuestions.map(q => q.id);
-        
-        const payload = { 
-            ...createExamRequest, 
-            students: addedStudents.map(s => s.studentId),
-            section_ids: section_ids,
-            section_question_counts: section_question_counts,
-            coding_question_ids: coding_question_ids
-        };
+  const paginatedAll = paginate(filteredAll, allPage);
+  const paginatedAdded = paginate(filteredAdded, addedPage);
 
-        console.log("AddStudents - createExam payload:", payload);
-        console.log("AddStudents - students being sent:", payload.students);
-        console.log("AddStudents - section_question_counts:", section_question_counts);
-        console.log("AddStudents - addedStudents:", addedStudents);
+  return (
+    <div className="flex min-h-0 w-full flex-col overflow-x-hidden bg-[#282828] px-4 py-5 sm:px-6 md:py-6 md:px-8">
+      <div className="flex w-full justify-center">
+        <div className="w-full max-w-6xl min-w-0">
+          {/* Header */}
+          <div className="pb-4 flex flex-wrap items-center justify-between gap-4">
+            <h2 className="text-xl font-semibold text-white sm:text-2xl">Add Students</h2>
+            <span className="shrink-0 rounded-full bg-[#404040] px-3 py-1 text-sm text-gray-300">
+              Step 3 of 3
+            </span>
+          </div>
 
-        try {
-            let res;
-            if (isEditing && editExamData) {
-                // Update existing exam
-                console.log("AddStudents - Updating exam:", editExamData.id);
-                res = await authFetch(`/admin/exams/${editExamData.id}/`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-            } else {
-                // Create new exam
-                console.log("AddStudents - Creating new exam");
-                res = await authFetch('/admin/exams/create-exam/', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-            }
-            
-            console.log("AddStudents - Response status:", res.status);
-            console.log("AddStudents - Response ok:", res.ok);
-            
-            if (!res.ok) {
-                const errorData = await res.json();
-                console.log("AddStudents - Error response:", errorData);
-                throw new Error(errorData.message || 'Failed to create exam');
-            }
-            
-            const responseData = await res.json();
-            console.log("AddStudents - Success response:", responseData);
-            
-            const actionText = isEditing ? 'Updated' : 'Created';
-            await Swal.fire({
-                title: `Test ${actionText}`,
-                text: `Test has been ${actionText.toLowerCase()}.`,
-                icon: 'success',
-                confirmButtonText: 'OK',
-                background: '#181817',
-                color: '#fff'
-            });
-            onSubmit();
-        } catch (err) {
-            console.error("AddStudents - Error:", err);
-            Swal.fire({
-                title: 'Error',
-                text: err.message,
-                icon: 'error',
-                confirmButtonText: 'OK',
-                background: '#181817',
-                color: '#fff'
-            });
-        } finally {
-            setIsCreating(false);
-        }
-    };
-
-    return (
-        <div className='adds-container justify-center flex flex-wrap'>
-            <div className='addStudent-box'>
-                <h1>Add Students</h1>
-
-                <div className='grid lg:grid-cols-2 md:grid-cols-1 gap-2.5 add-s-container'>
-                    {/* All Students Section */}
-                    <div className='all-student'>
-                        <div className='all-s-header flex justify-between'>
-                            <h3>All Students</h3>
-                            <div className='flex gap-1.5 r-header-search'>
-                                <select
-                                    className='filter-select-branch'
-                                    value={allBranchFilter}
-                                    onChange={e => setAllBranchFilter(e.target.value)}
-                                >
-                                    <option value=''>Branch</option>
-                                    {branches.map(b => (
-                                        <option key={b} value={b}>{b}</option>
-                                    ))}
-                                </select>
-                                <div className='flex relative s-search-container'>
-                                    <FontAwesomeIcon icon={faSearch} className='s-icon' />
-                                    <input type='text' placeholder='Search All Students' onChange={e => setAllSearchQuery(e.target.value)} />
-                                </div>
-                            </div>
-                        </div>
-                        <div className='all-s-body'>
-                            <div className="adds-table-wrapper">
-                                <table>
-                                    <thead>
-                                        <tr>
-                                            <td colSpan={2} align='left'>All Students</td>
-                                            <td colSpan={2} align='right'>
-                                                <button
-                                                    onClick={addAll}
-                                                    className='bg-green-500 rounded hover:bg-green-900 adds-branch'
-                                                >
-                                                    + Add Batch
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {
-                                             paginateData(filteredAll, allPage).length ? (
-                                            paginateData(filteredAll, allPage).map(s => (
-                                                <tr key={s.studentId} className='border-1 border-white'>
-                                                    <td>{s.id}</td>
-                                                    <td>{s.name}</td>
-                                                    <td>{s.branch}</td>
-                                                    <td>
-                                                        <button
-                                                            onClick={() => addOne(s)}
-                                                            className='bg-green-500 hover:bg-green-900 rounded adds-btn'
-                                                        >
-                                                            +Add
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                            ))
-                                        ) : (
-                                            <tr>
-                                                <td colSpan={4} className='text-center'>No students found</td>
-                                            </tr>
-                                        )}
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            {/* Pagination Controls */}
-                            <div className="pagination flex justify-center items-center gap-2 mt-2">
-                                <button
-                                    disabled={filteredAll.length === 0 || allPage === 1}
-                                    onClick={() => setAllPage(p => Math.max(1, p - 1))}
-                                    className="px-3 py-1 bg-gray-700 rounded disabled:opacity-50"
-                                >
-                                    Prev
-                                </button>
-                                <span>
-                                    {filteredAll.length ? allPage : 0} / {Math.ceil(filteredAll.length / studentsPerPage) || 0}
-                                </span>
-                                <button
-                                    disabled={filteredAll.length === 0 || allPage >= Math.ceil(filteredAll.length / studentsPerPage)}
-                                    onClick={() => setAllPage(p => Math.min(Math.ceil(filteredAll.length / studentsPerPage), p + 1))}
-                                    className="px-3 py-1 bg-gray-700 rounded disabled:opacity-50"
-                                >
-                                    Next
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Added Students Section */}
-                    <div className='all-student-added'>
-                        <div className='all-s-header-added flex justify-between'>
-                            <h3>Added Students</h3>
-                            <div className='flex gap-1.5 r-header-search'>
-                                <select
-                                    className='filter-select-branch'
-                                    value={addedBranchFilter}
-                                    onChange={e => setAddedBranchFilter(e.target.value)}
-                                >
-                                    <option value=''>Branch</option>
-                                    {branches.map(b => (
-                                        <option key={b} value={b}>{b}</option>
-                                    ))}
-                                </select>
-                                <div className='flex relative s-search-container'>
-                                    <FontAwesomeIcon icon={faSearch} className='s-icon' />
-                                    <input type='text' placeholder='Search Added Students' onChange={e => setAddedSearchQuery(e.target.value)} />
-                                </div>
-                            </div>
-                        </div>
-                        <div className='all-s-body'>
-                            <div className="addeds-table-wrapper">
-                                {filteredAdded.length ? (
-                                    <table>
-                                        <thead>
-                                            <tr>
-                                                <td colSpan={5} align='left'>Added Students</td>
-                                                <td><button className='bg-red-500 hover:bg-red-900 rounded adds-btn' onClick={removeAll}>Remove all</button></td>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {paginateData(filteredAdded, addedPage).map(s => (
-                                                <tr key={s.studentId} className='border-1 border-white'>
-                                                    <td>{s.id}</td>
-                                                    <td className='whitespace-nowrap'>{s.name}</td>
-                                                    <td>{s.degree}</td>
-                                                    <td>{s.year}</td>
-                                                    <td>{s.branch}</td>
-                                                    <td>
-                                                        <button
-                                                            onClick={() => removeOne(s)}
-                                                            className='bg-red-500 hover:bg-red-900 rounded adds-btn'
-                                                        >
-                                                            Remove
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                ) : (
-                                    <p className='text-center text-white'>No students added yet.</p>
-                                )}
-                            </div>
-
-                            {/* Pagination Controls for Added Students */}
-                             <div className="pagination flex justify-center items-center gap-2 mt-2">
-                                <button
-                                    disabled={filteredAdded.length === 0 || addedPage === 1}
-                                    onClick={() => setAddedPage(p => Math.max(1, p - 1))}
-                                    className="px-3 py-1 bg-gray-700 rounded disabled:opacity-50"
-                                >
-                                    Prev
-                                </button>
-                               <span>
-                                    {filteredAdded.length ? addedPage : 0} / {Math.ceil(filteredAdded.length / studentsPerPage) || 0}
-                                </span>
-                                <button
-                                    disabled={filteredAdded.length === 0 || addedPage >= Math.ceil(filteredAdded.length / studentsPerPage)}
-                                    onClick={() => setAddedPage(p => Math.min(Math.ceil(filteredAdded.length / studentsPerPage), p + 1))}
-                                    className="px-3 py-1 bg-gray-700 rounded disabled:opacity-50"
-                                >
-                                    Next
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+          {/* Two panels */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* All Students */}
+            <div className={cardClass}>
+              <div className={cardHead}>
+                <h3 className="text-base font-semibold text-white">All Students</h3>
+                <div className="flex items-center gap-2">
+                  <select
+                    value={allBranchFilter}
+                    onChange={(e) => { setAllBranchFilter(e.target.value); setAllPage(1); }}
+                    className={`${selectClass} max-w-[140px]`}
+                  >
+                    <option value="">All branches</option>
+                    {branches.map((b) => (
+                      <option key={b} value={b}>{b}</option>
+                    ))}
+                  </select>
+                  <div className="relative min-w-[160px]">
+                    <FontAwesomeIcon
+                      icon={faSearch}
+                      className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 w-4 h-4 pointer-events-none"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Search by USN or name..."
+                      value={allSearchQuery}
+                      onChange={(e) => { setAllSearchQuery(e.target.value); setAllPage(1); }}
+                      className={`${inputClass} pl-9`}
+                    />
+                  </div>
                 </div>
-
-                <div className='flex justify-center'>
-                    <img src={line} alt='line' className='line-bottom' />
+              </div>
+              <div className="flex-1 min-h-0 flex flex-col p-4">
+                <div className="flex items-center justify-between gap-2 mb-3">
+                  <span className="text-sm text-gray-400">
+                    {filteredAll.length} available
+                  </span>
+                  <button
+                    type="button"
+                    onClick={addAll}
+                    disabled={filteredAll.length === 0}
+                    className="flex items-center gap-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-3 py-2 text-sm font-medium cursor-pointer"
+                  >
+                    <FontAwesomeIcon icon={faUserPlus} /> Add all
+                  </button>
                 </div>
-                <div className='flex w-full justify-end bottom-control gap-1'>
-                    <button onClick={onBack} className="exam-previous-btn">
-                        <FontAwesomeIcon icon={faRotateLeft} className='left-icon' />back
-                    </button>
-                    <p>3/3</p>
+                <div className="rounded-lg border border-[#5a5a5a] bg-[#404040] overflow-hidden flex-1 min-h-[200px] max-h-[40vh] overflow-y-auto">
+                  <table className="w-full text-sm">
+                    <thead className="sticky top-0 bg-[#313131] text-left text-gray-300 border-b border-[#5a5a5a]">
+                      <tr>
+                        <th className="px-3 py-2 font-medium">USN</th>
+                        <th className="px-3 py-2 font-medium">Name</th>
+                        <th className="px-3 py-2 font-medium">Branch</th>
+                        <th className="px-3 py-2 w-24 min-w-[6rem]"></th>
+                      </tr>
+                    </thead>
+                    <tbody className="text-gray-200">
+                      {paginatedAll.length ? (
+                        paginatedAll.map((s) => (
+                          <tr
+                            key={s.studentId}
+                            className="border-b border-[#5a5a5a]/50 hover:bg-[#4a4a4a]"
+                          >
+                            <td className="px-3 py-2 font-mono text-xs">{s.id}</td>
+                            <td className="px-3 py-2 truncate max-w-[120px]" title={s.name}>{s.name}</td>
+                            <td className="px-3 py-2 text-gray-400">{s.branch}</td>
+                            <td className="px-3 py-2">
+                              <button
+                                type="button"
+                                onClick={() => addOne(s)}
+                                className={btnSuccess}
+                              >
+                                <FontAwesomeIcon icon={faPlus} className="shrink-0" /> Add
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan={4} className="px-3 py-8 text-center text-gray-500">
+                            No students found. Adjust filters or search.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+                {totalAllPages > 1 && (
+                  <div className="flex items-center justify-between gap-2 mt-3 pt-3 border-t border-[#5a5a5a]">
                     <button
-                        className='exam-next-btn'
-                        onClick={createExam}
-                        disabled={isCreating}
+                      type="button"
+                      disabled={allPage === 1}
+                      onClick={() => setAllPage((p) => Math.max(1, p - 1))}
+                      className="rounded-lg border border-[#5a5a5a] bg-[#404040] px-3 py-1.5 text-sm text-gray-300 disabled:opacity-50 cursor-pointer"
                     >
-                        {isCreating
-                            ? <span className='flex items-center gap-2'>
-                                <svg className='animate-spin h-5 w-5' viewBox='0 0 24 24'>
-                                    <circle className='opacity-25' cx='12' cy='12' r='10' stroke='currentColor' strokeWidth='4' />
-                                    <path className='opacity-75' fill='currentColor' d='M4 12a8 8 0 018-8v8z' />
-                                </svg>
-                                {isEditing ? 'Updating…' : 'Creating…'}
-                            </span>
-                            : isEditing ? '+ Update Exam' : '+ CreateExam'
-                        }
+                      Previous
                     </button>
-                </div>
+                    <span className="text-sm text-gray-400">
+                      Page {allPage} of {totalAllPages}
+                    </span>
+                    <button
+                      type="button"
+                      disabled={allPage >= totalAllPages}
+                      onClick={() => setAllPage((p) => Math.min(totalAllPages, p + 1))}
+                      className="rounded-lg border border-[#5a5a5a] bg-[#404040] px-3 py-1.5 text-sm text-gray-300 disabled:opacity-50 cursor-pointer"
+                    >
+                      Next
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
+
+            {/* Added Students */}
+            <div className={cardClass}>
+              <div className={cardHead}>
+                <h3 className="text-base font-semibold text-white">Added Students</h3>
+                <div className="flex items-center gap-2">
+                  <select
+                    value={addedBranchFilter}
+                    onChange={(e) => { setAddedBranchFilter(e.target.value); setAddedPage(1); }}
+                    className={`${selectClass} max-w-[140px]`}
+                  >
+                    <option value="">All branches</option>
+                    {branches.map((b) => (
+                      <option key={b} value={b}>{b}</option>
+                    ))}
+                  </select>
+                  <div className="relative min-w-[160px]">
+                    <FontAwesomeIcon
+                      icon={faSearch}
+                      className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 w-4 h-4 pointer-events-none"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Search added..."
+                      value={addedSearchQuery}
+                      onChange={(e) => { setAddedSearchQuery(e.target.value); setAddedPage(1); }}
+                      className={`${inputClass} pl-9`}
+                    />
+                  </div>
+                </div>
+              </div>
+              <div className="flex-1 min-h-0 flex flex-col p-4">
+                <div className="flex items-center justify-between gap-2 mb-3">
+                  <span className="text-sm text-gray-400">
+                    {addedStudents.length} added
+                  </span>
+                  <button
+                    type="button"
+                    onClick={removeAll}
+                    disabled={addedStudents.length === 0}
+                    className="flex items-center gap-2 rounded-lg bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-3 py-2 text-sm font-medium cursor-pointer"
+                  >
+                    <FontAwesomeIcon icon={faTrashAlt} /> Remove all
+                  </button>
+                </div>
+                <div className="rounded-lg border border-[#5a5a5a] bg-[#404040] overflow-hidden flex-1 min-h-[200px] max-h-[40vh] overflow-y-auto">
+                  {filteredAdded.length ? (
+                    <table className="w-full text-sm">
+                      <thead className="sticky top-0 bg-[#313131] text-left text-gray-300 border-b border-[#5a5a5a]">
+                        <tr>
+                          <th className="px-3 py-2 font-medium">USN</th>
+                          <th className="px-3 py-2 font-medium">Name</th>
+                          <th className="px-3 py-2 font-medium">Branch</th>
+                          <th className="px-3 py-2 w-24 min-w-[6rem]"></th>
+                        </tr>
+                      </thead>
+                      <tbody className="text-gray-200">
+                        {paginatedAdded.map((s) => (
+                          <tr
+                            key={s.studentId}
+                            className="border-b border-[#5a5a5a]/50 hover:bg-[#4a4a4a]"
+                          >
+                            <td className="px-3 py-2 font-mono text-xs">{s.id}</td>
+                            <td className="px-3 py-2 truncate max-w-[120px]" title={s.name}>{s.name}</td>
+                            <td className="px-3 py-2 text-gray-400">{s.branch}</td>
+                            <td className="px-3 py-2">
+                              <button
+                                type="button"
+                                onClick={() => removeOne(s)}
+                                className={btnDanger}
+                              >
+                                Remove
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center min-h-[200px] text-gray-500 text-sm px-4 text-center">
+                      <p>No students added yet.</p>
+                      <p className="mt-1">Add students from the left panel to include them in the exam.</p>
+                    </div>
+                  )}
+                </div>
+                {filteredAdded.length > 0 && totalAddedPages > 1 && (
+                  <div className="flex items-center justify-between gap-2 mt-3 pt-3 border-t border-[#5a5a5a]">
+                    <button
+                      type="button"
+                      disabled={addedPage === 1}
+                      onClick={() => setAddedPage((p) => Math.max(1, p - 1))}
+                      className="rounded-lg border border-[#5a5a5a] bg-[#404040] px-3 py-1.5 text-sm text-gray-300 disabled:opacity-50 cursor-pointer"
+                    >
+                      Previous
+                    </button>
+                    <span className="text-sm text-gray-400">
+                      Page {addedPage} of {totalAddedPages}
+                    </span>
+                    <button
+                      type="button"
+                      disabled={addedPage >= totalAddedPages}
+                      onClick={() => setAddedPage((p) => Math.min(totalAddedPages, p + 1))}
+                      className="rounded-lg border border-[#5a5a5a] bg-[#404040] px-3 py-1.5 text-sm text-gray-300 disabled:opacity-50 cursor-pointer"
+                    >
+                      Next
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div className="mt-8 flex items-center justify-between gap-4 border-t border-[#5a5a5a] pt-6">
+            <button type="button" onClick={onBack} className={btnSecondary}>
+              <FontAwesomeIcon icon={faRotateLeft} className="mr-2" /> Back
+            </button>
+            <span className="text-sm text-gray-400">Step 3 of 3</span>
+            <button
+              type="button"
+              onClick={createExam}
+              disabled={isCreating}
+              className={`${btnPrimary} flex items-center gap-2`}
+            >
+              {isCreating ? (
+                <>
+                  <span className="inline-block h-5 w-5 rounded-full border-2 border-white border-t-transparent animate-spin" />
+                  {isEditing ? 'Updating…' : 'Creating…'}
+                </>
+              ) : isEditing ? (
+                'Update exam'
+              ) : (
+                'Create exam'
+              )}
+            </button>
+          </div>
         </div>
-    );
+      </div>
+    </div>
+  );
 };
 
 export default AddStudents;

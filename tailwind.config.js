@@ -4,10 +4,11 @@ export default {
     theme: {
         extend: {},
         screens: {
-            sm: "640px",  // Small devices (phones)
-            md: "768px",  // Tablets
-            lg: "1024px", // Laptops
-            xl: "1280px", // Desktops
+            sm: "640px",   // Small devices (phones)
+            md: "768px",   // Tablets
+            lg: "1024px",  // Laptops
+            xl: "1280px",  // Desktops
+            2xl: "1536px", // Large desktops
         },
     },
     plugins: [],

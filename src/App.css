@@ -1,5 +1,5 @@
+/* Reset moved to index.css @layer base so Tailwind margin/padding utilities work */
 * {
-  margin: 0px;
   box-sizing: border-box;
 }
 

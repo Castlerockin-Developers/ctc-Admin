@@ -1,1 +1,42 @@
 @import "tailwindcss";
+
+/* Madina font family – used by Sidebar and other components */
+@font-face {
+  font-family: "madina-light";
+  src: url("/public/fonts/Madani_Arabic_Light.ttf") format("truetype");
+  font-weight: 300;
+  font-style: normal;
+}
+@font-face {
+  font-family: "madina-medium";
+  src: url("/public/fonts/Madani_Arabic_Medium.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+}
+@font-face {
+  font-family: "madina-regular";
+  src: url("/public/fonts/Madani_Arabic_Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+}
+@font-face {
+  font-family: "madina-semibold";
+  src: url("/public/fonts/Madani_Arabic_Semi_Bold.ttf") format("truetype");
+  font-weight: 600;
+  font-style: normal;
+}
+@font-face {
+  font-family: "madina";
+  src: url("/public/fonts/Madani_Arabic_Variable.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+}
+
+/* Put global reset in Tailwind base layer so margin/padding utilities override it */
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+}

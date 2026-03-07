@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import { log, error as logError } from "../utils/logger";
 import {
   FaSearch,
   FaPlus,
-  FaFilter,
   FaDatabase,
   FaPen,
   FaUpload,
@@ -10,10 +10,8 @@ import {
 import Swal from "sweetalert2";
 import { motion } from "framer-motion";
 import { authFetch, authFetchPayload } from "../scripts/AuthProvider";
-import TableSkeleton from "../loader/TableSkeleton";
+import Spinner from "../loader/Spinner";
 import { useCache } from "../hooks/useCache";
-import CacheStatusIndicator from "./CacheStatusIndicator";
-import "./CacheStatusIndicator.css";
 
 // Utility function to truncate text:
 // It returns "..." if the text is too long,
@@ -35,18 +33,14 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed })
   const [activeTab, setActiveTab] = useState("all"); // default to first branch after load
   const [studentsData, setStudentsData] = useState({}); // expect object with branch keys
   const [groups, setGroups] = useState([]);
-
-
-  // State to track screen width for responsive rendering
-  const [screenWidth, setScreenWidth] = useState(window.innerWidth);
-
-  // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
-  // const [studentsPerPage] = useState(10); // Number of students to display per page
-  // responsive students-per-page: 15 if width ≥2560px, else 10
-  const [studentsPerPage, setStudentsPerPage] = useState(
-    () => window.innerWidth >= 2560 ? 18 : 10
-  );
+  const [studentsPerPage, setStudentsPerPage] = useState(() => (typeof window !== "undefined" && window.innerWidth >= 2560 ? 15 : 10));
+
+  useEffect(() => {
+    const onResize = () => setStudentsPerPage(window.innerWidth >= 2560 ? 15 : 10);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
 
   const pageFade = {
     initial: { opacity: 0 },
@@ -81,27 +75,6 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed })
     }),
   };
 
-  useEffect(() => {
-    const onResize = () => {
-      setStudentsPerPage(window.innerWidth >= 2560 ? 15 : 10);
-    };
-    window.addEventListener('resize', onResize);
-    return () => window.removeEventListener('resize', onResize);
-  }, []);
-
-
-
-  const [loading, setLoading] = useState(true); // State to track loading
-
-  // Effect to update screenWidth on window resize
-  useEffect(() => {
-    const handleResize = () => {
-      setScreenWidth(window.innerWidth);
-    };
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
   // Students data fetch function
   const fetchStudentsData = useCallback(async () => {
     const response = await authFetch("/admin/students/", { method: "GET" });
@@ -119,15 +92,15 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed })
 
   // Cache callbacks
   const onCacheHit = useCallback((data) => {
-    console.log('Students data loaded from cache');
+    log('Students data loaded from cache');
   }, []);
 
   const onCacheMiss = useCallback((data) => {
-    console.log('Students data fetched fresh');
+    log('Students data fetched fresh');
   }, []);
 
   const onError = useCallback((err) => {
-    console.error('Students fetch error:', err);
+    logError('Students fetch error:', err);
   }, []);
 
   // Use cache hook for students data
@@ -165,7 +138,7 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed })
     }
   }, [cacheAllowed, forceRefresh, fetchStudentsData, invalidateCache]);
 
-  console.log('Cache debug:', {
+  log('Cache debug:', {
     cacheAllowed,
     cacheLoading,
     cacheError,
@@ -176,16 +149,13 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed })
 
   // If cache is disabled, show a message
   if (!cacheAllowed) {
-    console.log('Cache is disabled - this might be causing the issue');
+    log('Cache is disabled - this might be causing the issue');
   }
-
-  // Add cache status display for debugging
-  const cacheStatus = cacheAllowed ? (cacheUsed ? 'Using Cache' : 'Fresh Data') : 'Cache Disabled';
 
   // Update local state when cache data changes
   useEffect(() => {
     if (cachedStudentsData) {
-      console.log('Cached students data:', cachedStudentsData);
+      log('Cached students data:', cachedStudentsData);
       setTotalStudents(cachedStudentsData.user_count || 0);
       totalAllowedStudents.current = cachedStudentsData.max_users;
       setStudentsData(cachedStudentsData.data || {});
@@ -206,11 +176,11 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed })
 
   // Filter students based on search query
   const filteredAndSortedStudents = () => {
-    console.log('Filter function - studentsData:', studentsData);
-    console.log('Filter function - activeTab:', activeTab);
+    log('Filter function - studentsData:', studentsData);
+    log('Filter function - activeTab:', activeTab);
     
     if (!studentsData) {
-      console.log('No studentsData, returning empty array');
+      log('No studentsData, returning empty array');
       return [];
     }
 
@@ -219,7 +189,7 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed })
         ? Object.values(studentsData).flat()
         : studentsData[activeTab] || [];
     
-    console.log('Current branch students:', currentBranchStudents);
+    log('Current branch students:', currentBranchStudents);
 
     // Apply search filter first
     const searchLower = searchQuery.toLowerCase();
@@ -237,33 +207,14 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed })
     return filtered;
   };
 
-  const studentsToDisplay = filteredAndSortedStudents(); // Get the filtered and sorted list
-
-  // Pagination Logic
+  const studentsToDisplay = filteredAndSortedStudents();
   const indexOfLastStudent = currentPage * studentsPerPage;
   const indexOfFirstStudent = indexOfLastStudent - studentsPerPage;
-  const currentStudents = studentsToDisplay.slice(
-    indexOfFirstStudent,
-    indexOfLastStudent
-  );
-
+  const currentStudents = studentsToDisplay.slice(indexOfFirstStudent, indexOfLastStudent);
   const totalPages = Math.ceil(studentsToDisplay.length / studentsPerPage);
 
-
-
-  const goToNextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1);
-    }
-  };
-
-  const goToPrevPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
-    }
-  };
-
-  // Calculate max students from response or props
+  const goToNextPage = () => { if (currentPage < totalPages) setCurrentPage(currentPage + 1); };
+  const goToPrevPage = () => { if (currentPage > 1) setCurrentPage(currentPage - 1); };
 
 
 
@@ -275,11 +226,11 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed })
         const groupsData = await response.json();
         return groupsData;
       } else {
-        console.error("Failed to fetch groups:", response.status);
+        logError("Failed to fetch groups:", response.status);
         return null;
       }
     } catch (error) {
-      console.error("Error fetching groups:", error);
+      logError("Error fetching groups:", error);
       return null;
     }
   };
@@ -291,40 +242,30 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed })
       variants={pageFade}
       initial="initial"
       animate="animate"
-      className="lg:w-3xl justify-center flex flex-wrap result-container">
-              <div className="result-header">
-          <div className="header-wrapper">
-            <div className="flex justify-between items-center w-full">
-              <div>
-                <motion.h1 variants={itemSlide} className="header-title">Manage Students</motion.h1>
-              </div>
-              <div className="flex items-center gap-4">
-                <motion.div variants={itemSlide} className="total-students-card">
-                  <p className="total-label">Total Students</p>
-                  <p className="total-count">
-                    {totalStudents}/{totalAllowedStudents.current || 500}
-                  </p>
-                </motion.div>
-
-              </div>
-            </div>
+      className="flex h-[87vh] min-h-[calc(100dvh-4.5rem)] w-full max-w-full flex-col overflow-hidden rounded-lg bg-[#282828] p-4 sm:p-5 md:p-6 md:pb-8"
+    >
+      <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto overflow-x-hidden sm:gap-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-6">
+            <motion.h1 variants={itemSlide} className="text-xl font-semibold text-white sm:text-2xl md:text-3xl">
+              Manage Students
+            </motion.h1>
+            <motion.div variants={itemSlide} className="rounded-lg border border-[#666] bg-[#4B4B4B] px-4 py-3">
+              <p className="text-xs text-gray-400">Total Students</p>
+              <p className="text-lg font-semibold text-white sm:text-xl">
+                {studentsToDisplay.length} / {totalAllowedStudents.current || 500}
+              </p>
+            </motion.div>
           </div>
-
-        {/* Search and Add */}
-        <div className="m-btn-right flex flex-wrap items-center justify-center sm:justify-end gap-2 w-full sm:w-auto">
-          {/* Combined Branch Filter */}
-          <motion.div
-            variants={itemSlide}
-            className="m-btn-left flex flex-wrap justify-center sm:justify-start gap-2">
-            <motion.select
-              variants={itemSlide}
-              className="branch-filter-select" // Add a class for styling
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+            <select
               value={activeTab}
               onChange={(e) => {
                 setSearchQuery("");
                 setActiveTab(e.target.value);
-                setCurrentPage(1); // Reset to first page on branch change
+                setCurrentPage(1);
               }}
+              className="min-h-[44px] rounded-lg border border-[#5a5a5a] bg-[#3d3d3d] px-4 py-2.5 text-sm text-white outline-none focus:border-[#A294F9] focus:ring-2 focus:ring-[#A294F9]/30"
             >
               <option value="all">All Branches</option>
               {studentsData && Object.keys(studentsData).sort().map((branch) => (
@@ -332,176 +273,141 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed })
                   {branch}
                 </option>
               ))}
-            </motion.select>
-          </motion.div>
-          <motion.div
-            variants={itemSlide}
-            className="search-box flex items-center w-full sm:w-auto">
-            <FaSearch className="search-icon" />
-            <input
-              type="text"
-              placeholder="Search students..."
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                setCurrentPage(1); // Reset to first page on search
-              }}
-              className="w-full sm:w-auto"
-            />
-          </motion.div>
-          <motion.button
-            whileTap={{ scale: 1.1 }}
-            variants={itemSlide}
-            className="create-btn create-students-btn"
-            onClick={() => setStudentModalOpen(true)}
-          >
-            <FaPlus size={12} className="mr-2" /> Add New Students
-          </motion.button>
-        </div>
-
-        {/* Students Table */}
-        <div className="m-table-container">
-          {cacheLoading ? (
-            <TableSkeleton />
-          ) : cacheError ? (
-            <div className="text-center py-8">
-              <p className="text-red-500 mb-4">{cacheError.message || "Failed to load students data"}</p>
-              <button 
-                onClick={forceRefresh}
-                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-              >
-                Retry
-              </button>
+            </select>
+            <div className="flex min-h-[44px] flex-1 min-w-0 items-center gap-2 rounded-lg border border-[#5a5a5a] bg-[#3d3d3d] px-4 py-2.5 transition-colors focus-within:border-[#A294F9] focus-within:ring-2 focus-within:ring-[#A294F9]/30">
+              <FaSearch className="h-5 w-5 shrink-0 text-gray-300" />
+              <input
+                type="text"
+                placeholder="Search students..."
+                value={searchQuery}
+                onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
+                className="min-w-0 flex-1 border-none bg-transparent text-white outline-none placeholder:text-gray-400"
+              />
             </div>
-          ) : !cachedStudentsData ? (
-            <TableSkeleton />
-          ) : (
-            <table>
-              <thead>
-                {/* Changed breakpoint to 768px to cover tablets and most mobile devices */}
-                {screenWidth <= 768 ? (
-                  // Mobile/Tablet Headers (6 columns)
-                  <tr>
-                    <th
-                      className="mobile-usn-col"
-                    // onClick={() => handleSort("usn")}
-                    >
-                      USN
-                    </th>
-                    <th className="mobile-name-col">Name</th>
-                    <th className="mobile-email-col">Email</th>
-                    <th className="mobile-phone-col">Phone</th>
-                    <th className="mobile-status-col">Active</th>
-                  </tr>
-                ) : (
-                  // Desktop Headers (6 columns)
-                  <tr>
-                    <th
-                      className="desktop-usn-col"
-                    // onClick={() => handleSort("usn")}
-                    >
-                      #USN
-                    </th>
-                    <th className="desktop-name-col">Name</th>
-                    <th className="desktop-email-col">Email</th>
-                    <th className="desktop-phone-col">Phone</th>
-                    <th className="desktop-active-col">Active</th>
-                  </tr>
-                )}
-              </thead>
-              <tbody>
-                {currentStudents.length > 0 ? (
-                  currentStudents.map((student, index) => (
-                    <motion.tr
-                      key={student.usn}
-                      custom={index}
-                      variants={tableRowSlide}
-                      initial="hidden"
-                      animate="visible"
-                      className={index % 2 === 0 ? "even-row" : "odd-row"}
-                    >
-                      {/* Changed breakpoint to 768px */}
-                      {screenWidth <= 768 ? (
-                        // Mobile/Tablet Data Cells (6 columns)
-                        <>
-                          <td className="mobile-usn-col">{student.usn}</td>
-                          {/* Name column: Displays "..." if long, full name on hover */}
-                          <td
-                            className="mobile-name-col"
-                            title={student.name || student.email}
-                          >
-                            {truncateText(student.name, 20)}
-                          </td>
-                          <td className="mobile-email-col">{student.email}</td>
-                          {/* Phone column: Displays content or "-", full number on hover */}
-                          <td
-                            className="mobile-phone-col"
-                            title={student.contact}
-                          >
-                            {student.contact || "-"}
-                          </td>
-                          <td className="mobile-status-col">
-                            {student.is_active ? "Yes" : "No"}
-                          </td>
-                        </>
-                      ) : (
-                        // Desktop Data Cells (6 columns)
-                        <>
-                          <td className="desktop-usn-col">{student.usn}</td>
-                          {/* Name column: Displays "..." if long, full name on hover */}
-                          <td
-                            className="desktop-name-col"
-                            title={student.name || student.email}
-                          >
-                            {truncateText(student.name || student.email, 30)}
-                          </td>
-                          <td className="desktop-email-col">{student.email}</td>
-                          {/* Phone column: Displays content or "-", full number on hover */}
-                          <td
-                            className="desktop-phone-col"
-                            title={student.contact}
-                          >
-                            {student.contact || "-"}
-                          </td>
-                          <td className="desktop-active-col">
-                            {student.is_active ? "Yes" : "No"}
-                          </td>
-                        </>
-                      )}
-                    </motion.tr>
-                  ))
-                ) : (
-                  <tr>
-                    {/* Adjusted colspan to 6 as there are now 6 columns */}
-                    <td colSpan="6" className="no-data">
-                      No students found
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          )}
+            <motion.button
+              whileTap={{ scale: 1.05 }}
+              variants={itemSlide}
+              type="button"
+              onClick={() => setStudentModalOpen(true)}
+              className="inline-flex min-h-[44px] items-center justify-center gap-2 whitespace-nowrap rounded-lg bg-[#A294F9] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#8b7ce8]"
+            >
+              <FaPlus className="h-4 w-4" /> Add New Students
+            </motion.button>
+          </div>
         </div>
 
-        {/* Pagination Controls */}
-        {studentsToDisplay.length > studentsPerPage && ( // Only show pagination if there's more than one page
-          <div className="pagination-controls flex justify-between items-center mt-4">
+        {cacheLoading ? (
+          <Spinner className="min-h-[280px]" />
+        ) : cacheError ? (
+          <div className="flex flex-1 flex-col items-center justify-center gap-4 rounded-lg border border-[#5a5a5a] bg-[#353535] py-12">
+            <p className="text-center text-red-400">{cacheError.message || "Failed to load students data"}</p>
+            <button
+              type="button"
+              onClick={forceRefresh}
+              className="rounded-lg bg-[#A294F9] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#8b7ce8]"
+            >
+              Retry
+            </button>
+          </div>
+        ) : !cachedStudentsData ? (
+          <Spinner className="min-h-[280px]" />
+        ) : currentStudents.length > 0 ? (
+          <>
+            {/* Mobile: cards */}
+            <div className="flex flex-col gap-3 overflow-y-auto pb-2 md:hidden">
+              {currentStudents.map((student, index) => (
+                <motion.div
+                  key={student.usn}
+                  custom={index}
+                  variants={tableRowSlide}
+                  initial="hidden"
+                  animate="visible"
+                  className="flex flex-col gap-3 rounded-lg border border-[#5a5a5a] bg-[#3a3a3a] p-4"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-medium text-white" title={student.name || student.email}>
+                        {truncateText(student.name || student.email, 24)}
+                      </p>
+                      <p className="text-xs text-gray-400">{student.usn}</p>
+                    </div>
+                    <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${student.is_active ? "bg-green-500/20 text-green-400" : "bg-gray-500/20 text-gray-400"}`}>
+                      {student.is_active ? "Active" : "Inactive"}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-gray-300">
+                    <span className="text-gray-500">Email</span>
+                    <span className="truncate text-right">{student.email}</span>
+                    <span className="text-gray-500">Phone</span>
+                    <span className="text-right">{student.contact || "—"}</span>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Desktop: table */}
+            <div className="hidden min-h-0 flex-1 overflow-hidden rounded-lg md:block">
+              <div className="h-full overflow-x-auto overflow-y-auto rounded-lg border border-[#5a5a5a]">
+                <table className="w-full min-w-[640px] table-auto border-collapse">
+                  <thead className="sticky top-0 z-10 bg-[#4a4a4a]">
+                    <tr>
+                      <th className="whitespace-nowrap border-b border-[#666] px-4 py-4 text-center text-sm font-medium text-white">#USN</th>
+                      <th className="whitespace-nowrap border-b border-[#666] px-4 py-4 text-left text-sm font-medium text-white">Name</th>
+                      <th className="whitespace-nowrap border-b border-[#666] px-4 py-4 text-left text-sm font-medium text-white">Email</th>
+                      <th className="whitespace-nowrap border-b border-[#666] px-4 py-4 text-center text-sm font-medium text-white">Phone</th>
+                      <th className="whitespace-nowrap border-b border-[#666] px-4 py-4 text-center text-sm font-medium text-white">Active</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {currentStudents.map((student, index) => (
+                      <motion.tr
+                        key={student.usn}
+                        custom={index}
+                        variants={tableRowSlide}
+                        initial="hidden"
+                        animate="visible"
+                        className={`border-b border-[#555] transition-colors hover:bg-[#404040] ${index % 2 === 0 ? "bg-[#3a3a3a]" : "bg-[#353535]"}`}
+                      >
+                        <td className="whitespace-nowrap px-4 py-3.5 text-center text-sm text-white">{student.usn}</td>
+                        <td className="max-w-[180px] truncate px-4 py-3.5 text-left text-sm text-white" title={student.name || student.email}>{truncateText(student.name || student.email, 30)}</td>
+                        <td className="max-w-[200px] truncate px-4 py-3.5 text-left text-sm text-white">{student.email}</td>
+                        <td className="whitespace-nowrap px-4 py-3.5 text-center text-sm text-white">{student.contact || "—"}</td>
+                        <td className="px-4 py-3.5 text-center">
+                          <span className={student.is_active ? "text-green-400" : "text-gray-400"}>{student.is_active ? "Yes" : "No"}</span>
+                        </td>
+                      </motion.tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </>
+        ) : (
+          <div className="flex flex-1 items-center justify-center rounded-lg border border-[#5a5a5a] bg-[#353535] text-gray-400 md:min-h-[200px]">
+            No students found
+          </div>
+        )}
+
+        {totalPages > 1 && studentsToDisplay.length > 0 && (
+          <div className="flex shrink-0 items-center justify-center gap-4 pt-2 sm:gap-6">
             <motion.button
-              whileTap={{ scale: 0.95 }}
+              whileTap={{ scale: 0.98 }}
+              type="button"
               onClick={goToPrevPage}
               disabled={currentPage === 1}
-              className="pagination-btn"
+              className="min-h-[44px] rounded-lg border border-[#5a5a5a] bg-transparent px-4 py-2.5 text-sm text-white transition-colors hover:border-gray-400 hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Previous
             </motion.button>
-            <span className="page-info">
-              Page {currentPage} of {totalPages}
+            <span className="flex min-h-[44px] items-center text-sm text-gray-300">
+              {currentPage} / {totalPages}
             </span>
             <motion.button
-              whileTap={{ scale: 0.95 }}
+              whileTap={{ scale: 0.98 }}
+              type="button"
               onClick={goToNextPage}
               disabled={currentPage === totalPages}
-              className="pagination-btn"
+              className="min-h-[44px] rounded-lg border border-[#5a5a5a] bg-transparent px-4 py-2.5 text-sm text-white transition-colors hover:border-gray-400 hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Next
             </motion.button>
@@ -572,7 +478,7 @@ const EditStudentModal = ({ onClose, groups, studentId, refreshTotalStudents }) 
           });
         }
       } catch (error) {
-        console.error(error);
+        logError(error);
         Swal.fire({
           icon: "error",
           title: "Error",
@@ -663,124 +569,57 @@ const EditStudentModal = ({ onClose, groups, studentId, refreshTotalStudents }) 
     if (errors[e.target.name]) setErrors({ ...errors, [e.target.name]: null });
   };
 
+  const inputClass = "w-full rounded-lg border border-[#5a5a5a] bg-[#3d3d3d] px-4 py-2.5 text-sm text-white outline-none placeholder:text-gray-500 focus:border-[#A294F9] focus:ring-2 focus:ring-[#A294F9]/30 disabled:opacity-60";
+  const labelClass = "mb-1.5 block text-sm font-medium text-gray-300";
+  const fieldClass = "mb-4";
+
   return (
-    <div className="modal-overlay">
-      <div className="modal-container">
-        <h2 className="modal-title">Edit Student</h2>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={(e) => e.target === e.currentTarget && onClose()}>
+      <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl border border-[#5a5a5a] bg-[#282828] p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
+        <h2 className="mb-6 text-xl font-semibold text-white">Edit Student</h2>
 
-        <div className="form-group">
-          <label>First Name :</label>
-          <input
-            type="text"
-            name="firstName"
-            className="form-input"
-            placeholder="Enter First Name"
-            value={student.firstName}
-            onChange={handleChange}
-          />
-          {errors.firstName && (
-            <span className="error-text">{errors.firstName}</span>
-          )}
+        <div className={fieldClass}>
+          <label className={labelClass}>First Name</label>
+          <input type="text" name="firstName" className={inputClass} placeholder="Enter first name" value={student.firstName} onChange={handleChange} />
+          {errors.firstName && <span className="mt-1 block text-xs text-red-400">{errors.firstName}</span>}
         </div>
-
-        <div className="form-group">
-          <label>Last Name :</label>
-          <input
-            type="text"
-            name="lastName"
-            className="form-input"
-            placeholder="Enter Last Name"
-            value={student.lastName}
-            onChange={handleChange}
-          />
-          {errors.lastName && (
-            <span className="error-text">{errors.lastName}</span>
-          )}
+        <div className={fieldClass}>
+          <label className={labelClass}>Last Name</label>
+          <input type="text" name="lastName" className={inputClass} placeholder="Enter last name" value={student.lastName} onChange={handleChange} />
+          {errors.lastName && <span className="mt-1 block text-xs text-red-400">{errors.lastName}</span>}
         </div>
-
-        <div className="form-group">
-          <label>Email :</label>
-          <input
-            type="email"
-            name="email"
-            className="form-input"
-            placeholder="Enter email"
-            value={student.email}
-            disabled
-            onChange={handleChange}
-          />
-          {errors.email && <span className="error-text">{errors.email}</span>}
+        <div className={fieldClass}>
+          <label className={labelClass}>Email</label>
+          <input type="email" name="email" className={inputClass} placeholder="Enter email" value={student.email} disabled onChange={handleChange} />
+          {errors.email && <span className="mt-1 block text-xs text-red-400">{errors.email}</span>}
         </div>
-
-        <div className="form-group">
-          <label>Password :</label>
-          <input
-            type="password"
-            name="password"
-            className="form-input"
-            placeholder="Keep blank to not change"
-            value={student.password}
-            onChange={handleChange}
-          />
-          {errors.password && (
-            <span className="error-text">{errors.password}</span>
-          )}
+        <div className={fieldClass}>
+          <label className={labelClass}>Password</label>
+          <input type="password" name="password" className={inputClass} placeholder="Keep blank to not change" value={student.password} onChange={handleChange} />
+          {errors.password && <span className="mt-1 block text-xs text-red-400">{errors.password}</span>}
         </div>
-
-        <div className="form-group">
-          <label>USN :</label>
-          <input
-            type="text"
-            name="usn"
-            className="form-input"
-            placeholder="Enter USN"
-            value={student.usn}
-            disabled
-            onChange={handleChange}
-          />
-          {errors.usn && <span className="error-text">{errors.usn}</span>}
+        <div className={fieldClass}>
+          <label className={labelClass}>USN</label>
+          <input type="text" name="usn" className={inputClass} placeholder="Enter USN" value={student.usn} disabled onChange={handleChange} />
+          {errors.usn && <span className="mt-1 block text-xs text-red-400">{errors.usn}</span>}
         </div>
-
-        <div className="form-group">
-          <label>Group :</label>
-          <select
-            name="groupId"
-            className="form-input"
-            value={student.groupId}
-            onChange={handleChange}
-          >
+        <div className={fieldClass}>
+          <label className={labelClass}>Group</label>
+          <select name="groupId" className={inputClass} value={student.groupId} onChange={handleChange}>
             <option value="" disabled>Select a group</option>
             {groups.map((g) => (
-              <option key={g.id} value={g.id}>
-                {g.name}
-              </option>
+              <option key={g.id} value={g.id}>{g.name}</option>
             ))}
           </select>
-          {errors.groupId && (
-            <span className="error-text">{errors.groupId}</span>
-          )}
+          {errors.groupId && <span className="mt-1 block text-xs text-red-400">{errors.groupId}</span>}
         </div>
-
-        <div className="form-group">
-          <label>Contact :</label>
-          <input
-            type="text"
-            name="contact"
-            className="form-input"
-            placeholder="Enter phone number"
-            value={student.contact}
-            onChange={handleChange}
-          />
+        <div className={fieldClass}>
+          <label className={labelClass}>Contact</label>
+          <input type="text" name="contact" className={inputClass} placeholder="Enter phone number" value={student.contact} onChange={handleChange} />
         </div>
-
-        <div className="form-group">
-          <label>Gender :</label>
-          <select
-            name="gender"
-            className="form-input"
-            value={student.gender}
-            onChange={handleChange}
-          >
+        <div className={fieldClass}>
+          <label className={labelClass}>Gender</label>
+          <select name="gender" className={inputClass} value={student.gender} onChange={handleChange}>
             <option value="">Select gender</option>
             <option value="M">Male</option>
             <option value="F">Female</option>
@@ -788,14 +627,11 @@ const EditStudentModal = ({ onClose, groups, studentId, refreshTotalStudents }) 
           </select>
         </div>
 
-        <div className="modal-buttons">
-          <motion.button className="back-btn" onClick={onClose}>
+        <div className="mt-6 flex gap-3">
+          <motion.button type="button" whileTap={{ scale: 0.98 }} onClick={onClose} className="flex-1 rounded-lg border border-[#5a5a5a] bg-[#3d3d3d] py-2.5 text-sm font-medium text-white hover:bg-[#4a4a4a]">
             Back
           </motion.button>
-          <motion.button
-            className="create-btn-student"
-            onClick={handleEditStudent}
-          >
+          <motion.button type="button" whileTap={{ scale: 0.98 }} onClick={handleEditStudent} className="flex-1 rounded-lg bg-[#A294F9] py-2.5 text-sm font-medium text-white hover:bg-[#8b7ce8]">
             Update
           </motion.button>
         </div>
@@ -868,7 +704,7 @@ const AddStudentModal = ({ onClose, groups, refreshTotalStudents }) => {
     const selectedFile = event.target.files[0];
     if (selectedFile) {
       setFile(selectedFile);
-      console.log("Excel File Selected:", selectedFile.name);
+      log("Excel File Selected:", selectedFile.name);
     }
   };
 
@@ -1028,185 +864,114 @@ const AddStudentModal = ({ onClose, groups, refreshTotalStudents }) => {
     }
   };
 
+  const inputClass = "w-full rounded-lg border border-[#5a5a5a] bg-[#3d3d3d] px-4 py-2.5 text-sm text-white outline-none placeholder:text-gray-500 focus:border-[#A294F9] focus:ring-2 focus:ring-[#A294F9]/30";
+  const labelClass = "mb-1.5 block text-sm font-medium text-gray-300";
+  const fieldClass = "mb-4";
+
   return (
     <motion.div
       variants={modalPopup}
       initial="initial"
       animate="animate"
       exit="exit"
-      className="modal-overlay">
-      <div className="modal-container">
-        <h2 className="modal-title">Add Student</h2>
-        {/* Tab Slider for Dataset & Add Manually */}
-        <div className="toggle-buttons">
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+    >
+      <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl border border-[#5a5a5a] bg-[#282828] p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
+        <h2 className="mb-6 text-xl font-semibold text-white">Add Student</h2>
+
+        <div className="mb-6 flex rounded-lg border border-[#5a5a5a] bg-[#353535] p-1">
           <motion.button
-            className={`toggle-btn ${activeTab === "dataset" ? "active" : ""}`}
+            type="button"
+            className={`flex flex-1 items-center justify-center gap-2 rounded-md py-2.5 text-sm font-medium transition-colors ${activeTab === "dataset" ? "bg-[#A294F9] text-white" : "text-gray-400 hover:text-white"}`}
             onClick={() => setActiveTab("dataset")}
           >
-            <FaDatabase className="icon" /> Dataset
+            <FaDatabase className="h-4 w-4" /> Dataset
           </motion.button>
           <motion.button
-            className={`toggle-btn ${activeTab === "manual" ? "active" : ""}`}
+            type="button"
+            className={`flex flex-1 items-center justify-center gap-2 rounded-md py-2.5 text-sm font-medium transition-colors ${activeTab === "manual" ? "bg-[#A294F9] text-white" : "text-gray-400 hover:text-white"}`}
             onClick={() => setActiveTab("manual")}
           >
-            <FaPen className="icon" /> Add Manually
+            <FaPen className="h-4 w-4" /> Add Manually
           </motion.button>
         </div>
-        {/* Dataset (Excel Upload) Section */}
+
         {activeTab === "dataset" && (
-          <div className="upload-section">
-            <label className="upload-label">Import from Excel:</label>
+          <div className="mb-6 space-y-4">
+            <label className={labelClass}>Import from Excel</label>
             <input
               type="file"
               accept=".xls,.xlsx"
-              className="file-input"
               onChange={handleFileUpload}
+              className="block w-full text-sm text-gray-400 file:mr-4 file:rounded-lg file:border-0 file:bg-[#A294F9] file:px-4 file:py-2 file:text-sm file:font-medium file:text-white file:hover:bg-[#8b7ce8]"
             />
             <motion.button
-              className="upload-btn"
-              whileTap={{ scale: 1.1 }}
-              onClick={handleCreateStudent} // Changed onClick to handleCreateStudent
+              type="button"
+              whileTap={{ scale: 1.02 }}
+              onClick={handleCreateStudent}
               disabled={isCreatingStudent}
+              className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#A294F9] py-3 text-sm font-medium text-white hover:bg-[#8b7ce8] disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isCreatingStudent ? (<> <FaUpload className="icon" /> Uploading...</>) : (<> <FaUpload className="icon" /> Upload File</>)}
+              {isCreatingStudent ? <><span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" /> Uploading...</> : <><FaUpload className="h-4 w-4" /> Upload File</>}
             </motion.button>
           </div>
         )}
+
         {activeTab === "manual" && (
           <>
-            {" "}
-            {/* This fragment is correctly opened here */}
-            <div className="form-group">
-              <label>First Name :</label>
-              <input
-                type="text"
-                name="firstName"
-                className="form-input"
-                placeholder="Enter First Name"
-                value={student.firstName}
-                onChange={handleChange}
-              />
-              {errors.firstName && (
-                <span className="error-text">{errors.firstName}</span>
-              )}
+            <div className={fieldClass}>
+              <label className={labelClass}>First Name</label>
+              <input type="text" name="firstName" className={inputClass} placeholder="Enter first name" value={student.firstName} onChange={handleChange} />
+              {errors.firstName && <span className="mt-1 block text-xs text-red-400">{errors.firstName}</span>}
             </div>
-            <div className="form-group">
-              <label>Last Name :</label>
-              <input
-                type="text"
-                name="lastName"
-                className="form-input"
-                placeholder="Enter Last Name"
-                value={student.lastName}
-                onChange={handleChange}
-              />
-              {errors.lastName && (
-                <span className="error-text">{errors.lastName}</span>
-              )}
+            <div className={fieldClass}>
+              <label className={labelClass}>Last Name</label>
+              <input type="text" name="lastName" className={inputClass} placeholder="Enter last name" value={student.lastName} onChange={handleChange} />
+              {errors.lastName && <span className="mt-1 block text-xs text-red-400">{errors.lastName}</span>}
             </div>
-            <div className="form-group">
-              <label>Email :</label>
-              <input
-                type="email"
-                name="email"
-                className="form-input"
-                placeholder="Enter email"
-                value={student.email}
-                onChange={handleChange}
-              />
-
-              {errors.email && (
-                <span className="error-text">{errors.email}</span>
-              )}
+            <div className={fieldClass}>
+              <label className={labelClass}>Email</label>
+              <input type="email" name="email" className={inputClass} placeholder="Enter email" value={student.email} onChange={handleChange} />
+              {errors.email && <span className="mt-1 block text-xs text-red-400">{errors.email}</span>}
             </div>
-            <div className="form-group">
-              <label>Password :</label>
-              <input
-                type="password"
-                name="password"
-                className="form-input"
-                placeholder="Enter password"
-                value={student.password}
-                onChange={handleChange}
-              />
-              {errors.password && (
-                <span className="error-text">{errors.password}</span>
-              )}
+            <div className={fieldClass}>
+              <label className={labelClass}>Password</label>
+              <input type="password" name="password" className={inputClass} placeholder="Enter password" value={student.password} onChange={handleChange} />
+              {errors.password && <span className="mt-1 block text-xs text-red-400">{errors.password}</span>}
             </div>
-            <div className="form-group">
-              <label>USN :</label>
-              <input
-                type="text"
-                name="usn"
-                className="form-input"
-                placeholder="Enter USN"
-                value={student.usn}
-                onChange={handleChange}
-              />
-              {errors.usn && <span className="error-text">{errors.usn}</span>}
+            <div className={fieldClass}>
+              <label className={labelClass}>USN</label>
+              <input type="text" name="usn" className={inputClass} placeholder="Enter USN" value={student.usn} onChange={handleChange} />
+              {errors.usn && <span className="mt-1 block text-xs text-red-400">{errors.usn}</span>}
             </div>
-            <div className="form-group">
-              <label>Group :</label>
-              {/* <select
-                name="groupId"
-                className="form-input"
-                value={student.groupId}
-                onChange={handleChange}
-              >
-                <option value="">Select a group</option>
-                {groups.map((g) => (
-                  <option key={g.id} value={g.id}>
-                    {g.name}
-                  </option>
-                ))}
-              </select> */}
-              <select
-                name="groupId"
-                className="form-input"
-                value={student.groupId || ""}
-                onChange={handleGroupChange} // ← new handler
-              >
+            <div className={fieldClass}>
+              <label className={labelClass}>Group</label>
+              <select name="groupId" className={inputClass} value={student.groupId || ""} onChange={handleGroupChange}>
                 <option value="" disabled>Select a group</option>
                 <option value="add_new">Add a group</option>
                 {groups.map((g) => (
-                  <option key={g.id} value={g.id}>
-                    {g.name}
-                  </option>
+                  <option key={g.id} value={g.id}>{g.name}</option>
                 ))}
               </select>
-              {errors.groupId && (
-                <span className="error-text">{errors.groupId}</span>
-              )}
+              {errors.groupId && <span className="mt-1 block text-xs text-red-400">{errors.groupId}</span>}
             </div>
             {isAddingGroup && (
-              <div className="form-group">
-                <label>Add a group:</label>
-                <input
-                  type="text"
-                  className="form-input"
-                  value={newGroupName}
-                  onChange={(e) => setNewGroupName(e.target.value)}
-                  placeholder="Enter new group name"
-                />
-                {errors.newGroupName && (
-                  <span className="error-text">{errors.newGroupName}</span>
-                )}
+              <div className={fieldClass}>
+                <label className={labelClass}>New group name</label>
+                <input type="text" className={inputClass} value={newGroupName} onChange={(e) => setNewGroupName(e.target.value)} placeholder="Enter new group name" />
+                {errors.newGroupName && <span className="mt-1 block text-xs text-red-400">{errors.newGroupName}</span>}
               </div>
-            )}{" "}
-            {/* This closes the fragment started on line 925 */}
-            {/* The problematic closing fragment was here, removed it. */}
+            )}
           </>
         )}
-        <div className="modal-buttons">
-          <motion.button className="back-btn" onClick={onClose}>
+
+        <div className="mt-6 flex gap-3">
+          <motion.button type="button" whileTap={{ scale: 0.98 }} onClick={onClose} className="flex-1 rounded-lg border border-[#5a5a5a] bg-[#3d3d3d] py-2.5 text-sm font-medium text-white hover:bg-[#4a4a4a]">
             Back
           </motion.button>
           {activeTab === "manual" && (
-            <motion.button
-              className="create-btn-student"
-              onClick={handleCreateStudent}
-              disabled={isCreatingStudent}
-            >
+            <motion.button type="button" whileTap={{ scale: 0.98 }} onClick={handleCreateStudent} disabled={isCreatingStudent} className="flex-1 rounded-lg bg-[#A294F9] py-2.5 text-sm font-medium text-white hover:bg-[#8b7ce8] disabled:opacity-50 disabled:cursor-not-allowed">
               {isCreatingStudent ? "Creating..." : "Create Student"}
             </motion.button>
           )}

@@ -1,3 +1,5 @@
+import { error as logError } from '../utils/logger';
+
 export const baseUrl = 'https://api.corp.crackthecampus.com/api';
 export const staticUrl = '';
 export async function authFetch(url, options) {
@@ -92,7 +94,7 @@ export async function login(username, password) {
 
     return data; // Return the response for further handling
   } catch (error) {
-    console.error('Login failed:', error);
+    logError('Login failed:', error);
     throw error;
   }
 }
@@ -150,7 +152,7 @@ export async function authFetchPayload(path, payload, method) {
           return response;
         })
         .catch(error => {
-          console.error('There was a problem with the fetch operation:', error);
+          logError('There was a problem with the fetch operation:', error);
           throw error; // Propagate the error to the caller
         });
     } else {

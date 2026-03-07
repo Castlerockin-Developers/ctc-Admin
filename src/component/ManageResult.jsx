@@ -1,14 +1,12 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { log, error as logError } from "../utils/logger";
 import { FaSearch } from "react-icons/fa";
 import { motion } from "framer-motion";
 import ViewResult from "./ViewResult";
 import ParticularResult from "./PerticularResult";
 import { authFetch } from "../scripts/AuthProvider";
-import "../pages/home.css";
-import ManageLoader from "../loader/ManageLoader";
+import Spinner from "../loader/Spinner";
 import { useCache } from "../hooks/useCache";
-import CacheStatusIndicator from "./CacheStatusIndicator";
-import "./CacheStatusIndicator.css";
 
 const ManageResult = ({ onNext, cacheAllowed }) => {
   const [activeTab, setActiveTab] = useState("all");
@@ -17,29 +15,28 @@ const ManageResult = ({ onNext, cacheAllowed }) => {
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [resultsPerPage, setResultsPerPage] = useState(() =>
-    window.innerWidth >= 2560 ? 15 : 10
+    typeof window !== "undefined" && window.innerWidth >= 2560 ? 15 : 10
   );
   const [loadingResultId, setLoadingResultId] = useState(null);
+
+  useEffect(() => {
+    const onResize = () =>
+      setResultsPerPage(window.innerWidth >= 2560 ? 15 : 10);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
 
   const pageVariant = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
-      transition: {
-        duration: 0.3,
-        when: "beforeChildren",
-        staggerChildren: 0.08,
-      },
+      transition: { duration: 0.3, when: "beforeChildren", staggerChildren: 0.08 },
     },
   };
 
   const itemVariant = {
     hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.2 },
-    },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.2 } },
   };
 
   const rowVariant = {
@@ -47,52 +44,25 @@ const ManageResult = ({ onNext, cacheAllowed }) => {
     visible: (i) => ({
       opacity: 1,
       y: 0,
-      transition: {
-        delay: i * 0.03,
-        duration: 0.5,
-      },
+      transition: { delay: i * 0.03, duration: 0.5 },
     }),
   };
 
-
-  useEffect(() => {
-    const onResize = () => {
-      setResultsPerPage(window.innerWidth >= 2560 ? 15 : 10);
-    };
-    window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
-  }, []);
-
-  // Results data fetch function
   const fetchResultData = useCallback(async () => {
-    console.log('fetchResultData: Starting API call...');
+    log("fetchResultData: Starting API call...");
     try {
       const response = await authFetch("/admin/results/", { method: "GET" });
-      console.log('fetchResultData: Response status:', response.status);
-      
-      if (!response.ok) {
-        console.error('fetchResultData: Response not ok:', response.status, response.statusText);
-        throw new Error("Failed to fetch results");
-      }
-      
+      if (!response.ok) throw new Error("Failed to fetch results");
       const data = await response.json();
-      console.log('fetchResultData: Raw data received:', data);
-      
-      // Map and format data
       const now = new Date();
       const mapped = data.map((res) => {
         const start = new Date(res.start_time);
         const end = new Date(res.end_time);
         let status = "";
-        if (start > now) {
-          status = "Upcoming";
-        } else if (!res.is_result_declared && end > now) {
-          status = "Ongoing";
-        } else if (res.is_result_declared) {
-          status = "Results Declared";
-        } else {
-          status = "Completed";
-        }
+        if (start > now) status = "Upcoming";
+        else if (!res.is_result_declared && end > now) status = "Ongoing";
+        else if (res.is_result_declared) status = "Results Declared";
+        else status = "Completed";
         return {
           id: res.id,
           name: res.name,
@@ -110,67 +80,38 @@ const ManageResult = ({ onNext, cacheAllowed }) => {
           status,
         };
       });
-      
-      console.log('fetchResultData: Mapped data:', mapped);
       return mapped;
     } catch (error) {
-      console.error('fetchResultData: Error occurred:', error);
+      logError("fetchResultData:", error);
       throw error;
     }
   }, []);
 
-  // Cache callbacks
-  const onCacheHit = useCallback((data) => {
-    console.log('Results data loaded from cache');
-  }, []);
+  const onCacheHit = useCallback(() => log("Results data loaded from cache"), []);
+  const onCacheMiss = useCallback(() => log("Results data fetched fresh"), []);
+  const onError = useCallback((err) => logError("Results fetch error:", err), []);
 
-  const onCacheMiss = useCallback((data) => {
-    console.log('Results data fetched fresh');
-  }, []);
-
-  const onError = useCallback((err) => {
-    console.error('Results fetch error:', err);
-  }, []);
-
-  // Use cache hook for results data
   const {
     data: resultsData,
     loading,
     error,
-    cacheUsed,
-    cacheInfo,
     forceRefresh,
-    invalidateCache,
-    clearAllCache
-  } = useCache('result_data', fetchResultData, {
-    enabled: cacheAllowed !== false, // Allow cache if not explicitly disabled
-    expiryMs: 5 * 60 * 1000, // 5 minutes
+  } = useCache("result_data", fetchResultData, {
+    enabled: cacheAllowed !== false,
+    expiryMs: 5 * 60 * 1000,
     autoRefresh: false,
     onCacheHit,
     onCacheMiss,
-    onError
+    onError,
   });
 
-  // Debug logging
-  console.log('ManageResult render:', {
-    cacheAllowed,
-    loading,
-    error: error?.message,
-    resultsData: resultsData ? resultsData.length : null,
-    cacheUsed,
-    cacheInfo
-  });
-
-  // Fallback: If cache is taking too long or failing, try direct fetch
   const [fallbackData, setFallbackData] = useState(null);
   const [fallbackLoading, setFallbackLoading] = useState(false);
   const [fallbackError, setFallbackError] = useState(null);
 
   useEffect(() => {
-    // If cache is not working after 5 seconds, try direct fetch
     const timeout = setTimeout(async () => {
       if (!resultsData && !loading && !error) {
-        console.log('ManageResult: Cache taking too long, trying direct fetch...');
         setFallbackLoading(true);
         try {
           const data = await fetchResultData();
@@ -178,34 +119,29 @@ const ManageResult = ({ onNext, cacheAllowed }) => {
           setFallbackError(null);
         } catch (err) {
           setFallbackError(err);
-          console.error('ManageResult: Direct fetch failed:', err);
         } finally {
           setFallbackLoading(false);
         }
       }
     }, 5000);
-
     return () => clearTimeout(timeout);
   }, [resultsData, loading, error, fetchResultData]);
 
-  // Use fallback data if cache data is not available
   const effectiveData = resultsData || fallbackData;
   const effectiveLoading = loading || fallbackLoading;
   const effectiveError = error || fallbackError;
 
-  if (effectiveLoading) {
-    console.log('ManageResult: Loading...');
-    return <ManageLoader />;
-  }
-  
+  if (effectiveLoading) return <Spinner className="min-h-[200px]" />;
+
   if (effectiveError) {
-    console.log('ManageResult: Error occurred:', effectiveError);
     return (
-      <div className="text-center">
-        <p className="text-red-500 mb-4">{effectiveError.message || "Failed to load results"}</p>
-        <button 
+      <div className="flex min-h-[200px] flex-col items-center justify-center gap-4 rounded-lg bg-[#282828] p-6 text-center">
+        <p className="text-red-400">
+          {effectiveError.message || "Failed to load results"}
+        </p>
+        <button
           onClick={forceRefresh}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          className="rounded-lg bg-[#A294F9] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#8E5DAF]"
         >
           Retry
         </button>
@@ -213,13 +149,8 @@ const ManageResult = ({ onNext, cacheAllowed }) => {
     );
   }
 
-  // Don't render the main content if data is not available yet
-  if (!effectiveData) {
-    console.log('ManageResult: No results data available');
-    return <ManageLoader />;
-  }
+  if (!effectiveData) return <Spinner className="min-h-[200px]" />;
 
-  // Filter results by tab and search
   const filteredResults = effectiveData
     .filter((row) => {
       if (activeTab === "all") return true;
@@ -236,34 +167,23 @@ const ManageResult = ({ onNext, cacheAllowed }) => {
       );
     });
 
-  // Pagination Logic
   const indexOfLastResult = currentPage * resultsPerPage;
   const indexOfFirstResult = indexOfLastResult - resultsPerPage;
   const currentResults = filteredResults.slice(
     indexOfFirstResult,
     indexOfLastResult
   );
-
-  const totalPages = Math.ceil(filteredResults.length / resultsPerPage);
-
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+  const totalPages = Math.max(1, Math.ceil(filteredResults.length / resultsPerPage));
 
   const goToNextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1);
-    }
+    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
   };
-
   const goToPrevPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
-    }
+    if (currentPage > 1) setCurrentPage(currentPage - 1);
   };
 
   const handleViewResult = async (row) => {
-    // Prevent multiple clicks
     if (loadingResultId === row.id) return;
-    
     setLoadingResultId(row.id);
     try {
       const resp = await authFetch(`/admin/results/${row.id}/`, {
@@ -296,7 +216,7 @@ const ManageResult = ({ onNext, cacheAllowed }) => {
         })),
       });
     } catch (err) {
-      console.error(err);
+      logError(err);
     } finally {
       setLoadingResultId(null);
     }
@@ -307,8 +227,14 @@ const ManageResult = ({ onNext, cacheAllowed }) => {
     setSelectedStudent(null);
   };
 
-  const handleViewStudent = (student) => {
-    setSelectedStudent(student);
+  const handleViewStudent = (student) => setSelectedStudent(student);
+
+  const getStatusColor = (status) => {
+    if (status === "Ongoing") return "bg-emerald-600/80 text-white";
+    if (status === "Upcoming") return "bg-amber-600/80 text-white";
+    if (status === "Results Declared") return "bg-blue-600/80 text-white";
+    if (status === "Expired") return "bg-red-600/80 text-white";
+    return "bg-gray-500/80 text-white";
   };
 
   return (
@@ -316,7 +242,8 @@ const ManageResult = ({ onNext, cacheAllowed }) => {
       variants={pageVariant}
       initial="hidden"
       animate="visible"
-      className="lg:w-3xl justify-center flex flex-wrap result-container">
+      className="flex h-[87vh] min-h-[calc(100dvh-4.5rem)] w-full max-w-full flex-col overflow-hidden rounded-lg bg-[#282828] p-4 sm:p-5 md:h-[87vh] md:min-h-0 md:p-6 md:pb-8"
+    >
       {selectedStudent ? (
         <ParticularResult student={selectedStudent} onBack={handleBack} />
       ) : selectedResult ? (
@@ -326,152 +253,229 @@ const ManageResult = ({ onNext, cacheAllowed }) => {
           onNext={handleViewStudent}
         />
       ) : (
-        <div className="result-header">
-          <div className="flex justify-between items-center mb-4">
-            <h1>Results</h1>
-          </div>
-
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-            {/* Left Button Group (Tabs) */}
-            <div className="m-btn-left flex flex-wrap justify-center sm:justify-start gap-2">
-              <motion.button
-                variants={itemVariant}
-                whileTap={{ scale: 1.1 }}
-                className={activeTab === "all" ? "m-active" : ""}
-                onClick={() => setActiveTab("all")}
-              >
-                All Exams
-              </motion.button>
-              <motion.button
-                variants={itemVariant}
-                whileTap={{ scale: 1.1 }}
-                className={activeTab === "active" ? "m-active" : ""}
-                onClick={() => setActiveTab("active")}
-              >
-                Active
-              </motion.button>
-              <motion.button
-                variants={itemVariant}
-                whileTap={{ scale: 1.1 }}
-                className={activeTab === "completed" ? "m-active" : ""}
-                onClick={() => setActiveTab("completed")}
-              >
-                Completed
-              </motion.button>
-            </div>
-
-            {/* Right Side: Filter Button, Search Bar */}
-            <div className="m-btn-right flex flex-wrap items-center justify-center sm:justify-end gap-2 w-full sm:w-auto">
-              {/* Search Bar */}
-              <motion.div
-                variants={itemVariant}
-                className="search-box flex items-center w-full sm:w-auto">
-                <FaSearch className="search-icon" />
+        <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto overflow-x-hidden sm:gap-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <h1 className="text-xl font-semibold text-white sm:text-2xl md:text-3xl">
+              Results
+            </h1>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+              <div className="flex min-h-[44px] flex-1 min-w-0 items-center gap-2 rounded-lg border border-[#5a5a5a] bg-[#3d3d3d] px-4 py-2.5 transition-colors focus-within:border-[#A294F9] focus-within:ring-2 focus-within:ring-[#A294F9]/30">
+                <FaSearch className="h-5 w-5 shrink-0 text-gray-300" />
                 <input
                   type="text"
                   placeholder="Search results..."
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full sm:w-auto"
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setCurrentPage(1);
+                  }}
+                  className="min-w-0 flex-1 border-none bg-transparent text-white outline-none placeholder:text-gray-400"
                 />
-              </motion.div>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                {[
+                  { key: "all", label: "All Exams" },
+                  { key: "active", label: "Active" },
+                  { key: "completed", label: "Completed" },
+                ].map(({ key, label }) => (
+                  <motion.button
+                    key={key}
+                    variants={itemVariant}
+                    whileTap={{ scale: 1.05 }}
+                    type="button"
+                    onClick={() => {
+                      setActiveTab(key);
+                      setCurrentPage(1);
+                    }}
+                    className={`rounded-lg px-4 py-2.5 text-sm font-medium transition-colors ${
+                      activeTab === key
+                        ? "bg-[#A294F9] text-white"
+                        : "border border-[#5a5a5a] bg-[#404040] text-gray-300 hover:bg-[#4a4a4a]"
+                    }`}
+                  >
+                    {label}
+                  </motion.button>
+                ))}
+              </div>
             </div>
           </div>
 
-          {/* Results Table */}
-          {effectiveData ? (
-            <div className="m-table-container">
-              <table>
-                <thead>
-                  <tr>
-                    <th>#ID</th>
-                    <th>Name</th>
-                    <th className="start-time">Start Time</th>
-                    <th className="start-time">End Time</th>
-                    <th>Analytics</th>
-                    <th>Status</th>
-                    <th></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {currentResults.length > 0 ? (
-                    currentResults.map((row, index) => (
-                      <motion.tr
-                        custom={index}
-                        variants={rowVariant}
-                        initial="hidden"
-                        animate="visible"
-                        key={row.id}
-                        className={index % 2 === 0 ? "even-row" : "odd-row"}
+          {effectiveData && currentResults.length > 0 ? (
+            <>
+              {/* Mobile: card layout */}
+              <div className="flex flex-col gap-3 overflow-y-auto pb-2 md:hidden">
+                {currentResults.map((row, index) => (
+                  <motion.div
+                    key={row.id}
+                    custom={index}
+                    variants={rowVariant}
+                    initial="hidden"
+                    animate="visible"
+                    className="flex flex-col gap-3 rounded-lg border border-[#5a5a5a] bg-[#3a3a3a] p-4"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate font-medium text-white">
+                          {row.name}
+                        </p>
+                        <p className="mt-0.5 text-xs text-gray-400">#{row.id}</p>
+                      </div>
+                      <span
+                        className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${getStatusColor(
+                          row.status
+                        )}`}
                       >
-                        <td>{row.id}</td>
-                        <td>{row.name}</td>
-                        <td>{row.startTime}</td>
-                        <td>{row.endTime}</td>
-                        <td>{row.analytics}</td>
-                        <td
-                          className={
-                            row.status === "Expired" ? "text-red-500" : ""
-                          }
+                        {row.status}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-gray-300">
+                      <span className="text-gray-500">Start</span>
+                      <span className="text-right">{row.startTime}</span>
+                      <span className="text-gray-500">End</span>
+                      <span className="text-right">{row.endTime}</span>
+                      <span className="text-gray-500">Analytics</span>
+                      <span className="text-right text-white">
+                        {row.analytics}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleViewResult(row)}
+                      disabled={loadingResultId === row.id}
+                      className="w-full rounded-lg bg-[#8E5DAF] py-3 text-sm font-medium text-white transition-colors hover:bg-[#7421ac] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    >
+                      {loadingResultId === row.id ? (
+                        <>
+                          <span className="inline-block h-4 w-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
+                          Loading...
+                        </>
+                      ) : (
+                        "View Result"
+                      )}
+                    </button>
+                  </motion.div>
+                ))}
+              </div>
+
+              {/* Desktop: table layout */}
+              <div className="hidden min-h-0 flex-1 overflow-hidden rounded-lg md:block">
+                <div className="h-full overflow-x-auto overflow-y-auto rounded-lg border border-[#5a5a5a]">
+                  <table className="w-full min-w-[640px] table-auto border-collapse">
+                    <thead className="sticky top-0 z-10 bg-[#4a4a4a]">
+                      <tr>
+                        <th className="whitespace-nowrap border-b border-[#666] px-4 py-4 text-center text-sm font-medium text-white">
+                          #ID
+                        </th>
+                        <th className="whitespace-nowrap border-b border-[#666] px-4 py-4 text-left text-sm font-medium text-white">
+                          Name
+                        </th>
+                        <th className="whitespace-nowrap border-b border-[#666] px-4 py-4 text-center text-sm font-medium text-white">
+                          Start Time
+                        </th>
+                        <th className="whitespace-nowrap border-b border-[#666] px-4 py-4 text-center text-sm font-medium text-white">
+                          End Time
+                        </th>
+                        <th className="whitespace-nowrap border-b border-[#666] px-4 py-4 text-center text-sm font-medium text-white">
+                          Analytics
+                        </th>
+                        <th className="whitespace-nowrap border-b border-[#666] px-4 py-4 text-center text-sm font-medium text-white">
+                          Status
+                        </th>
+                        <th className="whitespace-nowrap border-b border-[#666] px-4 py-4 text-center text-sm font-medium text-white">
+                          {" "}
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {currentResults.map((row, index) => (
+                        <motion.tr
+                          key={row.id}
+                          custom={index}
+                          variants={rowVariant}
+                          initial="hidden"
+                          animate="visible"
+                          className={`border-b border-[#555] transition-colors hover:bg-[#404040] ${
+                            index % 2 === 0 ? "bg-[#3a3a3a]" : "bg-[#353535]"
+                          }`}
                         >
-                          {row.status}
-                        </td>
-                        <td>
-                          <motion.button
-                            className="viewexam-btn"
-                            whileTap={{ scale: 1.2 }}
-                            onClick={() => handleViewResult(row)}
-                            disabled={loadingResultId === row.id}
-                          >
-                            {loadingResultId === row.id ? (
-                              <div className="flex items-center gap-2">
-                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                                <span>Loading...</span>
-                              </div>
-                            ) : (
-                              "View Result"
-                            )}
-                          </motion.button>
-                        </td>
-                      </motion.tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan="7" className="no-data">
-                        No results found
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
+                          <td className="px-4 py-3.5 text-center text-sm text-white">
+                            {row.id}
+                          </td>
+                          <td className="max-w-[180px] truncate px-4 py-3.5 text-left text-sm text-white md:max-w-none">
+                            {row.name}
+                          </td>
+                          <td className="whitespace-nowrap px-4 py-3.5 text-center text-sm text-white">
+                            {row.startTime}
+                          </td>
+                          <td className="whitespace-nowrap px-4 py-3.5 text-center text-sm text-white">
+                            {row.endTime}
+                          </td>
+                          <td className="px-4 py-3.5 text-center text-sm text-white">
+                            {row.analytics}
+                          </td>
+                          <td className="px-4 py-3.5 text-center text-sm">
+                            <span
+                              className={
+                                row.status === "Expired"
+                                  ? "text-red-400"
+                                  : "text-white"
+                              }
+                            >
+                              {row.status}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3.5 text-center">
+                            <motion.button
+                              type="button"
+                              whileTap={{ scale: 1.05 }}
+                              onClick={() => handleViewResult(row)}
+                              disabled={loadingResultId === row.id}
+                              className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg bg-[#8E5DAF] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#7421ac] disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              {loadingResultId === row.id ? (
+                                <>
+                                  <span className="inline-block h-4 w-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
+                                  Loading...
+                                </>
+                              ) : (
+                                "View Result"
+                              )}
+                            </motion.button>
+                          </td>
+                        </motion.tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </>
           ) : (
-            <div className="text-center py-8">
-              <p className="text-gray-500">Loading results...</p>
+            <div className="flex flex-1 items-center justify-center rounded-lg border border-[#5a5a5a] bg-[#353535] text-gray-400 md:min-h-[200px]">
+              No results found
             </div>
           )}
-          {/* Pagination Controls */}
-          {totalPages > 1 && (
-            <div className="pagination-controls flex justify-between items-center mt-4">
-              <motion.button
-                whileTap={{ scale: 1.1 }}
+
+          {totalPages > 1 && effectiveData && filteredResults.length > 0 && (
+            <div className="flex shrink-0 items-center justify-center gap-4 pt-2 sm:gap-6">
+              <button
+                type="button"
                 onClick={goToPrevPage}
                 disabled={currentPage === 1}
-                className="pagination-btn"
+                className="min-h-[44px] rounded-lg border border-[#5a5a5a] bg-transparent px-4 py-2.5 text-sm text-white transition-colors hover:border-gray-400 hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                Previous
-              </motion.button>
-              <span>
-                Page {currentPage} of {totalPages}
+                ‹ Previous
+              </button>
+              <span className="flex min-h-[44px] items-center text-sm text-gray-300">
+                {currentPage} / {totalPages}
               </span>
-              <motion.button
-                whileTap={{ scale: 1.1 }}
+              <button
+                type="button"
                 onClick={goToNextPage}
                 disabled={currentPage === totalPages}
-                className="pagination-btn"
+                className="min-h-[44px] rounded-lg border border-[#5a5a5a] bg-transparent px-4 py-2.5 text-sm text-white transition-colors hover:border-gray-400 hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                Next
-              </motion.button>
+                Next ›
+              </button>
             </div>
           )}
         </div>

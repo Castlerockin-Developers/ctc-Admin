@@ -1,25 +1,28 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Dashboard from './component/Dashboard'; // Import the Dashboard component
-import SubcriptionPage from './component/Subcription'; // Import the SubscriptionPage component
-import Home from './pages/home'; // Import Home page component
-import './App.css'; // Import your CSS file
-import LoginPage from './pages/login';
+import './App.css';
+
+const LoginPage = lazy(() => import('./pages/login'));
+const Home = lazy(() => import('./pages/home'));
+const Dashboard = lazy(() => import('./component/Dashboard'));
+const SubcriptionPage = lazy(() => import('./component/Subcription'));
 
 function App() {
   return (
     <Router>
       <div className='app-background'>
-        <Routes>
-          {/* Home page route */}
-          <Route path="/" element={<LoginPage />} />
-          <Route path="/home" element={<Home />} />
-          {/* Dashboard page route */}
-          <Route path="/dashboard" element={<Dashboard />} />
-
-          {/* Subscription page route */}
-          <Route path="/subcription" element={<SubcriptionPage />} />
-        </Routes>
+        <Suspense fallback={
+          <div className="flex items-center justify-center h-screen bg-[#181817]">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#A294F9]" />
+          </div>
+        }>
+          <Routes>
+            <Route path="/" element={<LoginPage />} />
+            <Route path="/home" element={<Home />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/subcription" element={<SubcriptionPage />} />
+          </Routes>
+        </Suspense>
       </div>
     </Router>
   );

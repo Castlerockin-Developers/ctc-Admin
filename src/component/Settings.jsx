@@ -1,38 +1,91 @@
 import React, { useMemo, useState } from "react";
-import { motion } from "motion/react";
-import { FaPen, FaSearch } from "react-icons/fa";
+import { error as logError } from "../utils/logger";
+import { motion } from "framer-motion";
+import { FaPen, FaSearch, FaEllipsisV, FaTimes } from "react-icons/fa";
 import swal from "sweetalert";
-import "./Settings.css";
 import { authFetch } from "../scripts/AuthProvider";
 import avatar from "../assets/useravatar.jpg";
-import { FaEllipsisV } from "react-icons/fa";
-import SettingsLoader from "../loader/SettingsLoader";
+import Spinner from "../loader/Spinner";
+
+const MODAL_CLASSES = {
+  backdrop: "fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4",
+  content: "w-full max-w-md rounded-xl border border-[#444] bg-[#1e1e1e] p-6 shadow-xl",
+  title: "mb-4 text-lg font-semibold text-white",
+  formRow: "mb-4 flex flex-col gap-1.5 sm:flex-row sm:items-center",
+  formLabel: "w-full sm:w-28 shrink-0 text-sm font-medium text-gray-300",
+  formInput:
+    "flex-1 rounded-lg border border-[#555] bg-[#2e2e2e] px-3 py-2 text-sm text-white placeholder-gray-500 focus:border-[#A294F9] focus:outline-none focus:ring-1 focus:ring-[#A294F9]",
+  actions: "mt-6 flex justify-end gap-3",
+};
 
 const Settings = ({ openAddUserModal, setOpenAddUserModal }) => {
-  // Search query state
   const [searchQuery, setSearchQuery] = useState("");
-  // User list state (dummy data)
-  // const user = { role: "Admin", email: "admin@example.com", phone_number: "1234 5678", profile_img: "https://ui-avatars.com/api/?name=John+Doe&background=0D8ABC&color=fff&size=120" };
   const [users, setUsers] = useState([]);
   const [user, setUser] = useState({});
   const [activityHistory, setActivityHistory] = useState([]);
   const [relations, setRelations] = useState({});
   const [loading, setLoading] = useState(true);
-
-  // Modal visibility states for editing and adding users
   const [showEditUserModal, setShowEditUserModal] = useState(false);
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
+  const [showChangePasswordModalForUser, setShowChangePasswordModalForUser] = useState(false);
+  const [passwordUser, setPasswordUser] = useState(null);
+  const [openMenuId, setOpenMenuId] = useState(null);
+
+  const [newUserName, setNewUserName] = useState("");
+  const [newUserEmail, setNewUserEmail] = useState("");
+  const [newUserPhone, setNewUserPhone] = useState("");
+  const [newUserRole, setNewUserRole] = useState("User");
+  const [newUserPassword, setNewUserPassword] = useState("");
+  const [isCreatingUser, setIsCreatingUser] = useState(false);
+
+  const [editName, setEditName] = useState("");
+  const [editEmail, setEditEmail] = useState("");
+  const [editPhone, setEditPhone] = useState("");
+  const [editRole, setEditRole] = useState("");
+
+  const [oldPassword, setOldPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [newPasswordUser, setNewPasswordUser] = useState("");
+  const [confirmPasswordUser, setConfirmPasswordUser] = useState("");
+
   const fetchSettings = async () => {
     setLoading(true);
     try {
-      console.log("Fetching settings data...");
       const response = await authFetch("/admin/settings/", { method: "GET" });
       const data = await response.json();
-      setSettingsData(data); // Update settings data state with the response
+      if (!response.ok) {
+        logError("Settings API error:", data?.error || response.status);
+        fetchProfileFallback();
+        return;
+      }
+      setSettingsData(data);
     } catch (error) {
-      console.error("Error fetching settings data:", error);
+      logError("Error fetching settings data:", error);
+      // When settings API fails (e.g. 400 org not found, 500), still try to show current user profile
+      fetchProfileFallback();
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchProfileFallback = async () => {
+    try {
+      const response = await authFetch("/getUserDetails/", { method: "GET" });
+      const data = await response.json();
+      if (!response.ok) return;
+      const name =
+        [data.first_name, data.last_name].filter(Boolean).join(" ").trim() ||
+        data.username ||
+        "";
+      setUser({
+        name,
+        email: data.email ?? "",
+        phone_number: data.contact ?? "",
+        profile_img: data.profile_picture ?? null,
+      });
+    } catch (err) {
+      logError("Fallback profile fetch failed:", err);
     }
   };
 
@@ -41,70 +94,44 @@ const Settings = ({ openAddUserModal, setOpenAddUserModal }) => {
   }, []);
 
   const setSettingsData = (data) => {
-    const { activity_logs, admin_users, account_manager } = data;
-    const user = {
-      name: data.user,
-      email: data.email,
-      phone_number: data.phone,
-      profile_img: data.profile_picture,
-    };
+    // Profile: always set from top-level fields (API: user, email, phone, profile_picture)
+    setUser({
+      name: data.user ?? "",
+      email: data.email ?? "",
+      phone_number: data.phone ?? "",
+      profile_img: data.profile_picture ?? null,
+    });
 
-    const activityHistory = activity_logs.map((log) => ({
-      id: log.id,
-      action: log.details,
-      time: new Date(log.timestamp).toLocaleString(),
-    }));
+    // Account manager: safe in case API returns error or missing relation
+    const am = data.account_manager;
+    setRelations({
+      name: am ? [am.first_name, am.last_name].filter(Boolean).join(" ") || "" : "",
+      email: am?.email ?? "",
+      phone_number: am?.phone_number ?? "",
+    });
 
-    const relations = {
-      name: account_manager.first_name,
-      email: account_manager.email,
-      phone_number: account_manager.phone_number,
-    };
+    // Activity log and admin list: guard against missing or non-array
+    const activityLogs = Array.isArray(data.activity_logs) ? data.activity_logs : [];
+    setActivityHistory(
+      activityLogs.map((entry) => ({
+        id: entry.id,
+        action: entry.details ?? "",
+        time: entry.timestamp ? new Date(entry.timestamp).toLocaleString() : "",
+      }))
+    );
 
-    const users = admin_users.map((admin) => ({
-      id: admin.id,
-      name: `${admin.first_name} ${admin.last_name}`,
-      email: admin.email,
-      phone: admin.contact || "N/A",
-      role: admin.is_staff ? "Admin" : "Lecturer",
-    }));
-
-    setUser(user);
-    setActivityHistory(activityHistory);
-    setRelations(relations);
-    setUsers(users);
+    const adminUsers = Array.isArray(data.admin_users) ? data.admin_users : [];
+    setUsers(
+      adminUsers.map((admin) => ({
+        id: admin.id,
+        name: [admin.first_name, admin.last_name].filter(Boolean).join(" ") || "—",
+        email: admin.email ?? "",
+        phone: admin.contact || "N/A",
+        role: admin.is_staff ? "Admin" : "Lecturer",
+      }))
+    );
   };
 
-  // States for the Add User form
-  const [newUserName, setNewUserName] = useState("");
-  const [newUserEmail, setNewUserEmail] = useState("");
-  const [newUserPhone, setNewUserPhone] = useState("");
-  const [newUserRole, setNewUserRole] = useState("User");
-
-  // States for the Edit User form
-  const [editUserId, setEditUserId] = useState(null);
-  const [editName, setEditName] = useState("");
-  const [editEmail, setEditEmail] = useState("");
-  const [editPhone, setEditPhone] = useState("");
-  const [editRole, setEditRole] = useState("");
-  const [isCreatingUser, setIsCreatingUser] = useState(false);
-
-  // States for the Change Password form
-  const [oldPassword, setOldPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-
-  const [showChangePasswordModalForUser, setShowChangePasswordModalForUser] =
-    useState(false);
-  const [passwordUser, setPasswordUser] = useState(null);
-  const [newPasswordUser, setNewPasswordUser] = useState("");
-  const [confirmPasswordUser, setConfirmPasswordUser] = useState("");
-
-  const [openMenuId, setOpenMenuId] = useState(null);
-
-  const [newUserPassword, setNewUserPassword] = useState("");
-
-  // Function to handle change password action (for both admin and user)
   const handleChangePasswordForUser = async () => {
     if (!newPasswordUser || !confirmPasswordUser) {
       swal("Error", "Please fill in all password fields", "error");
@@ -162,26 +189,18 @@ const Settings = ({ openAddUserModal, setOpenAddUserModal }) => {
     }
 
     if (Object.keys(errors).length > 0) {
-      const errorMsg = Object.values(errors).join("\n");
-      swal("Error", errorMsg, "error");
+      swal("Error", Object.values(errors).join("\n"), "error");
       setIsCreatingUser(false);
       return;
     }
 
-    // const newUserData = {
-    //   request_type: "add_admin",
-    //   name: newUserName,
-    //   email: newUserEmail,
-    //   phone: newUserPhone,
-    //   role: newUserRole,
-    // };
     const newUserData = {
       request_type: "add_admin",
       name: newUserName,
       email: newUserEmail,
       phone: newUserPhone,
       role: newUserRole,
-      password: newUserPassword, // Add this
+      password: newUserPassword,
     };
 
     try {
@@ -197,7 +216,7 @@ const Settings = ({ openAddUserModal, setOpenAddUserModal }) => {
       fetchSettings();
       swal("Success", "User created successfully", "success");
     } catch (error) {
-      console.error("Error creating user:", error);
+      logError("Error creating user:", error);
       swal("Error", "Failed to create user. Please try again.", "error");
       setIsCreatingUser(false);
     }
@@ -213,13 +232,11 @@ const Settings = ({ openAddUserModal, setOpenAddUserModal }) => {
     setIsCreatingUser(false);
   };
 
-  // Open the Edit User modal and pre-populate fields
-  const handleEditUser = (user) => {
-    setEditUserId(user.id);
-    setEditName(user.name);
-    setEditEmail(user.email);
-    setEditPhone(user.phone);
-    setEditRole(user.role);
+  const handleEditUser = (targetUser) => {
+    setEditName(targetUser.name);
+    setEditEmail(targetUser.email);
+    setEditPhone(targetUser.phone);
+    setEditRole(targetUser.role);
     setShowEditUserModal(true);
   };
 
@@ -242,11 +259,10 @@ const Settings = ({ openAddUserModal, setOpenAddUserModal }) => {
       }
       swal("Success", "User updated successfully", "success");
     } catch (error) {
-      console.error("Error updating user:", error);
+      logError("Error updating user:", error);
       swal("Error", "Failed to update user. Please try again.", "error");
     }
     fetchSettings();
-    setEditUserId(null);
     setEditName("");
     setEditEmail("");
     setEditPhone("");
@@ -254,7 +270,6 @@ const Settings = ({ openAddUserModal, setOpenAddUserModal }) => {
     setShowEditUserModal(false);
   };
 
-  // Delete a user with confirmation
   const handleDeleteUser = (userId) => {
     swal({
       title: "Are you sure?",
@@ -264,12 +279,9 @@ const Settings = ({ openAddUserModal, setOpenAddUserModal }) => {
       dangerMode: true,
     }).then(async (willDelete) => {
       if (willDelete) {
-        const response = await authFetch(
-          `/admin/settings/update/` + userId + "/",
-          {
-            method: "DELETE",
-          }
-        );
+        const response = await authFetch(`/admin/settings/update/${userId}/`, {
+          method: "DELETE",
+        });
         if (!response.ok) {
           swal("Error", "Failed to delete user. Please try again.", "error");
           return;
@@ -280,207 +292,206 @@ const Settings = ({ openAddUserModal, setOpenAddUserModal }) => {
     });
   };
 
-  const handleChangePassword = () => {
+  const handleChangePassword = async () => {
     if (!oldPassword || !newPassword || !confirmPassword) {
       swal("Error", "Please fill in all password fields", "error");
       return;
     }
-
     if (newPassword !== confirmPassword) {
       swal("Error", "New password and confirm password do not match", "error");
       return;
     }
-
-    const response = authFetch("/admin/settings/update/", {
-      method: "POST",
-      body: JSON.stringify({
-        request_type: "change_password",
-        old_password: oldPassword,
-        new_password: newPassword,
-      }),
-    });
-
-    if (!response.ok) {
-      if (response.status === 400) {
-        swal("Error", "Old password is incorrect", "error");
+    try {
+      const response = await authFetch("/admin/settings/update/", {
+        method: "POST",
+        body: JSON.stringify({
+          request_type: "change_password",
+          old_password: oldPassword,
+          new_password: newPassword,
+        }),
+      });
+      if (!response.ok) {
+        if (response.status === 400) {
+          swal("Error", "Old password is incorrect", "error");
+          return;
+        }
+        swal("Error", "Failed to change password. Please try again.", "error");
         return;
       }
+      swal("Success", "Password changed successfully", "success");
+      setOldPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      setShowChangePasswordModal(false);
+    } catch (err) {
+      logError("Change password error:", err);
+      swal("Error", "Failed to change password. Please try again.", "error");
     }
-
-    swal("Success", "Password changed successfully", "success");
-    // Clear password fields and close modal
-    setOldPassword("");
-    setNewPassword("");
-    setConfirmPassword("");
-    setShowChangePasswordModal(false);
   };
 
-  // Filter users based on search query
   const filteredUserData = useMemo(() => {
-    if (!searchQuery) return users;
-    return users.filter((user) =>
-      user.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    if (!searchQuery.trim()) return users;
+    const q = searchQuery.toLowerCase().trim();
+    return users.filter((u) => u.name.toLowerCase().includes(q));
   }, [searchQuery, users]);
 
-  if (loading) {
-    return <SettingsLoader />;
-  }
+  if (loading) return <Spinner className="min-h-[200px]" />;
+
+  const { backdrop, content, title, formRow, formLabel, formInput, actions } = MODAL_CLASSES;
 
   return (
-    <>
-      <div className="settings-container justify-center flex flex-wrap">
-        <div className="settings-box">
-          <h1>Settings</h1>
-          {/* Profile Card */}
-          <div className="profile-card">
-            <h3>Profile:</h3>
-            <div className="flex justify-between gap-2 profile-details-container">
-              <div className="profile-details">
-                <div className="flex">
-                  <div className="flex profile-img-col">
-                    <img src={avatar} alt="Profile Avatar" />
-                    <div>
-                      <p>Username:</p>
-                      <p>Email:</p>
-                      <p>Phone Number:</p>
-                    </div>
-                  </div>
-                  <div className="profile-d-display">
-                    <p>{user.name}</p>
-                    <p>{user.email}</p>
-                    <p>{user.phone_number}</p>
-                  </div>
-                </div>
-                <div className="Account-manager-box">
-                  <h5>Account Manager:</h5>
-                  <p>Name: {relations.name}</p>
-                  <div className="flex justify-between">
-                    <p>Email: {relations.email}</p>
-                    <p>Phone Number: {relations.phone_number}</p>
-                  </div>
+    <div className="flex min-h-[calc(100vh-6rem)] w-full max-w-full flex-col rounded-lg bg-[#282828] p-4 sm:p-5 md:p-6">
+      <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-x-hidden">
+        <h1 className="shrink-0 text-xl font-semibold text-white sm:text-2xl">
+          Settings
+        </h1>
+
+        {/* Profile Card */}
+        <div className="shrink-0 rounded-xl border border-[#5a5a5a] bg-[#333333] p-4 sm:p-5">
+          <h3 className="mb-4 text-lg font-semibold text-white">Profile</h3>
+          <div className="flex flex-col gap-4 lg:flex-row lg:gap-6">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start lg:min-w-0 lg:flex-1">
+              <div className="flex items-start gap-4">
+                <img
+                  src={user.profile_img || avatar}
+                  alt="Profile"
+                  className="h-20 w-20 shrink-0 rounded-xl object-cover sm:h-24 sm:w-24"
+                />
+                <div className="min-w-0">
+                  <p className="text-xs text-gray-400">Username</p>
+                  <p className="truncate text-sm font-medium text-white">{user.name ?? "—"}</p>
+                  <p className="mt-2 text-xs text-gray-400">Email</p>
+                  <p className="truncate text-sm text-white">{user.email ?? "—"}</p>
+                  <p className="mt-2 text-xs text-gray-400">Phone</p>
+                  <p className="truncate text-sm text-white">{user.phone_number ?? "—"}</p>
                 </div>
               </div>
-              <div className="r-activity-history">
-                <div className="activity-history">
-                  <h5>Activity History</h5>
-                  <div className="activity-list">
-                    {activityHistory.length > 0 ? (
-                      activityHistory.map((activity) => (
-                        <p key={activity.id}>
-                          {activity.action} - {activity.time}
-                        </p>
-                      ))
-                    ) : (
-                      <p>No activity found</p>
-                    )}
-                  </div>
-                  <div className="flex justify-end">
-                    {/* For admin change password, simply call the function */}
-                    <button onClick={() => setShowChangePasswordModal(true)}>
-                      Change Password
-                    </button>
-                  </div>
-                </div>
+              <div className="rounded-lg border border-[#5a5a5a] bg-[#3d3d3d] p-4 lg:flex-1">
+                <h5 className="mb-2 text-sm font-semibold text-white">Account Manager</h5>
+                <p className="text-sm text-gray-300">Name: {relations.name ?? "—"}</p>
+                <p className="mt-1 text-sm text-gray-300">Email: {relations.email ?? "—"}</p>
+                <p className="mt-1 text-sm text-gray-300">Phone: {relations.phone_number ?? "—"}</p>
               </div>
+            </div>
+            <div className="flex min-h-0 flex-col rounded-lg border border-[#5a5a5a] bg-[#3d3d3d] p-4 lg:w-80">
+              <h5 className="mb-2 text-sm font-semibold text-white">Activity History</h5>
+              <div className="min-h-0 flex-1 overflow-y-auto">
+                {activityHistory.length > 0 ? (
+                  <ul className="space-y-1.5 text-xs text-gray-300">
+                    {activityHistory.map((activity) => (
+                      <li key={activity.id} className="break-words">
+                        {activity.action} — {activity.time}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-sm text-gray-500">No activity found</p>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowChangePasswordModal(true)}
+                className="mt-3 w-full rounded-lg bg-[#A294F9] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#8b7ce8]"
+              >
+                Change Password
+              </button>
             </div>
           </div>
+        </div>
 
-          {/* Manage Users Section */}
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 manage-table-container">
-            {/* Title */}
-            <div className="flex flex-wrap justify-center sm:justify-start gap-6 manage-btn">
-              <motion.button
-                whileTap={{ scale: 1.1 }}
-                className="manage-active"
-              >
-                Manage Users
-              </motion.button>
-            </div>
-            {/* Search & Add User Button */}
-            <div className="flex flex-wrap items-center justify-center sm:justify-end gap-2 w-full sm:w-auto">
-              <div className="search-box flex items-center w-full sm:w-auto">
-                <FaSearch className="m-icon" />
+        {/* Manage Users */}
+        <div className="flex min-h-0 flex-col gap-3">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <p className="border-b-2 border-[#A294F9] pb-2 text-base font-semibold text-white">
+              Manage Users
+            </p>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+              <div className="relative flex items-center">
+                <FaSearch className="absolute left-3 text-gray-400" />
                 <input
                   type="text"
                   placeholder="Search users..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full sm:w-auto border border-gray-300 rounded px-2 py-1"
+                  className="w-full rounded-lg border border-[#555] bg-[#3a3a3a] py-2 pl-9 pr-3 text-sm text-white placeholder-gray-500 focus:border-[#A294F9] focus:outline-none sm:w-56"
                 />
               </div>
               <motion.button
-                whileTap={{ scale: 1.2 }}
-                className="manage-create-btn w-full sm:w-auto"
+                whileTap={{ scale: 1.02 }}
+                type="button"
                 onClick={() => setOpenAddUserModal(true)}
+                className="rounded-lg bg-[#A294F9] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#8b7ce8]"
               >
                 Add User
               </motion.button>
             </div>
           </div>
 
-          {/* Users Table */}
-          <div className="overflow-x-auto manage-table">
-            <table className="w-full border-collapse">
+          {/* Desktop: table */}
+          <div className="hidden overflow-x-auto rounded-lg border border-[#5a5a5a] md:block">
+            <table className="min-w-[640px] w-full border-collapse">
               <thead>
-                <tr className="text-white">
-                  <th className="py-2 px-4">#ID</th>
-                  <th className="py-2 px-4">Name</th>
-                  <th className="py-2 px-4">Email</th>
-                  <th className="py-2 px-4">Phone</th>
-                  <th className="py-2 px-4">Role</th>
-                  <th className="py-2 px-4">Actions</th>
+                <tr className="bg-[#535353]">
+                  <th className="border-b border-[#666] px-4 py-3 text-left text-sm font-medium text-white">#ID</th>
+                  <th className="border-b border-[#666] px-4 py-3 text-left text-sm font-medium text-white">Name</th>
+                  <th className="border-b border-[#666] px-4 py-3 text-left text-sm font-medium text-white">Email</th>
+                  <th className="border-b border-[#666] px-4 py-3 text-left text-sm font-medium text-white">Phone</th>
+                  <th className="border-b border-[#666] px-4 py-3 text-left text-sm font-medium text-white">Role</th>
+                  <th className="border-b border-[#666] px-4 py-3 text-center text-sm font-medium text-white">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredUserData.length > 0 ? (
-                  filteredUserData.map((user) => (
-                    <tr key={user.id}>
-                      <td className="py-2 px-4">{user.id}</td>
-                      <td className="py-2 px-4">{user.name}</td>
-                      <td className="py-2 px-4">{user.email}</td>
-                      <td className="py-2 px-4">{user.phone}</td>
-                      <td className="py-2 px-4">{user.role}</td>
-                      <td className="py-2 px-4 text-center">
+                  filteredUserData.map((u, index) => (
+                    <tr
+                      key={u.id}
+                      className={`border-b border-[#555] hover:bg-[#404040] ${
+                        index % 2 === 0 ? "bg-[#3a3a3a]" : "bg-[#353535]"
+                      }`}
+                    >
+                      <td className="px-4 py-3 text-sm text-white">{u.id}</td>
+                      <td className="px-4 py-3 text-sm text-white">{u.name}</td>
+                      <td className="max-w-[180px] truncate px-4 py-3 text-sm text-white">{u.email}</td>
+                      <td className="px-4 py-3 text-sm text-white">{u.phone}</td>
+                      <td className="px-4 py-3 text-sm text-white">{u.role}</td>
+                      <td className="px-4 py-3 text-center">
                         <div className="relative inline-block">
-                          <FaEllipsisV
-                            className="cursor-pointer text-gray-400 hover:text-white"
-                            onClick={() =>
-                              setOpenMenuId(
-                                openMenuId === user.id ? null : user.id
-                              )
-                            }
-                          />
-
-                          {openMenuId === user.id && (
-                            <ul className="absolute left-1/2 transform -translate-x-1/2 mt-2 w-36 bg-[#222] text-white rounded shadow-lg z-20">
-                              <li
-                                className="px-4 py-2 hover:bg-gray-700 cursor-pointer"
-                                onClick={() => {
-                                  handleEditUser(user);
-                                  setOpenMenuId(null);
-                                }}
-                              >
-                                Edit
+                          <button
+                            type="button"
+                            onClick={() => setOpenMenuId(openMenuId === u.id ? null : u.id)}
+                            className="rounded p-1.5 text-gray-400 transition-colors hover:bg-[#555] hover:text-white"
+                            aria-label="Actions"
+                          >
+                            <FaEllipsisV className="text-lg" />
+                          </button>
+                          {openMenuId === u.id && (
+                            <ul className="absolute right-0 top-full z-20 mt-1 min-w-[140px] rounded-lg border border-[#555] bg-[#2a2a2a] py-1 shadow-xl">
+                              <li>
+                                <button
+                                  type="button"
+                                  onClick={() => { handleEditUser(u); setOpenMenuId(null); }}
+                                  className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-white hover:bg-[#404040]"
+                                >
+                                  <FaPen className="text-xs" /> Edit
+                                </button>
                               </li>
-                              <li
-                                className="px-4 py-2 hover:bg-gray-700 cursor-pointer"
-                                onClick={() => {
-                                  setPasswordUser(user);
-                                  setShowChangePasswordModalForUser(true);
-                                  setOpenMenuId(null);
-                                }}
-                              >
-                                Change Password
+                              <li>
+                                <button
+                                  type="button"
+                                  onClick={() => { setPasswordUser(u); setShowChangePasswordModalForUser(true); setOpenMenuId(null); }}
+                                  className="w-full px-4 py-2 text-left text-sm text-white hover:bg-[#404040]"
+                                >
+                                  Change Password
+                                </button>
                               </li>
-                              <li
-                                className="px-4 py-2 hover:bg-gray-700 cursor-pointer"
-                                onClick={() => {
-                                  handleDeleteUser(user.id);
-                                  setOpenMenuId(null);
-                                }}
-                              >
-                                Delete
+                              <li>
+                                <button
+                                  type="button"
+                                  onClick={() => { handleDeleteUser(u.id); setOpenMenuId(null); }}
+                                  className="w-full px-4 py-2 text-left text-sm text-red-400 hover:bg-[#404040]"
+                                >
+                                  Delete
+                                </button>
                               </li>
                             </ul>
                           )}
@@ -490,7 +501,7 @@ const Settings = ({ openAddUserModal, setOpenAddUserModal }) => {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="6" className="py-4 text-center">
+                    <td colSpan="6" className="px-4 py-8 text-center text-sm text-gray-400">
                       No users found
                     </td>
                   </tr>
@@ -499,406 +510,99 @@ const Settings = ({ openAddUserModal, setOpenAddUserModal }) => {
             </table>
           </div>
 
-          {/* Add User Modal */}
-          {openAddUserModal && (
-            <div className="modal-backdrop">
-              <div className="modal-content">
-                <h2>Add User</h2>
-                <div className="modal-row">
-                  <label>Name:</label>
-                  <input
-                    type="text"
-                    value={newUserName}
-                    onChange={(e) => setNewUserName(e.target.value)}
-                    placeholder="Enter user name"
-                  />
+          {/* Mobile: user cards */}
+          <div className="flex flex-col gap-3 md:hidden">
+            {filteredUserData.length > 0 ? (
+              filteredUserData.map((u) => (
+                <div
+                  key={u.id}
+                  className="rounded-lg border border-[#5a5a5a] bg-[#3a3a3a] p-4"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="font-medium text-white">{u.name}</p>
+                      <p className="text-xs text-gray-400">#{u.id} · {u.role}</p>
+                    </div>
+                    <div className="relative shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => setOpenMenuId(openMenuId === u.id ? null : u.id)}
+                        className="rounded p-2 text-gray-400 hover:bg-[#555] hover:text-white"
+                        aria-label="Actions"
+                      >
+                        <FaEllipsisV />
+                      </button>
+                      {openMenuId === u.id && (
+                        <ul className="absolute right-0 top-full z-20 mt-1 min-w-[140px] rounded-lg border border-[#555] bg-[#2a2a2a] py-1 shadow-xl">
+                          <li>
+                            <button type="button" onClick={() => { handleEditUser(u); setOpenMenuId(null); }} className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-white hover:bg-[#404040]">
+                              <FaPen className="text-xs" /> Edit
+                            </button>
+                          </li>
+                          <li>
+                            <button type="button" onClick={() => { setPasswordUser(u); setShowChangePasswordModalForUser(true); setOpenMenuId(null); }} className="w-full px-4 py-2 text-left text-sm text-white hover:bg-[#404040]">
+                              Change Password
+                            </button>
+                          </li>
+                          <li>
+                            <button type="button" onClick={() => { handleDeleteUser(u.id); setOpenMenuId(null); }} className="w-full px-4 py-2 text-left text-sm text-red-400 hover:bg-[#404040]">
+                              Delete
+                            </button>
+                          </li>
+                        </ul>
+                      )}
+                    </div>
+                  </div>
+                  <p className="mt-2 truncate text-sm text-gray-300">{u.email}</p>
+                  <p className="text-sm text-gray-300">{u.phone}</p>
                 </div>
-                <div className="modal-row">
-                  <label>Email:</label>
-                  <input
-                    type="email"
-                    value={newUserEmail}
-                    onChange={(e) => setNewUserEmail(e.target.value)}
-                    placeholder="Enter email"
-                  />
-                </div>
-                <div className="modal-row">
-                  <label>Phone:</label>
-                  <input
-                    type="text"
-                    value={newUserPhone}
-                    onChange={(e) => setNewUserPhone(e.target.value)}
-                    placeholder="Enter phone number"
-                  />
-                </div>
-                <div className="modal-row">
-                  <label>Password:</label>
-                  <input
-                    type="password"
-                    value={newUserPassword}
-                    onChange={(e) => setNewUserPassword(e.target.value)}
-                    placeholder="Enter password"
-                  />
-                </div>
-                <div className="modal-row">
-                  <label>Role:</label>
-                  <select
-                    value={newUserRole}
-                    onChange={(e) => setNewUserRole(e.target.value)}
-                  >
-                    <option value="Admin">Admin</option>
-                    <option value="Lecturer">Lecturer</option>
-                  </select>
-                </div>
-                <div className="setting-modal-buttons">
-                  <button onClick={() => setOpenAddUserModal(false)}>
-                    Back
-                  </button>
-                  <button
-                    onClick={handleCreateUser}
-                    className="create-btn settings-create-btn"
-                    disabled={isCreatingUser}
-                  >
-                    {isCreatingUser ? "Creating..." : "Create"}
-                  </button>
-                </div>
+              ))
+            ) : (
+              <div className="rounded-lg border border-[#5a5a5a] bg-[#353535] py-8 text-center text-sm text-gray-400">
+                No users found
               </div>
-            </div>
-          )}
-
-          {/* Edit User Modal */}
-          {showEditUserModal && (
-            <div className="modal-backdrop">
-              <div className="modal-content">
-                <h2>Edit User</h2>
-                <div className="modal-row">
-                  <label>Name:</label>
-                  <input
-                    type="text"
-                    value={editName}
-                    onChange={(e) => setEditName(e.target.value)}
-                  />
-                </div>
-                <div className="modal-row">
-                  <label>Email:</label>
-                  <input
-                    type="email"
-                    value={editEmail}
-                    onChange={(e) => setEditEmail(e.target.value)}
-                  />
-                </div>
-                <div className="modal-row">
-                  <label>Phone:</label>
-                  <input
-                    type="text"
-                    value={editPhone}
-                    onChange={(e) => setEditPhone(e.target.value)}
-                  />
-                </div>
-                <div className="modal-row">
-                  <label>Role:</label>
-                  <select
-                    value={editRole}
-                    onChange={(e) => setEditRole(e.target.value)}
-                  >
-                    <option value="Admin">Admin</option>
-                    <option value="Lecturer">Lecturer</option>
-                  </select>
-                </div>
-                <div className="modal-buttons">
-                  <button onClick={() => setShowEditUserModal(false)}>
-                    Back
-                  </button>
-                  <button onClick={handleUpdateUser} className="create-btn">
-                    Update
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-          {showChangePasswordModal && (
-            <div className="modal-backdrop">
-              <div className="modal-content">
-                <h2>Change Password</h2>
-                <div className="modal-row">
-                  <label>Old Password:</label>
-                  <input
-                    type="password"
-                    value={oldPassword}
-                    onChange={(e) => setOldPassword(e.target.value)}
-                    placeholder="Enter old password"
-                  />
-                </div>
-                <div className="modal-row">
-                  <label>New Password:</label>
-                  <input
-                    type="password"
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    placeholder="Enter new password"
-                  />
-                </div>
-                <div className="modal-row">
-                  <label>Confirm Password:</label>
-                  <input
-                    type="password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="Confirm new password"
-                  />
-                </div>
-                <div className="setting-modal-buttons">
-                  <button onClick={() => setShowChangePasswordModal(false)}>
-                    Back
-                  </button>
-                  <button onClick={handleChangePassword} className="create-btn">
-                    Update Password
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-          {showChangePasswordModalForUser && (
-            <div className="modal-backdrop">
-              <div className="modal-content">
-                <h2>Change Password for {passwordUser.name}</h2>
-                <div className="modal-row">
-                  <label>New Password:</label>
-                  <input
-                    type="password"
-                    value={newPasswordUser}
-                    onChange={(e) => setNewPasswordUser(e.target.value)}
-                    placeholder="Enter new password"
-                  />
-                </div>
-                <div className="modal-row">
-                  <label>Confirm Password:</label>
-                  <input
-                    type="password"
-                    value={confirmPasswordUser}
-                    onChange={(e) => setConfirmPasswordUser(e.target.value)}
-                    placeholder="Confirm new password"
-                  />
-                </div>
-                <div className="setting-modal-buttons">
-                  <button
-                    onClick={() => setShowChangePasswordModalForUser(false)}
-                  >
-                    Back
-                  </button>
-                  <button
-                    onClick={handleChangePasswordForUser}
-                    className="create-btn"
-                  >
-                    Update Password
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      <div className="mb-settings-container">
-        <div className="profile-card">
-          <h3>Profile:</h3>
-          <div className="flex justify-between gap-2 profile-details-container">
-            <div className="profile-details">
-              <div className="flex">
-                <div className="flex profile-img-col">
-                  <img src={avatar} alt="Profile Avatar" />
-                </div>
-                <div className="profile-d-display">
-                  <p>{user.name}</p>
-                  <p>{user.email}</p>
-                  <p>{user.phone_number}</p>
-                </div>
-              </div>
-            </div>
-            <div className="r-activity-history">
-              <div className="Account-manager-box">
-                <h5>Account Manager:</h5>
-                <p>Name: {relations.name}</p>
-                <div className="flex justify-between e-p-container">
-                  <p>Email: {relations.email}</p>
-                  <p>Phone Number: {relations.phone_number}</p>
-                </div>
-              </div>
-              <div className="activity-history">
-                <h5>Activity History</h5>
-                <div className="activity-list">
-                  {activityHistory.length > 0 ? (
-                    activityHistory.map((activity) => (
-                      <p key={activity.id}>
-                        {activity.action} - {activity.time}
-                      </p>
-                    ))
-                  ) : (
-                    <p>No activity found</p>
-                  )}
-                </div>
-                <div className="flex justify-end">
-                  {/* For admin change password, simply call the function */}
-                  <button onClick={() => setShowChangePasswordModal(true)}>
-                    Change Password
-                  </button>
-                </div>
-              </div>
-            </div>
+            )}
           </div>
-        </div>
-
-        {/* Manage Users Section */}
-        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 manage-table-container">
-          {/* Title */}
-          <div className="flex flex-wrap justify-center sm:justify-start gap-6 manage-btn">
-            <motion.button whileTap={{ scale: 1.1 }} className="manage-active">
-              Manage Users
-            </motion.button>
-          </div>
-          {/* Search & Add User Button */}
-          <div className="flex flex-wrap items-center justify-center sm:justify-end gap-2 w-full sm:w-auto">
-            <div className="search-box flex items-center w-full sm:w-auto">
-              <FaSearch className="m-icon" />
-              <input
-                type="text"
-                placeholder="Search users..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full sm:w-auto border border-gray-300 rounded px-2 py-1"
-              />
-            </div>
-            <motion.button
-              whileTap={{ scale: 1.2 }}
-              className="manage-create-btn w-full sm:w-auto"
-              onClick={() => setOpenAddUserModal(true)}
-            >
-              Add User
-            </motion.button>
-          </div>
-        </div>
-
-        <div className="overflow-x-auto manage-table">
-          <table className="w-full border-collapse">
-            <thead>
-              <tr className="text-white">
-                <th className="py-2 px-4">#ID</th>
-                <th className="py-2 px-4">Name</th>
-                <th className="py-2 px-4">Email</th>
-                <th className="py-2 px-4">Phone</th>
-                <th className="py-2 px-4">Role</th>
-                <th className="py-2 px-4">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredUserData.length > 0 ? (
-                filteredUserData.map((user) => (
-                  <tr key={user.id}>
-                    <td className="py-2 px-4 w-50">{user.id}</td>
-                    <td className="py-2 px-4 w-50">{user.name}</td>
-                    <td className="py-2 px-4">{user.email}</td>
-                    <td className="py-2 px-4 w-50">{user.phone}</td>
-                    <td className="py-2 px-4 w-50">{user.role}</td>
-                    <td className="py-2 px-4 align-middle text-center w-fit-content">
-                      <div className="flex justify-end items-center gap-4">
-                        <motion.button
-                          whileTap={{ scale: 1.2 }}
-                          className="text-white flex gap-2 px-3 py-1 rounded m-edit-btn"
-                          onClick={() => handleEditUser(user)}
-                        >
-                          <FaPen className="icon-pen" />
-                          Edit
-                        </motion.button>
-                        <motion.button
-                          whileTap={{ scale: 1.2 }}
-                          className="bg-red-600 text-white px-3 py-1 rounded m-delte-btn"
-                          onClick={() => handleDeleteUser(user.id)}
-                        >
-                          Delete
-                        </motion.button>
-                        <motion.button
-                          whileTap={{ scale: 1.2 }}
-                          className="bg-red-600 text-white px-3 py-1 rounded m-password-btn"
-                          onClick={() => {
-                            setPasswordUser(user);
-                            setShowChangePasswordModalForUser(true);
-                          }}
-                        >
-                          Change Password
-                        </motion.button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="6" className="py-4 text-center">
-                    No users found
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
         </div>
 
         {/* Add User Modal */}
         {openAddUserModal && (
-          <div className="modal-backdrop">
-            <div className="modal-content">
-              <h2>Add User</h2>
-              <div className="modal-row">
-                <label>Name:</label>
-                <input
-                  type="text"
-                  value={newUserName}
-                  onChange={(e) => setNewUserName(e.target.value)}
-                  placeholder="Enter user name"
-                />
+          <div className={backdrop} onClick={() => setOpenAddUserModal(false)}>
+            <div className={content} onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center justify-between">
+                <h2 className={title}>Add User</h2>
+                <button type="button" onClick={() => setOpenAddUserModal(false)} className="rounded p-1.5 text-gray-400 hover:bg-[#404040] hover:text-white">
+                  <FaTimes />
+                </button>
               </div>
-              <div className="modal-row">
-                <label>Email:</label>
-                <input
-                  type="email"
-                  value={newUserEmail}
-                  onChange={(e) => setNewUserEmail(e.target.value)}
-                  placeholder="Enter email"
-                />
+              <div className={formRow}>
+                <label className={formLabel}>Name</label>
+                <input type="text" value={newUserName} onChange={(e) => setNewUserName(e.target.value)} placeholder="Enter name" className={formInput} />
               </div>
-              <div className="modal-row">
-                <label>Phone:</label>
-                <input
-                  type="text"
-                  value={newUserPhone}
-                  onChange={(e) => setNewUserPhone(e.target.value)}
-                  placeholder="Enter phone number"
-                />
+              <div className={formRow}>
+                <label className={formLabel}>Email</label>
+                <input type="email" value={newUserEmail} onChange={(e) => setNewUserEmail(e.target.value)} placeholder="Enter email" className={formInput} />
               </div>
-              <div className="modal-row">
-                <label>Password:</label>
-                <input
-                  type="password"
-                  value={newUserPassword}
-                  onChange={(e) => setNewUserPassword(e.target.value)}
-                  placeholder="Enter password"
-                />
+              <div className={formRow}>
+                <label className={formLabel}>Phone</label>
+                <input type="text" value={newUserPhone} onChange={(e) => setNewUserPhone(e.target.value)} placeholder="Enter phone" className={formInput} />
               </div>
-              <div className="modal-row">
-                <label>Role:</label>
-                <select
-                  value={newUserRole}
-                  onChange={(e) => setNewUserRole(e.target.value)}
-                >
+              <div className={formRow}>
+                <label className={formLabel}>Password</label>
+                <input type="password" value={newUserPassword} onChange={(e) => setNewUserPassword(e.target.value)} placeholder="Enter password" className={formInput} />
+              </div>
+              <div className={formRow}>
+                <label className={formLabel}>Role</label>
+                <select value={newUserRole} onChange={(e) => setNewUserRole(e.target.value)} className={formInput}>
                   <option value="Admin">Admin</option>
                   <option value="Lecturer">Lecturer</option>
                 </select>
               </div>
-              <div className="setting-modal-buttons">
-                <button onClick={() => setOpenAddUserModal(false)}>Back</button>
-                <button
-                  onClick={handleCreateUser}
-                  className="create-btn"
-                  disabled={isCreatingUser}
-                >
+              <div className={actions}>
+                <button type="button" onClick={() => setOpenAddUserModal(false)} className="rounded-lg bg-[#555] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#444]">
+                  Back
+                </button>
+                <button type="button" onClick={handleCreateUser} disabled={isCreatingUser} className="rounded-lg bg-[#A294F9] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#8b7ce8] disabled:opacity-60">
                   {isCreatingUser ? "Creating..." : "Create"}
                 </button>
               </div>
@@ -908,48 +612,38 @@ const Settings = ({ openAddUserModal, setOpenAddUserModal }) => {
 
         {/* Edit User Modal */}
         {showEditUserModal && (
-          <div className="modal-backdrop">
-            <div className="modal-content">
-              <h2>Edit User</h2>
-              <div className="modal-row">
-                <label>Name:</label>
-                <input
-                  type="text"
-                  value={editName}
-                  onChange={(e) => setEditName(e.target.value)}
-                />
+          <div className={backdrop} onClick={() => setShowEditUserModal(false)}>
+            <div className={content} onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center justify-between">
+                <h2 className={title}>Edit User</h2>
+                <button type="button" onClick={() => setShowEditUserModal(false)} className="rounded p-1.5 text-gray-400 hover:bg-[#404040] hover:text-white">
+                  <FaTimes />
+                </button>
               </div>
-              <div className="modal-row">
-                <label>Email:</label>
-                <input
-                  type="email"
-                  value={editEmail}
-                  onChange={(e) => setEditEmail(e.target.value)}
-                />
+              <div className={formRow}>
+                <label className={formLabel}>Name</label>
+                <input type="text" value={editName} onChange={(e) => setEditName(e.target.value)} className={formInput} />
               </div>
-              <div className="modal-row">
-                <label>Phone:</label>
-                <input
-                  type="text"
-                  value={editPhone}
-                  onChange={(e) => setEditPhone(e.target.value)}
-                />
+              <div className={formRow}>
+                <label className={formLabel}>Email</label>
+                <input type="email" value={editEmail} onChange={(e) => setEditEmail(e.target.value)} className={formInput} />
               </div>
-              <div className="modal-row">
-                <label>Role:</label>
-                <select
-                  value={editRole}
-                  onChange={(e) => setEditRole(e.target.value)}
-                >
+              <div className={formRow}>
+                <label className={formLabel}>Phone</label>
+                <input type="text" value={editPhone} onChange={(e) => setEditPhone(e.target.value)} className={formInput} />
+              </div>
+              <div className={formRow}>
+                <label className={formLabel}>Role</label>
+                <select value={editRole} onChange={(e) => setEditRole(e.target.value)} className={formInput}>
                   <option value="Admin">Admin</option>
                   <option value="Lecturer">Lecturer</option>
                 </select>
               </div>
-              <div className="modal-buttons">
-                <button onClick={() => setShowEditUserModal(false)}>
+              <div className={actions}>
+                <button type="button" onClick={() => setShowEditUserModal(false)} className="rounded-lg bg-[#555] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#444]">
                   Back
                 </button>
-                <button onClick={handleUpdateUser} className="create-btn">
+                <button type="button" onClick={handleUpdateUser} className="rounded-lg bg-[#A294F9] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#8b7ce8]">
                   Update
                 </button>
               </div>
@@ -957,80 +651,63 @@ const Settings = ({ openAddUserModal, setOpenAddUserModal }) => {
           </div>
         )}
 
+        {/* Change Password (self) Modal */}
         {showChangePasswordModal && (
-          <div className="modal-backdrop">
-            <div className="modal-content">
-              <h2>Change Password</h2>
-              <div className="modal-row">
-                <label>Old Password:</label>
-                <input
-                  type="password"
-                  value={oldPassword}
-                  onChange={(e) => setOldPassword(e.target.value)}
-                  placeholder="Enter old password"
-                />
+          <div className={backdrop} onClick={() => setShowChangePasswordModal(false)}>
+            <div className={content} onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center justify-between">
+                <h2 className={title}>Change Password</h2>
+                <button type="button" onClick={() => setShowChangePasswordModal(false)} className="rounded p-1.5 text-gray-400 hover:bg-[#404040] hover:text-white">
+                  <FaTimes />
+                </button>
               </div>
-              <div className="modal-row">
-                <label>New Password:</label>
-                <input
-                  type="password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder="Enter new password"
-                />
+              <div className={formRow}>
+                <label className={formLabel}>Old Password</label>
+                <input type="password" value={oldPassword} onChange={(e) => setOldPassword(e.target.value)} placeholder="Enter old password" className={formInput} />
               </div>
-              <div className="modal-row">
-                <label>Confirm Password:</label>
-                <input
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="Confirm new password"
-                />
+              <div className={formRow}>
+                <label className={formLabel}>New Password</label>
+                <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Enter new password" className={formInput} />
               </div>
-              <div className="setting-modal-buttons">
-                <button onClick={() => setShowChangePasswordModal(false)}>
+              <div className={formRow}>
+                <label className={formLabel}>Confirm</label>
+                <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Confirm new password" className={formInput} />
+              </div>
+              <div className={actions}>
+                <button type="button" onClick={() => setShowChangePasswordModal(false)} className="rounded-lg bg-[#555] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#444]">
                   Back
                 </button>
-                <button onClick={handleChangePassword} className="create-btn">
+                <button type="button" onClick={handleChangePassword} className="rounded-lg bg-[#A294F9] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#8b7ce8]">
                   Update Password
                 </button>
               </div>
             </div>
           </div>
         )}
-        {showChangePasswordModalForUser && (
-          <div className="modal-backdrop">
-            <div className="modal-content">
-              <h2>Change Password for {passwordUser.name}</h2>
-              <div className="modal-row">
-                <label>New Password:</label>
-                <input
-                  type="password"
-                  value={newPasswordUser}
-                  onChange={(e) => setNewPasswordUser(e.target.value)}
-                  placeholder="Enter new password"
-                />
+
+        {/* Change Password (for user) Modal */}
+        {showChangePasswordModalForUser && passwordUser && (
+          <div className={backdrop} onClick={() => setShowChangePasswordModalForUser(false)}>
+            <div className={content} onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center justify-between">
+                <h2 className={title}>Change Password — {passwordUser.name}</h2>
+                <button type="button" onClick={() => setShowChangePasswordModalForUser(false)} className="rounded p-1.5 text-gray-400 hover:bg-[#404040] hover:text-white">
+                  <FaTimes />
+                </button>
               </div>
-              <div className="modal-row">
-                <label>Confirm Password:</label>
-                <input
-                  type="password"
-                  value={confirmPasswordUser}
-                  onChange={(e) => setConfirmPasswordUser(e.target.value)}
-                  placeholder="Confirm new password"
-                />
+              <div className={formRow}>
+                <label className={formLabel}>New Password</label>
+                <input type="password" value={newPasswordUser} onChange={(e) => setNewPasswordUser(e.target.value)} placeholder="Enter new password" className={formInput} />
               </div>
-              <div className="setting-modal-buttons">
-                <button
-                  onClick={() => setShowChangePasswordModalForUser(false)}
-                >
+              <div className={formRow}>
+                <label className={formLabel}>Confirm</label>
+                <input type="password" value={confirmPasswordUser} onChange={(e) => setConfirmPasswordUser(e.target.value)} placeholder="Confirm new password" className={formInput} />
+              </div>
+              <div className={actions}>
+                <button type="button" onClick={() => setShowChangePasswordModalForUser(false)} className="rounded-lg bg-[#555] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#444]">
                   Back
                 </button>
-                <button
-                  onClick={handleChangePasswordForUser}
-                  className="create-btn"
-                >
+                <button type="button" onClick={handleChangePasswordForUser} className="rounded-lg bg-[#A294F9] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#8b7ce8]">
                   Update Password
                 </button>
               </div>
@@ -1038,7 +715,8 @@ const Settings = ({ openAddUserModal, setOpenAddUserModal }) => {
           </div>
         )}
       </div>
-    </>
+
+    </div>
   );
 };
 

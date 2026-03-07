@@ -1,47 +1,53 @@
 import React, { useState, useEffect } from "react";
-import "./ViewResult.css";
-import { FaSearch } from "react-icons/fa";
-import * as XLSX from "xlsx";
-import { saveAs } from "file-saver";
+import { log, error as logError } from "../utils/logger";
+import { FaSearch, FaFileExcel, FaChevronLeft } from "react-icons/fa";
+import Swal from "sweetalert2";
 import { authFetch } from "../scripts/AuthProvider";
-import './ViewResult.css';
 
 const ViewResult = ({ result, onBack, onNext }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10; // You can adjust this number as needed
+  const itemsPerPage = 10;
 
   if (!result) {
-    return <div>No result selected</div>;
+    return (
+      <div className="flex h-[87vh] items-center justify-center rounded-lg bg-[#282828] text-gray-400">
+        No result selected
+      </div>
+    );
   }
 
   const viewExam = async (student) => {
-    const response = await authFetch('/admin/results/individual-results/' + student.attempt_id + "/", {
-      method: "GET",
-    });
+    const response = await authFetch(
+      "/admin/results/individual-results/" + student.attempt_id + "/",
+      { method: "GET" }
+    );
     if (response.ok) {
       const data = await response.json();
       const examData = {
         ...student,
-        sections: data.reportData.sections.map(section => ({
+        sections: data.reportData.sections.map((section) => ({
           name: section.sectionName,
           obtainedMarks: section.obtainedMarks,
           totalMarks: section.maxMarks,
-          questions: section.questionsAttempted.map(question => ({
+          questions: section.questionsAttempted.map((question) => ({
             question: question.question,
             yourAnswer: question.selectedAnswer,
             actualAnswer: question.correctAnswer,
-            marks: question.correctAnswer === question.selectedAnswer ? 1 : 0,
-            status: question.correctAnswer === question.selectedAnswer ? "Correct" : "Incorrect",
+            marks:
+              question.correctAnswer === question.selectedAnswer ? 1 : 0,
+            status:
+              question.correctAnswer === question.selectedAnswer
+                ? "Correct"
+                : "Incorrect",
           })),
         })),
       };
-      console.log("Exam Data:", examData);
+      log("Exam Data:", examData);
       onNext(examData);
     } else {
-      console.error("Failed to fetch exam data:", response.statusText);
-      // alert("Failed to fetch exam data. Please try again later.");
-      swal({
+      logError("Failed to fetch exam data:", response.statusText);
+      Swal.fire({
         title: "Error",
         text: "Failed to fetch exam data. Please try again later.",
         icon: "error",
@@ -53,15 +59,14 @@ const ViewResult = ({ result, onBack, onNext }) => {
     }
   };
 
-  // Function to export student data to Excel with conditional formatting
-  const handleExportToExcel = async (result) => {
-    const response = await authFetch('/admin/results/full-report/' + result.id + "/", {
-      method: "GET",
-    });
+  const handleExportToExcel = async (resultData) => {
+    const response = await authFetch(
+      "/admin/results/full-report/" + resultData.id + "/",
+      { method: "GET" }
+    );
     if (!response.ok) {
-      console.error("Failed to fetch data for export:", response.statusText);
-      // alert("Failed to export data. Please try again later.");
-        swal({
+      logError("Failed to fetch data for export:", response.statusText);
+      Swal.fire({
         title: "Error",
         text: "Failed to export data. Please try again later.",
         icon: "error",
@@ -73,155 +78,270 @@ const ViewResult = ({ result, onBack, onNext }) => {
       return;
     }
     const blob = await response.blob();
-    const fileName = `result_${result.id}.xlsx`;
+    const fileName = `result_${resultData.id}.xlsx`;
+    const { saveAs } = await import("file-saver");
     saveAs(blob, fileName);
   };
 
-  // Filter students based on search query
-  const filteredStudents = result.students.filter(student =>
-    student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    student.usn.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredStudents = result.students.filter(
+    (student) =>
+      student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      student.usn.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Calculate total pages
-  const totalPages = Math.ceil(filteredStudents.length / itemsPerPage);
-
-  // Get current students for the page
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredStudents.length / itemsPerPage)
+  );
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentStudents = filteredStudents.slice(indexOfFirstItem, indexOfLastItem);
+  const currentStudents = filteredStudents.slice(
+    indexOfFirstItem,
+    indexOfLastItem
+  );
 
-  // Handle page change
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
   };
 
-  // Reset page to 1 when search query changes
   useEffect(() => {
     setCurrentPage(1);
   }, [searchQuery]);
 
+  const formatScore = (val) =>
+    typeof val === "number" ? val.toFixed(2) : val;
 
   return (
-    <div className="justify-center flex flex-wrap viewresult-container">
-      <div className="viewreult-box">
-        <div className="flex justify-between top-viewresult">
-          <div className="flex">
-            <button onClick={onBack}>&lt;</button>
-            <h1>
-              {result.id} - {result.name}
-            </h1>
+    <div className="flex max-h-[87vh] w-full max-w-full flex-col overflow-y-auto rounded-lg bg-[#282828] p-5 sm:p-6 md:p-8 md:pb-8">
+      {/* Header: back + title + times */}
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
+        <div className="flex min-w-0 items-center gap-4">
+          <button
+            type="button"
+            onClick={onBack}
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-[#5a5a5a] bg-[#3d3d3d] text-xl text-white transition-colors hover:bg-[#4a4a4a]"
+            aria-label="Go back"
+          >
+            <FaChevronLeft className="h-5 w-5" />
+          </button>
+          <h1 className="min-w-0 truncate text-lg font-semibold text-white sm:text-xl md:text-2xl">
+            {result.id} – {result.name}
+          </h1>
+        </div>
+        <div className="flex shrink-0 gap-8 text-sm text-white">
+          <div className="space-y-1">
+            <p className="text-gray-400">Start Time</p>
+            <p className="font-medium">{result.startTime}</p>
           </div>
-          <div className="flex justify-between view-time">
-            <div>
-              <p>Start Time</p>
-              <p>{result.startTime}</p>
+          <div className="space-y-1">
+            <p className="text-gray-400">End Time</p>
+            <p className="font-medium">{result.endTime}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Stats cards */}
+      <div className="mb-8 grid grid-cols-2 gap-4 sm:gap-5 md:grid-cols-4 md:gap-6">
+        {[
+          { label: "Students Attempted", value: result.studentsAttempted },
+          { label: "Students Unattempted", value: result.studentsUnattempted },
+          { label: "Malpractice", value: result.malpractice },
+          {
+            label: "Average Score",
+            value: formatScore(result.averageScore),
+          },
+        ].map(({ label, value }) => (
+          <div
+            key={label}
+            className="rounded-lg border border-[#666] bg-[#4B4B4B] p-5 sm:p-6"
+          >
+            <p className="text-sm text-gray-300">{label}</p>
+            <p className="mt-3 text-xl font-semibold text-white sm:text-2xl">
+              {value}
+            </p>
+          </div>
+        ))}
+      </div>
+
+      {/* Students section: label + search + export + table + pagination */}
+      <div className="flex flex-col gap-5">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
+          <p className="border-b-4 border-[#A294F9] pb-2 text-base font-bold text-white sm:text-lg">
+            Students
+          </p>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-5">
+            <div className="flex min-h-[44px] flex-1 min-w-0 items-center gap-2 rounded-lg border border-[#5a5a5a] bg-[#3d3d3d] px-4 py-2.5 transition-colors focus-within:border-[#A294F9] focus-within:ring-2 focus-within:ring-[#A294F9]/30">
+              <FaSearch className="h-5 w-5 shrink-0 text-gray-300" />
+              <input
+                type="text"
+                placeholder="Search results..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="min-w-0 flex-1 border-none bg-transparent text-white outline-none placeholder:text-gray-400"
+              />
             </div>
-            <div>
-              <p>End Time</p>
-              <p>{result.endTime}</p>
-            </div>
+            <button
+              type="button"
+              onClick={() => handleExportToExcel(result)}
+              className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-lg bg-[#9B005D] px-5 py-2.5 font-medium text-white shadow-md transition-colors hover:bg-[#8A004A]"
+            >
+              <FaFileExcel className="h-5 w-5 shrink-0" />
+              <span>Export</span>
+            </button>
           </div>
         </div>
 
-        <div className="flex justify-between view-r-card-container">
-          <div className="view-r-cards">
-            <p>Students Attempted</p>
-            <h4>{result.studentsAttempted}</h4>
-          </div>
-          <div className="view-r-cards">
-            <p>Students Unattempted</p>
-            <h4>{result.studentsUnattempted}</h4>
-          </div>
-          <div className="view-r-cards">
-            <p>Malpractice</p>
-            <h4>{result.malpractice}</h4>
-          </div>
-          <div className="view-r-cards">
-            <p>Average Score</p>
-            <h4>{typeof result.averageScore === 'number' ? result.averageScore.toFixed(2) : result.averageScore}</h4>
-          </div>
-        </div>
-
-        <div>
-          <div className="flex justify-between middle-view">
-            <p className="students">Students</p>
-            <div className="flex">
-              <div className="search-box flex items-center w-full sm:w-auto">
-                <FaSearch className="search-icon" />
-                <input
-                  type="text"
-                  placeholder="Search results..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full sm:w-auto"
-                />
-              </div>
-
-              {/* Export Button */}
-              <button
-                onClick={() => handleExportToExcel(result)}
-                className="flex items-center gap-2 bg-[#9B005D] text-white px-4 py-2 rounded-lg shadow-md
-                                hover:bg-[#8A004A] hover:scale-105 transition-transform duration-200 ease-in-out cursor-pointer"
+        {/* Mobile: cards */}
+        <div className="mt-1 flex flex-col gap-4 overflow-y-auto pb-2 md:hidden">
+          {currentStudents.length === 0 ? (
+            <div className="rounded-lg border border-[#5a5a5a] bg-[#353535] py-8 text-center text-gray-400">
+              No students found
+            </div>
+          ) : (
+            currentStudents.map((student, index) => (
+              <div
+                key={student.usn + index}
+                className="flex flex-col gap-3 rounded-lg border border-[#5a5a5a] bg-[#3a3a3a] p-4 sm:p-5"
               >
-                <img src="src/assets/excel.png" alt="Excel Icon" className="w-6 h-6" />
-                <span className="font-medium text-lg">Export</span>
-              </button>
-            </div>
-          </div>
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-medium text-white">
+                      {student.name}
+                    </p>
+                    <p className="text-xs text-gray-400">{student.usn}</p>
+                  </div>
+                  <span className="shrink-0 text-sm text-white">
+                    Score: {formatScore(student.score)}
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-gray-300">
+                  <span className="text-gray-500">Start</span>
+                  <span className="text-right">{student.startTime}</span>
+                  <span className="text-gray-500">End</span>
+                  <span className="text-right">{student.endTime}</span>
+                  <span className="text-gray-500">Trust Score</span>
+                  <span className="text-right text-white">
+                    {formatScore(student.trustScore)}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => viewExam(student)}
+                  className="w-full rounded-lg bg-[#8E5DAF] py-3 text-sm font-medium text-white transition-colors hover:bg-[#7421ac]"
+                >
+                  View
+                </button>
+              </div>
+            ))
+          )}
+        </div>
 
-          {/* UI Table (Without MCQ & Coding Marks) */}
-          <div>
-            <div className="view-table-container">
-              <table>
-                <thead>
+        {/* Desktop: table - fixed height for 10 rows, not scrollable */}
+        <div className="mt-1 hidden h-[584px] rounded-lg md:block">
+          <div className="h-full overflow-x-auto rounded-lg border border-[#5a5a5a]">
+            <table className="w-full min-w-[640px] table-auto border-collapse">
+              <thead className="sticky top-0 z-10 bg-[#535353]">
+                <tr>
+                  <th className="whitespace-nowrap border-b border-[#666] px-4 py-3 text-center text-sm font-medium text-white">
+                    USN
+                  </th>
+                  <th className="whitespace-nowrap border-b border-[#666] px-4 py-3 text-left text-sm font-medium text-white">
+                    Name
+                  </th>
+                  <th className="whitespace-nowrap border-b border-[#666] px-4 py-3 text-center text-sm font-medium text-white">
+                    Start Time
+                  </th>
+                  <th className="whitespace-nowrap border-b border-[#666] px-4 py-3 text-center text-sm font-medium text-white">
+                    End Time
+                  </th>
+                  <th className="whitespace-nowrap border-b border-[#666] px-4 py-3 text-center text-sm font-medium text-white">
+                    Score
+                  </th>
+                  <th className="whitespace-nowrap border-b border-[#666] px-4 py-3 text-center text-sm font-medium text-white">
+                    Trust Score
+                  </th>
+                  <th className="whitespace-nowrap border-b border-[#666] px-4 py-3 text-center text-sm font-medium text-white">
+                    {" "}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {currentStudents.length === 0 ? (
                   <tr>
-                    <th>USN</th>
-                    <th>Name</th>
-                    <th className="start-time">Start Time</th>
-                    <th className="start-time">End Time</th>
-                    <th>Score</th>
-                    <th>Trust Score</th>
-                    <th></th>
+                    <td
+                      colSpan={7}
+                      className="py-8 text-center text-gray-400"
+                    >
+                      No students found
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  {currentStudents.map((student, index) => (
-                    <tr key={index}>
-                      <td>{student.usn}</td>
-                      <td>{student.name}</td>
-                      <td>{student.startTime}</td>
-                      <td>{student.endTime}</td>
-                      <td>{typeof student.score === 'number' ? student.score.toFixed(2) : student.score}</td>
-                      <td>{typeof student.trustScore === 'number' ? student.trustScore.toFixed(2) : student.trustScore}</td>
-                      <td>
-                        <button className="viewexam-btn" onClick={() => viewExam(student)}>
+                ) : (
+                  currentStudents.map((student, index) => (
+                    <tr
+                      key={student.usn + index}
+                      className={`border-b border-[#555] transition-colors hover:bg-[#404040] ${
+                        index % 2 === 0 ? "bg-[#393939]" : "bg-[#424242]"
+                      }`}
+                    >
+                      <td className="whitespace-nowrap px-4 py-3 text-center text-sm text-white">
+                        {student.usn}
+                      </td>
+                      <td className="max-w-[180px] truncate px-4 py-3 text-left text-sm text-white">
+                        {student.name}
+                      </td>
+                      <td className="whitespace-nowrap px-4 py-3 text-center text-sm text-white">
+                        {student.startTime}
+                      </td>
+                      <td className="whitespace-nowrap px-4 py-3 text-center text-sm text-white">
+                        {student.endTime}
+                      </td>
+                      <td className="px-4 py-3 text-center text-sm text-white">
+                        {formatScore(student.score)}
+                      </td>
+                      <td className="px-4 py-3 text-center text-sm text-white">
+                        {formatScore(student.trustScore)}
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <button
+                          type="button"
+                          onClick={() => viewExam(student)}
+                          className="inline-flex items-center justify-center whitespace-nowrap rounded-lg bg-[#8E5DAF] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#7421ac]"
+                        >
                           View
                         </button>
                       </td>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            {/* Pagination Controls */}
-            <div className="pagination-button">
-              <button
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage === 1}
-              >
-                Previous
-              </button>
-              <span className="page-info">Page {currentPage} of {totalPages}</span>
-              <button
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage === totalPages || totalPages === 0}
-              >
-                Next
-              </button>
-            </div>
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
+
+        {/* Pagination - scroll down to reach */}
+        {totalPages > 1 && filteredStudents.length > 0 && (
+          <div className="flex items-center justify-center gap-5 border-t border-[#5a5a5a] py-6 pt-6 sm:gap-6">
+            <button
+              type="button"
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="min-h-[44px] rounded-lg border border-[#5a5a5a] bg-transparent px-4 py-2.5 text-sm text-white transition-colors hover:border-gray-400 hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Previous
+            </button>
+            <span className="flex min-h-[44px] items-center text-sm text-gray-300">
+              Page {currentPage} of {totalPages}
+            </span>
+            <button
+              type="button"
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className="min-h-[44px] rounded-lg border border-[#5a5a5a] bg-transparent px-4 py-2.5 text-sm text-white transition-colors hover:border-gray-400 hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Next
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
