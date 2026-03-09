@@ -461,9 +461,11 @@ const ViewCourse = ({ onUnassign, onEdit, onDelete, onBack, selectedCourse }) =>
 
   if (loading) {
     return (
-      <div className="Custom-container">
-        <div className="flex justify-center items-center py-8">
-          <div className='text-white'>Loading course details...</div>
+      <div className="flex h-[87vh] min-h-[calc(100dvh-4.5rem)] w-full max-w-full flex-col overflow-hidden rounded-lg bg-[#282828] p-4 sm:p-5 md:h-[87vh] md:min-h-0 md:p-6 md:pb-8">
+        <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto overflow-x-hidden pb-6 sm:pb-8 sm:gap-6">
+          <div className="flex flex-1 justify-center items-center py-8">
+            <div className="text-white">Loading course details...</div>
+          </div>
         </div>
       </div>
     );
@@ -471,25 +473,28 @@ const ViewCourse = ({ onUnassign, onEdit, onDelete, onBack, selectedCourse }) =>
 
   if (!courseData) {
     return (
-      <div className="Custom-container">
-        <div className="flex justify-center items-center py-8">
-          <div className='text-white'>Course not found.</div>
+      <div className="flex h-[87vh] min-h-[calc(100dvh-4.5rem)] w-full max-w-full flex-col overflow-hidden rounded-lg bg-[#282828] p-4 sm:p-5 md:h-[87vh] md:min-h-0 md:p-6 md:pb-8">
+        <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto overflow-x-hidden pb-6 sm:pb-8 sm:gap-6">
+          <div className="flex flex-1 justify-center items-center py-8">
+            <div className="text-white">Course not found.</div>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="Custom-container">
-      <div className="new-c-top new-c-top1 flex items-center gap-4">
+    <div className="flex h-[87vh] min-h-[calc(100dvh-4.5rem)] w-full max-w-full flex-col overflow-hidden rounded-lg bg-[#282828] p-4 sm:p-5 md:h-[87vh] md:min-h-0 md:p-6 md:pb-8">
+      <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto overflow-x-hidden pb-6 sm:pb-8 sm:gap-6">
+      <div className="new-c-top new-c-top1 flex items-center gap-4 shrink-0">
         <button
           onClick={onBack}
-          className="view-back-btn back-btn text-2xl font-bold"
+          className="view-back-btn back-btn  cursor-pointer text-1xl text-white rounded-lg border border-[#5a5a5a] bg-[#3d3d3d] px-2 py-0 hover:bg-[#4a4a4a]"
           aria-label="Go back"
         >
           &lt;
         </button>
-        <h1>View Course</h1>
+        <h1 className="text-white text-3xl font-semibold">View Course</h1>
       </div>
       <div className="view-details-container">
         <div className="view-details">
@@ -685,7 +690,8 @@ const ViewCourse = ({ onUnassign, onEdit, onDelete, onBack, selectedCourse }) =>
                       border: 'none',
                       borderRadius: '4px',
                       cursor: 'pointer',
-                      marginLeft: '8px'
+                      marginLeft: '8px',
+                      marginRight: '8px'
                     }}
                   >
                     Edit
@@ -928,6 +934,7 @@ const ViewCourse = ({ onUnassign, onEdit, onDelete, onBack, selectedCourse }) =>
             </>
           )}
         </div>
+      </div>
       </div>
     </div>
   );
