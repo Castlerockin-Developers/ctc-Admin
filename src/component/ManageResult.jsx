@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { log, error as logError } from "../utils/logger";
 import { FaSearch } from "react-icons/fa";
 import { motion } from "framer-motion";
@@ -6,11 +6,38 @@ import ViewResult from "./ViewResult";
 import ParticularResult from "./PerticularResult";
 import { authFetch } from "../scripts/AuthProvider";
 import Spinner from "../loader/Spinner";
-import { useCache } from "../hooks/useCache";
+
+function mapApiRowToDisplay(res) {
+  const now = new Date();
+  const start = new Date(res.start_time);
+  const end = new Date(res.end_time);
+  let status = "";
+  if (start > now) status = "Upcoming";
+  else if (!res.is_result_declared && end > now) status = "Ongoing";
+  else if (res.is_result_declared) status = "Results Declared";
+  else status = "Completed";
+  return {
+    id: res.id,
+    name: res.name,
+    startTime: start.toLocaleString([], {
+      dateStyle: "short",
+      timeStyle: "short",
+      hour12: true,
+    }),
+    endTime: end.toLocaleString([], {
+      dateStyle: "short",
+      timeStyle: "short",
+      hour12: true,
+    }),
+    analytics: `${res.attempts_allowed} Attempts`,
+    status,
+  };
+}
 
 const ManageResult = ({ onNext, cacheAllowed }) => {
   const [activeTab, setActiveTab] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchInput, setSearchInput] = useState("");
   const [selectedResult, setSelectedResult] = useState(null);
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -18,6 +45,11 @@ const ManageResult = ({ onNext, cacheAllowed }) => {
     typeof window !== "undefined" && window.innerWidth >= 2560 ? 15 : 10
   );
   const [loadingResultId, setLoadingResultId] = useState(null);
+  const [resultsData, setResultsData] = useState(null);
+  const [totalCount, setTotalCount] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const searchDebounceRef = useRef(null);
 
   useEffect(() => {
     const onResize = () =>
@@ -48,172 +80,140 @@ const ManageResult = ({ onNext, cacheAllowed }) => {
     }),
   };
 
-  const fetchResultData = useCallback(async () => {
-    log("fetchResultData: Starting API call...");
-    try {
-      const response = await authFetch("/admin/results/", { method: "GET" });
+  const fetchResults = useCallback(
+    async (page, pageSize, status, search) => {
+      log("fetchResults: page=%s pageSize=%s status=%s search=%s", page, pageSize, status, search || "");
+      const params = new URLSearchParams();
+      params.set("page", String(page));
+      params.set("page_size", String(pageSize));
+      if (status && status !== "all") params.set("status", status);
+      if (search) params.set("search", search.trim());
+      const url = `/admin/results/?${params.toString()}`;
+      const response = await authFetch(url, { method: "GET" });
       if (!response.ok) throw new Error("Failed to fetch results");
       const data = await response.json();
-      const now = new Date();
-      const mapped = data.map((res) => {
-        const start = new Date(res.start_time);
-        const end = new Date(res.end_time);
-        let status = "";
-        if (start > now) status = "Upcoming";
-        else if (!res.is_result_declared && end > now) status = "Ongoing";
-        else if (res.is_result_declared) status = "Results Declared";
-        else status = "Completed";
-        return {
-          id: res.id,
-          name: res.name,
-          startTime: start.toLocaleString([], {
-            dateStyle: "short",
-            timeStyle: "short",
-            hour12: true,
-          }),
-          endTime: end.toLocaleString([], {
-            dateStyle: "short",
-            timeStyle: "short",
-            hour12: true,
-          }),
-          analytics: `${res.attempts_allowed} Attempts`,
-          status,
-        };
-      });
-      return mapped;
-    } catch (error) {
-      logError("fetchResultData:", error);
-      throw error;
-    }
-  }, []);
-
-  const onCacheHit = useCallback(() => log("Results data loaded from cache"), []);
-  const onCacheMiss = useCallback(() => log("Results data fetched fresh"), []);
-  const onError = useCallback((err) => logError("Results fetch error:", err), []);
-
-  const {
-    data: resultsData,
-    loading,
-    error,
-    forceRefresh,
-  } = useCache("result_data", fetchResultData, {
-    enabled: cacheAllowed !== false,
-    expiryMs: 5 * 60 * 1000,
-    autoRefresh: false,
-    onCacheHit,
-    onCacheMiss,
-    onError,
-  });
-
-  const [fallbackData, setFallbackData] = useState(null);
-  const [fallbackLoading, setFallbackLoading] = useState(false);
-  const [fallbackError, setFallbackError] = useState(null);
+      if (data && Array.isArray(data.results) && typeof data.count === "number") {
+        const mapped = data.results.map(mapApiRowToDisplay);
+        return { paginated: true, results: mapped, totalCount: data.count };
+      }
+      if (Array.isArray(data)) {
+        const mapped = data.map(mapApiRowToDisplay);
+        return { paginated: false, results: mapped, totalCount: mapped.length };
+      }
+      throw new Error("Unexpected response format");
+    },
+    []
+  );
 
   useEffect(() => {
-    const timeout = setTimeout(async () => {
-      if (!resultsData && !loading && !error) {
-        setFallbackLoading(true);
-        try {
-          const data = await fetchResultData();
-          setFallbackData(data);
-          setFallbackError(null);
-        } catch (err) {
-          setFallbackError(err);
-        } finally {
-          setFallbackLoading(false);
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    searchDebounceRef.current = setTimeout(() => {
+      setSearchQuery(searchInput);
+      setCurrentPage(1);
+    }, 300);
+    return () => {
+      if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    };
+  }, [searchInput]);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+    fetchResults(currentPage, resultsPerPage, activeTab, searchQuery)
+      .then(({ paginated, results, totalCount: count }) => {
+        if (cancelled) return;
+        if (paginated) {
+          setResultsData(results);
+          setTotalCount(count);
+        } else {
+          const filtered = results
+            .filter((row) => {
+              if (activeTab === "all") return true;
+              if (activeTab === "active") return row.status === "Ongoing";
+              if (activeTab === "completed")
+                return row.status === "Results Declared" || row.status === "Completed";
+              return true;
+            })
+            .filter((row) => {
+              if (!searchQuery) return true;
+              const q = searchQuery.toLowerCase();
+              return [row.id, row.name, row.analytics, row.status].some((field) =>
+                String(field).toLowerCase().includes(q)
+              );
+            });
+          const start = (currentPage - 1) * resultsPerPage;
+          setResultsData(filtered.slice(start, start + resultsPerPage));
+          setTotalCount(filtered.length);
         }
-      }
-    }, 5000);
-    return () => clearTimeout(timeout);
-  }, [resultsData, loading, error, fetchResultData]);
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          logError("fetchResults:", err);
+          setError(err);
+          setResultsData(null);
+          setTotalCount(0);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [currentPage, resultsPerPage, activeTab, searchQuery, fetchResults]);
 
-  const effectiveData = resultsData || fallbackData;
-  const effectiveLoading = loading || fallbackLoading;
-  const effectiveError = error || fallbackError;
-
-  if (effectiveLoading) return <Spinner className="min-h-[200px]" />;
-
-  if (effectiveError) {
-    return (
-      <div className="flex min-h-[200px] flex-col items-center justify-center gap-4 rounded-lg bg-[#282828] p-6 text-center">
-        <p className="text-red-400">
-          {effectiveError.message || "Failed to load results"}
-        </p>
-        <button
-          onClick={forceRefresh}
-          className="rounded-lg bg-[#A294F9] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#8E5DAF]"
-        >
-          Retry
-        </button>
-      </div>
-    );
-  }
-
-  if (!effectiveData) return <Spinner className="min-h-[200px]" />;
-
-  const filteredResults = effectiveData
-    .filter((row) => {
-      if (activeTab === "all") return true;
-      if (activeTab === "active") return row.status === "Ongoing";
-      if (activeTab === "completed")
-        return row.status === "Results Declared" || row.status === "Completed";
-      return true;
-    })
-    .filter((row) => {
-      if (!searchQuery) return true;
-      const q = searchQuery.toLowerCase();
-      return [row.id, row.name, row.analytics, row.status].some((field) =>
-        String(field).toLowerCase().includes(q)
-      );
-    });
-
-  const indexOfLastResult = currentPage * resultsPerPage;
-  const indexOfFirstResult = indexOfLastResult - resultsPerPage;
-  const currentResults = filteredResults.slice(
-    indexOfFirstResult,
-    indexOfLastResult
-  );
-  const totalPages = Math.max(1, Math.ceil(filteredResults.length / resultsPerPage));
+  const totalPages = Math.max(1, Math.ceil(totalCount / resultsPerPage));
+  const currentResults = resultsData || [];
+  const hasResults = currentResults.length > 0;
 
   const goToNextPage = () => {
-    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+    if (currentPage < totalPages) setCurrentPage((p) => p + 1);
   };
   const goToPrevPage = () => {
-    if (currentPage > 1) setCurrentPage(currentPage - 1);
+    if (currentPage > 1) setCurrentPage((p) => p - 1);
+  };
+
+  const handleRetry = () => {
+    setError(null);
+    setCurrentPage(1);
   };
 
   const handleViewResult = async (row) => {
     if (loadingResultId === row.id) return;
     setLoadingResultId(row.id);
+    const pageSize = 10;
     try {
-      const resp = await authFetch(`/admin/results/${row.id}/`, {
-        method: "GET",
-      });
+      const url = `/admin/results/${row.id}/?attempts_page=1&attempts_page_size=${pageSize}`;
+      const resp = await authFetch(url, { method: "GET" });
       if (!resp.ok) throw new Error("Failed to fetch details");
       const details = await resp.json();
+      const mapAttempt = (a) => ({
+        attempt_id: a.id,
+        usn: a.usn,
+        name: a.user_name,
+        startTime: new Date(a.start_time).toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+        }),
+        endTime: new Date(a.end_time).toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+        }),
+        score: a.score,
+        trustScore: a.trust_score,
+      });
       setSelectedResult({
         ...row,
         studentsAttempted: details.users_attempted_count,
         studentsUnattempted: details.users_unattempted_count,
         malpractice: details.malpractice_recorded_count,
         averageScore: details.users_average_score,
-        students: details.attempts.map((a) => ({
-          attempt_id: a.id,
-          usn: a.usn,
-          name: a.user_name,
-          startTime: new Date(a.start_time).toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-            hour12: true,
-          }),
-          endTime: new Date(a.end_time).toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-            hour12: true,
-          }),
-          score: a.score,
-          trustScore: a.trust_score,
-        })),
+        students: details.attempts.map(mapAttempt),
+        attemptsCount: details.attempts_count ?? details.attempts?.length,
+        attemptsPageSize: pageSize,
       });
     } catch (err) {
       logError(err);
@@ -236,6 +236,29 @@ const ManageResult = ({ onNext, cacheAllowed }) => {
     if (status === "Expired") return "bg-red-600/80 text-white";
     return "bg-gray-500/80 text-white";
   };
+
+  const setActiveTabAndResetPage = (key) => {
+    setActiveTab(key);
+    setCurrentPage(1);
+  };
+
+  if (loading && !resultsData) return <Spinner className="min-h-[200px]" />;
+
+  if (error) {
+    return (
+      <div className="flex min-h-[200px] flex-col items-center justify-center gap-4 rounded-lg bg-[#282828] p-6 text-center">
+        <p className="text-red-400">
+          {error.message || "Failed to load results"}
+        </p>
+        <button
+          onClick={handleRetry}
+          className="rounded-lg bg-[#A294F9] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#8E5DAF]"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
 
   return (
     <motion.div
@@ -264,11 +287,8 @@ const ManageResult = ({ onNext, cacheAllowed }) => {
                 <input
                   type="text"
                   placeholder="Search results..."
-                  value={searchQuery}
-                  onChange={(e) => {
-                    setSearchQuery(e.target.value);
-                    setCurrentPage(1);
-                  }}
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
                   className="min-w-0 flex-1 border-none bg-transparent text-white outline-none placeholder:text-gray-400"
                 />
               </div>
@@ -300,7 +320,11 @@ const ManageResult = ({ onNext, cacheAllowed }) => {
             </div>
           </div>
 
-          {effectiveData && currentResults.length > 0 ? (
+          {loading && resultsData ? (
+            <div className="flex flex-1 items-center justify-center">
+              <Spinner className="h-8 w-8" />
+            </div>
+          ) : hasResults ? (
             <>
               {/* Mobile: card layout */}
               <div className="flex flex-col gap-3 overflow-y-auto pb-2 md:hidden">
@@ -455,13 +479,13 @@ const ManageResult = ({ onNext, cacheAllowed }) => {
             </div>
           )}
 
-          {totalPages > 1 && effectiveData && filteredResults.length > 0 && (
+          {totalPages > 1 && hasResults && (
             <div className="flex shrink-0 items-center justify-center gap-4 pt-2 sm:gap-6">
               <button
                 type="button"
                 onClick={goToPrevPage}
-                disabled={currentPage === 1}
-                className="min-h-[44px] cursor-pointer rounded-lg border border-[#5a5a5a] bg-transparent px-4 py-2.5 text-sm text-white transition-colors hover:border-gray-400 hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50"
+                disabled={currentPage === 1 || loading}
+                className="min-h-[44px] rounded-lg border border-[#5a5a5a] bg-transparent px-4 py-2.5 text-sm text-white transition-colors hover:border-gray-400 hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 ‹ Previous
               </button>
@@ -471,8 +495,8 @@ const ManageResult = ({ onNext, cacheAllowed }) => {
               <button
                 type="button"
                 onClick={goToNextPage}
-                disabled={currentPage === totalPages}
-                className="min-h-[44px] cursor-pointer rounded-lg border border-[#5a5a5a] bg-transparent px-4 py-2.5 text-sm text-white transition-colors hover:border-gray-400 hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50"
+                disabled={currentPage === totalPages || loading}
+                className="min-h-[44px] rounded-lg border border-[#5a5a5a] bg-transparent px-4 py-2.5 text-sm text-white transition-colors hover:border-gray-400 hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Next ›
               </button>

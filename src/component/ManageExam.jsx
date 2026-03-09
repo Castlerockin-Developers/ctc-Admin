@@ -4,19 +4,44 @@ import { FaSearch, FaPlus, FaFilter, FaEllipsisV } from "react-icons/fa";
 import Swal from "sweetalert2";
 import { authFetch } from "../scripts/AuthProvider";
 import Spinner from "../loader/Spinner";
-import { useCache } from "../hooks/useCache";
 import PropTypes from "prop-types";
+
+function mapExamToDisplay(exam) {
+  const startTime = new Date(exam.start_time);
+  const endTime = new Date(exam.end_time);
+  const now = new Date();
+  let status;
+  if (startTime > now) status = "Upcoming";
+  else if (endTime > now && startTime <= now) status = "Ongoing";
+  else if (exam.is_result_declared) status = "Results Declared";
+  else status = "Completed";
+  return {
+    id: exam.id,
+    name: exam.name,
+    startTime: startTime.toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short', hour12: true }),
+    endTime: endTime.toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short', hour12: true }),
+    attemptsAllowed: exam.attempts_allowed,
+    status,
+  };
+}
 
 const ManageExam = ({ onCreateNewExam, cacheAllowed, onEditExam, examToView, onBackToDashboard, onClearExamToView }) => {
     const [activeButton, setActiveButton] = useState("all");
     const [searchQuery, setSearchQuery] = useState("");
+    const [searchInput, setSearchInput] = useState("");
     const [selectedExam, setSelectedExam] = useState(examToView || null);
     const [showFilter, setShowFilter] = useState(false);
     const [showActionsMenu, setShowActionsMenu] = useState(false);
     const filterRef = useRef(null);
     const actionsMenuRef = useRef(null);
     const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage, setItemsPerPage] = useState(() => window.innerWidth >= 2560 ? 15 : 10);
+    const [itemsPerPage, setItemsPerPage] = useState(() => typeof window !== "undefined" && window.innerWidth >= 2560 ? 15 : 10);
+    const [examsData, setExamsData] = useState(null);
+    const [totalCount, setTotalCount] = useState(0);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const searchDebounceRef = useRef(null);
+    const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
     const onResize = () => setItemsPerPage(window.innerWidth >= 2560 ? 15 : 10);
@@ -31,6 +56,15 @@ const ManageExam = ({ onCreateNewExam, cacheAllowed, onEditExam, examToView, onB
             setSelectedExam(null);
         }
     }, [examToView]);
+
+  useEffect(() => {
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    searchDebounceRef.current = setTimeout(() => {
+      setSearchQuery(searchInput);
+      setCurrentPage(1);
+    }, 300);
+    return () => { if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current); };
+  }, [searchInput]);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -60,83 +94,81 @@ const ManageExam = ({ onCreateNewExam, cacheAllowed, onEditExam, examToView, onB
     setShowFilter(false);
   };
 
-  const fetchExams = useCallback(async () => {
-    const response = await authFetch("/admin/exams/", { method: "GET" });
+  const fetchExams = useCallback(async (page, pageSize, status, search) => {
+    const params = new URLSearchParams();
+    params.set("page", String(page));
+    params.set("page_size", String(pageSize));
+    if (status && status !== "all") params.set("status", status);
+    if (search) params.set("search", search.trim());
+    const response = await authFetch(`/admin/exams/?${params.toString()}`, { method: "GET" });
     const data = await response.json();
-    return data;
+    if (data && Array.isArray(data.results) && typeof data.count === "number") {
+      return { paginated: true, results: data.results.map(mapExamToDisplay), totalCount: data.count };
+    }
+    if (Array.isArray(data)) {
+      return { paginated: false, results: data.map(mapExamToDisplay), totalCount: data.length };
+    }
+    throw new Error("Unexpected response format");
   }, []);
 
-  const { data: examsData, forceRefresh, loading } = useCache("exam_data", fetchExams, {
-    enabled: cacheAllowed,
-    expiryMs: 5 * 60 * 1000,
-    autoRefresh: false,
-  });
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+    fetchExams(currentPage, itemsPerPage, activeButton, searchQuery)
+      .then(({ paginated, results, totalCount: count }) => {
+        if (cancelled) return;
+        if (paginated) {
+          setExamsData(results);
+          setTotalCount(count);
+        } else {
+          const filtered = results
+            .filter(row => {
+              if (activeButton === "all") return true;
+              if (activeButton === "active") return row.status === "Ongoing";
+              if (activeButton === "upcoming") return row.status === "Upcoming";
+              if (activeButton === "completed") return row.status === "Results Declared" || row.status === "Completed";
+              return true;
+            })
+            .filter(row =>
+              !searchQuery ||
+              row.id.toString().includes(searchQuery) ||
+              row.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              row.startTime.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              row.endTime.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              row.attemptsAllowed.toString().includes(searchQuery) ||
+              row.status.toLowerCase().includes(searchQuery.toLowerCase())
+            );
+          const start = (currentPage - 1) * itemsPerPage;
+          setExamsData(filtered.slice(start, start + itemsPerPage));
+          setTotalCount(filtered.length);
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          logError("fetchExams:", err);
+          setError(err);
+          setExamsData(null);
+          setTotalCount(0);
+        }
+      })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, [currentPage, itemsPerPage, activeButton, searchQuery, retryCount, fetchExams]);
 
-    const tableData = examsData ? examsData.map((exam) => {
-        const startTime = new Date(exam.start_time);
-        const endTime = new Date(exam.end_time);
-        const now = new Date();
-        let status;
-        if (startTime > now) status = "Upcoming";
-        else if (endTime > now && startTime <= now) status = "Ongoing";
-        else if (exam.is_result_declared) status = "Results Declared";
-        else status = "Completed";
-
-        return {
-            id: exam.id,
-            name: exam.name,
-            startTime: startTime.toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short', hour12: true }),
-            endTime: endTime.toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short', hour12: true }),
-            attemptsAllowed: exam.attempts_allowed,
-            status,
-        };
-    }) : [];
-
-    const filteredTableData = tableData
-        .filter(row => {
-            if (activeButton === "all") return true;
-            if (activeButton === "active") return row.status === "Ongoing";
-            if (activeButton === "upcoming") return row.status === "Upcoming";
-            if (activeButton === "completed") return row.status === "Results Declared" || row.status === "Completed";
-            return true;
-        })
-        .filter(row =>
-            searchQuery === "" ||
-            row.id.toString().includes(searchQuery) ||
-            row.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            row.startTime.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            row.endTime.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            row.attemptsAllowed.toString().includes(searchQuery) ||
-            row.status.toLowerCase().includes(searchQuery.toLowerCase())
-        )
-        .sort((a, b) => {
-            const statusPriority = { "Ongoing": 1, "Upcoming": 2, "Completed": 3, "Results Declared": 4 };
-            const priorityA = statusPriority[a.status] || 5;
-            const priorityB = statusPriority[b.status] || 5;
-            if (priorityA !== priorityB) return priorityA - priorityB;
-            return new Date(a.startTime) - new Date(b.startTime);
-        });
-
-  const statusPriority = { Ongoing: 0, Upcoming: 1, "Results Declared": 2, Completed: 3 };
-  const sortedFilteredData = filteredTableData.slice().sort((a, b) => {
-    const aP = statusPriority[a.status] ?? 99;
-    const bP = statusPriority[b.status] ?? 99;
-    if (aP !== bP) return aP - bP;
-    return (a.startTimestamp || 0) - (b.startTimestamp || 0);
-  });
-
-  const totalPages = Math.ceil(sortedFilteredData.length / itemsPerPage);
-  const indexOfLast = currentPage * itemsPerPage;
-  const indexOfFirst = indexOfLast - itemsPerPage;
-  const currentTableData = sortedFilteredData.slice(indexOfFirst, indexOfLast);
+  const tableData = examsData || [];
+  const totalPages = Math.max(1, Math.ceil(totalCount / itemsPerPage));
 
   const handlePageChange = (pageNumber) => {
     if (pageNumber >= 1 && pageNumber <= totalPages) setCurrentPage(pageNumber);
   };
 
+  const forceRefresh = useCallback(() => {
+    setCurrentPage(1);
+  }, []);
+
     const handleViewExam = (exam) => {
-        const examWithStatus = tableData.find(e => e.id === exam.id);
-        setSelectedExam(examWithStatus ? { ...exam, status: examWithStatus.status } : exam);
+        setSelectedExam(exam);
     };
 
     const handleBack = () => {
@@ -161,8 +193,8 @@ const ManageExam = ({ onCreateNewExam, cacheAllowed, onEditExam, examToView, onB
                                     <input
                                         type="text"
                                         placeholder="Search exams..."
-                                        value={searchQuery}
-                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        value={searchInput}
+                                        onChange={(e) => setSearchInput(e.target.value)}
                                         className="min-w-0 flex-1 border-none bg-transparent text-white outline-none placeholder:text-gray-400"
                                     />
                                     <button
@@ -230,13 +262,24 @@ const ManageExam = ({ onCreateNewExam, cacheAllowed, onEditExam, examToView, onB
                     </div>
 
                     <div className="min-h-0 flex-1 overflow-hidden rounded-lg">
-                        {loading || !examsData ? (
+                        {loading && examsData === null && !error ? (
                             <Spinner className="min-h-[280px]" />
-                        ) : currentTableData.length > 0 ? (
+                        ) : error ? (
+                            <div className="flex min-h-[200px] flex-col items-center justify-center gap-4 rounded-lg bg-[#353535] p-6 text-center">
+                                <p className="text-red-400">{error.message || "Failed to load exams"}</p>
+                                <button
+                                    type="button"
+                                    onClick={() => { setError(null); setRetryCount(c => c + 1); }}
+                                    className="rounded-lg bg-[#A294F9] px-4 py-2.5 text-sm font-medium text-white"
+                                >
+                                    Retry
+                                </button>
+                            </div>
+                        ) : tableData.length > 0 ? (
                             <>
                                 {/* Mobile: card layout */}
                                 <div className="flex flex-col gap-3 overflow-y-auto pb-2 md:hidden">
-                                    {currentTableData.map((row) => {
+                                    {tableData.map((row) => {
                                         const statusColor =
                                             row.status === "Ongoing"
                                                 ? "bg-emerald-600/80 text-white"
@@ -292,7 +335,7 @@ const ManageExam = ({ onCreateNewExam, cacheAllowed, onEditExam, examToView, onB
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {currentTableData.map((row, idx) => (
+                                            {tableData.map((row, idx) => (
                                                 <tr
                                                     key={row.id}
                                                     className={`border-b border-[#555] transition-colors hover:bg-[#404040] ${idx % 2 === 0 ? "bg-[#3a3a3a]" : "bg-[#353535]"}`}
@@ -324,7 +367,7 @@ const ManageExam = ({ onCreateNewExam, cacheAllowed, onEditExam, examToView, onB
                         )}
                     </div>
 
-                    {!loading && examsData && sortedFilteredData.length > 0 && (
+                    {!loading && tableData.length > 0 && totalPages > 1 && (
                         <div className="flex items-center justify-center gap-4 pt-2 sm:gap-6">
                             <button
                                 onClick={() => handlePageChange(currentPage - 1)}

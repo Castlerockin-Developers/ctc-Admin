@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from "react";
 import { log, error as logError } from "../utils/logger";
 import { FaTimes } from "react-icons/fa";
-import { authFetch } from "../scripts/AuthProvider";
+import { authFetch, SESSION_EXPIRED_MESSAGE } from "../scripts/AuthProvider";
 import Spinner from "../loader/Spinner";
 import { useCache } from "../hooks/useCache";
 
@@ -32,7 +32,11 @@ const Dashboard = ({
 
     const fetchDashboardData = useCallback(async () => {
         log("Dashboard: fetchDashboardData -> calling /admin/home/");
-        const response = await authFetch("/admin/home/", { method: "GET" });
+        const params = new URLSearchParams();
+        params.set("recent_limit", "10");
+        params.set("completed_limit", "10");
+        params.set("active_limit", "10");
+        const response = await authFetch(`/admin/home/?${params.toString()}`, { method: "GET" });
         const responseData = await response.json();
         return {
             dashboardData: {
@@ -83,17 +87,29 @@ const Dashboard = ({
     if (loading) return <Spinner className="min-h-[200px]" />;
 
     if (error) {
+        const isSessionExpired = error.message === SESSION_EXPIRED_MESSAGE;
         return (
             <div className="flex flex-col items-center justify-center p-4 text-center">
                 <p className="mb-4 text-lg text-red-500">
-                    {error.message || "Failed to load dashboard data"}
+                    {isSessionExpired
+                        ? "Your session has expired. Please log in again."
+                        : (error.message || "Failed to load dashboard data")}
                 </p>
-                <button
-                    onClick={forceRefresh}
-                    className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
-                >
-                    Retry
-                </button>
+                {isSessionExpired ? (
+                    <a
+                        href="/"
+                        className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+                    >
+                        Log in again
+                    </a>
+                ) : (
+                    <button
+                        onClick={forceRefresh}
+                        className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+                    >
+                        Retry
+                    </button>
+                )}
             </div>
         );
     }

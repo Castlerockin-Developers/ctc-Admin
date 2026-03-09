@@ -11,7 +11,6 @@ import Swal from "sweetalert2";
 import { motion } from "framer-motion";
 import { authFetch, authFetchPayload } from "../scripts/AuthProvider";
 import Spinner from "../loader/Spinner";
-import { useCache } from "../hooks/useCache";
 
 // Utility function to truncate text:
 // It returns "..." if the text is too long,
@@ -27,20 +26,35 @@ const truncateText = (text, maxLength) => {
 
 const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed }) => {
   const [searchQuery, setSearchQuery] = useState("");
-  const userCount = useRef(0); // to track total students count
-  const totalAllowedStudents = useRef(0); // to track max students count
-  const [totalStudents, setTotalStudents] = useState(0); // <-- use only this for total students
-  const [activeTab, setActiveTab] = useState("all"); // default to first branch after load
-  const [studentsData, setStudentsData] = useState({}); // expect object with branch keys
+  const [searchInput, setSearchInput] = useState("");
+  const totalAllowedStudents = useRef(0);
+  const [totalStudents, setTotalStudents] = useState(0);
+  const [activeTab, setActiveTab] = useState("all");
+  const [studentsData, setStudentsData] = useState(null);
+  const [totalCount, setTotalCount] = useState(0);
   const [groups, setGroups] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [studentsPerPage, setStudentsPerPage] = useState(() => (typeof window !== "undefined" && window.innerWidth >= 2560 ? 15 : 10));
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const searchDebounceRef = useRef(null);
+  const [retryCount, setRetryCount] = useState(0);
+  const [isPaginated, setIsPaginated] = useState(true);
 
   useEffect(() => {
     const onResize = () => setStudentsPerPage(window.innerWidth >= 2560 ? 15 : 10);
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
   }, []);
+
+  useEffect(() => {
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    searchDebounceRef.current = setTimeout(() => {
+      setSearchQuery(searchInput);
+      setCurrentPage(1);
+    }, 300);
+    return () => { if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current); };
+  }, [searchInput]);
 
   const pageFade = {
     initial: { opacity: 0 },
@@ -75,163 +89,109 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed })
     }),
   };
 
-  // Students data fetch function
-  const fetchStudentsData = useCallback(async () => {
-    const response = await authFetch("/admin/students/", { method: "GET" });
-    if (response.status === 200) {
-      const data = await response.json();
+  const fetchStudentsPage = useCallback(async (page, pageSize, group, search) => {
+    const params = new URLSearchParams();
+    params.set("page", String(page));
+    params.set("page_size", String(pageSize));
+    if (group && group !== "all") params.set("group", group);
+    if (search) params.set("search", search.trim());
+    const response = await authFetch(`/admin/students/?${params.toString()}`, { method: "GET" });
+    if (!response.ok) throw new Error("Failed to fetch students");
+    const data = await response.json();
+    if (data && Array.isArray(data.results) && typeof data.count === "number") {
       return {
-        user_count: data.user_count || 0,
+        paginated: true,
+        results: data.results,
+        totalCount: data.count,
+        user_count: data.user_count,
         max_users: data.max_users,
-        data: data.data || {}
       };
-    } else {
-      throw new Error("Failed to fetch students data");
     }
-  }, []);
-
-  // Cache callbacks
-  const onCacheHit = useCallback((data) => {
-    log('Students data loaded from cache');
-  }, []);
-
-  const onCacheMiss = useCallback((data) => {
-    log('Students data fetched fresh');
-  }, []);
-
-  const onError = useCallback((err) => {
-    logError('Students fetch error:', err);
-  }, []);
-
-  // Use cache hook for students data
-  const {
-    data: cachedStudentsData,
-    loading: cacheLoading,
-    error: cacheError,
-    cacheUsed,
-    cacheInfo,
-    forceRefresh,
-    invalidateCache
-  } = useCache('students_data', fetchStudentsData, {
-    enabled: cacheAllowed,
-    expiryMs: 5 * 60 * 1000, // 5 minutes
-    autoRefresh: false,
-    onCacheHit,
-    onCacheMiss,
-    onError
-  });
-
-  // Create a refresh function that forces cache refresh
-  const refreshStudentsData = useCallback(async () => {
-    if (cacheAllowed) {
-      // First invalidate the cache to ensure fresh data
-      invalidateCache();
-      // Then force refresh to get new data
-      await forceRefresh();
-    } else {
-      // If cache is disabled, just fetch fresh data
-      const freshData = await fetchStudentsData();
-      setTotalStudents(freshData.user_count || 0);
-      totalAllowedStudents.current = freshData.max_users;
-      setStudentsData(freshData.data || {});
-      setCurrentPage(1);
+    if (data && data.data && typeof data.user_count === "number") {
+      const grouped = data.data || {};
+      const flat = group === "all" || !group
+        ? Object.values(grouped).flat()
+        : (grouped[group] || []);
+      return {
+        paginated: false,
+        results: flat,
+        totalCount: flat.length,
+        user_count: data.user_count,
+        max_users: data.max_users,
+      };
     }
-  }, [cacheAllowed, forceRefresh, fetchStudentsData, invalidateCache]);
+    throw new Error("Unexpected response format");
+  }, []);
 
-  log('Cache debug:', {
-    cacheAllowed,
-    cacheLoading,
-    cacheError,
-    cachedStudentsData,
-    cacheUsed,
-    cacheInfo
-  });
-
-  // If cache is disabled, show a message
-  if (!cacheAllowed) {
-    log('Cache is disabled - this might be causing the issue');
-  }
-
-  // Update local state when cache data changes
   useEffect(() => {
-    if (cachedStudentsData) {
-      log('Cached students data:', cachedStudentsData);
-      setTotalStudents(cachedStudentsData.user_count || 0);
-      totalAllowedStudents.current = cachedStudentsData.max_users;
-      setStudentsData(cachedStudentsData.data || {});
-      setCurrentPage(1);
-    }
-  }, [cachedStudentsData]);
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+    fetchStudentsPage(currentPage, studentsPerPage, activeTab, searchQuery)
+      .then(({ paginated, results, totalCount: count, user_count, max_users }) => {
+        if (cancelled) return;
+        setIsPaginated(paginated);
+        setStudentsData(results);
+        setTotalCount(count);
+        setTotalStudents(user_count ?? 0);
+        totalAllowedStudents.current = max_users;
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          logError("ManageStudents fetch:", err);
+          setError(err);
+          setStudentsData(null);
+          setTotalCount(0);
+        }
+      })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, [currentPage, studentsPerPage, activeTab, searchQuery, retryCount, fetchStudentsPage]);
 
   // Load groups on component mount
   useEffect(() => {
     const loadGroups = async () => {
-      const data = await fetchGroups();
-      if (data) setGroups(data);
+      try {
+        const response = await authFetch("/admin/groups/", { method: "GET" });
+        if (response.ok) {
+          const data = await response.json();
+          setGroups(Array.isArray(data) ? data : []);
+        }
+      } catch (e) {
+        logError("Error fetching groups:", e);
+      }
     };
     loadGroups();
   }, []);
 
-
-
-  // Filter students based on search query
-  const filteredAndSortedStudents = () => {
-    log('Filter function - studentsData:', studentsData);
-    log('Filter function - activeTab:', activeTab);
-    
-    if (!studentsData) {
-      log('No studentsData, returning empty array');
-      return [];
-    }
-
-    let currentBranchStudents =
-      activeTab === "all"
-        ? Object.values(studentsData).flat()
-        : studentsData[activeTab] || [];
-    
-    log('Current branch students:', currentBranchStudents);
-
-    // Apply search filter first
-    const searchLower = searchQuery.toLowerCase();
-    const filtered = currentBranchStudents.filter((student) => {
-      if (!student || !student.usn) return false;
-      return (
-        student.usn.toLowerCase().includes(searchLower) ||
-        (student.name && student.name.toLowerCase().includes(searchLower)) ||
-        (student.email && student.email.toLowerCase().includes(searchLower)) ||
-        (student.contact && student.contact.toLowerCase().includes(searchLower))
+  const studentsToDisplay = studentsData || [];
+  const currentStudents = isPaginated
+    ? studentsToDisplay
+    : studentsToDisplay.slice(
+        (currentPage - 1) * studentsPerPage,
+        currentPage * studentsPerPage
       );
-    });
+  const totalPages = Math.max(1, Math.ceil(totalCount / studentsPerPage));
 
+  const goToNextPage = () => { if (currentPage < totalPages) setCurrentPage((p) => p + 1); };
+  const goToPrevPage = () => { if (currentPage > 1) setCurrentPage((p) => p - 1); };
 
-    return filtered;
-  };
-
-  const studentsToDisplay = filteredAndSortedStudents();
-  const indexOfLastStudent = currentPage * studentsPerPage;
-  const indexOfFirstStudent = indexOfLastStudent - studentsPerPage;
-  const currentStudents = studentsToDisplay.slice(indexOfFirstStudent, indexOfLastStudent);
-  const totalPages = Math.ceil(studentsToDisplay.length / studentsPerPage);
-
-  const goToNextPage = () => { if (currentPage < totalPages) setCurrentPage(currentPage + 1); };
-  const goToPrevPage = () => { if (currentPage > 1) setCurrentPage(currentPage - 1); };
-
-
-
+  const refreshStudentsData = useCallback(() => {
+    setCurrentPage(1);
+    setRetryCount((c) => c + 1);
+  }, []);
 
   const fetchGroups = async () => {
     try {
       const response = await authFetch("/admin/groups/", { method: "GET" });
       if (response.ok) {
         const groupsData = await response.json();
-        return groupsData;
-      } else {
-        logError("Failed to fetch groups:", response.status);
-        return null;
+        return Array.isArray(groupsData) ? groupsData : [];
       }
+      return [];
     } catch (error) {
       logError("Error fetching groups:", error);
-      return null;
+      return [];
     }
   };
 
@@ -253,7 +213,7 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed })
             <motion.div variants={itemSlide} className="rounded-lg border border-[#666] bg-[#4B4B4B] px-4 py-3">
               <p className="text-xs text-gray-400">Total Students</p>
               <p className="text-lg font-semibold text-white sm:text-xl">
-                {studentsToDisplay.length} / {totalAllowedStudents.current || 500}
+                {totalCount} / {totalAllowedStudents.current || 500}
               </p>
             </motion.div>
           </div>
@@ -262,6 +222,7 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed })
               value={activeTab}
               onChange={(e) => {
                 setSearchQuery("");
+                setSearchInput("");
                 setActiveTab(e.target.value);
                 setCurrentPage(1);
               }}
@@ -279,8 +240,8 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed })
               <input
                 type="text"
                 placeholder="Search students..."
-                value={searchQuery}
-                onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
+                value={searchInput}
+                onChange={(e) => { setSearchInput(e.target.value); setCurrentPage(1); }}
                 className="min-w-0 flex-1 border-none bg-transparent text-white outline-none placeholder:text-gray-400"
               />
             </div>
@@ -296,21 +257,19 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed })
           </div>
         </div>
 
-        {cacheLoading ? (
+        {loading && studentsData === null && !error ? (
           <Spinner className="min-h-[280px]" />
-        ) : cacheError ? (
+        ) : error ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-4 rounded-lg border border-[#5a5a5a] bg-[#353535] py-12">
-            <p className="text-center text-red-400">{cacheError.message || "Failed to load students data"}</p>
+            <p className="text-center text-red-400">{error.message || "Failed to load students data"}</p>
             <button
               type="button"
-              onClick={forceRefresh}
+              onClick={() => { setError(null); setRetryCount((c) => c + 1); }}
               className="rounded-lg bg-[#A294F9] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#8b7ce8]"
             >
               Retry
             </button>
           </div>
-        ) : !cachedStudentsData ? (
-          <Spinner className="min-h-[280px]" />
         ) : currentStudents.length > 0 ? (
           <>
             {/* Mobile: cards */}
@@ -339,7 +298,7 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed })
                     <span className="text-gray-500">Email</span>
                     <span className="truncate text-right">{student.email}</span>
                     <span className="text-gray-500">Phone</span>
-                    <span className="text-right">{student.contact || "—"}</span>
+                    <span className="text-right">{student.contact ?? student.phone ?? "—"}</span>
                   </div>
                 </motion.div>
               ))}
@@ -371,7 +330,7 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed })
                         <td className="whitespace-nowrap px-4 py-3.5 text-center text-sm text-white">{student.usn}</td>
                         <td className="max-w-[180px] truncate px-4 py-3.5 text-left text-sm text-white" title={student.name || student.email}>{truncateText(student.name || student.email, 30)}</td>
                         <td className="max-w-[200px] truncate px-4 py-3.5 text-left text-sm text-white">{student.email}</td>
-                        <td className="whitespace-nowrap px-4 py-3.5 text-center text-sm text-white">{student.contact || "—"}</td>
+                        <td className="whitespace-nowrap px-4 py-3.5 text-center text-sm text-white">{student.contact ?? student.phone ?? "—"}</td>
                         <td className="px-4 py-3.5 text-center">
                           <span className={student.is_active ? "text-green-400" : "text-gray-400"}>{student.is_active ? "Yes" : "No"}</span>
                         </td>
@@ -388,7 +347,7 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed })
           </div>
         )}
 
-        {totalPages > 1 && studentsToDisplay.length > 0 && (
+        {totalPages > 1 && totalCount > 0 && (
           <div className="flex shrink-0 items-center justify-center gap-4 pt-2 sm:gap-6">
             <motion.button
               whileTap={{ scale: 0.98 }}
