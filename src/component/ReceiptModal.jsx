@@ -1,28 +1,54 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import "./receiptModal.css";
+import { authFetch } from "../scripts/AuthProvider";
+import { error as logError } from "../utils/logger";
 
-const ReceiptModal = ({ onClose }) => {
+const ReceiptModal = ({ transactionId, onClose }) => {
     const [pdfUrl, setPdfUrl] = useState("");
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const urlRef = useRef(null);
 
     useEffect(() => {
+        if (!transactionId) return;
         let cancelled = false;
+        setLoading(true);
+        setError(null);
+        setPdfUrl("");
         (async () => {
-            const { jsPDF } = await import("jspdf");
-            if (cancelled) return;
-            const doc = new jsPDF();
-            doc.setFont("helvetica", "bold");
-            doc.text("Receipt", 90, 20);
-            const pdfBlob = doc.output("blob");
-            const url = URL.createObjectURL(pdfBlob);
-            if (!cancelled) setPdfUrl(url);
+            try {
+                const response = await authFetch(`/admin/receipt/${encodeURIComponent(transactionId)}/`, {
+                    method: "GET",
+                });
+                const blob = await response.blob();
+                if (cancelled) return;
+                if (urlRef.current) URL.revokeObjectURL(urlRef.current);
+                const url = URL.createObjectURL(blob);
+                urlRef.current = url;
+                setPdfUrl(url);
+            } catch (err) {
+                if (!cancelled) {
+                    logError("Failed to fetch receipt:", err);
+                    setError(err?.message || "Failed to load receipt");
+                }
+            } finally {
+                if (!cancelled) setLoading(false);
+            }
         })();
-        return () => { cancelled = true; };
-    }, []);
+        return () => {
+            cancelled = true;
+            if (urlRef.current) {
+                URL.revokeObjectURL(urlRef.current);
+                urlRef.current = null;
+            }
+        };
+    }, [transactionId]);
 
     const handleDownload = () => {
+        if (!pdfUrl) return;
         const link = document.createElement("a");
         link.href = pdfUrl;
-        link.download = "Receipt.pdf";
+        link.download = `Receipt_${transactionId || "receipt"}.pdf`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -31,22 +57,35 @@ const ReceiptModal = ({ onClose }) => {
     return (
         <div className="receipt-modal-overlay">
             <div className="receipt-modal-container">
-                {/* Heading */}
                 <h2 className="modal-title">Receipt Preview</h2>
 
-                {/* Full-Screen PDF Viewer */}
-                {pdfUrl && (
+                {loading && (
+                    <div className="receipt-loading">Loading receipt…</div>
+                )}
+                {error && (
+                    <div className="receipt-error">
+                        <p>{error}</p>
+                        <p className="receipt-error-hint">Please try again or contact support.</p>
+                    </div>
+                )}
+                {pdfUrl && !loading && !error && (
                     <iframe
                         src={`${pdfUrl}#zoom=page-width`}
                         title="Receipt PDF"
                         className="full-screen-pdf"
-                    ></iframe>
+                    />
                 )}
 
-                {/* Bottom Buttons */}
                 <div className="modal-buttons">
-                    <button className="back-btn" onClick={onClose}>Back</button>
-                    <button className="download-btn" onClick={handleDownload}>Download PDF</button>
+                    <button type="button" className="back-btn" onClick={onClose}>Back</button>
+                    <button
+                        type="button"
+                        className="download-btn"
+                        onClick={handleDownload}
+                        disabled={!pdfUrl}
+                    >
+                        Download PDF
+                    </button>
                 </div>
             </div>
         </div>

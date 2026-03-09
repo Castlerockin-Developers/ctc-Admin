@@ -29,6 +29,36 @@
 }
 
 /* Modal Title */
+.modal-title {
+    text-align: center;
+    font-weight: bold;
+    padding: 10px;
+    color: white;
+    font-size: 1.25rem;
+    margin: 0 0 1rem 0;
+}
+
+.receipt-loading,
+.receipt-error {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #ccc;
+    padding: 2rem;
+}
+
+.receipt-error {
+    color: #f87171;
+}
+
+.receipt-error-hint {
+    margin-top: 0.5rem;
+    font-size: 0.875rem;
+    color: #9ca3af;
+}
+
 .student-modal-title {
     text-align: center;
     font-weight: bold;
@@ -50,28 +80,58 @@
 .modal-buttons {
     display: flex;
     justify-content: space-between;
-    padding: 10px 20px;
-    background-color: #181817;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    background-color: #222;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-/* Button Styles */
-.back-btn .download-btn {
+/* Button Base Styles */
+.receipt-modal-container .back-btn,
+.receipt-modal-container .download-btn {
     text-align: center;
-    padding: 10px 15px;
+    padding: 0.75rem 1.5rem;
     border: none;
     cursor: pointer;
-    border-radius: 5px;
-    font-size: 16px;
-    width: 48%;
+    border-radius: 10px;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.2s ease;
+    min-width: 140px;
+}
+
+.receipt-modal-container .back-btn:hover,
+.receipt-modal-container .download-btn:not(:disabled):hover {
+    transform: translateY(-1px);
+}
+
+.receipt-modal-container .back-btn {
+    background: transparent;
+    color: #d1d5db;
+    border: 2px solid #4b5563;
+}
+
+.receipt-modal-container .back-btn:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: #6b7280;
     color: white;
 }
 
-.back-btn {
-    background: rgb(150, 150, 150);
+.receipt-modal-container .download-btn {
+    background: linear-gradient(135deg, #A294F9 0%, #8b7ce8 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(162, 148, 249, 0.35);
 }
 
-.download-btn {
-    background: rgb(77, 140, 255);
+.receipt-modal-container .download-btn:not(:disabled):hover {
+    background: linear-gradient(135deg, #8b7ce8 0%, #7c6bd9 100%);
+    box-shadow: 0 4px 14px rgba(162, 148, 249, 0.45);
+}
+
+.receipt-modal-container .download-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 /* Mobile view */
