@@ -1,13 +1,67 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { log, error as logError } from "../utils/logger";
 import { FaSearch, FaFileExcel, FaChevronLeft } from "react-icons/fa";
 import Swal from "sweetalert2";
 import { authFetch } from "../scripts/AuthProvider";
 
+const ITEMS_PER_PAGE = 10;
+
+const mapAttemptToStudent = (a) => ({
+  attempt_id: a.id,
+  usn: a.usn,
+  name: a.user_name,
+  startTime: new Date(a.start_time).toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  }),
+  endTime: new Date(a.end_time).toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  }),
+  score: a.score,
+  trustScore: a.trust_score,
+});
+
 const ViewResult = ({ result, onBack, onNext }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const [students, setStudents] = useState([]);
+  const [loadingPage, setLoadingPage] = useState(false);
+  const itemsPerPage = result?.attemptsPageSize ?? ITEMS_PER_PAGE;
+  const totalAttemptsCount = result?.attemptsCount ?? 0;
+  const isServerPaginated = totalAttemptsCount > 0;
+
+  useEffect(() => {
+    if (result?.students) {
+      setStudents(result.students);
+      setCurrentPage(1);
+    }
+  }, [result?.id]);
+
+  useEffect(() => {
+    if (!result?.id || !isServerPaginated) return;
+    if (currentPage === 1 && result.students?.length) {
+      setStudents(result.students);
+      return;
+    }
+    let cancelled = false;
+    setLoadingPage(true);
+    const url = `/admin/results/${result.id}/?attempts_page=${currentPage}&attempts_page_size=${itemsPerPage}`;
+    authFetch(url, { method: "GET" })
+      .then((res) => res.ok ? res.json() : Promise.reject(new Error("Failed to load")))
+      .then((data) => {
+        if (!cancelled && data.attempts) {
+          setStudents(data.attempts.map(mapAttemptToStudent));
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) logError("ViewResult fetch page:", err);
+      })
+      .finally(() => { if (!cancelled) setLoadingPage(false); });
+    return () => { cancelled = true; };
+  }, [result?.id, currentPage, itemsPerPage, isServerPaginated]);
 
   if (!result) {
     return (
@@ -83,22 +137,20 @@ const ViewResult = ({ result, onBack, onNext }) => {
     saveAs(blob, fileName);
   };
 
-  const filteredStudents = result.students.filter(
+  const filteredStudents = students.filter(
     (student) =>
-      student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      student.usn.toLowerCase().includes(searchQuery.toLowerCase())
+      (student.name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (student.usn || "").toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const totalPages = Math.max(
-    1,
-    Math.ceil(filteredStudents.length / itemsPerPage)
-  );
+  const totalPages = isServerPaginated
+    ? Math.max(1, Math.ceil(totalAttemptsCount / itemsPerPage))
+    : Math.max(1, Math.ceil(filteredStudents.length / itemsPerPage));
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentStudents = filteredStudents.slice(
-    indexOfFirstItem,
-    indexOfLastItem
-  );
+  const currentStudents = isServerPaginated
+    ? filteredStudents
+    : filteredStudents.slice(indexOfFirstItem, indexOfLastItem);
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
@@ -193,7 +245,11 @@ const ViewResult = ({ result, onBack, onNext }) => {
 
         {/* Mobile: cards */}
         <div className="mt-1 flex flex-col gap-4 overflow-y-auto pb-2 md:hidden">
-          {currentStudents.length === 0 ? (
+          {loadingPage ? (
+            <div className="rounded-lg border border-[#5a5a5a] bg-[#353535] py-12 text-center text-gray-400">
+              Loading…
+            </div>
+          ) : currentStudents.length === 0 ? (
             <div className="rounded-lg border border-[#5a5a5a] bg-[#353535] py-8 text-center text-gray-400">
               No students found
             </div>
@@ -239,6 +295,11 @@ const ViewResult = ({ result, onBack, onNext }) => {
         {/* Desktop: table - fixed height for 10 rows, not scrollable */}
         <div className="mt-1 hidden h-[584px] rounded-lg md:block">
           <div className="h-full overflow-x-auto rounded-lg border border-[#5a5a5a]">
+            {loadingPage ? (
+              <div className="flex h-full items-center justify-center text-gray-400">
+                Loading…
+              </div>
+            ) : (
             <table className="w-full min-w-[640px] table-auto border-collapse">
               <thead className="sticky top-0 z-10 bg-[#535353]">
                 <tr>
@@ -315,16 +376,17 @@ const ViewResult = ({ result, onBack, onNext }) => {
                 )}
               </tbody>
             </table>
+            )}
           </div>
         </div>
 
         {/* Pagination - scroll down to reach */}
-        {totalPages > 1 && filteredStudents.length > 0 && (
+        {totalPages > 1 && (
           <div className="flex items-center justify-center gap-5 border-t border-[#5a5a5a] py-6 pt-6 sm:gap-6">
             <button
               type="button"
               onClick={() => handlePageChange(currentPage - 1)}
-              disabled={currentPage === 1}
+              disabled={currentPage === 1 || loadingPage}
               className="min-h-[44px] rounded-lg border border-[#5a5a5a] bg-transparent px-4 py-2.5 text-sm text-white transition-colors hover:border-gray-400 hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Previous
@@ -335,7 +397,7 @@ const ViewResult = ({ result, onBack, onNext }) => {
             <button
               type="button"
               onClick={() => handlePageChange(currentPage + 1)}
-              disabled={currentPage === totalPages}
+              disabled={currentPage === totalPages || loadingPage}
               className="min-h-[44px] rounded-lg border border-[#5a5a5a] bg-transparent px-4 py-2.5 text-sm text-white transition-colors hover:border-gray-400 hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Next

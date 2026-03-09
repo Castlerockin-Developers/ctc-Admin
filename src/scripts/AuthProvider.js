@@ -2,6 +2,14 @@ import { error as logError } from '../utils/logger';
 
 export const baseUrl = 'https://api.corp.crackthecampus.com/api';
 export const staticUrl = '';
+export const SESSION_EXPIRED_MESSAGE = 'Failed to refresh access token';
+
+function clearSession() {
+  localStorage.removeItem('access');
+  localStorage.removeItem('refresh');
+  localStorage.removeItem('userdata');
+}
+
 export async function authFetch(url, options) {
   let accessToken = localStorage.getItem('access'); // Declare `let` to allow reassignment
   const refreshToken = localStorage.getItem('refresh');
@@ -29,7 +37,11 @@ export async function authFetch(url, options) {
   let response = await fetch(baseUrl + url, requestOptions);
 
   if (response.status === 401) {
-    // If the response is 401 (Unauthorized), attempt to refresh the access token
+    // No refresh token or refresh failed = session expired
+    if (!refreshToken) {
+      clearSession();
+      throw new Error(SESSION_EXPIRED_MESSAGE);
+    }
     const refreshOptions = {
       method: 'POST',
       headers: {
@@ -52,7 +64,8 @@ export async function authFetch(url, options) {
       // Retry original request with the new access token
       response = await fetch(baseUrl + url, requestOptions);
     } else {
-      throw new Error('Failed to refresh access token');
+      clearSession();
+      throw new Error(SESSION_EXPIRED_MESSAGE);
     }
   }
 
@@ -100,9 +113,7 @@ export async function login(username, password) {
 }
 
 export function logout() {
-  // Clear access and refresh tokens from localStorage
-  localStorage.removeItem('access');
-  localStorage.removeItem('refresh');
+  clearSession();
 }
 
 export function useAuth() {
@@ -127,6 +138,10 @@ export async function authFetchPayload(path, payload, method) {
   const response = await fetch(baseUrl + path, options);
 
   if (response.status === 401) {
+    if (!refreshToken) {
+      clearSession();
+      throw new Error(SESSION_EXPIRED_MESSAGE);
+    }
     // If the response is 401 (Unauthorized), attempt to refresh the access token
     const refreshOptions = {
       method: 'POST',
@@ -156,7 +171,8 @@ export async function authFetchPayload(path, payload, method) {
           throw error; // Propagate the error to the caller
         });
     } else {
-      throw new Error('Failed to refresh access token');
+      clearSession();
+      throw new Error(SESSION_EXPIRED_MESSAGE);
     }
   } else if (response.status === 400) {
     const errorData = await response.json();
