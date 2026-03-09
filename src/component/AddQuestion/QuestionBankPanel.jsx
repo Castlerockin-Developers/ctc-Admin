@@ -35,9 +35,8 @@ export default function QuestionBankPanel({
   codingBankRef,
 }) {
   const banks = getBanksList();
-  const labelIsCoding = (b) => (b.label || '').toLowerCase().includes('coding');
-  const isMcqBank = (b) => b.type === 'mcq' && !labelIsCoding(b);
-  const isCodingBank = (b) => b.id === 'coding' || labelIsCoding(b);
+  const isMcqBank = (b) => b.type === 'mcq';
+  const isCodingBank = (b) => b.type === 'coding';
   const hasMcq = banks.some(isMcqBank);
   const hasCoding = banks.some(isCodingBank);
 
