@@ -204,7 +204,7 @@ const NewCoursefirst = ({ onBackc, onNextc }) => {
                 type="button"
                 whileTap={{ scale: 1.05 }}
                 onClick={handleUploadClick}
-                className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#A294F9] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#8b7ce8]"
+                className="inline-flex items-center cursor-pointer justify-center gap-2 rounded-lg bg-[#A294F9] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#8b7ce8]"
               >
                 <FaCloudUploadAlt className="h-4 w-4" /> Upload
               </motion.button>
@@ -215,7 +215,7 @@ const NewCoursefirst = ({ onBackc, onNextc }) => {
             <button
               type="button"
               onClick={onBackc}
-              className="rounded-lg border border-[#5a5a5a] bg-[#3d3d3d] px-5 py-2.5 text-sm font-medium text-white hover:bg-[#4a4a4a]"
+              className="rounded-lg border cursor-pointer border-[#5a5a5a] bg-[#3d3d3d] px-5 py-2.5 text-sm font-medium text-white hover:bg-[#4a4a4a]"
             >
               Back
             </button>
@@ -224,7 +224,7 @@ const NewCoursefirst = ({ onBackc, onNextc }) => {
               type="button"
               onClick={handleNext}
               disabled={loading}
-              className="rounded-lg bg-[#8E5DAF] px-5 py-2.5 text-sm font-medium text-white hover:bg-[#7421ac] disabled:opacity-50 disabled:cursor-not-allowed"
+              className="rounded-lg bg-[#8E5DAF] cursor-pointer px-5 py-2.5 text-sm font-medium text-white hover:bg-[#7421ac] disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? "Creating..." : "Next"}
             </button>

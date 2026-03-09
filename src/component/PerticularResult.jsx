@@ -102,7 +102,7 @@ const ParticularResult = ({ student, onBack }) => {
           <button
             type="button"
             onClick={onExportPDF}
-            className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#A294F9] px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#8b7ce8]"
+            className="inline-flex items-center cursor-pointer justify-center gap-2 rounded-lg bg-[#A294F9] px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#8b7ce8]"
             title="Export as PDF"
           >
             <FaFilePdf className="h-5 w-5 shrink-0" />

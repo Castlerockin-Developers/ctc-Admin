@@ -242,9 +242,9 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed })
       variants={pageFade}
       initial="initial"
       animate="animate"
-      className="flex h-[87vh] min-h-[calc(100dvh-4.5rem)] w-full max-w-full flex-col overflow-hidden rounded-lg bg-[#282828] p-4 sm:p-5 md:p-6 md:pb-8"
+      className="flex h-[87vh] min-h-[calc(100dvh-4.5rem)] w-full max-w-full flex-col overflow-hidden rounded-lg bg-[#282828] p-4 sm:p-5 md:h-[87vh] md:min-h-0 md:p-6 md:pb-8"
     >
-      <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto overflow-x-hidden sm:gap-6">
+      <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto overflow-x-hidden pb-6 sm:gap-6 sm:pb-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-6">
             <motion.h1 variants={itemSlide} className="text-xl font-semibold text-white sm:text-2xl md:text-3xl">
@@ -289,7 +289,7 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed })
               variants={itemSlide}
               type="button"
               onClick={() => setStudentModalOpen(true)}
-              className="inline-flex min-h-[44px] items-center justify-center gap-2 whitespace-nowrap rounded-lg bg-[#A294F9] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#8b7ce8]"
+              className="inline-flex min-h-[44px] cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-lg bg-[#A294F9] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#8b7ce8]"
             >
               <FaPlus className="h-4 w-4" /> Add New Students
             </motion.button>
@@ -407,7 +407,7 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed })
               type="button"
               onClick={goToNextPage}
               disabled={currentPage === totalPages}
-              className="min-h-[44px] rounded-lg border border-[#5a5a5a] bg-transparent px-4 py-2.5 text-sm text-white transition-colors hover:border-gray-400 hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50"
+              className="min-h-[44px] cursor-pointer rounded-lg border border-[#5a5a5a] bg-transparent px-4 py-2.5 text-sm text-white transition-colors hover:border-gray-400 hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Next
             </motion.button>

@@ -227,7 +227,7 @@ const ViewResult = ({ result, onBack, onNext }) => {
                 <button
                   type="button"
                   onClick={() => viewExam(student)}
-                  className="w-full rounded-lg bg-[#8E5DAF] py-3 text-sm font-medium text-white transition-colors hover:bg-[#7421ac]"
+                  className="w-full cursor-pointer rounded-lg bg-[#8E5DAF] py-3 text-sm font-medium text-white transition-colors hover:bg-[#7421ac]"
                 >
                   View
                 </button>
@@ -305,7 +305,7 @@ const ViewResult = ({ result, onBack, onNext }) => {
                         <button
                           type="button"
                           onClick={() => viewExam(student)}
-                          className="inline-flex items-center justify-center whitespace-nowrap rounded-lg bg-[#8E5DAF] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#7421ac]"
+                          className="inline-flex cursor-pointer items-center justify-center whitespace-nowrap rounded-lg bg-[#8E5DAF] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#7421ac]"
                         >
                           View
                         </button>
@@ -325,7 +325,7 @@ const ViewResult = ({ result, onBack, onNext }) => {
               type="button"
               onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage === 1}
-              className="min-h-[44px] rounded-lg border border-[#5a5a5a] bg-transparent px-4 py-2.5 text-sm text-white transition-colors hover:border-gray-400 hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50"
+              className="min-h-[44px] cursor-pointer rounded-lg border border-[#5a5a5a] bg-transparent px-4 py-2.5 text-sm text-white transition-colors hover:border-gray-400 hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Previous
             </button>
@@ -336,7 +336,7 @@ const ViewResult = ({ result, onBack, onNext }) => {
               type="button"
               onClick={() => handlePageChange(currentPage + 1)}
               disabled={currentPage === totalPages}
-              className="min-h-[44px] rounded-lg border border-[#5a5a5a] bg-transparent px-4 py-2.5 text-sm text-white transition-colors hover:border-gray-400 hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50"
+              className="min-h-[44px] cursor-pointer rounded-lg border border-[#5a5a5a] bg-transparent px-4 py-2.5 text-sm text-white transition-colors hover:border-gray-400 hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Next
             </button>
