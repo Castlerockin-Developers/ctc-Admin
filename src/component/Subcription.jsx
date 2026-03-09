@@ -42,9 +42,9 @@ const Subscription = () => {
   ];
 
   return (
-    <div className="flex h-[87vh] min-h-[calc(100dvh-4.5rem)] w-full max-w-full flex-col overflow-hidden rounded-lg bg-[#282828] p-4 sm:p-5 md:p-6 md:pb-8">
+    <div className="flex h-[87vh] min-h-[calc(100dvh-4.5rem)] w-full max-w-full flex-col overflow-hidden rounded-lg bg-[#282828] p-4 sm:p-5 md:h-[87vh] md:min-h-0 md:p-6 md:pb-8">
       {/* Single scroll area - no nested scroll to avoid double scrollbar */}
-      <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto overflow-x-hidden overscroll-contain">
+      <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto overflow-x-hidden overscroll-contain pb-6 sm:pb-8">
         <h1 className="shrink-0 text-xl font-semibold text-white sm:text-2xl">
           Subscription
         </h1>
@@ -82,7 +82,7 @@ const Subscription = () => {
 
         {/* Billing History */}
         <div className="flex min-h-0 flex-col gap-3">
-          <p className="shrink-0 border-b-2 border-[#A294F9] pb-2 text-base font-semibold text-white">
+          <p className="shrink-0 w-fit border-b-2 border-[#A294F9] pb-2 text-base font-semibold text-white">
             Billing History
           </p>
 

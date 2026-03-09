@@ -35,9 +35,8 @@ export default function QuestionBankPanel({
   codingBankRef,
 }) {
   const banks = getBanksList();
-  const labelIsCoding = (b) => (b.label || '').toLowerCase().includes('coding');
-  const isMcqBank = (b) => b.type === 'mcq' && !labelIsCoding(b);
-  const isCodingBank = (b) => b.id === 'coding' || labelIsCoding(b);
+  const isMcqBank = (b) => b.type === 'mcq';
+  const isCodingBank = (b) => b.type === 'coding';
   const hasMcq = banks.some(isMcqBank);
   const hasCoding = banks.some(isCodingBank);
 
@@ -156,11 +155,13 @@ export default function QuestionBankPanel({
                             : 'border-[#5a5a5a] bg-[#404040] hover:bg-[#4a4a4a] hover:border-[#A294F9]/50'
                         }`}
                       >
-                        <span className="font-medium text-white truncate">{bank.label}</span>
-                        <span className="text-gray-400 text-sm shrink-0">
-                          {bank.count} questions
-                        </span>
-                        <FontAwesomeIcon icon={faPlus} className="text-[#A294F9] w-4 h-4 shrink-0" />
+                        <span className="font-medium text-white truncate flex-1 min-w-0">{bank.label}</span>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <span className="text-gray-400 text-sm tabular-nums text-center w-[7rem]">
+                            {bank.count} questions
+                          </span>
+                          <FontAwesomeIcon icon={faPlus} className="text-[#A294F9] w-4 h-4 shrink-0" />
+                        </div>
                       </button>
                     );
                   })}

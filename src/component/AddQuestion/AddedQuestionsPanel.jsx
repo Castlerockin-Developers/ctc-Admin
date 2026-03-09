@@ -1,4 +1,6 @@
 import React from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faLock } from '@fortawesome/free-solid-svg-icons';
 import { cardHead, cardBody } from './constants';
 
 function truncateTitle(title, wordLimit = 5) {
@@ -29,7 +31,7 @@ export default function AddedQuestionsPanel({
   windowWidth,
 }) {
   return (
-    <div className="flex flex-col gap-6 pt-4">
+    <div className="flex flex-col gap-6 pt-4 pb-6 sm:pb-8">
       <h2 className="text-xl font-semibold text-white shrink-0">Added questions</h2>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 min-w-0">
         {/* MCQ */}
@@ -54,6 +56,9 @@ export default function AddedQuestionsPanel({
                     <div className="flex flex-wrap items-center justify-between gap-4 w-full">
                       <label className="flex items-center gap-2 text-gray-400 shrink-0">
                         <span className="text-xs whitespace-nowrap">Timer (min)</span>
+                        {isOverallTimedTest && (
+                          <FontAwesomeIcon icon={faLock} className="h-3.5 w-4 text-gray-500" title="Section timer disabled (exam is overall timed)" />
+                        )}
                         <input
                           type="number"
                           placeholder="—"
@@ -61,7 +66,7 @@ export default function AddedQuestionsPanel({
                           onChange={(e) => onTimerChange(groupId, e.target.value)}
                           disabled={isOverallTimedTest}
                           onClick={(e) => e.stopPropagation()}
-                          className="w-20 rounded border border-[#5a5a5a] bg-[#404040] px-2 py-2 text-sm text-white placeholder:text-gray-500 disabled:opacity-60"
+                          className="w-20 rounded border border-[#5a5a5a] bg-[#404040] px-2 py-2 text-sm text-white placeholder:text-gray-500 disabled:opacity-60 disabled:cursor-not-allowed"
                         />
                       </label>
                       <div className="flex items-center gap-2 shrink-0">

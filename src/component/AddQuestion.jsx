@@ -291,7 +291,7 @@ const AddQuestion = ({
       ));
 
   return (
-    <div className="flex min-h-0 w-full flex-col overflow-x-hidden bg-[#282828] px-4 py-5 sm:px-6 md:py-6 md:px-8">
+    <div className="flex min-h-0 w-full flex-col overflow-x-hidden bg-[#282828] px-4 py-5 sm:px-6 md:pt-6 md:pb-8 md:px-8">
       <div className="flex w-full justify-center">
         <div className="w-full max-w-6xl min-w-0">
           <div className="pb-4 flex flex-wrap items-center justify-between gap-4">

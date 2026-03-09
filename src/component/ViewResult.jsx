@@ -283,7 +283,7 @@ const ViewResult = ({ result, onBack, onNext }) => {
                 <button
                   type="button"
                   onClick={() => viewExam(student)}
-                  className="w-full rounded-lg bg-[#8E5DAF] py-3 text-sm font-medium text-white transition-colors hover:bg-[#7421ac]"
+                  className="w-full cursor-pointer rounded-lg bg-[#8E5DAF] py-3 text-sm font-medium text-white transition-colors hover:bg-[#7421ac]"
                 >
                   View
                 </button>
@@ -366,7 +366,7 @@ const ViewResult = ({ result, onBack, onNext }) => {
                         <button
                           type="button"
                           onClick={() => viewExam(student)}
-                          className="inline-flex items-center justify-center whitespace-nowrap rounded-lg bg-[#8E5DAF] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#7421ac]"
+                          className="inline-flex cursor-pointer items-center justify-center whitespace-nowrap rounded-lg bg-[#8E5DAF] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#7421ac]"
                         >
                           View
                         </button>

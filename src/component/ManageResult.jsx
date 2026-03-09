@@ -278,7 +278,7 @@ const ManageResult = ({ onNext, cacheAllowed }) => {
       ) : (
         <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto overflow-x-hidden sm:gap-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <h1 className="text-xl font-semibold text-white sm:text-2xl md:text-3xl">
+            <h1 className="text-xl cursor-pointer font-semibold text-white sm:text-2xl md:text-3xl">
               Results
             </h1>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
@@ -303,8 +303,11 @@ const ManageResult = ({ onNext, cacheAllowed }) => {
                     variants={itemVariant}
                     whileTap={{ scale: 1.05 }}
                     type="button"
-                    onClick={() => setActiveTabAndResetPage(key)}
-                    className={`rounded-lg px-4 py-2.5 text-sm font-medium transition-colors ${
+                    onClick={() => {
+                      setActiveTab(key);
+                      setCurrentPage(1);
+                    }}
+                    className={`cursor-pointer rounded-lg px-4 py-2.5 text-sm font-medium transition-colors ${
                       activeTab === key
                         ? "bg-[#A294F9] text-white"
                         : "border border-[#5a5a5a] bg-[#404040] text-gray-300 hover:bg-[#4a4a4a]"
@@ -363,7 +366,7 @@ const ManageResult = ({ onNext, cacheAllowed }) => {
                       type="button"
                       onClick={() => handleViewResult(row)}
                       disabled={loadingResultId === row.id}
-                      className="w-full rounded-lg bg-[#8E5DAF] py-3 text-sm font-medium text-white transition-colors hover:bg-[#7421ac] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                      className="w-full cursor-pointer rounded-lg bg-[#8E5DAF] py-3 text-sm font-medium text-white transition-colors hover:bg-[#7421ac] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                     >
                       {loadingResultId === row.id ? (
                         <>
@@ -451,7 +454,7 @@ const ManageResult = ({ onNext, cacheAllowed }) => {
                               whileTap={{ scale: 1.05 }}
                               onClick={() => handleViewResult(row)}
                               disabled={loadingResultId === row.id}
-                              className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg bg-[#8E5DAF] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#7421ac] disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="inline-flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer rounded-lg bg-[#8E5DAF] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#7421ac] disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                               {loadingResultId === row.id ? (
                                 <>

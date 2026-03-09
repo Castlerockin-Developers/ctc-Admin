@@ -340,8 +340,8 @@ const Settings = ({ openAddUserModal, setOpenAddUserModal }) => {
   const { backdrop, content, title, formRow, formLabel, formInput, actions } = MODAL_CLASSES;
 
   return (
-    <div className="flex min-h-[calc(100vh-6rem)] w-full max-w-full flex-col rounded-lg bg-[#282828] p-4 sm:p-5 md:p-6">
-      <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-x-hidden">
+    <div className="flex h-[87vh] min-h-[calc(100dvh-4.5rem)] w-full max-w-full flex-col overflow-hidden rounded-lg bg-[#282828] p-4 sm:p-5 md:h-[87vh] md:min-h-0 md:p-6 md:pb-8">
+      <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto overflow-x-hidden pb-6 sm:pb-8">
         <h1 className="shrink-0 text-xl font-semibold text-white sm:text-2xl">
           Settings
         </h1>

@@ -226,9 +226,9 @@ const ManageExam = ({ onCreateNewExam, cacheAllowed, onEditExam, examToView, onB
                                                         onCreateNewExam();
                                                         setShowActionsMenu(false);
                                                     }}
-                                                    className="flex w-full items-center gap-3 px-4 py-3 text-left text-white transition-colors hover:bg-[#535353]"
+                                                    className="flex w-full cursor-pointer items-center gap-3 px-4 py-3 text-left text-white transition-colors hover:bg-[#535353]"
                                                 >
-                                                    <FaPlus className="h-5 w-5 shrink-0" />
+                                                    <FaPlus className="h-5 w-5  shrink-0" />
                                                     Create New Exam
                                                 </button>
                                             </div>
@@ -244,7 +244,7 @@ const ManageExam = ({ onCreateNewExam, cacheAllowed, onEditExam, examToView, onB
                                                     className={`cursor-pointer px-4 py-3 transition-colors hover:bg-[#535353] ${activeButton === key ? "bg-[#535353] font-semibold" : ""}`}
                                                     onClick={() => handleFilterSelect(key)}
                                                 >
-                                                    {key === "all" ? "All Exams" : key.charAt(0).toUpperCase() + key.slice(1)}
+                                                    {key === "all" ? "" : key.charAt(0).toUpperCase() + key.slice(1)}
                                                 </li>
                                             ))}
                                         </ul>
@@ -254,7 +254,7 @@ const ManageExam = ({ onCreateNewExam, cacheAllowed, onEditExam, examToView, onB
                             {/* Desktop: Create New Exam button outside search bar */}
                             <button
                                 onClick={onCreateNewExam}
-                                className="hidden min-h-[44px] shrink-0 items-center justify-center gap-2 rounded-lg bg-[#A294F9] px-5 py-2.5 font-medium text-white transition-colors hover:bg-[#8E5DAF] md:flex"
+                                className="hidden min-h-[44px] shrink-0 cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#A294F9] px-5 py-2.5 font-medium text-white transition-colors hover:bg-[#8E5DAF] md:flex"
                             >
                                 <FaPlus className="h-5 w-5" /> Create New Exam
                             </button>
@@ -312,9 +312,9 @@ const ManageExam = ({ onCreateNewExam, cacheAllowed, onEditExam, examToView, onB
                                                 </div>
                                                 <button
                                                     onClick={() => handleViewExam(row)}
-                                                    className="mt-1 w-full rounded-lg bg-[#8E5DAF] py-3 text-sm font-medium text-white transition-colors hover:bg-[#7421ac] active:bg-[#5a1a85]"
+                                                    className="mt-1 w-full cursor-pointer rounded-lg bg-[#8E5DAF] py-3 text-sm font-medium text-white transition-colors hover:bg-[#7421ac] active:bg-[#5a1a85]"
                                                 >
-                                                    View Exam
+                                                   View Exam
                                                 </button>
                                             </div>
                                         );
@@ -349,12 +349,12 @@ const ManageExam = ({ onCreateNewExam, cacheAllowed, onEditExam, examToView, onB
                                                     <td className="px-4 py-3.5">
                                                         <button
                                                             onClick={() => handleViewExam(row)}
-                                                            className="whitespace-nowrap rounded-lg bg-[#8E5DAF] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#7421ac]"
+                                                            className="whitespace-nowrap cursor-pointer rounded-lg bg-[#8E5DAF] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#7421ac]"
                                                         >
                                                             View Exam
                                                         </button>
                                                     </td>
-                                                </tr>
+                                               </tr>
                                             ))}
                                         </tbody>
                                     </table>
@@ -372,7 +372,7 @@ const ManageExam = ({ onCreateNewExam, cacheAllowed, onEditExam, examToView, onB
                             <button
                                 onClick={() => handlePageChange(currentPage - 1)}
                                 disabled={currentPage === 1}
-                                className="min-h-[44px] rounded border border-gray-500 bg-transparent px-4 py-2.5 text-sm text-white transition-colors hover:border-gray-400 hover:bg-white/5 disabled:cursor-not-allowed disabled:border-gray-600 disabled:opacity-50 disabled:hover:bg-transparent"
+                                className="min-h-[44px] cursor-pointer rounded border border-gray-500 bg-transparent px-4 py-2.5 text-sm text-white transition-colors hover:border-gray-400 hover:bg-white/5 disabled:cursor-not-allowed disabled:border-gray-600 disabled:opacity-50 disabled:hover:bg-transparent"
                             >
                                 ‹ Previous
                             </button>
@@ -382,7 +382,7 @@ const ManageExam = ({ onCreateNewExam, cacheAllowed, onEditExam, examToView, onB
                             <button
                                 onClick={() => handlePageChange(currentPage + 1)}
                                 disabled={currentPage === totalPages}
-                                className="min-h-[44px] rounded border border-gray-500 bg-transparent px-4 py-2.5 text-sm text-white transition-colors hover:border-gray-400 hover:bg-white/5 disabled:cursor-not-allowed disabled:border-gray-600 disabled:opacity-50 disabled:hover:bg-transparent"
+                                className="min-h-[44px] cursor-pointer rounded border border-gray-500 bg-transparent px-4 py-2.5 text-sm text-white transition-colors hover:border-gray-400 hover:bg-white/5 disabled:cursor-not-allowed disabled:border-gray-600 disabled:opacity-50 disabled:hover:bg-transparent"
                             >
                                 Next ›
                             </button>
@@ -492,13 +492,13 @@ const ViewExam = ({ exam, onBack, onEditExam, onRefresh }) => {
                                     <>
                                         <button
                                             onClick={handleDeleteExam}
-                                            className="rounded-lg bg-red-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-red-700"
+                                            className="rounded-lg cursor-pointer bg-red-500 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-red-700"
                                         >
                                             Delete
                                         </button>
                                         <button
                                             onClick={handleEditClick}
-                                            className="rounded-lg bg-[#65979B] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#0098a3]"
+                                            className="rounded-lg cursor-pointer bg-[#65979B] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#0098a3]"
                                         >
                                             Edit
                                         </button>
