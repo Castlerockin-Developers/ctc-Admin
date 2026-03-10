@@ -208,87 +208,62 @@ const AddQuestion = ({
   );
 
   const handleNextButtonClick = useCallback(() => {
-    if (mcqQuestions.length === 0 && codingQuestions.length === 0) {
-      return Swal.fire({
-        title: 'Error',
-        text: 'Please add at least one question from the Question Bank to proceed.',
-        icon: 'error',
-        ...SWAL_THEME,
-        timer: 1500,
-        showConfirmButton: false,
-      });
-    }
+    onNexts();
+  }, [onNexts]);
+
+  const isNextDisabled = (() => {
+    const hasNoQuestions = mcqQuestions.length === 0 && codingQuestions.length === 0;
+    if (hasNoQuestions) return true;
+
     const allQs = [...mcqQuestions, ...codingQuestions];
     const hasZeroScore = allQs.some((q) => q.score === 0 || q.score == null);
-    if (hasZeroScore) {
-      return Swal.fire({
-        title: 'Scores Incomplete',
-        text: 'Please assign a non-zero score to every question before proceeding.',
-        icon: 'error',
-        ...SWAL_THEME,
-        timer: 1500,
-        showConfirmButton: false,
-      });
+    if (hasZeroScore) return true;
+
+    if (!isOverallTimedTest) {
+      const mcqSectionIds = [...new Set(mcqQuestions.map((q) => q.group_id))];
+      const withoutTimer = mcqSectionIds.filter(
+        (groupId) => !sectionTimers[groupId] || sectionTimers[groupId] === ''
+      );
+      if (withoutTimer.length > 0) return true;
     }
+
+    return false;
+  })();
+
+  const disabledHint = (() => {
+    if (!isNextDisabled) return '';
+
+    const hasNoQuestions = mcqQuestions.length === 0 && codingQuestions.length === 0;
+    if (hasNoQuestions) {
+      return 'Add at least one MCQ or Coding question from the Question Bank.';
+    }
+
+    const allQs = [...mcqQuestions, ...codingQuestions];
+    const firstZeroScore = allQs.find((q) => q.score === 0 || q.score == null);
+    if (firstZeroScore) {
+      const isMcq = mcqQuestions.some((q) => q.id === firstZeroScore.id);
+      const typeLabel = isMcq ? 'MCQ' : 'Coding';
+      const label = firstZeroScore.title || firstZeroScore.content || firstZeroScore.id;
+      return `Set a non-zero score for ${typeLabel} question “${label}”.`;
+    }
+
     if (!isOverallTimedTest) {
       const mcqSectionIds = [...new Set(mcqQuestions.map((q) => q.group_id))];
       const withoutTimer = mcqSectionIds.filter(
         (groupId) => !sectionTimers[groupId] || sectionTimers[groupId] === ''
       );
       if (withoutTimer.length > 0) {
-        return Swal.fire({
-          title: 'Section Timers Required',
-          text: 'Please set timers for all MCQ sections when overall timed test is disabled.',
-          icon: 'error',
-          ...SWAL_THEME,
-          timer: 2000,
-          showConfirmButton: false,
-        });
+        const firstGroupId = withoutTimer[0];
+        const sectionName =
+          mcqQuestions.find((q) => q.group_id === firstGroupId)?.title || 'this MCQ section';
+        return `Set a timer for “${sectionName}” or enable overall timed test.`;
       }
     }
-    if (mcqQuestions.length > 0 && codingQuestions.length === 0) {
-      return Swal.fire({
-        title: 'Warning',
-        text: 'You have not added any Coding questions. Do you want to proceed?',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Yes',
-        cancelButtonText: 'No',
-        ...SWAL_THEME,
-      }).then((result) => {
-        if (result.isConfirmed) onNexts();
-      });
-    }
-    if (codingQuestions.length > 0 && mcqQuestions.length === 0) {
-      return Swal.fire({
-        title: 'Warning',
-        text: 'You have not added any MCQ questions. Do you want to proceed?',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Yes',
-        cancelButtonText: 'No',
-        ...SWAL_THEME,
-      }).then((result) => {
-        if (result.isConfirmed) onNexts();
-      });
-    }
-    onNexts();
-  }, [
-    mcqQuestions,
-    codingQuestions,
-    sectionTimers,
-    isOverallTimedTest,
-    onNexts,
-  ]);
 
-  const isNextDisabled =
-    [...mcqQuestions, ...codingQuestions].some(
-      (q) => q.score === 0 || q.score == null
-    ) ||
-    (!isOverallTimedTest &&
-      [...new Set(mcqQuestions.map((q) => q.group_id))].some(
-        (groupId) => !sectionTimers[groupId] || sectionTimers[groupId] === ''
-      ));
+    return '';
+  })();
+
+  const [isNextHovered, setIsNextHovered] = useState(false);
 
   return (
     <div className="flex min-h-0 w-full flex-col overflow-x-hidden bg-[#282828] px-4 py-5 sm:px-6 md:pt-6 md:pb-8 md:px-8">
@@ -399,14 +374,26 @@ const AddQuestion = ({
               <FontAwesomeIcon icon={faRotateLeft} className="mr-2" /> Back
             </button>
             <span className="text-sm text-gray-400">Step 2 of 3</span>
-            <button
-              type="button"
-              onClick={handleNextButtonClick}
-              disabled={isNextDisabled}
-              className={`${btnPrimary} disabled:opacity-50 disabled:cursor-not-allowed`}
+            <div
+              className="relative flex flex-col items-end"
+              onMouseEnter={() => isNextDisabled && setIsNextHovered(true)}
+              onMouseLeave={() => setIsNextHovered(false)}
             >
-              Next
-            </button>
+              {isNextDisabled && disabledHint && isNextHovered && (
+                <div className="pointer-events-none absolute bottom-full right-0 z-20 mb-2 w-64 rounded-lg border border-amber-400/70 bg-black/95 px-3 py-2 text-xs leading-relaxed text-amber-100 shadow-xl">
+                  <div className="absolute -bottom-1 right-6 h-2 w-2 rotate-45 border-b border-r border-amber-400/70 bg-black/95" />
+                  {disabledHint}
+                </div>
+              )}
+              <button
+                type="button"
+                onClick={handleNextButtonClick}
+                disabled={isNextDisabled}
+                className={`${btnPrimary} disabled:opacity-50 disabled:cursor-not-allowed`}
+              >
+                Next
+              </button>
+            </div>
           </div>
         </div>
       </div>

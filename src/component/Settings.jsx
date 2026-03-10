@@ -3,7 +3,7 @@ import { error as logError } from "../utils/logger";
 import { motion } from "framer-motion";
 import { FaPen, FaSearch, FaEllipsisV, FaTimes } from "react-icons/fa";
 import swal from "sweetalert";
-import { authFetch } from "../scripts/AuthProvider";
+import { authFetch, getCachedSettingsDetails, setCachedSettingsDetails } from "../scripts/AuthProvider";
 import avatar from "../assets/useravatar.jpg";
 import Spinner from "../loader/Spinner";
 
@@ -49,23 +49,23 @@ const Settings = ({ openAddUserModal, setOpenAddUserModal }) => {
   const [newPasswordUser, setNewPasswordUser] = useState("");
   const [confirmPasswordUser, setConfirmPasswordUser] = useState("");
 
-  const fetchSettings = async () => {
-    setLoading(true);
+  const fetchSettings = async (updateCache = true, backgroundRefresh = false) => {
+    if (!backgroundRefresh) setLoading(true);
     try {
       const response = await authFetch("/admin/settings/", { method: "GET" });
       const data = await response.json();
       if (!response.ok) {
         logError("Settings API error:", data?.error || response.status);
-        fetchProfileFallback();
+        if (!backgroundRefresh) fetchProfileFallback();
         return;
       }
       setSettingsData(data);
+      if (updateCache) setCachedSettingsDetails(data);
     } catch (error) {
       logError("Error fetching settings data:", error);
-      // When settings API fails (e.g. 400 org not found, 500), still try to show current user profile
-      fetchProfileFallback();
+      if (!backgroundRefresh) fetchProfileFallback();
     } finally {
-      setLoading(false);
+      if (!backgroundRefresh) setLoading(false);
     }
   };
 
@@ -90,7 +90,14 @@ const Settings = ({ openAddUserModal, setOpenAddUserModal }) => {
   };
 
   React.useEffect(() => {
-    fetchSettings();
+    const cached = getCachedSettingsDetails();
+    if (cached) {
+      setSettingsData(cached);
+      setLoading(false);
+      fetchSettings(true, true);
+    } else {
+      fetchSettings(true, false);
+    }
   }, []);
 
   const setSettingsData = (data) => {
@@ -127,7 +134,7 @@ const Settings = ({ openAddUserModal, setOpenAddUserModal }) => {
         name: [admin.first_name, admin.last_name].filter(Boolean).join(" ") || "—",
         email: admin.email ?? "",
         phone: admin.contact || "N/A",
-        role: admin.is_staff ? "Admin" : "Lecturer",
+        role: admin.can_access_admin_panel ? "Admin" : "Lecturer",
       }))
     );
   };
@@ -375,7 +382,7 @@ const Settings = ({ openAddUserModal, setOpenAddUserModal }) => {
             </div>
             <div className="flex min-h-0 flex-col rounded-lg border border-[#5a5a5a] bg-[#3d3d3d] p-4 lg:w-80">
               <h5 className="mb-2 text-sm font-semibold text-white">Activity History</h5>
-              <div className="min-h-0 flex-1 overflow-y-auto">
+              <div className="min-h-0 flex-1 overflow-y-auto" style={{ height: "140px" }}>
                 {activityHistory.length > 0 ? (
                   <ul className="space-y-1.5 text-xs text-gray-300">
                     {activityHistory.map((activity) => (

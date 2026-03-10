@@ -261,7 +261,11 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed })
           <Spinner className="min-h-[280px]" />
         ) : error ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-4 rounded-lg border border-[#5a5a5a] bg-[#353535] py-12">
-            <p className="text-center text-red-400">{error.message || "Failed to load students data"}</p>
+            <p className="text-center text-red-400">
+              {typeof error.message === "string" && error.message.toLowerCase().includes("organization not found")
+                ? "We could not find an organization associated with your admin account. Please contact support to get your organization set up."
+                : (error.message || "Failed to load students data")}
+            </p>
             <button
               type="button"
               onClick={() => { setError(null); setRetryCount((c) => c + 1); }}

@@ -266,7 +266,11 @@ const ManageExam = ({ onCreateNewExam, cacheAllowed, onEditExam, examToView, onB
                             <Spinner className="min-h-[280px]" />
                         ) : error ? (
                             <div className="flex min-h-[200px] flex-col items-center justify-center gap-4 rounded-lg bg-[#353535] p-6 text-center">
-                                <p className="text-red-400">{error.message || "Failed to load exams"}</p>
+                                <p className="text-red-400">
+                                    {typeof error.message === "string" && error.message.toLowerCase().includes("organization not found")
+                                        ? "We could not find an organization associated with your admin account. Please contact support to get your organization set up."
+                                        : (error.message || "Failed to load exams")}
+                                </p>
                                 <button
                                     type="button"
                                     onClick={() => { setError(null); setRetryCount(c => c + 1); }}

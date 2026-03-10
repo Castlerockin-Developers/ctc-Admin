@@ -1,6 +1,6 @@
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faLock } from '@fortawesome/free-solid-svg-icons';
+import { faLock, faChevronDown } from '@fortawesome/free-solid-svg-icons';
 import { cardHead, cardBody } from './constants';
 
 function truncateTitle(title, wordLimit = 5) {
@@ -71,7 +71,7 @@ export default function AddedQuestionsPanel({
                       </label>
                       <div className="flex items-center gap-2 shrink-0">
                         <span className="text-xs text-gray-400 whitespace-nowrap">
-                          Set all score
+                          Apply for all
                         </span>
                         <input
                           type="number"
@@ -94,7 +94,7 @@ export default function AddedQuestionsPanel({
                           }}
                           className="rounded-lg bg-[#A294F9] hover:bg-[#826fff] px-3 py-2 text-xs font-medium text-white cursor-pointer"
                         >
-                          Apply
+                          Apply for all
                         </button>
                       </div>
                       <button
@@ -108,7 +108,15 @@ export default function AddedQuestionsPanel({
                       >
                         Remove section
                       </button>
+                      <div className="flex items-center justify-end pt-1 text-xs text-gray-400">
+                        <span className="mr-1">View questions</span>
+                        <FontAwesomeIcon
+                          icon={faChevronDown}
+                          className="h-3 w-3 text-gray-400 transition-transform duration-200 group-open:rotate-180"
+                        />
+                      </div>
                     </div>
+                    
                   </summary>
                   <div className="px-4 pb-4 pt-3 flex flex-col gap-3 border-t border-[#5a5a5a]">
                     {sectionQs.map((question, index) => (
@@ -173,7 +181,7 @@ export default function AddedQuestionsPanel({
           >
             {codingQuestions.length > 0 && (
               <div className="flex flex-wrap items-center justify-between gap-4 w-full border-b border-[#5a5a5a]/50 pb-3 mb-2">
-                <span className="text-xs text-gray-400">Set all score</span>
+                <span className="text-xs text-gray-400">Apply for all</span>
                 <div className="flex items-center gap-2">
                   <input
                     type="number"
@@ -189,7 +197,7 @@ export default function AddedQuestionsPanel({
                     onClick={() => onSetAllCodingScore(bulkCodingScore)}
                     className="rounded-lg bg-[#A294F9] hover:bg-[#8E5DAF] px-3 py-2 text-xs font-medium text-white cursor-pointer"
                   >
-                    Apply
+                    Apply for all
                   </button>
                 </div>
               </div>

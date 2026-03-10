@@ -1,13 +1,84 @@
 import { error as logError } from '../utils/logger';
 
-export const baseUrl = 'https://api.corp.crackthecampus.com/api';
+export const baseUrl = 'http://localhost:8000/api';
 export const staticUrl = '';
 export const SESSION_EXPIRED_MESSAGE = 'Failed to refresh access token';
+export const ACCESS_DENIED_MESSAGE = 'You do not have access to the admin panel.';
+
+const PLAN_CACHE_KEY = 'subscription_plan_cache';
+const PLAN_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
+const SETTINGS_CACHE_KEY = 'admin_settings_cache';
+const SETTINGS_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 
 function clearSession() {
   localStorage.removeItem('access');
   localStorage.removeItem('refresh');
   localStorage.removeItem('userdata');
+  invalidatePlanCache();
+  invalidateSettingsCache();
+}
+
+/** Get cached plan/subscription details if present and not expired. Returns null otherwise. */
+export function getCachedPlanDetails() {
+  try {
+    const raw = localStorage.getItem(PLAN_CACHE_KEY);
+    if (!raw) return null;
+    const { data, fetchedAt } = JSON.parse(raw);
+    if (!data || typeof fetchedAt !== 'number') return null;
+    if (Date.now() - fetchedAt > PLAN_CACHE_TTL_MS) return null;
+    return data;
+  } catch {
+    return null;
+  }
+}
+
+/** Store plan/subscription details in cache. */
+export function setCachedPlanDetails(data) {
+  try {
+    localStorage.setItem(
+      PLAN_CACHE_KEY,
+      JSON.stringify({ data, fetchedAt: Date.now() })
+    );
+  } catch (e) {
+    logError('Failed to cache plan details:', e);
+  }
+}
+
+/** Clear plan cache (e.g. after renewal or logout). */
+export function invalidatePlanCache() {
+  localStorage.removeItem(PLAN_CACHE_KEY);
+}
+
+/** Get cached settings page data if present and not expired. Returns null otherwise. */
+export function getCachedSettingsDetails() {
+  try {
+    const raw = localStorage.getItem(SETTINGS_CACHE_KEY);
+    if (!raw) return null;
+    const { data, fetchedAt } = JSON.parse(raw);
+    if (!data || typeof fetchedAt !== 'number') return null;
+    if (Date.now() - fetchedAt > SETTINGS_CACHE_TTL_MS) return null;
+    return data;
+  } catch {
+    return null;
+  }
+}
+
+/** Store settings page data in cache. */
+export function setCachedSettingsDetails(data) {
+  try {
+    localStorage.setItem(
+      SETTINGS_CACHE_KEY,
+      JSON.stringify({ data, fetchedAt: Date.now() })
+    );
+  } catch (e) {
+    logError('Failed to cache settings details:', e);
+  }
+}
+
+/** Clear settings cache (e.g. after profile/org changes or logout). */
+export function invalidateSettingsCache() {
+  localStorage.removeItem(SETTINGS_CACHE_KEY);
 }
 
 export async function authFetch(url, options) {
@@ -70,7 +141,27 @@ export async function authFetch(url, options) {
   }
 
   if (!response.ok) {
-    throw new Error('Network response was not ok');
+    if (response.status === 403) {
+      let message = ACCESS_DENIED_MESSAGE;
+      try {
+        const body = await response.json();
+        message = body.detail || body.error || body.message || message;
+      } catch (_) {}
+      const err = new Error(message);
+      err.status = 403;
+      throw err;
+    }
+    // For non-403 errors, try to surface a useful backend message
+    let message = 'Network response was not ok';
+    try {
+      const body = await response.json();
+      message = body.error || body.detail || body.message || message;
+    } catch (_) {
+      // Ignore JSON parsing errors and fall back to the default message
+    }
+    const err = new Error(message);
+    err.status = response.status;
+    throw err;
   }
 
   return response;
@@ -81,7 +172,8 @@ export const FixImageRoute = (imageUrl) => {
 };
 
 export async function login(username, password) {
-  const payload = JSON.stringify({ email: username, password: password });
+  // for_admin tells backend this login is for the admin panel (ctc-Admin)
+  const payload = JSON.stringify({ email: username, password: password, for_admin: true });
   const headers = {
     'Content-Type': 'application/json',
   };
@@ -160,7 +252,17 @@ export async function authFetchPayload(path, payload, method) {
       options.headers['Authorization'] = 'Bearer ' + accessToken; // Update headers with new access token
       // Retry original request with the new access token
       return fetch(baseUrl + path, options)
-        .then(response => {
+        .then(async (response) => {
+          if (response.status === 403) {
+            let message = ACCESS_DENIED_MESSAGE;
+            try {
+              const body = await response.json();
+              message = body.detail || message;
+            } catch (_) {}
+            const err = new Error(message);
+            err.status = 403;
+            throw err;
+          }
           if (!response.ok) {
             throw new Error('Network response was not ok');
           }
@@ -174,6 +276,15 @@ export async function authFetchPayload(path, payload, method) {
       clearSession();
       throw new Error(SESSION_EXPIRED_MESSAGE);
     }
+  } else if (response.status === 403) {
+    let message = ACCESS_DENIED_MESSAGE;
+    try {
+      const body = await response.json();
+      message = body.detail || message;
+    } catch (_) {}
+    const err = new Error(message);
+    err.status = 403;
+    throw err;
   } else if (response.status === 400) {
     const errorData = await response.json();
     throw JSON.stringify(errorData);

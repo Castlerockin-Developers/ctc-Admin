@@ -1,46 +1,59 @@
 import React, { useState, useEffect } from "react";
 import { error as logError } from "../utils/logger";
-import subcribebg from "../assets/subcribebg.png";
 import ReceiptModal from "./ReceiptModal";
-import { authFetch } from "../scripts/AuthProvider";
+import { authFetch, getCachedPlanDetails, setCachedPlanDetails } from "../scripts/AuthProvider";
 
 const Subscription = () => {
   const [expiryDate, setExpiryDate] = useState("0 days");
   const [planName, setPlanName] = useState("Premium");
+  const [planFeatures, setPlanFeatures] = useState([]);
   const [billingHistory, setBillingHistory] = useState([]);
   const [showReceipt, setShowReceipt] = useState(false);
   const [selectedReceiptItem, setSelectedReceiptItem] = useState(null);
 
-  const fetchSubscriptionDetails = async () => {
-    try {
-      const response = await authFetch("/admin/subscribe", { method: "GET" });
-      const data = await response.json();
-      setExpiryDate((data.expires_in ?? 0) + " days");
-      setPlanName(data.current_plan ?? "Premium");
-      const history = (data.billing_history ?? []).map((bill) => ({
+  const setters = {
+    setExpiryDate,
+    setPlanName,
+    setPlanFeatures,
+    setBillingHistory,
+  };
+
+  const applySubscriptionData = (data) => {
+    setExpiryDate((data.expires_in ?? 0) + " days");
+    setPlanName(data.current_plan ?? "Premium");
+    setPlanFeatures(Array.isArray(data.plan_features) ? data.plan_features : []);
+    setBillingHistory(
+      (data.billing_history ?? []).map((bill) => ({
         id: bill.transaction_id,
         particular: bill.plan_name,
         date: new Date(bill.purchase_date).toDateString(),
         credits: bill.credits,
         cost: bill.cost,
         status: bill.status,
-      }));
-      setBillingHistory(history);
+      }))
+    );
+  };
+
+  const fetchSubscriptionDetails = async (updateCache = true) => {
+    try {
+      const response = await authFetch("/admin/subscribe", { method: "GET" });
+      const data = await response.json();
+      applySubscriptionData(data);
+      if (updateCache) setCachedPlanDetails(data);
     } catch (err) {
       logError("Error fetching subscription data:", err);
     }
   };
 
   useEffect(() => {
-    fetchSubscriptionDetails();
+    const cached = getCachedPlanDetails();
+    if (cached) {
+      applySubscriptionData(cached);
+      fetchSubscriptionDetails(true);
+    } else {
+      fetchSubscriptionDetails(true);
+    }
   }, []);
-
-  const planFeatures = [
-    "Full Language Learning Access",
-    "10 Assessments Included Annually",
-    "AI Speech & Coding Included",
-    "Additional Contest Access",
-  ];
 
   return (
     <div className="flex h-[87vh] min-h-[calc(100dvh-4.5rem)] w-full max-w-full flex-col overflow-hidden rounded-lg bg-[#282828] p-4 sm:p-5 md:h-[87vh] md:min-h-0 md:p-6 md:pb-8">
@@ -54,22 +67,20 @@ const Subscription = () => {
         <div className="shrink-0 rounded-xl border border-[#5a5a5a] bg-[#333333] p-4 sm:p-5">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-stretch sm:gap-6">
             <div className="relative min-h-[140px] overflow-hidden rounded-xl border border-white/10 bg-gradient-to-br from-[#3a3a3a] to-[#252525] p-4 sm:min-w-0 sm:flex-1">
-              <img
-                src={subcribebg}
-                alt=""
-                className="pointer-events-none absolute -right-2 top-1/2 h-24 w-24 -translate-y-1/2 object-contain opacity-30 sm:h-28 sm:w-28"
-                aria-hidden
-              />
               <div className="relative">
                 <h3 className="text-lg font-semibold text-white sm:text-xl">
                   {planName}
                 </h3>
                 <ul className="mt-3 space-y-1.5 pl-4 text-sm text-gray-300">
-                  {planFeatures.map((feature, i) => (
-                    <li key={i} className="list-disc">
-                      {feature}
-                    </li>
-                  ))}
+                  {planFeatures.length > 0 ? (
+                    planFeatures.map((feature, i) => (
+                      <li key={i} className="list-disc">
+                        {feature}
+                      </li>
+                    ))
+                  ) : (
+                    <li className="list-disc text-gray-500">No features listed for this plan.</li>
+                  )}
                 </ul>
               </div>
             </div>
