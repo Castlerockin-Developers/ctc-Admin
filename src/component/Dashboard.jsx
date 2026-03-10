@@ -1,7 +1,8 @@
 import React, { useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { log, error as logError } from "../utils/logger";
 import { FaTimes } from "react-icons/fa";
-import { authFetch, SESSION_EXPIRED_MESSAGE } from "../scripts/AuthProvider";
+import { authFetch, SESSION_EXPIRED_MESSAGE, ACCESS_DENIED_MESSAGE } from "../scripts/AuthProvider";
 import Spinner from "../loader/Spinner";
 import { useCache } from "../hooks/useCache";
 
@@ -27,6 +28,7 @@ const Dashboard = ({
     cacheAllowed,
     onBackToDashboard,
 }) => {
+    const navigate = useNavigate();
     const [showPopup, setShowPopup] = useState(false);
     const [showCompletedPopup, setShowCompletedPopup] = useState(false);
 
@@ -87,13 +89,23 @@ const Dashboard = ({
     if (loading) return <Spinner className="min-h-[200px]" />;
 
     if (error) {
+        const isOrgMissing =
+            typeof error.message === "string" &&
+            error.message.toLowerCase().includes("organization not found");
+
+        if (error.status === 403) {
+            navigate("/access-denied", { replace: true });
+            return null;
+        }
         const isSessionExpired = error.message === SESSION_EXPIRED_MESSAGE;
         return (
             <div className="flex flex-col items-center justify-center p-4 text-center">
                 <p className="mb-4 text-lg text-red-500">
                     {isSessionExpired
                         ? "Your session has expired. Please log in again."
-                        : (error.message || "Failed to load dashboard data")}
+                        : isOrgMissing
+                            ? "We could not find an organization associated with your admin account. Please contact support to get your organization set up."
+                            : (error.message || "Failed to load dashboard data")}
                 </p>
                 {isSessionExpired ? (
                     <a

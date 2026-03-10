@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import logo from "/logo.png";
 import Loadinggif from "../assets/Loading.gif";
-import { login, baseUrl } from "../scripts/AuthProvider";
+import { login, baseUrl, logout, ACCESS_DENIED_MESSAGE } from "../scripts/AuthProvider";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 
@@ -91,6 +91,22 @@ const LoginPage = () => {
         !navigator.onLine
       ) {
         setError("Network error! Please check your connection and try again.");
+      } else if (
+        err.message?.toLowerCase().includes("access to the admin panel") ||
+        err.message?.toLowerCase().includes("access denied")
+      ) {
+        // Backend rejected admin-panel access
+        logout();
+        Swal.fire({
+          title: "Access denied",
+          text: ACCESS_DENIED_MESSAGE,
+          icon: "warning",
+          iconColor: "#A294F9",
+          confirmButtonColor: "#a294f9",
+          background: "#181817",
+          color: "#FFFFFF",
+          confirmButtonText: "OK",
+        });
       } else if (err.message?.includes("Login failed")) {
         setError("Invalid username or password.");
       } else {

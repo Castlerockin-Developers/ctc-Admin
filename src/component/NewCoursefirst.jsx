@@ -97,7 +97,7 @@ const NewCoursefirst = ({ onBackc, onNextc }) => {
           "Network error: Unable to connect. Check your connection and try again.";
       else if (error.message?.includes("401"))
         errorMessage = "Authentication error: Please log in again.";
-      else if (error.message?.includes("403"))
+      else if (error.status === 403 || error.message?.includes("403"))
         errorMessage = "Permission denied.";
       else if (error.message) errorMessage = error.message;
       Swal.fire({

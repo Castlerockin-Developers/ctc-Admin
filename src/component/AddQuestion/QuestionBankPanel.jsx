@@ -85,7 +85,7 @@ export default function QuestionBankPanel({
           </div>
         ) : !isQuestionBankVisible ? (
           <p className="text-gray-400 text-sm py-4">
-            All questions have been added. Remove some from the right to see them here again.
+            All questions have been added.
           </p>
         ) : activeBank === null ? (
           <div className="flex flex-col flex-1 min-h-0 overflow-hidden">

@@ -213,26 +213,35 @@ const NewExam = ({
     if (isStartDateValidInput && !isEditing) {
       //
       const startDateTime = new Date(`${examStartDate}T${startTime}`); //
-      const currentDateTime = new Date(); // Get current date and time
+      const now = new Date();
 
-      // To avoid issues with milliseconds, compare at minute level.
-      // Adjust current time to remove seconds/milliseconds for comparison clarity.
-      const currentDateTimeAdjusted = new Date(
-        currentDateTime.getFullYear(),
-        currentDateTime.getMonth(),
-        currentDateTime.getDate(),
-        currentDateTime.getHours(),
-        currentDateTime.getMinutes(),
+      // Allow start "today" at any time (including "now") — today is a valid start day.
+      // Only reject when the start *date* is before today (yesterday or earlier).
+      const startDateOnly = new Date(
+        startDateTime.getFullYear(),
+        startDateTime.getMonth(),
+        startDateTime.getDate(),
+        0,
+        0,
         0,
         0
-      ); // Set seconds and milliseconds to 0
+      );
+      const todayStart = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate(),
+        0,
+        0,
+        0,
+        0
+      );
 
       if (
-        startDateTime.getTime() < currentDateTimeAdjusted.getTime() &&
+        startDateOnly.getTime() < todayStart.getTime() &&
         !currentErrors.examStartDate
       ) {
         //
-        currentErrors.examStartDate = "Start date/time cannot be in the past."; //
+        currentErrors.examStartDate = "Start date cannot be in the past."; //
       }
     }
 

@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
 
 const LoginPage = lazy(() => import('./pages/login'));
+const AccessDeniedPage = lazy(() => import('./pages/AccessDenied'));
 const Home = lazy(() => import('./pages/home'));
 const Dashboard = lazy(() => import('./component/Dashboard'));
 const SubcriptionPage = lazy(() => import('./component/Subcription'));
@@ -18,6 +19,7 @@ function App() {
         }>
           <Routes>
             <Route path="/" element={<LoginPage />} />
+            <Route path="/access-denied" element={<AccessDeniedPage />} />
             <Route path="/home" element={<Home />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/subcription" element={<SubcriptionPage />} />

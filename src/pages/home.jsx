@@ -34,6 +34,7 @@ const Home = () => {
     const [createExamRequest, setCreateExamRequest] = useState([]);
     const [selectedCourse, setSelectedCourse] = useState(null);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [checkingAccess, setCheckingAccess] = useState(true);
 
     // Edit exam flow states
     const [isEditingExam, setIsEditingExam] = useState(false);
@@ -54,14 +55,40 @@ const Home = () => {
     // Temporary bypass for cache consent to ensure components load
     const effectiveCacheAllowed = true;
 
-    // Authentication check
+    // Authentication + admin access check
     useEffect(() => {
-        const accessToken = localStorage.getItem('access');
-        if (!accessToken) {
-            navigate('/');
-            return;
-        }
-        setIsAuthenticated(true);
+        const verifyAccess = async () => {
+            const accessToken = localStorage.getItem('access');
+            if (!accessToken) {
+                navigate('/');
+                return;
+            }
+            setIsAuthenticated(true);
+            try {
+                // Use getUserDetails to validate admin access before showing the app
+                const response = await authFetch('/getUserDetails/', { method: 'GET' });
+                const data = await response.json();
+                const hasAdminAccess =
+                    data?.can_access_admin_panel === true || data?.is_superuser === true;
+                if (!hasAdminAccess) {
+                    navigate('/access-denied', { replace: true });
+                    return;
+                }
+            } catch (error) {
+                // If backend says forbidden, send user to access denied
+                if (error.status === 403) {
+                    navigate('/access-denied', { replace: true });
+                    return;
+                }
+                logError('Home - failed to verify admin access:', error);
+                navigate('/', { replace: true });
+                return;
+            } finally {
+                setCheckingAccess(false);
+            }
+        };
+
+        verifyAccess();
     }, [navigate]);
 
     // Clear session storage on page refresh/load to ensure clean form state
@@ -252,8 +279,8 @@ const Home = () => {
         }
     };
 
-    // Show loading while checking authentication
-    if (!isAuthenticated) {
+    // Show loading while checking authentication / admin access
+    if (!isAuthenticated || checkingAccess) {
         return (
             <div className="flex items-center justify-center h-screen">
                 <div className="text-center">
