@@ -1,6 +1,7 @@
 import { error as logError } from '../utils/logger';
+import cacheService from '../utils/cacheService';
 
-export const baseUrl = 'https://api.corp.crackthecampus.com/api';
+export const baseUrl = 'http://localhost:8000/api';
 export const staticUrl = '';
 export const SESSION_EXPIRED_MESSAGE = 'Failed to refresh access token';
 
@@ -8,6 +9,8 @@ function clearSession() {
   localStorage.removeItem('access');
   localStorage.removeItem('refresh');
   localStorage.removeItem('userdata');
+  // Clear cached dashboard/student/exam/result data to prevent showing previous user's data after re-login
+  cacheService.clearAll();
 }
 
 export async function authFetch(url, options) {

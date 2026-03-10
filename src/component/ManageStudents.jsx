@@ -6,6 +6,7 @@ import {
   FaDatabase,
   FaPen,
   FaUpload,
+  FaTrash,
 } from "react-icons/fa";
 import Swal from "sweetalert2";
 import { motion } from "framer-motion";
@@ -40,6 +41,8 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed })
   const searchDebounceRef = useRef(null);
   const [retryCount, setRetryCount] = useState(0);
   const [isPaginated, setIsPaginated] = useState(true);
+  const [selectedIds, setSelectedIds] = useState(new Set());
+  const [deleteMode, setDeleteMode] = useState(false);
 
   useEffect(() => {
     const onResize = () => setStudentsPerPage(window.innerWidth >= 2560 ? 15 : 10);
@@ -148,6 +151,14 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed })
     return () => { cancelled = true; };
   }, [currentPage, studentsPerPage, activeTab, searchQuery, retryCount, fetchStudentsPage]);
 
+  useEffect(() => {
+    setSelectedIds(new Set());
+  }, [currentPage, activeTab, searchQuery]);
+
+  useEffect(() => {
+    if (!deleteMode) setSelectedIds(new Set());
+  }, [deleteMode]);
+
   // Load groups on component mount
   useEffect(() => {
     const loadGroups = async () => {
@@ -180,6 +191,78 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed })
     setCurrentPage(1);
     setRetryCount((c) => c + 1);
   }, []);
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === currentStudents.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(currentStudents.map((s) => s.id).filter(Boolean)));
+    }
+  };
+
+  const toggleSelect = (id) => {
+    if (!id) return;
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const handleDeleteButtonClick = () => {
+    if (!deleteMode) {
+      setDeleteMode(true);
+      return;
+    }
+    handleDeleteSelected();
+  };
+
+  const handleDeleteSelected = async () => {
+    if (selectedIds.size === 0) return;
+    const { value: confirmed } = await Swal.fire({
+      title: "Delete Students?",
+      html: `Are you sure you want to delete <strong>${selectedIds.size}</strong> student(s)? This action cannot be undone.`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#dc2626",
+      cancelButtonColor: "#666",
+      background: "#181817",
+      color: "#fff",
+    });
+    if (!confirmed) return;
+    try {
+      let deleted = 0;
+      let failed = 0;
+      for (const id of selectedIds) {
+        const res = await authFetch(`/admin/students/${id}/`, { method: "DELETE" });
+        if (res.ok) deleted++;
+        else failed++;
+      }
+      setSelectedIds(new Set());
+      setDeleteMode(false);
+      refreshStudentsData();
+      Swal.fire({
+        icon: deleted > 0 ? (failed > 0 ? "warning" : "success") : "error",
+        iconColor: "#A294F9",
+        title: deleted > 0 ? "Deletion Complete" : "Deletion Failed",
+        text: failed > 0
+          ? `Deleted ${deleted} student(s). Failed to delete ${failed}.`
+          : `Successfully deleted ${deleted} student(s).`,
+        background: "#181817",
+        color: "#fff",
+      });
+    } catch (e) {
+      logError("Delete students:", e);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: e.message || "Failed to delete students.",
+        background: "#181817",
+        color: "#fff",
+      });
+    }
+  };
 
   const fetchGroups = async () => {
     try {
@@ -218,23 +301,25 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed })
             </motion.div>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
-            <select
-              value={activeTab}
-              onChange={(e) => {
-                setSearchQuery("");
-                setSearchInput("");
-                setActiveTab(e.target.value);
-                setCurrentPage(1);
-              }}
-              className="min-h-[44px] rounded-lg border border-[#5a5a5a] bg-[#3d3d3d] px-4 py-2.5 text-sm text-white outline-none focus:border-[#A294F9] focus:ring-2 focus:ring-[#A294F9]/30"
-            >
-              <option value="all">All Branches</option>
-              {studentsData && Object.keys(studentsData).sort().map((branch) => (
-                <option key={branch} value={branch}>
-                  {branch}
-                </option>
-              ))}
-            </select>
+            <div className="flex items-center gap-2">
+              <select
+                value={activeTab}
+                onChange={(e) => {
+                  setSearchQuery("");
+                  setSearchInput("");
+                  setActiveTab(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="min-h-[44px] rounded-lg border border-[#5a5a5a] bg-[#3d3d3d] px-4 py-2.5 text-sm text-white outline-none focus:border-[#A294F9] focus:ring-2 focus:ring-[#A294F9]/30"
+              >
+                <option value="all">All Branches</option>
+                {groups.map((g) => (
+                  <option key={g.id} value={g.id}>
+                    {g.name}
+                  </option>
+                ))}
+              </select>
+            </div>
             <div className="flex min-h-[44px] flex-1 min-w-0 items-center gap-2 rounded-lg border border-[#5a5a5a] bg-[#3d3d3d] px-4 py-2.5 transition-colors focus-within:border-[#A294F9] focus-within:ring-2 focus-within:ring-[#A294F9]/30">
               <FaSearch className="h-5 w-5 shrink-0 text-gray-300" />
               <input
@@ -245,6 +330,28 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed })
                 className="min-w-0 flex-1 border-none bg-transparent text-white outline-none placeholder:text-gray-400"
               />
             </div>
+            <motion.button
+              whileTap={{ scale: 1.05 }}
+              variants={itemSlide}
+              type="button"
+              onClick={handleDeleteButtonClick}
+              disabled={deleteMode && selectedIds.size === 0}
+              title={deleteMode ? (selectedIds.size === 0 ? "Select students to delete" : `Delete ${selectedIds.size} selected`) : "Click to select students for deletion"}
+              className={`inline-flex min-h-[44px] cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-lg border px-4 py-2.5 text-sm font-medium transition-colors ${deleteMode ? "border-red-500/60 bg-red-500/10 text-red-400 hover:bg-red-500/20" : "border-red-500/60 bg-transparent text-red-400 hover:bg-red-500/20"} disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent`}
+            >
+              <FaTrash className="h-4 w-4" /> Delete Students
+            </motion.button>
+            {deleteMode && (
+              <motion.button
+                initial={{ opacity: 0, width: 0 }}
+                animate={{ opacity: 1, width: "auto" }}
+                type="button"
+                onClick={() => setDeleteMode(false)}
+                className="inline-flex min-h-[44px] shrink-0 cursor-pointer items-center justify-center rounded-lg border border-[#5a5a5a] bg-[#3d3d3d] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#4a4a4a]"
+              >
+                Cancel
+              </motion.button>
+            )}
             <motion.button
               whileTap={{ scale: 1.05 }}
               variants={itemSlide}
@@ -284,6 +391,14 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed })
                   className="flex flex-col gap-3 rounded-lg border border-[#5a5a5a] bg-[#3a3a3a] p-4"
                 >
                   <div className="flex items-start justify-between gap-2">
+                    {deleteMode && student.id && (
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.has(student.id)}
+                        onChange={() => toggleSelect(student.id)}
+                        className="mt-1 h-4 w-4 shrink-0 cursor-pointer rounded border-[#5a5a5a] bg-[#3d3d3d] text-[#A294F9] focus:ring-[#A294F9]"
+                      />
+                    )}
                     <div className="min-w-0 flex-1">
                       <p className="truncate font-medium text-white" title={student.name || student.email}>
                         {truncateText(student.name || student.email, 24)}
@@ -310,6 +425,16 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed })
                 <table className="w-full min-w-[640px] table-auto border-collapse">
                   <thead className="sticky top-0 z-10 bg-[#4a4a4a]">
                     <tr>
+                      {deleteMode && (
+                        <th className="w-12 border-b border-[#666] px-4 py-4 text-center">
+                          <input
+                            type="checkbox"
+                            checked={currentStudents.filter((s) => s.id).length > 0 && currentStudents.filter((s) => s.id).every((s) => selectedIds.has(s.id))}
+                            onChange={toggleSelectAll}
+                            className="h-4 w-4 cursor-pointer rounded border-[#5a5a5a] bg-[#3d3d3d] text-[#A294F9] focus:ring-[#A294F9]"
+                          />
+                        </th>
+                      )}
                       <th className="whitespace-nowrap border-b border-[#666] px-4 py-4 text-center text-sm font-medium text-white">#USN</th>
                       <th className="whitespace-nowrap border-b border-[#666] px-4 py-4 text-left text-sm font-medium text-white">Name</th>
                       <th className="whitespace-nowrap border-b border-[#666] px-4 py-4 text-left text-sm font-medium text-white">Email</th>
@@ -327,6 +452,18 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed })
                         animate="visible"
                         className={`border-b border-[#555] transition-colors hover:bg-[#404040] ${index % 2 === 0 ? "bg-[#3a3a3a]" : "bg-[#353535]"}`}
                       >
+                        {deleteMode && (
+                          <td className="w-12 px-4 py-3.5 text-center">
+                            {student.id && (
+                              <input
+                                type="checkbox"
+                                checked={selectedIds.has(student.id)}
+                                onChange={() => toggleSelect(student.id)}
+                                className="h-4 w-4 cursor-pointer rounded border-[#5a5a5a] bg-[#3d3d3d] text-[#A294F9] focus:ring-[#A294F9]"
+                              />
+                            )}
+                          </td>
+                        )}
                         <td className="whitespace-nowrap px-4 py-3.5 text-center text-sm text-white">{student.usn}</td>
                         <td className="max-w-[180px] truncate px-4 py-3.5 text-left text-sm text-white" title={student.name || student.email}>{truncateText(student.name || student.email, 30)}</td>
                         <td className="max-w-[200px] truncate px-4 py-3.5 text-left text-sm text-white">{student.email}</td>
@@ -859,6 +996,7 @@ const AddStudentModal = ({ onClose, groups, refreshTotalStudents }) => {
         {activeTab === "dataset" && (
           <div className="mb-6 space-y-4">
             <label className={labelClass}>Import from Excel</label>
+            <p className="mb-3 text-xs text-gray-400">Auto-detects columns: Email, Name/First Name/Last Name, USN/slNo, Phone/Contact, Gender. Use any sheet; sheet name becomes the branch/group.</p>
             <input
               type="file"
               accept=".xls,.xlsx"
