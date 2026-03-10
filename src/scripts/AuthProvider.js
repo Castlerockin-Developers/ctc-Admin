@@ -1,4 +1,5 @@
 import { error as logError } from '../utils/logger';
+import cacheService from '../utils/cacheService';
 
 export const baseUrl = 'https://api.corp.crackthecampus.com/api';
 export const staticUrl = '';
@@ -15,6 +16,8 @@ function clearSession() {
   localStorage.removeItem('access');
   localStorage.removeItem('refresh');
   localStorage.removeItem('userdata');
+  // Clear cached dashboard/student/exam/result data to prevent showing previous user's data after re-login
+  cacheService.clearAll();
   invalidatePlanCache();
   invalidateSettingsCache();
 }
