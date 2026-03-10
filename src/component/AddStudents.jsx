@@ -82,29 +82,68 @@ const AddStudents = ({
     }
 
     let cancelled = false;
-    (async () => {
+
+    const mapStudent = (s, branchFallback = '') => ({
+      studentId: s.id,
+      id: s.usn || s.slNo || s.id,
+      name: s.name || `${s.first_name || ''} ${s.last_name || ''}`.trim() || s.email || 'Unknown',
+      degree: s.degree || '',
+      year: s.year || '',
+      branch: s.branch || s.group_name || branchFallback || '',
+    });
+
+    const loadStudents = async () => {
       try {
-        const res = await authFetch('/admin/students/', { method: 'GET' });
-        const data = await res.json();
-        const list = (data.data && typeof data.data === 'object')
-          ? Object.keys(data.data).flatMap((branch) =>
-              (data.data[branch] || [])
-                .filter((s) => s.usn)
-                .map((s) => ({
-                  studentId: s.id,
-                  id: s.usn,
-                  name: s.name,
-                  degree: s.degree || '',
-                  year: s.year || '',
-                  branch,
-                }))
-            )
-          : [];
+        // Try new paginated format first
+        const baseParams = new URLSearchParams();
+        baseParams.set('page', '1');
+        baseParams.set('page_size', '200');
+        const firstRes = await authFetch(`/admin/students/?${baseParams.toString()}`, { method: 'GET' });
+        const firstData = await firstRes.json();
+
+        let list = [];
+
+        if (Array.isArray(firstData.results)) {
+          const pageSize = firstData.results.length || 200;
+          const totalCount = typeof firstData.count === 'number' ? firstData.count : firstData.results.length;
+          const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+
+          firstData.results
+            .filter((s) => s.usn || s.slNo || s.id)
+            .forEach((s) => list.push(mapStudent(s)));
+
+          // Fetch remaining pages if any
+          for (let page = 2; page <= totalPages; page += 1) {
+            const params = new URLSearchParams();
+            params.set('page', String(page));
+            params.set('page_size', String(pageSize));
+            const res = await authFetch(`/admin/students/?${params.toString()}`, { method: 'GET' });
+            const data = await res.json();
+            if (Array.isArray(data.results)) {
+              data.results
+                .filter((s) => s.usn || s.slNo || s.id)
+                .forEach((s) => list.push(mapStudent(s)));
+            } else {
+              break;
+            }
+          }
+        } else if (firstData.data && typeof firstData.data === 'object') {
+          // Fallback to legacy grouped response shape
+          list = Object.keys(firstData.data).flatMap((branch) =>
+            (firstData.data[branch] || [])
+              .filter((s) => s.usn || s.slNo || s.id)
+              .map((s) => mapStudent(s, branch))
+          );
+        }
+
         if (!cancelled) setAllStudents(list);
       } catch (e) {
         logError(e);
       }
-    })();
+    };
+
+    loadStudents();
+
     return () => { cancelled = true; };
   }, [isEditing]);
 
@@ -145,7 +184,7 @@ const AddStudents = ({
         (s) =>
           (!allBranchFilter || s.branch === allBranchFilter) &&
           !addedStudents.some((a) => a.studentId === s.studentId) &&
-          (s.id?.toLowerCase().includes(allSearchQuery.toLowerCase()) ||
+          (String(s.id ?? '').toLowerCase().includes(allSearchQuery.toLowerCase()) ||
             s.name?.toLowerCase().includes(allSearchQuery.toLowerCase()))
       ),
     [allStudents, addedStudents, allBranchFilter, allSearchQuery]
@@ -156,7 +195,7 @@ const AddStudents = ({
       addedStudents.filter(
         (s) =>
           (!addedBranchFilter || s.branch === addedBranchFilter) &&
-          (s.id?.toLowerCase().includes(addedSearchQuery.toLowerCase()) ||
+          (String(s.id ?? '').toLowerCase().includes(addedSearchQuery.toLowerCase()) ||
             s.name?.toLowerCase().includes(addedSearchQuery.toLowerCase()))
       ),
     [addedStudents, addedBranchFilter, addedSearchQuery]
