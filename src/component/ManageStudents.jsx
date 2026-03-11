@@ -392,7 +392,7 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed })
                 const rowKey = student.id || displayUsn || student.email || index;
                 return (
                 <motion.div
-                  key={rowKey}
+                  key={student.id ?? student.email ?? `student-${index}`}
                   custom={index}
                   variants={tableRowSlide}
                   initial="hidden"
@@ -459,7 +459,7 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed })
                       const rowKey = student.id || displayUsn || student.email || index;
                       return (
                       <motion.tr
-                        key={rowKey}
+                        key={student.id ?? student.email ?? `student-${index}`}
                         custom={index}
                         variants={tableRowSlide}
                         initial="hidden"
