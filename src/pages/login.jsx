@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 import logo from "/logo.png";
 import Loadinggif from "../assets/Loading.gif";
 import { login, baseUrl, logout, ACCESS_DENIED_MESSAGE } from "../scripts/AuthProvider";
@@ -39,6 +40,7 @@ const LoginPage = () => {
   const [resetEmail, setResetEmail] = useState("");
   const [emailError, setEmailError] = useState("");
   const [resetLoading, setResetLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     const lastVisit = sessionStorage.getItem("ctc_last_visit");
@@ -248,18 +250,28 @@ const LoginPage = () => {
                     <label htmlFor="password" className={labelBase}>
                       Password
                     </label>
-                    <input
-                      id="password"
-                      type="password"
-                      placeholder="Enter your password"
-                      className={inputBase}
-                      value={password}
-                      onChange={(e) => {
-                        setPassword(e.target.value);
-                        if (error) setError("");
-                      }}
-                      autoComplete={rememberMe ? "current-password" : "off"}
-                    />
+                    <div className="relative">
+                      <input
+                        id="password"
+                        type={showPassword ? "text" : "password"}
+                        placeholder="Enter your password"
+                        className={`${inputBase} pr-12`}
+                        value={password}
+                        onChange={(e) => {
+                          setPassword(e.target.value);
+                          if (error) setError("");
+                        }}
+                        autoComplete={rememberMe ? "current-password" : "off"}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword((p) => !p)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-200 transition-colors"
+                        aria-label={showPassword ? "Hide password" : "Show password"}
+                      >
+                        {showPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
+                      </button>
+                    </div>
                   </motion.div>
 
                   <motion.div

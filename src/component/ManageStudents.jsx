@@ -387,7 +387,7 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed })
             <div className="flex flex-col gap-3 overflow-y-auto pb-2 md:hidden">
               {currentStudents.map((student, index) => (
                 <motion.div
-                  key={student.usn}
+                  key={student.id ?? student.email ?? `student-${index}`}
                   custom={index}
                   variants={tableRowSlide}
                   initial="hidden"
@@ -449,7 +449,7 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed })
                   <tbody>
                     {currentStudents.map((student, index) => (
                       <motion.tr
-                        key={student.usn}
+                        key={student.id ?? student.email ?? `student-${index}`}
                         custom={index}
                         variants={tableRowSlide}
                         initial="hidden"
