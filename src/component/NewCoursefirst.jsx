@@ -1,9 +1,11 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { log, error as logError } from "../utils/logger";
 import { motion } from "framer-motion";
 import { FaChevronLeft, FaCloudUploadAlt } from "react-icons/fa";
 import { authFetch } from "../scripts/AuthProvider";
 import Swal from "sweetalert2";
+
+const SESSION_KEY = "newModuleForm";
 
 const inputClass =
   "w-full rounded-lg border border-[#5a5a5a] bg-[#3d3d3d] px-4 py-2.5 text-sm text-white outline-none placeholder:text-gray-500 focus:border-[#A294F9] focus:ring-2 focus:ring-[#A294F9]/30";
@@ -18,6 +20,45 @@ const NewCoursefirst = ({ onBackc, onNextc }) => {
     description: "",
   });
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const loadFromSession = async () => {
+      try {
+        const saved = sessionStorage.getItem(SESSION_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed && typeof parsed === "object") {
+            setFormData((prev) => ({ ...prev, ...parsed }));
+            return;
+          }
+        }
+        const moduleId = localStorage.getItem("currentModuleId");
+        if (moduleId) {
+          const res = await authFetch(`/learning/custom-modules/${moduleId}/`, { method: "GET" });
+          if (res.ok) {
+            const data = await res.json();
+            const m = data?.module;
+            if (m) {
+              setFormData({
+                name: m.name || "",
+                faculty: "",
+                description: m.desc || "",
+              });
+            }
+          }
+        }
+      } catch (e) {
+        logError("Load module form from session failed:", e);
+      }
+    };
+    loadFromSession();
+  }, []);
+
+  useEffect(() => {
+    if (formData.name || formData.faculty || formData.description) {
+      sessionStorage.setItem(SESSION_KEY, JSON.stringify(formData));
+    }
+  }, [formData]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -77,6 +118,7 @@ const NewCoursefirst = ({ onBackc, onNextc }) => {
         log("Module created successfully:", result);
         localStorage.setItem("currentModuleId", result.module_id);
         localStorage.setItem("currentModuleName", formData.name);
+        sessionStorage.removeItem(SESSION_KEY);
         Swal.fire({
           title: "Success!",
           text: "Module created successfully!",

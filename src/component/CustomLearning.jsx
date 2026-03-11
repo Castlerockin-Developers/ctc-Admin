@@ -18,12 +18,10 @@ const CustomLearning = ({ onNewcourse, onView }) => {
   const loadCustomModules = async () => {
     try {
       setLoading(true);
-      const response = await authFetch("/learning/list/", { method: "GET" });
+      const response = await authFetch("/learning/custom-modules/", { method: "GET" });
       if (response.ok) {
         const modules = await response.json();
-        const customModules = Array.isArray(modules)
-          ? modules.filter((m) => m?.is_custom)
-          : [];
+        const customModules = Array.isArray(modules) ? modules : [];
         setCourses(customModules);
       } else {
         throw new Error("Failed to load modules");
@@ -43,13 +41,34 @@ const CustomLearning = ({ onNewcourse, onView }) => {
   };
 
   const deleteModule = async (moduleId) => {
-    Swal.fire({
-      title: "Not available",
-      text: "Delete is not supported yet. Please contact the administrator.",
-      icon: "info",
-      background: "#181817",
-      color: "#fff",
-    });
+    try {
+      const response = await authFetch(`/learning/custom-modules/${moduleId}/`, {
+        method: "DELETE",
+      });
+      if (response.ok || response.status === 204) {
+        Swal.fire({
+          title: "Deleted!",
+          text: "Module has been deleted successfully.",
+          icon: "success",
+          background: "#181817",
+          color: "#fff",
+        });
+        loadCustomModules();
+      } else {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.error || "Failed to delete module");
+      }
+    } catch (error) {
+      logError("Error deleting module:", error);
+      Swal.fire({
+        title: "Error!",
+        text: error.message || "Failed to delete module. Please try again.",
+        icon: "error",
+        background: "#181817",
+        color: "#fff",
+      });
+      loadCustomModules();
+    }
   };
 
   useEffect(() => {
@@ -58,12 +77,14 @@ const CustomLearning = ({ onNewcourse, onView }) => {
 
   const handleActionChange = (e, courseId) => {
     const selectedAction = e.target.value;
+    const selectedCourse = courses.find((c) => c.id === courseId);
     if (selectedAction === "view") {
-      const selectedCourse = courses.find((c) => c.id === courseId);
       onView?.(selectedCourse);
       resetSelect(courseId);
-    }
-    if (selectedAction === "delete") {
+    } else if (selectedAction === "edit") {
+      onView?.(selectedCourse);
+      resetSelect(courseId);
+    } else if (selectedAction === "delete") {
       Swal.fire({
         title: "Are you sure?",
         text: "This module will be deleted permanently!",
@@ -180,7 +201,6 @@ const CustomLearning = ({ onNewcourse, onView }) => {
                     <option value="view">View</option>
                     <option value="edit">Edit</option>
                     <option value="delete">Delete</option>
-                    <option value="assign">Assign to Students</option>
                   </select>
                 </div>
               </motion.div>
