@@ -46,22 +46,45 @@ const ViewCourse = ({ onUnassign, onEdit, onDelete, onBack, selectedCourse }) =>
     }
   }, [selectedCourse]);
 
-  // Load all available students
+  // Load students from the current organization only (admin/students filters by org)
   const loadAllStudents = async () => {
     try {
-      const response = await authFetch('/users/', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
-        }
+      const list = [];
+      // Use paginated admin students API (org-filtered)
+      const baseParams = new URLSearchParams();
+      baseParams.set('page', '1');
+      baseParams.set('page_size', '500');
+      const firstRes = await authFetch(`/admin/students/?${baseParams.toString()}`, { method: 'GET' });
+      if (!firstRes.ok) return;
+      const firstData = await firstRes.json();
+
+      const mapStudent = (s) => ({
+        id: s.id,
+        first_name: s.first_name ?? (s.name ? s.name.split(' ')[0] || '' : ''),
+        last_name: s.last_name ?? (s.name ? s.name.split(' ').slice(1).join(' ').trim() || '' : ''),
+        name: s.name || `${s.first_name || ''} ${s.last_name || ''}`.trim(),
+        email: s.email,
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        // Filter for students (users who are not staff)
-        const students = data.filter(user => !user.is_staff && !user.is_superuser);
-        setAllStudents(students);
+      if (Array.isArray(firstData.results)) {
+        const pageSize = firstData.results.length || 500;
+        const totalCount = typeof firstData.count === 'number' ? firstData.count : firstData.results.length;
+        const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+        firstData.results.filter((s) => s.id).forEach((s) => list.push(mapStudent(s)));
+        for (let page = 2; page <= totalPages; page += 1) {
+          const params = new URLSearchParams();
+          params.set('page', String(page));
+          params.set('page_size', String(pageSize));
+          const res = await authFetch(`/admin/students/?${params.toString()}`, { method: 'GET' });
+          const data = await res.json();
+          if (Array.isArray(data.results)) {
+            data.results.filter((s) => s.id).forEach((s) => list.push(mapStudent(s)));
+          } else break;
+        }
+      } else if (firstData.data && typeof firstData.data === 'object') {
+        Object.values(firstData.data).flat().filter((s) => s.id).forEach((s) => list.push(mapStudent(s)));
       }
+      setAllStudents(list);
     } catch (error) {
       logError('Error loading students:', error);
     }
@@ -858,7 +881,7 @@ const ViewCourse = ({ onUnassign, onEdit, onDelete, onBack, selectedCourse }) =>
                             onChange={() => handleStudentSelectionChange(student.id)}
                             style={{ marginRight: '8px' }}
                           />
-                          {student.first_name} {student.last_name} ({student.email})
+                          {student.name || `${student.first_name || ''} ${student.last_name || ''}`.trim()} ({student.email})
                         </label>
                       </div>
                     ))
