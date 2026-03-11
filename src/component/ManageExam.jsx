@@ -443,8 +443,17 @@ const ViewExam = ({ exam, onBack, onEditExam, onRefresh }) => {
                 const response = await authFetch(`/admin/exams/${examDetails.id}/`, { method: "DELETE" });
 
                 if (response.ok) {
-                    Swal.fire({ icon: "success", title: "Exam Deleted!", text: "The exam has been deleted successfully.", background: '#181817', color: '#fff' });
-                    onBack();
+                    Swal.fire({
+                      icon: "success",
+                      title: "Exam Deleted!",
+                      text: "The exam has been deleted successfully.",
+                      background: '#181817',
+                      color: '#fff'
+                    }).then(() => {
+                      // Trigger a refresh of the exams list as soon as deletion succeeds
+                      if (onRefresh) onRefresh();
+                      onBack();
+                    });
                 } else {
                     const errorData = await response.json();
                     Swal.fire({ icon: "error", title: "Error", text: errorData.error || "Failed to delete exam.", background: '#181817', color: '#fff' });
@@ -601,4 +610,5 @@ ViewExam.propTypes = {
   }).isRequired,
   onBack: PropTypes.func.isRequired,
   onEditExam: PropTypes.func,
+  onRefresh: PropTypes.func,
 };
