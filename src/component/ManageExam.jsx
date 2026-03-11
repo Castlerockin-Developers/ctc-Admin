@@ -164,7 +164,9 @@ const ManageExam = ({ onCreateNewExam, cacheAllowed, onEditExam, examToView, onB
   };
 
   const forceRefresh = useCallback(() => {
+    // Always go back to first page and bump retry counter to trigger a refetch
     setCurrentPage(1);
+    setRetryCount((c) => c + 1);
   }, []);
 
     const handleViewExam = (exam) => {
