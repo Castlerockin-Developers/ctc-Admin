@@ -5,6 +5,8 @@ import { FaChevronLeft, FaCloudUploadAlt } from "react-icons/fa";
 import { authFetch } from "../scripts/AuthProvider";
 import Swal from "sweetalert2";
 
+const getChaptersSessionKey = (moduleId) => `newModuleChapters_${moduleId || "temp"}`;
+
 const inputClass =
   "w-full rounded-lg border border-[#5a5a5a] bg-[#3d3d3d] px-4 py-2.5 text-sm text-white outline-none placeholder:text-gray-500 focus:border-[#A294F9] focus:ring-2 focus:ring-[#A294F9]/30";
 const labelClass = "mb-1.5 block text-sm font-medium text-gray-300";
@@ -33,6 +35,27 @@ const ChapterAdding = ({ onBackcc, onNextcc }) => {
       setCurrentModuleName(moduleName || "Unknown Module");
     }
   }, []);
+
+  useEffect(() => {
+    if (!currentModuleId) return;
+    const key = getChaptersSessionKey(currentModuleId);
+    const saved = sessionStorage.getItem(key);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed?.chapterList?.length) setChapterList(parsed.chapterList);
+        if (parsed?.chapterInput) setChapterInput(parsed.chapterInput);
+      } catch (_) {}
+    }
+  }, [currentModuleId]);
+
+  useEffect(() => {
+    if (!currentModuleId) return;
+    const key = getChaptersSessionKey(currentModuleId);
+    if (chapterList.length > 0 || chapterInput.chapterName || chapterInput.description || chapterInput.question || chapterInput.expectedOutput) {
+      sessionStorage.setItem(key, JSON.stringify({ chapterList, chapterInput }));
+    }
+  }, [currentModuleId, chapterList, chapterInput]);
 
   const handleFileChange = (event) => {
     setFiles(Array.from(event.target.files));
@@ -161,6 +184,7 @@ const ChapterAdding = ({ onBackcc, onNextcc }) => {
       });
       return;
     }
+    sessionStorage.removeItem(getChaptersSessionKey(currentModuleId));
     Swal.fire({
       title: "Success!",
       text: `Module "${currentModuleName}" created with ${chapterList.length} chapters!`,
