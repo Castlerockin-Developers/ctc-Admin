@@ -137,7 +137,11 @@ const ViewResult = ({ result, onBack, onNext }) => {
     saveAs(blob, fileName);
   };
 
-  const filteredStudents = students.filter(
+  const filteredStudents = students.map((student) => {
+    const safeName = student.name || "N/A";
+    const safeUsn = student.usn || "N/A";
+    return { ...student, name: safeName, usn: safeUsn };
+  }).filter(
     (student) =>
       (student.name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
       (student.usn || "").toLowerCase().includes(searchQuery.toLowerCase())

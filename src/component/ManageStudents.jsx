@@ -339,7 +339,7 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed })
               title={deleteMode ? (selectedIds.size === 0 ? "Select students to delete" : `Delete ${selectedIds.size} selected`) : "Click to select students for deletion"}
               className={`inline-flex min-h-[44px] cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-lg border px-4 py-2.5 text-sm font-medium transition-colors ${deleteMode ? "border-red-500/60 bg-red-500/10 text-red-400 hover:bg-red-500/20" : "border-red-500/60 bg-transparent text-red-400 hover:bg-red-500/20"} disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent`}
             >
-              <FaTrash className="h-4 w-4" /> Delete Students
+              <FaTrash className="h-4 w-4" /> Delete
             </motion.button>
             {deleteMode && (
               <motion.button
@@ -385,7 +385,12 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed })
           <>
             {/* Mobile: cards */}
             <div className="flex flex-col gap-3 overflow-y-auto pb-2 md:hidden">
-              {currentStudents.map((student, index) => (
+              {currentStudents.map((student, index) => {
+                const fullName = [student.first_name, student.last_name].filter(Boolean).join(" ");
+                const displayName = student.name || fullName || student.email || "N/A";
+                const displayUsn = student.usn || student.slNo || "N/A";
+                const rowKey = student.id || displayUsn || student.email || index;
+                return (
                 <motion.div
                   key={student.id ?? student.email ?? `student-${index}`}
                   custom={index}
@@ -404,10 +409,10 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed })
                       />
                     )}
                     <div className="min-w-0 flex-1">
-                      <p className="truncate font-medium text-white" title={student.name || student.email}>
-                        {truncateText(student.name || student.email, 24)}
+                      <p className="truncate font-medium text-white" title={displayName}>
+                        {truncateText(displayName, 24)}
                       </p>
-                      <p className="text-xs text-gray-400">{student.usn}</p>
+                      <p className="text-xs text-gray-400">{displayUsn}</p>
                     </div>
                     <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${student.is_active ? "bg-green-500/20 text-green-400" : "bg-gray-500/20 text-gray-400"}`}>
                       {student.is_active ? "Active" : "Inactive"}
@@ -420,7 +425,7 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed })
                     <span className="text-right">{student.contact ?? student.phone ?? "—"}</span>
                   </div>
                 </motion.div>
-              ))}
+              )})}
             </div>
 
             {/* Desktop: table */}
@@ -447,7 +452,12 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed })
                     </tr>
                   </thead>
                   <tbody>
-                    {currentStudents.map((student, index) => (
+                    {currentStudents.map((student, index) => {
+                      const fullName = [student.first_name, student.last_name].filter(Boolean).join(" ");
+                      const displayName = student.name || fullName || student.email || "N/A";
+                      const displayUsn = student.usn || student.slNo || "N/A";
+                      const rowKey = student.id || displayUsn || student.email || index;
+                      return (
                       <motion.tr
                         key={student.id ?? student.email ?? `student-${index}`}
                         custom={index}
@@ -468,15 +478,15 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed })
                             )}
                           </td>
                         )}
-                        <td className="whitespace-nowrap px-4 py-3.5 text-center text-sm text-white">{student.usn}</td>
-                        <td className="max-w-[180px] truncate px-4 py-3.5 text-left text-sm text-white" title={student.name || student.email}>{truncateText(student.name || student.email, 30)}</td>
+                        <td className="whitespace-nowrap px-4 py-3.5 text-center text-sm text-white">{displayUsn}</td>
+                        <td className="max-w-[180px] truncate px-4 py-3.5 text-left text-sm text-white" title={displayName}>{truncateText(displayName, 30)}</td>
                         <td className="max-w-[200px] truncate px-4 py-3.5 text-left text-sm text-white">{student.email}</td>
                         <td className="whitespace-nowrap px-4 py-3.5 text-center text-sm text-white">{student.contact ?? student.phone ?? "—"}</td>
                         <td className="px-4 py-3.5 text-center">
                           <span className={student.is_active ? "text-green-400" : "text-gray-400"}>{student.is_active ? "Yes" : "No"}</span>
                         </td>
                       </motion.tr>
-                    ))}
+                    )})}
                   </tbody>
                 </table>
               </div>
@@ -520,7 +530,8 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed })
         <AddStudentModal
           onClose={() => setStudentModalOpen(false)}
           groups={groups}
-          refreshTotalStudents={refreshStudentsData} // <-- pass callback
+          refreshTotalStudents={refreshStudentsData}
+          setGroups={setGroups}
         />
       )}
 
@@ -741,9 +752,9 @@ const EditStudentModal = ({ onClose, groups, studentId, refreshTotalStudents }) 
 };
 
 // -----------------------------------------------------------------------------
-// AddStudentModal Component (fixed)
+// AddStudentModal Component
 // -----------------------------------------------------------------------------
-const AddStudentModal = ({ onClose, groups, refreshTotalStudents }) => {
+const AddStudentModal = ({ onClose, groups, refreshTotalStudents, setGroups }) => {
   const [activeTab, setActiveTab] = useState("manual");
   const [student, setStudent] = useState({
     firstName: "",
@@ -790,14 +801,9 @@ const AddStudentModal = ({ onClose, groups, refreshTotalStudents }) => {
     if (errors[e.target.name]) setErrors({ ...errors, [e.target.name]: null });
   };
   const handleGroupChange = (e) => {
-    if (e.target.value === "add_new") {
-      setIsAddingGroup(true);
-      setStudent((s) => ({ ...s, groupId: "" }));
-    } else {
-      setIsAddingGroup(false);
-      setStudent((s) => ({ ...s, groupId: e.target.value }));
-      setErrors((err) => ({ ...err, groupId: null }));
-    }
+    setIsAddingGroup(false);
+    setStudent((s) => ({ ...s, groupId: e.target.value }));
+    setErrors((err) => ({ ...err, groupId: null }));
   };
 
   const handleFileUpload = (event) => {
@@ -805,6 +811,72 @@ const AddStudentModal = ({ onClose, groups, refreshTotalStudents }) => {
     if (selectedFile) {
       setFile(selectedFile);
       log("Excel File Selected:", selectedFile.name);
+    }
+  };
+
+  const handleCreateGroup = async () => {
+    const name = newGroupName.trim();
+    if (!name) {
+      setErrors((err) => ({ ...err, newGroupName: "Please enter a group name." }));
+      return;
+    }
+
+    const result = await Swal.fire({
+      title: "Create new group?",
+      text: `Create group "${name}" for this organization?`,
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "Create",
+      cancelButtonText: "Cancel",
+      background: "#181817",
+      color: "#fff",
+      confirmButtonColor: "#A294F9",
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+      const res = await authFetch("/admin/groups/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        await Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: err.error || "Could not create group.",
+          background: "#181817",
+          color: "#fff",
+        });
+        return;
+      }
+
+      const created = await res.json();
+      setGroups((g) => [...g, created]);
+      setStudent((s) => ({ ...s, groupId: created.id }));
+      setIsAddingGroup(false);
+      setNewGroupName("");
+      setErrors((err) => ({ ...err, newGroupName: null, groupId: null }));
+
+      await Swal.fire({
+        icon: "success",
+        iconColor: "#A294F9",
+        title: "Group created",
+        text: `Group "${created.name}" has been created. It is now selected for the student.`,
+        background: "#181817",
+        color: "#fff",
+      });
+    } catch (error) {
+      await Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: error.message || "Network error.",
+        background: "#181817",
+        color: "#fff",
+      });
     }
   };
 
@@ -872,31 +944,6 @@ const AddStudentModal = ({ onClose, groups, refreshTotalStudents }) => {
         setErrors(validationErrors);
         setIsCreatingStudent(false);
         return;
-      }
-
-      if (isAddingGroup) {
-        const res = await authFetch("/admin/groups/", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name: newGroupName.trim() }),
-        });
-        if (!res.ok) {
-          const err = await res.json();
-          return Swal.fire({
-            icon: "error",
-            title: "Error",
-            text: err.error || "Could not create group.",
-            background: '#181817',
-            color: '#fff',
-          });
-          setIsCreatingStudent(false);
-        }
-        const created = await res.json();
-        // overwrite student.groupId with the new group's ID
-        student.groupId = created.id;
-        // update the local dropdown list
-        setGroups(g => [...g, created]);
-        setIsAddingGroup(false);
       }
       // ──────────────────────────────────────────────────────────────────────────
 
@@ -1047,21 +1094,83 @@ const AddStudentModal = ({ onClose, groups, refreshTotalStudents }) => {
               {errors.usn && <span className="mt-1 block text-xs text-red-400">{errors.usn}</span>}
             </div>
             <div className={fieldClass}>
-              <label className={labelClass}>Group</label>
-              <select name="groupId" className={inputClass} value={student.groupId || ""} onChange={handleGroupChange}>
-                <option value="" disabled>Select a group</option>
-                <option value="add_new">Add a group</option>
+              <div className="mb-1.5 flex items-center justify-between gap-2">
+                <label className={labelClass}>Group</label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsAddingGroup((prev) => {
+                      const next = !prev;
+                      if (next) {
+                        setStudent((s) => ({ ...s, groupId: "" }));
+                        setErrors((err) => ({ ...err, groupId: null }));
+                      } else {
+                        setNewGroupName("");
+                        setErrors((err) => ({ ...err, newGroupName: null }));
+                      }
+                      return next;
+                    });
+                  }}
+                  className={`inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs font-medium transition-colors ${
+                    isAddingGroup
+                      ? "border-[#A294F9] bg-[#A294F9] text-white"
+                      : "border-[#5a5a5a] bg-[#3d3d3d] text-gray-200 hover:bg-[#4a4a4a]"
+                  }`}
+                >
+                  <FaPlus className="h-3 w-3" />
+                  {isAddingGroup ? "Cancel" : "New"}
+                </button>
+              </div>
+              <select
+                name="groupId"
+                className={inputClass}
+                value={student.groupId || ""}
+                onChange={handleGroupChange}
+              >
+                <option value="" disabled>
+                  Select a group
+                </option>
                 {groups.map((g) => (
-                  <option key={g.id} value={g.id}>{g.name}</option>
+                  <option key={g.id} value={g.id}>
+                    {g.name}
+                  </option>
                 ))}
               </select>
-              {errors.groupId && <span className="mt-1 block text-xs text-red-400">{errors.groupId}</span>}
+              {errors.groupId && (
+                <span className="mt-1 block text-xs text-red-400">
+                  {errors.groupId}
+                </span>
+              )}
             </div>
             {isAddingGroup && (
               <div className={fieldClass}>
                 <label className={labelClass}>New group name</label>
-                <input type="text" className={inputClass} value={newGroupName} onChange={(e) => setNewGroupName(e.target.value)} placeholder="Enter new group name" />
-                {errors.newGroupName && <span className="mt-1 block text-xs text-red-400">{errors.newGroupName}</span>}
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    className={inputClass}
+                    value={newGroupName}
+                    onChange={(e) => {
+                      setNewGroupName(e.target.value);
+                      if (errors.newGroupName) {
+                        setErrors((err) => ({ ...err, newGroupName: null }));
+                      }
+                    }}
+                    placeholder="Enter new group name"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleCreateGroup}
+                    className="shrink-0 rounded-lg bg-[#A294F9] px-3 py-2 text-xs font-medium text-white hover:bg-[#8b7ce8]"
+                  >
+                    Create
+                  </button>
+                </div>
+                {errors.newGroupName && (
+                  <span className="mt-1 block text-xs text-red-400">
+                    {errors.newGroupName}
+                  </span>
+                )}
               </div>
             )}
           </>
