@@ -60,33 +60,32 @@ const CourseStudents = ({ onBackccc, onNextccc }) => {
             Array.isArray(data.results) &&
             typeof data.count === "number"
           ) {
-            (data.results || [])
-              .filter((s) => s.usn || s.slNo)
-              .forEach((s) => {
-                const branch =
-                  s.group_name ||
-                  s.branch ||
-                  s.branch_name ||
-                  (Array.isArray(s.groups) && s.groups.length > 0
-                    ? s.groups[0]
-                    : "") ||
-                  "";
+            (data.results || []).forEach((s) => {
+              const branch =
+                s.group_name ||
+                s.branch ||
+                s.branch_name ||
+                (Array.isArray(s.groups) && s.groups.length > 0
+                  ? s.groups[0]
+                  : "") ||
+                "";
 
-                if (branch) branchSet.add(branch);
+              if (branch) branchSet.add(branch);
 
-                collectedStudents.push({
-                  studentId: s.id,
-                  id: s.usn || s.slNo,
-                  name:
-                    s.name ||
-                    [s.first_name, s.last_name].filter(Boolean).join(" ") ||
-                    s.email ||
-                    "",
-                  degree: s.degree || "",
-                  year: s.year || "",
-                  branch,
-                });
+              collectedStudents.push({
+                studentId: s.id,
+                id: s.usn || s.slNo || s.email || String(s.id),
+                name:
+                  s.name ||
+                  [s.first_name, s.last_name].filter(Boolean).join(" ") ||
+                  s.email ||
+                  "",
+                email: s.email || "",
+                degree: s.degree || "",
+                year: s.year || "",
+                branch,
               });
+            });
 
             // StudentsView returns full URLs for next/previous
             hasNext = !!data.next;
@@ -97,22 +96,21 @@ const CourseStudents = ({ onBackccc, onNextccc }) => {
             // Fallback for legacy grouped format (super-admin or non-paginated)
             Object.keys(data.data || {}).forEach((branch) => {
               branchSet.add(branch);
-              (data.data[branch] || [])
-                .filter((s) => s.usn || s.slNo)
-                .forEach((s) => {
-                  collectedStudents.push({
-                    studentId: s.id,
-                    id: s.usn || s.slNo,
-                    name:
-                      s.name ||
-                      [s.first_name, s.last_name].filter(Boolean).join(" ") ||
-                      s.email ||
-                      "",
-                    degree: s.degree || "",
-                    year: s.year || "",
-                    branch,
-                  });
+              (data.data[branch] || []).forEach((s) => {
+                collectedStudents.push({
+                  studentId: s.id,
+                  id: s.usn || s.slNo || s.email || String(s.id),
+                  name:
+                    s.name ||
+                    [s.first_name, s.last_name].filter(Boolean).join(" ") ||
+                    s.email ||
+                    "",
+                  email: s.email || "",
+                  degree: s.degree || "",
+                  year: s.year || "",
+                  branch,
                 });
+              });
             });
             hasNext = false;
           } else {
@@ -215,13 +213,22 @@ const CourseStudents = ({ onBackccc, onNextccc }) => {
 
     try {
       setLoading(true);
+
+      const payload = {
+        module_id: parseInt(currentModuleId, 10),
+        student_ids: addedStudents.map((s) => s.studentId),
+        assigned_branch: addedBranchFilter || "All",
+        // Extra metadata for downstream corporate API
+        students: addedStudents.map((s) => ({
+          id: s.studentId,
+          name: s.name || "",
+          email: s.email || "",
+        })),
+      };
+
       const response = await authFetch("/learning/assignments/", {
         method: "POST",
-        body: JSON.stringify({
-          module_id: parseInt(currentModuleId, 10),
-          student_ids: addedStudents.map((s) => s.studentId),
-          assigned_branch: addedBranchFilter || "All",
-        }),
+        body: JSON.stringify(payload),
         headers: { "Content-Type": "application/json" },
       });
 
