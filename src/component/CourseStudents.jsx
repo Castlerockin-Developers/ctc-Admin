@@ -29,27 +29,108 @@ const CourseStudents = ({ onBackccc, onNextccc }) => {
     }
   }, []);
 
+  // Fetch all students from paginated /admin/students/ endpoint
   useEffect(() => {
     (async () => {
       try {
-        const res = await authFetch("/admin/students/", { method: "GET" });
-        const data = await res.json();
-        const list = Object.keys(data.data || {}).flatMap((branch) =>
-          (data.data[branch] || [])
-            .filter((s) => s.usn)
-            .map((s) => ({
-              studentId: s.id,
-              id: s.usn,
-              name: s.name,
-              degree: s.degree || "",
-              year: s.year || "",
-              branch,
-            }))
-        );
-        setAllStudents(list);
-        setBranches(Object.keys(data.data || {}));
+        // We intentionally pass page & page_size so backend uses the paginated branch
+        // and then iterate through all pages to build the full list.
+        const collectedStudents = [];
+        const branchSet = new Set();
+
+        let page = 1;
+        const pageSize = 100; // backend caps at 100, matches StudentsView logic
+        let hasNext = true;
+
+        while (hasNext) {
+          const params = new URLSearchParams();
+          params.set("page", String(page));
+          params.set("page_size", String(pageSize));
+
+          const res = await authFetch(`/admin/students/?${params.toString()}`, {
+            method: "GET",
+          });
+          if (!res.ok) {
+            throw new Error("Failed to fetch students");
+          }
+          const data = await res.json();
+
+          if (
+            data &&
+            Array.isArray(data.results) &&
+            typeof data.count === "number"
+          ) {
+            (data.results || [])
+              .filter((s) => s.usn || s.slNo)
+              .forEach((s) => {
+                const branch =
+                  s.group_name ||
+                  s.branch ||
+                  s.branch_name ||
+                  (Array.isArray(s.groups) && s.groups.length > 0
+                    ? s.groups[0]
+                    : "") ||
+                  "";
+
+                if (branch) branchSet.add(branch);
+
+                collectedStudents.push({
+                  studentId: s.id,
+                  id: s.usn || s.slNo,
+                  name:
+                    s.name ||
+                    [s.first_name, s.last_name].filter(Boolean).join(" ") ||
+                    s.email ||
+                    "",
+                  degree: s.degree || "",
+                  year: s.year || "",
+                  branch,
+                });
+              });
+
+            // StudentsView returns full URLs for next/previous
+            hasNext = !!data.next;
+            if (hasNext) {
+              page += 1;
+            }
+          } else if (data && data.data) {
+            // Fallback for legacy grouped format (super-admin or non-paginated)
+            Object.keys(data.data || {}).forEach((branch) => {
+              branchSet.add(branch);
+              (data.data[branch] || [])
+                .filter((s) => s.usn || s.slNo)
+                .forEach((s) => {
+                  collectedStudents.push({
+                    studentId: s.id,
+                    id: s.usn || s.slNo,
+                    name:
+                      s.name ||
+                      [s.first_name, s.last_name].filter(Boolean).join(" ") ||
+                      s.email ||
+                      "",
+                    degree: s.degree || "",
+                    year: s.year || "",
+                    branch,
+                  });
+                });
+            });
+            hasNext = false;
+          } else {
+            throw new Error("Unexpected students response format");
+          }
+        }
+
+        setAllStudents(collectedStudents);
+        setBranches(Array.from(branchSet));
       } catch (e) {
         logError("Failed to fetch students:", e);
+        Swal.fire({
+          title: "Error!",
+          text: e.message || "Failed to load students. Please try again.",
+          icon: "error",
+          background: "#181817",
+          color: "#fff",
+        });
       }
     })();
   }, []);
