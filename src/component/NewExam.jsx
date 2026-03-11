@@ -79,13 +79,26 @@ const NewExam = ({
       setExamEndDate(endDateTime.toISOString().split("T")[0]);
       setEndTime(endDateTime.toTimeString().slice(0, 5));
       setTimedTest(editExamData.is_timed || false);
-      setTimer(editExamData.timer ? editExamData.timer.toString() : "");
+      // Backend exposes overall exam time as `exam_time`, not `timer`
+      const overallTime =
+        typeof editExamData.exam_time === "number"
+          ? editExamData.exam_time
+          : parseInt(editExamData.exam_time, 10);
+      setTimer(
+        editExamData.is_timed && !Number.isNaN(overallTime)
+          ? overallTime.toString()
+          : ""
+      );
       setAttemptsAllowed(
         editExamData.attempts_allowed
           ? editExamData.attempts_allowed.toString()
           : ""
       );
-      setInstructions(editExamData.instructions || "");
+      // Backend stores instructions in `description` (plain text)
+      // Fall back to any `instructions` field if present for backwards compatibility.
+      setInstructions(
+        editExamData.instructions || editExamData.description || ""
+      );
     }
     // When !isEditing, keep state from useState initializer (sessionStorage) so returning from step 2 preserves data
   }, [isEditing, editExamData]);

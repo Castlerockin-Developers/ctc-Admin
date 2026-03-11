@@ -31,7 +31,9 @@ export function useAddQuestionState(isEditing, editExamData) {
 
     if (editExamData.alloted_sections?.length > 0) {
       const mcqFromExam = [];
-      editExamData.alloted_sections.forEach((section, index) => {
+      const timersFromExam = {};
+
+      editExamData.alloted_sections.forEach((section) => {
         if (section.questions?.length > 0) {
           section.questions.forEach((q) => {
             mcqFromExam.push({
@@ -56,8 +58,20 @@ export function useAddQuestionState(isEditing, editExamData) {
             is_section_placeholder: true,
           });
         }
+
+        // Backfill per-section timers when exam is not using a single overall timer.
+        // AllotedSectionExamSerializer exposes `section_time` and `is_timed` per section.
+        if (!editExamData.is_timed && section.is_timed && section.section_time) {
+          timersFromExam[section.section] = section.section_time;
+        }
       });
+
       setMcqQuestions(mcqFromExam);
+
+      // Merge with any existing timers from session storage, giving precedence to API data.
+      if (Object.keys(timersFromExam).length > 0) {
+        setSectionTimers((prev) => ({ ...prev, ...timersFromExam }));
+      }
     }
 
     if (editExamData.selected_coding_questions?.length > 0) {
