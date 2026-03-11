@@ -225,58 +225,14 @@ const Home = () => {
         setActiveComponent("editExam");
     };
 
-    // Function to handle exam update
-    const handleUpdateExam = async (updatedData) => {
-        try {
-            log("Home - handleUpdateExam called with:", updatedData);
-            log("Home - editExamData:", editExamData);
-            
-            if (!editExamData || !editExamData.id) {
-                throw new Error("Exam ID not found. Cannot update exam.");
-            }
+    // Function to handle exam update (post-success UI only; network call is done in AddStudents)
+    const handleUpdateExam = () => {
+        log("Home - handleUpdateExam called (post-success). editExamData:", editExamData);
 
-            const url = `/admin/exams/${editExamData.id}/`;
-            log("Home - Making PUT request to:", url);
-            log("Home - Request payload:", JSON.stringify(updatedData, null, 2));
-
-            const response = await authFetch(url, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(updatedData),
-            });
-
-            log("Home - Update response status:", response.status);
-            log("Home - Update response ok:", response.ok);
-            log("Home - Update response headers:", response.headers);
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                log("Home - Update error response:", errorData);
-                throw new Error(errorData.error || errorData.message || `Failed to update exam (${response.status})`);
-            }
-
-            const responseData = await response.json();
-            log("Home - Update success response:", responseData);
-
-            Swal.fire({
-                title: "Updated!",
-                text: "Exam has been updated successfully.",
-                icon: "success",
-        iconColor: "#A294F9", // Set the icon color to purple
-                background: "#181817",
-                color: "#fff",
-                showConfirmButton: false,
-                timer: 1500,
-            });
-
-            // Reset edit states and go back to manage exam
-            setIsEditingExam(false);
-            setEditExamData(null);
-            setActiveComponent("manageExam");
-        } catch (error) {
-            logError("Error updating exam:", error);
-            Swal.fire("Error", error.message || "Failed to update exam", "error");
-        }
+        // Reset edit states and go back to manage exam
+        setIsEditingExam(false);
+        setEditExamData(null);
+        setActiveComponent("manageExam");
     };
 
     // Show loading while checking authentication / admin access

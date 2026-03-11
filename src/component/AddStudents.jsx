@@ -251,6 +251,19 @@ const AddStudents = ({
     }
 
     setIsCreating(true);
+
+    // Ensure we have exam details from step 1 before submitting
+    if (!createExamRequest || !createExamRequest.exam) {
+      logError('AddStudents - Missing exam details in createExamRequest:', createExamRequest);
+      setIsCreating(false);
+      return Swal.fire({
+        title: 'Missing Exam Details',
+        text: 'Exam details are missing. Please complete the exam information step again.',
+        icon: 'error',
+        confirmButtonText: 'OK',
+        ...SWAL_THEME,
+      });
+    }
     const mcqQuestions = JSON.parse(sessionStorage.getItem('mcqQuestions') || '[]');
     const section_ids = [...new Set(mcqQuestions.map((q) => q.group_id))];
     const section_question_counts = {};
@@ -267,6 +280,8 @@ const AddStudents = ({
       section_question_counts,
       coding_question_ids,
     };
+
+    log('AddStudents - Final payload for exam create/update:', payload);
 
     try {
       const url =
