@@ -49,12 +49,18 @@ const TopBar = () => {
     }, []);
 
     return (
-        <div className="min-h-[72px] lg:min-h-[88px] min-[2300px]:min-h-[155px] flex justify-center lg:justify-between items-center w-full px-4 lg:px-6 bg-[#181817]">
-            <div className="flex items-center">
-                <img src={logo} alt="logo" className="h-12 lg:h-14 w-auto max-w-[200px] min-[2300px]:w-[350px] hidden lg:block" />
+        <div className="h-[72px] lg:h-[88px] min-[2300px]:h-[155px] shrink-0 flex justify-center lg:justify-between items-center w-full px-4 lg:px-6 bg-[#181817]">
+            <div className="flex items-center min-w-0 h-full">
+                <img src={logo} alt="logo" className="h-12 lg:h-14 w-auto max-w-[200px] min-[2300px]:w-[350px] hidden lg:block object-contain" />
             </div>
-            <div className='flex items-center gap-4'>
-                {!loading && orgLogo && <img src={orgLogo} alt="College Logo" className='w-24 md:w-28 lg:w-32 h-auto' />}
+            <div className="flex items-center justify-center gap-4 h-full min-w-0">
+                {!loading && orgLogo && (
+                    <img
+                        src={orgLogo}
+                        alt="College Logo"
+                        className="max-h-12 max-w-24 md:max-w-28 lg:max-h-14 lg:max-w-32 min-[2300px]:max-h-[120px] min-[2300px]:max-w-64 w-auto h-auto object-contain object-center"
+                    />
+                )}
             </div>
         </div>
     )
