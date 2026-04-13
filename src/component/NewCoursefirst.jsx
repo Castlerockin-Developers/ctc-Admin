@@ -108,6 +108,14 @@ const NewCoursefirst = ({ onBackc, onNextc }) => {
       moduleData.append("desc", formData.description);
       moduleData.append("image", files[0]);
 
+      // Upload workflow:
+      // - Save as draft (not published yet)
+      // - Publish automatically "tomorrow" to allow adding remaining chapters
+      //   without learners seeing partial/duplicate courses.
+      const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000);
+      moduleData.append("is_published", "false");
+      moduleData.append("publish_at", tomorrow.toISOString());
+
       const response = await authFetch("/learning/custom-modules/", {
         method: "POST",
         body: moduleData,
