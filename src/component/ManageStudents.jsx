@@ -197,14 +197,17 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed, o
     setRetryCount((c) => c + 1);
   }, []);
 
+  const canOpenStudentAnalytics = typeof onOpenStudentAnalytics === "function";
+
   const openStudentAnalytics = useCallback(
     (e, student) => {
+      if (!canOpenStudentAnalytics) return;
       if (deleteMode) return;
       if (e?.target?.closest?.('input[type="checkbox"]')) return;
       if (!student?.id || !onOpenStudentAnalytics) return;
       onOpenStudentAnalytics(student);
     },
-    [deleteMode, onOpenStudentAnalytics]
+    [deleteMode, onOpenStudentAnalytics, canOpenStudentAnalytics]
   );
 
   const toggleSelectAll = () => {
@@ -416,16 +419,22 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed, o
                   variants={tableRowSlide}
                   initial="hidden"
                   animate="visible"
-                  role="button"
-                  tabIndex={0}
-                  onClick={(e) => openStudentAnalytics(e, student)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      openStudentAnalytics(e, student);
-                    }
-                  }}
-                  className={`flex flex-col gap-3 rounded-lg border border-[#5a5a5a] bg-[#3a3a3a] p-4 ${deleteMode ? "" : "cursor-pointer hover:border-[#A294F9]/40"}`}
+                  role={canOpenStudentAnalytics ? "button" : undefined}
+                  tabIndex={canOpenStudentAnalytics ? 0 : undefined}
+                  onClick={canOpenStudentAnalytics ? (e) => openStudentAnalytics(e, student) : undefined}
+                  onKeyDown={
+                    canOpenStudentAnalytics
+                      ? (e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            openStudentAnalytics(e, student);
+                          }
+                        }
+                      : undefined
+                  }
+                  className={`flex flex-col gap-3 rounded-lg border border-[#5a5a5a] bg-[#3a3a3a] p-4 ${
+                    deleteMode || !canOpenStudentAnalytics ? "" : "cursor-pointer hover:border-[#A294F9]/40"
+                  }`}
                 >
                   <div className="flex items-start justify-between gap-2">
                     {deleteMode && student.id && (
@@ -493,8 +502,10 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed, o
                         variants={tableRowSlide}
                         initial="hidden"
                         animate="visible"
-                        onClick={(e) => openStudentAnalytics(e, student)}
-                        className={`border-b border-[#555] transition-colors hover:bg-[#404040] ${deleteMode ? "" : "cursor-pointer"} ${index % 2 === 0 ? "bg-[#3a3a3a]" : "bg-[#353535]"}`}
+                        onClick={canOpenStudentAnalytics ? (e) => openStudentAnalytics(e, student) : undefined}
+                        className={`border-b border-[#555] transition-colors hover:bg-[#404040] ${
+                          deleteMode || !canOpenStudentAnalytics ? "" : "cursor-pointer"
+                        } ${index % 2 === 0 ? "bg-[#3a3a3a]" : "bg-[#353535]"}`}
                       >
                         {deleteMode && (
                           <td className="w-12 px-4 py-3.5 text-center">

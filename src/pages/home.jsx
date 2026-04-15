@@ -8,6 +8,7 @@ import { authFetch } from "../scripts/AuthProvider";
 import { useCacheConsent } from "../hooks/useCache";
 
 import Dashboard from "../component/Dashboard";
+import OrgAnalyticsPage from "../component/OrgAnalyticsPage";
 import ManageExam from "../component/ManageExam";
 import NewExam from "../component/NewExam";
 import ManageResult from "../component/ManageResult";
@@ -27,11 +28,23 @@ import ChapterAdding from "../component/ChapterAdding";
 import CourseStudents from "../component/CourseStudents";
 import ViewCourse from "../component/ViewCourse";
 
+function readPanelAccessLevel() {
+    try {
+        const raw = localStorage.getItem("panelScope");
+        if (!raw) return "full";
+        const s = JSON.parse(raw);
+        return s?.admin_panel_access_level === "branch" ? "branch" : "full";
+    } catch {
+        return "full";
+    }
+}
+
 const Home = () => {
     const navigate = useNavigate();
     const [activeComponent, setActiveComponent] = useState("dashboard");
     const [isStudentModalOpen, setStudentModalOpen] = useState(false);
     const [studentAnalyticsStudent, setStudentAnalyticsStudent] = useState(null);
+    const [panelAccessLevel, setPanelAccessLevel] = useState(readPanelAccessLevel);
     const [openAddUserModal, setOpenAddUserModal] = useState(false);
     const [createExamRequest, setCreateExamRequest] = useState([]);
     const [selectedCourse, setSelectedCourse] = useState(null);
@@ -77,10 +90,12 @@ const Home = () => {
                     return;
                 }
                 try {
+                    const level = data.admin_panel_access_level || 'full';
+                    setPanelAccessLevel(level === 'branch' ? 'branch' : 'full');
                     localStorage.setItem(
                         'panelScope',
                         JSON.stringify({
-                            admin_panel_access_level: data.admin_panel_access_level || 'full',
+                            admin_panel_access_level: level,
                             admin_panel_groups_detail: data.admin_panel_groups_detail || [],
                             is_full_org_admin_panel: data.is_full_org_admin_panel !== false,
                         })
@@ -327,7 +342,11 @@ const Home = () => {
                                 setExamToView(null);
                                 setActiveComponent("dashboard");
                             }}
+                            isBranchCoordinator={panelAccessLevel === "branch"}
                         />
+                    )}
+                    {activeComponent === "analytics" && (
+                        <OrgAnalyticsPage cacheAllowed={effectiveCacheAllowed} />
                     )}
                     {activeComponent === "subcribe" && <Subcription />}
                     {activeComponent === "settings" && (

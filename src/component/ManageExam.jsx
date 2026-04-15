@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { log, error as logError } from "../utils/logger";
-import { FaSearch, FaPlus, FaFilter, FaEllipsisV } from "react-icons/fa";
+import { FaSearch, FaPlus, FaFilter, FaEllipsisV, FaArrowLeft } from "react-icons/fa";
 import Swal from "sweetalert2";
 import { authFetch } from "../scripts/AuthProvider";
 import Spinner from "../loader/Spinner";
@@ -488,10 +488,12 @@ const ViewExam = ({ exam, onBack, onEditExam, onRefresh }) => {
             <div className="flex flex-col gap-6">
                 <div className="flex items-center gap-4">
                     <button
+                        type="button"
                         onClick={onBack}
-                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#404040] text-2xl font-bold text-white transition-colors hover:bg-[#505050]"
+                        aria-label="Back to exams"
+                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#404040] text-white transition-colors hover:bg-[#505050]"
                     >
-                        &lt;
+                        <FaArrowLeft className="h-4 w-4" aria-hidden />
                     </button>
                     <h1 className="min-w-0 truncate text-xl font-semibold text-white sm:text-2xl md:text-3xl">
                         #{examDetails.id} {examDetails.name}

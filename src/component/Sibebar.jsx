@@ -159,6 +159,10 @@ const Sidebar = ({ activeComponent, setActiveComponent, onManageExamClick }) => 
                         <div className={barClass("dashboard")} />
                         <h6 className="flex-1 whitespace-nowrap text-left pl-4 text-sm sm:text-base md:text-base lg:text-lg font-semibold text-white">Home</h6>
                     </button>
+                    <button type="button" className={navButtonClass("analytics")} onClick={() => handleNavigation("analytics")}>
+                        <div className={barClass("analytics")} />
+                        <h6 className="flex-1 whitespace-nowrap text-left pl-4 text-sm sm:text-base md:text-base lg:text-lg font-semibold text-white">Analytics</h6>
+                    </button>
                     <button type="button" className={navButtonClass("manageExam")} onClick={() => handleNavigation("manageExam")}>
                         <div className={barClass("manageExam")} />
                         <h6 className="flex-1 whitespace-nowrap text-left pl-4 text-sm sm:text-base md:text-base lg:text-lg font-semibold text-white">Manage Exam</h6>

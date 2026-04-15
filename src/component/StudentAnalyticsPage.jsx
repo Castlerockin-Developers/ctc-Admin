@@ -641,14 +641,14 @@ const StudentAnalyticsPage = ({ student, onBack }) => {
     >
       <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto overflow-x-hidden pb-6 sm:gap-6 sm:pb-8">
         <div className="flex shrink-0 flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start">
+          <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center">
             <button
               type="button"
               onClick={() => {
                 setDetailRow(null);
                 onBack();
               }}
-              className="inline-flex w-fit shrink-0 items-center gap-2 rounded-lg border border-[#5a5a5a] bg-[#3d3d3d] px-4 py-2.5 font-[madina-semibold] text-sm text-white transition-colors hover:bg-[#4a4a4a]"
+              className="inline-flex w-fit shrink-0 items-center gap-2 self-start rounded-lg border border-[#5a5a5a] bg-[#3d3d3d] px-3 py-2 font-[madina-semibold] text-sm text-white transition-colors hover:bg-[#4a4a4a] sm:self-auto"
             >
               <FaChevronLeft className="h-4 w-4" />
               Back to Manage Students
