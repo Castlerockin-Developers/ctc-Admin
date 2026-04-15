@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { createElement, useCallback, useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { FaChevronLeft } from "react-icons/fa";
+import { FaChartLine, FaCheckCircle, FaChevronLeft, FaExclamationTriangle } from "react-icons/fa";
 import Swal from "sweetalert2";
 import { authFetch } from "../scripts/AuthProvider";
 import { error as logError } from "../utils/logger";
@@ -9,7 +9,7 @@ import Spinner from "../loader/Spinner";
 import ParticularResult from "./PerticularResult";
 
 function formatDt(iso) {
-  if (!iso) return "—";
+  if (!iso) return "-";
   try {
     return new Date(iso).toLocaleString(undefined, {
       dateStyle: "short",
@@ -41,7 +41,7 @@ function assessmentTypeLabel(t) {
     contest: "Contest",
     practice: "Practice",
   };
-  return m[t] || (t ? String(t) : "—");
+  return m[t] || (t ? String(t) : "-");
 }
 
 /** Normalize API series to points { label, value, date }; sort by date when present. */
@@ -93,7 +93,7 @@ function ScoreLineChart({ points, color, footnote }) {
 
   if (!points?.length) {
     return (
-      <div className="flex min-h-[200px] items-center justify-center rounded-lg border border-[#5a5a5a] bg-[#2d2d2d] text-sm text-gray-500">
+      <div className="font-[madina-regular] flex min-h-[200px] items-center justify-center rounded-lg border border-[#5a5a5a] bg-[#2d2d2d] text-sm text-white">
         No data yet
       </div>
     );
@@ -118,10 +118,10 @@ function ScoreLineChart({ points, color, footnote }) {
   const xTick = (i) => (points[i].date ? shortDate(points[i].date) : `#${i + 1}`);
 
   return (
-    <div className="rounded-lg border border-[#5a5a5a] bg-[#2d2d2d] p-2 sm:p-3">
+    <div className="font-[madina-regular] rounded-lg border border-[#5a5a5a] bg-[#2d2d2d] p-2 sm:p-3">
       <svg
         viewBox={`0 0 ${W} ${H}`}
-        className="h-[200px] w-full max-w-full"
+        className="font-[madina-regular] h-[200px] w-full max-w-full"
         role="img"
         aria-label="Score trend line chart"
       >
@@ -138,7 +138,7 @@ function ScoreLineChart({ points, color, footnote }) {
                 strokeDasharray="4 5"
                 strokeWidth="1"
               />
-              <text x={margin.left - 8} y={y + 4} textAnchor="end" fill="#9ca3af" fontSize="11">
+              <text x={margin.left - 8} y={y + 4} textAnchor="end" fill="#ffffff" fontSize="11">
                 {Math.round(tv * 10) / 10}
               </text>
             </g>
@@ -162,7 +162,7 @@ function ScoreLineChart({ points, color, footnote }) {
             x={xAt(i)}
             y={H - 12}
             textAnchor="middle"
-            fill="#9ca3af"
+            fill="#ffffff"
             fontSize="10"
             transform={`rotate(-18 ${xAt(i)} ${H - 12})`}
           >
@@ -170,7 +170,7 @@ function ScoreLineChart({ points, color, footnote }) {
           </text>
         ))}
       </svg>
-      <p className="mt-1 text-center text-[11px] text-gray-500">
+      <p className="mt-1 text-center text-[11px] text-white">
         {footnote ?? "Chronological total score per completed attempt"}
       </p>
     </div>
@@ -187,7 +187,7 @@ function ScoreBarChart({ points, color, footnote }) {
 
   if (!points?.length) {
     return (
-      <div className="flex min-h-[200px] items-center justify-center rounded-lg border border-[#5a5a5a] bg-[#2d2d2d] text-sm text-gray-500">
+      <div className="font-[madina-regular] flex min-h-[200px] items-center justify-center rounded-lg border border-[#5a5a5a] bg-[#2d2d2d] text-sm text-white">
         No data yet
       </div>
     );
@@ -205,10 +205,10 @@ function ScoreBarChart({ points, color, footnote }) {
   const tickVals = Array.from({ length: ticks + 1 }, (_, i) => yMin + (i / ticks) * (yMax - yMin));
 
   return (
-    <div className="rounded-lg border border-[#5a5a5a] bg-[#2d2d2d] p-2 sm:p-3">
+    <div className="font-[madina-regular] rounded-lg border border-[#5a5a5a] bg-[#2d2d2d] p-2 sm:p-3">
       <svg
         viewBox={`0 0 ${W} ${H}`}
-        className="h-[200px] w-full max-w-full"
+        className="font-[madina-regular] h-[200px] w-full max-w-full"
         role="img"
         aria-label="Score bar chart"
       >
@@ -225,7 +225,7 @@ function ScoreBarChart({ points, color, footnote }) {
                 strokeDasharray="3 4"
                 strokeWidth="1"
               />
-              <text x={margin.left - 8} y={y + 4} textAnchor="end" fill="#9ca3af" fontSize="11">
+              <text x={margin.left - 8} y={y + 4} textAnchor="end" fill="#ffffff" fontSize="11">
                 {Math.round(tv * 10) / 10}
               </text>
             </g>
@@ -251,14 +251,14 @@ function ScoreBarChart({ points, color, footnote }) {
             x={margin.left + (i + 0.5) * (cw / n)}
             y={H - 10}
             textAnchor="middle"
-            fill="#9ca3af"
+            fill="#ffffff"
             fontSize="9"
           >
             {n > 8 ? i + 1 : p.date ? shortDate(p.date).slice(0, 8) : `#${i + 1}`}
           </text>
         ))}
       </svg>
-      <p className="mt-1 text-center text-[11px] text-gray-500">
+      <p className="mt-1 text-center text-[11px] text-white">
         {footnote ??
           (n > 8 ? "Each bar is one attempt in order (1 … n)" : "Each bar is one attempt (date under bar)")}
       </p>
@@ -271,7 +271,7 @@ function avg(arr) {
   return arr.reduce((a, b) => a + b, 0) / arr.length;
 }
 
-/** Split assigned custom modules into completed vs ongoing (partial progress) vs not started. */
+/** Split learning modules into completed vs ongoing (partial / in progress) vs not started. */
 function partitionLearningModules(modules) {
   const completed = [];
   const ongoing = [];
@@ -280,8 +280,10 @@ function partitionLearningModules(modules) {
     const total = Number(m.chapters_total) || 0;
     const done = Number(m.chapters_completed) || 0;
     const pct = Number(m.progress_percent) || 0;
+    const inProgressCh = Number(m.chapters_in_progress) || 0;
     const isComplete = total > 0 && (done >= total || pct >= 99.5);
-    const isOngoing = total > 0 && !isComplete && (done > 0 || pct > 0);
+    const isOngoing =
+      total > 0 && !isComplete && (done > 0 || pct > 0 || inProgressCh > 0);
     if (isComplete) completed.push(m);
     else if (isOngoing) ongoing.push(m);
     else notStarted.push(m);
@@ -291,7 +293,7 @@ function partitionLearningModules(modules) {
 
 /**
  * Heuristic progress narrative from analytics payload.
- * Returns { tone, title, lines, disclaimer } — tone: positive | attention | neutral
+ * Returns { tone, title, lines, disclaimer }. tone: positive | attention | neutral
  */
 function buildProgressComment(data) {
   if (!data) {
@@ -348,14 +350,14 @@ function buildProgressComment(data) {
       );
     } else if (exTrend.key === "declining") {
       lines.push(
-        "Exam scores have softened recently compared with this student’s earlier attempts — worth reviewing weak topics or timing."
+        "Exam scores have softened recently compared with this student’s earlier attempts. Worth reviewing weak topics or timing."
       );
     } else {
-      lines.push("Exam scores are relatively steady across completed attempts — consistent performance without a strong up or down drift.");
+      lines.push("Exam scores are relatively steady across completed attempts, with consistent performance without a strong up or down drift.");
     }
   } else if (examScores.length === 1) {
     lines.push(
-      "Only one completed exam attempt is on record, so a trend line is not meaningful yet — collect a few more assessments to judge progress."
+      "Only one completed exam attempt is on record, so a trend line is not meaningful yet. Collect a few more assessments to judge progress."
     );
   } else {
     lines.push("There are no completed exam attempts with scores in this window, so exam progress cannot be assessed from graphs.");
@@ -370,24 +372,24 @@ function buildProgressComment(data) {
       lines.push("Contest scores look stable across recorded finishes.");
     }
   } else if (contestScores.length === 1) {
-    lines.push("Only one finished contest score is recorded — more contests are needed to comment on contest progress.");
+    lines.push("Only one finished contest score is recorded; more contests are needed to comment on contest progress.");
   } else {
     lines.push("No finished contest attempts with scores were found for this student.");
   }
 
   if (noShowRatio > 0.35 && eligible >= 3) {
     lines.push(
-      `Participation: a notable share of eligible exams (${noShow} of ${eligible}) were not started — progress also depends on showing up for assigned tests.`
+      `Participation: a notable share of eligible exams (${noShow} of ${eligible}) were not started. Progress also depends on showing up for assigned tests.`
     );
   } else if (eligible > 0 && noShow === 0) {
-    lines.push("Participation: the student has started every eligible exam listed — good engagement with assigned assessments.");
+    lines.push("Participation: the student has started every eligible exam listed, showing good engagement with assigned assessments.");
   }
 
   if (streak >= 5 || distinct30 >= 12) {
     lines.push("Login activity looks healthy: regular sign-ins suggest steady engagement with the platform.");
   } else if (submittedAttempts >= 3 && logins30 === 0 && distinct30 <= 2) {
     lines.push(
-      "Login activity is sparse in the last 30 days despite some exam attempts — encourage consistent sign-in so habits and reminders stay aligned."
+      "Login activity is sparse in the last 30 days despite some exam attempts. Encourage consistent sign-in so habits and reminders stay aligned."
     );
   } else if (logins30 > 0) {
     lines.push("The student has signed in during the last 30 days; use streak and distinct-day counts above for finer engagement context.");
@@ -395,21 +397,21 @@ function buildProgressComment(data) {
 
   if (modulesAssigned > 0) {
     if (modulesDone >= modulesAssigned) {
-      lines.push("Custom learning: all assigned modules are fully completed — strong follow-through on coursework.");
+      lines.push("Custom learning: all assigned modules are fully completed, with strong follow-through on coursework.");
     } else if (modulesDone > 0) {
       lines.push(
-        `Custom learning: ${modulesDone} of ${modulesAssigned} assigned module(s) fully completed — room to push remaining modules to completion.`
+        `Custom learning: ${modulesDone} of ${modulesAssigned} assigned module(s) fully completed. There is room to push remaining modules to completion.`
       );
     } else {
       lines.push(
-        "Custom learning: modules are assigned but none are fully completed yet — progress on self-paced content is still building."
+        "Custom learning: modules are assigned but none are fully completed yet; progress on self-paced content is still building."
       );
     }
   }
 
   if (lowTrust >= 2 && submittedAttempts >= 2) {
     lines.push(
-      "Several low-trust attempts were flagged — review proctoring notes alongside scores before drawing conclusions about skill gains."
+      "Several low-trust attempts were flagged. Review proctoring notes alongside scores before drawing conclusions about skill gains."
     );
   }
 
@@ -438,7 +440,7 @@ function buildProgressComment(data) {
     tone === "positive"
       ? "Overall: signs of progress"
       : tone === "attention"
-        ? "Overall: mixed signals — needs attention"
+        ? "Overall: mixed signals; needs attention"
         : "Overall: steady or early-stage";
 
   const disclaimer =
@@ -446,6 +448,43 @@ function buildProgressComment(data) {
 
   return { tone, title, lines, disclaimer };
 }
+
+/** Sentiment-aware shell for the automated progress summary (professional, dark UI). */
+const PROGRESS_SUMMARY_UI = {
+  positive: {
+    shell:
+      "border-emerald-500/40 bg-[linear-gradient(152deg,rgba(4,47,46,0.55)_0%,rgba(32,32,32,0.97)_38%,#2d2d2d_100%)] shadow-[inset_0_1px_0_0_rgba(52,211,153,0.18)]",
+    rail: "from-emerald-400 to-emerald-600",
+    railMobile: "from-emerald-400 via-emerald-500 to-teal-700",
+    iconBox: "border-emerald-400/35 bg-emerald-500/12 text-emerald-200",
+    listTop: "border-emerald-500/20",
+    bullet: "bg-emerald-300 shadow-[0_0_0_1px_rgba(6,95,70,0.5),0_0_12px_rgba(52,211,153,0.35)]",
+    disclaimerRule: "border-emerald-800/35",
+    Icon: FaCheckCircle,
+  },
+  attention: {
+    shell:
+      "border-amber-500/40 bg-[linear-gradient(152deg,rgba(69,26,3,0.5)_0%,rgba(36,34,30,0.98)_40%,#2d2d2d_100%)] shadow-[inset_0_1px_0_0_rgba(251,191,36,0.12)]",
+    rail: "from-amber-300 to-amber-600",
+    railMobile: "from-amber-300 via-amber-500 to-orange-800",
+    iconBox: "border-amber-400/40 bg-amber-500/12 text-amber-100",
+    listTop: "border-amber-500/25",
+    bullet: "bg-amber-300 shadow-[0_0_0_1px_rgba(120,53,15,0.45),0_0_12px_rgba(251,191,36,0.28)]",
+    disclaimerRule: "border-amber-800/35",
+    Icon: FaExclamationTriangle,
+  },
+  neutral: {
+    shell:
+      "border-[#6b5ea8]/45 bg-[linear-gradient(152deg,rgba(55,48,82,0.42)_0%,rgba(32,32,32,0.97)_40%,#2d2d2d_100%)] shadow-[inset_0_1px_0_0_rgba(162,148,249,0.14)]",
+    rail: "from-[#c4b5fd] to-[#7c6bb8]",
+    railMobile: "from-[#dcd4ff] via-[#A294F9] to-[#5b4d8a]",
+    iconBox: "border-[#A294F9]/40 bg-[#A294F9]/12 text-[#e8e4ff]",
+    listTop: "border-white/10",
+    bullet: "bg-[#c9bffd] shadow-[0_0_0_1px_rgba(90,75,140,0.45),0_0_10px_rgba(162,148,249,0.3)]",
+    disclaimerRule: "border-white/12",
+    Icon: FaChartLine,
+  },
+};
 
 /**
  * Full-page student analytics (Manage Students → row). Matches ctc-admin dark UI.
@@ -499,7 +538,10 @@ const StudentAnalyticsPage = ({ student, onBack }) => {
   const contestSeries = useMemo(() => normalizeScoreSeries(data?.contest_score_series), [data]);
 
   const skillCenter = useMemo(
-    () => partitionLearningModules(data?.custom_learning?.modules),
+    () =>
+      partitionLearningModules(
+        data?.skill_center_activity?.modules ?? data?.custom_learning?.modules
+      ),
     [data]
   );
 
@@ -511,6 +553,11 @@ const StudentAnalyticsPage = ({ student, onBack }) => {
         : data.exam_score_series;
     return buildProgressComment({ ...data, exam_score_series: examForTrend });
   }, [data]);
+
+  const progressSummaryUi = useMemo(
+    () => PROGRESS_SUMMARY_UI[progressComment.tone] ?? PROGRESS_SUMMARY_UI.neutral,
+    [progressComment.tone]
+  );
 
   const loadAttemptDetail = useCallback(async (row) => {
     setDetailLoading(true);
@@ -563,16 +610,23 @@ const StudentAnalyticsPage = ({ student, onBack }) => {
 
   if (!student?.id) {
     return (
-      <div className="flex min-h-[40vh] flex-col items-center justify-center p-8 text-gray-400">
-        <p>No student selected.</p>
-        <button
-          type="button"
-          onClick={onBack}
-          className="mt-4 rounded-lg border border-[#5a5a5a] bg-[#3d3d3d] px-4 py-2 text-sm text-white hover:bg-[#4a4a4a]"
-        >
-          Back to students
-        </button>
-      </div>
+      <motion.div
+        className="font-[madina-regular] flex h-[87vh] min-h-[calc(100dvh-4.5rem)] w-full max-w-full flex-col overflow-hidden rounded-lg bg-[#282828] p-4 sm:p-5 md:h-[87vh] md:min-h-0 md:p-6 md:pb-8"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.2 }}
+      >
+        <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-4 overflow-y-auto overflow-x-hidden pb-6 text-white sm:pb-8">
+          <p>No student selected.</p>
+          <button
+            type="button"
+            onClick={onBack}
+            className="rounded-lg border border-[#5a5a5a] bg-[#3d3d3d] px-4 py-2 font-[madina-semibold] text-sm text-white hover:bg-[#4a4a4a]"
+          >
+            Back to students
+          </button>
+        </div>
+      </motion.div>
     );
   }
 
@@ -580,13 +634,13 @@ const StudentAnalyticsPage = ({ student, onBack }) => {
 
   return (
     <motion.div
-      className="min-h-full w-full bg-[#1a1a1a] pb-10 pl-0 pt-4 sm:pt-6"
+      className="font-[madina-regular] flex h-[87vh] min-h-[calc(100dvh-4.5rem)] w-full max-w-full flex-col overflow-hidden rounded-lg bg-[#282828] p-4 sm:p-5 md:h-[87vh] md:min-h-0 md:p-6 md:pb-8"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.2 }}
     >
-      <div className="w-full max-w-none pl-0 pr-3 sm:pr-5 lg:pr-8">
-        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+      <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto overflow-x-hidden pb-6 sm:gap-6 sm:pb-8">
+        <div className="flex shrink-0 flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start">
             <button
               type="button"
@@ -594,32 +648,32 @@ const StudentAnalyticsPage = ({ student, onBack }) => {
                 setDetailRow(null);
                 onBack();
               }}
-              className="inline-flex w-fit shrink-0 items-center gap-2 rounded-lg border border-[#5a5a5a] bg-[#3d3d3d] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#4a4a4a]"
+              className="inline-flex w-fit shrink-0 items-center gap-2 rounded-lg border border-[#5a5a5a] bg-[#3d3d3d] px-4 py-2.5 font-[madina-semibold] text-sm text-white transition-colors hover:bg-[#4a4a4a]"
             >
               <FaChevronLeft className="h-4 w-4" />
               Back to Manage Students
             </button>
             <div className="min-w-0 border-l border-transparent pl-0 sm:border-[#5a5a5a] sm:pl-6">
-              <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
+              <p className="font-[madina-semibold] text-xs uppercase tracking-wide text-white">
                 Student analytics
               </p>
-              <h1 className="mt-1 text-2xl font-semibold tracking-tight text-white sm:text-3xl">
+              <h1 className="mt-1 font-[madina-semibold] text-2xl tracking-tight text-white sm:text-3xl">
                 {id?.name || student.name || student.email || "Student"}
               </h1>
-              <p className="mt-1 text-sm text-gray-400 sm:text-base">
-                {id?.usn || student.usn || student.slNo || "—"}
+              <p className="mt-1 text-sm text-white sm:text-base">
+                {id?.usn || student.usn || student.slNo || "-"}
               </p>
             </div>
           </div>
         </div>
 
-        <div className="rounded-xl border border-[#5a5a5a] bg-[#282828] p-4 sm:p-6 lg:p-8">
+        <div className="min-h-0 flex-1">
           {detailRow ? (
             <div className="space-y-4">
               <button
                 type="button"
                 onClick={() => setDetailRow(null)}
-                className="inline-flex items-center gap-2 rounded-lg border border-[#5a5a5a] bg-[#3d3d3d] px-4 py-2 text-sm text-white hover:bg-[#4a4a4a]"
+                className="inline-flex items-center gap-2 rounded-lg border border-[#5a5a5a] bg-[#3d3d3d] px-4 py-2 font-[madina-semibold] text-sm text-white hover:bg-[#4a4a4a]"
               >
                 <FaChevronLeft className="h-3 w-3" /> Back to analytics overview
               </button>
@@ -629,13 +683,13 @@ const StudentAnalyticsPage = ({ student, onBack }) => {
             <Spinner className="min-h-[320px]" />
           ) : error ? (
             <div className="flex flex-col items-center gap-4 py-16">
-              <p className="text-center text-red-400">
+              <p className="text-center text-white">
                 {error.message || "Failed to load analytics"}
               </p>
               <button
                 type="button"
                 onClick={onBack}
-                className="rounded-lg bg-[#A294F9] px-4 py-2 text-sm font-medium text-white hover:bg-[#8b7ce8]"
+                className="rounded-lg bg-[#A294F9] px-4 py-2 font-[madina-semibold] text-sm text-white hover:bg-[#8b7ce8]"
               >
                 Back to students
               </button>
@@ -643,45 +697,45 @@ const StudentAnalyticsPage = ({ student, onBack }) => {
           ) : data ? (
             <div className="flex flex-col gap-8">
               <section className="rounded-lg border border-[#5a5a5a] bg-[#353535] p-4 sm:p-5">
-                <h2 className="mb-4 text-base font-semibold text-white">Identity & account</h2>
+                <h2 className="mb-4 font-[madina-semibold] text-base text-white">Identity & account</h2>
                 <dl className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2 lg:grid-cols-3">
                   <div>
-                    <dt className="text-gray-500">Email</dt>
-                    <dd className="mt-0.5 text-white">{id?.email || "—"}</dd>
+                    <dt className="font-[madina-semibold] text-white">Email</dt>
+                    <dd className="mt-0.5 text-white">{id?.email || "-"}</dd>
                   </div>
                   <div>
-                    <dt className="text-gray-500">Phone</dt>
-                    <dd className="mt-0.5 text-white">{id?.phone || "—"}</dd>
+                    <dt className="font-[madina-semibold] text-white">Phone</dt>
+                    <dd className="mt-0.5 text-white">{id?.phone || "-"}</dd>
                   </div>
                   <div className="sm:col-span-2 lg:col-span-1">
-                    <dt className="text-gray-500">Branch / group</dt>
+                    <dt className="font-[madina-semibold] text-white">Branch / group</dt>
                     <dd className="mt-0.5 text-white">
                       {(id?.branch_groups || []).length
                         ? id.branch_groups.join(", ")
-                        : "—"}
+                        : "-"}
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-gray-500">Batch</dt>
-                    <dd className="mt-0.5 text-white">{id?.batch ?? "—"}</dd>
+                    <dt className="font-[madina-semibold] text-white">Batch</dt>
+                    <dd className="mt-0.5 text-white">{id?.batch ?? "-"}</dd>
                   </div>
                   <div>
-                    <dt className="text-gray-500">Active</dt>
-                    <dd className={`mt-0.5 ${id?.is_active ? "text-green-400" : "text-gray-400"}`}>
+                    <dt className="font-[madina-semibold] text-white">Active</dt>
+                    <dd className="mt-0.5 text-white">
                       {id?.is_active ? "Yes" : "No"}
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-gray-500">Created</dt>
-                    <dd className="mt-0.5 text-gray-300">{formatDt(id?.created_at)}</dd>
+                    <dt className="font-[madina-semibold] text-white">Created</dt>
+                    <dd className="mt-0.5 text-white">{formatDt(id?.created_at)}</dd>
                   </div>
                   <div>
-                    <dt className="text-gray-500">Updated</dt>
-                    <dd className="mt-0.5 text-gray-300">{formatDt(id?.updated_at)}</dd>
+                    <dt className="font-[madina-semibold] text-white">Updated</dt>
+                    <dd className="mt-0.5 text-white">{formatDt(id?.updated_at)}</dd>
                   </div>
                   <div>
-                    <dt className="text-gray-500">Last login</dt>
-                    <dd className="mt-0.5 text-gray-300">
+                    <dt className="font-[madina-semibold] text-white">Last login</dt>
+                    <dd className="mt-0.5 text-white">
                       {formatDt(id?.last_login || id?.last_login_timestamp)}
                     </dd>
                   </div>
@@ -689,62 +743,62 @@ const StudentAnalyticsPage = ({ student, onBack }) => {
               </section>
 
               <section className="rounded-lg border border-[#5a5a5a] bg-[#353535] p-4 sm:p-5">
-                <h2 className="mb-4 text-base font-semibold text-white">Login regularity</h2>
+                <h2 className="mb-4 font-[madina-semibold] text-base text-white">Login regularity</h2>
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                   <div className="rounded-lg bg-[#3a3a3a] p-4">
-                    <p className="text-xs text-gray-500">Streak (days)</p>
-                    <p className="mt-1 text-2xl font-semibold text-[#A294F9]">
+                    <p className="text-xs text-white">Streak (days)</p>
+                    <p className="mt-1 font-[madina-semibold] text-2xl text-white">
                       {data.login_regularity?.current_streak_days ?? 0}
                     </p>
                   </div>
                   <div className="rounded-lg bg-[#3a3a3a] p-4">
-                    <p className="text-xs text-gray-500">Logins (30d)</p>
-                    <p className="mt-1 text-2xl font-semibold text-white">
+                    <p className="text-xs text-white">Logins (30d)</p>
+                    <p className="mt-1 font-[madina-semibold] text-2xl text-white">
                       {data.login_regularity?.logins_last_30_days ?? 0}
                     </p>
                   </div>
                   <div className="rounded-lg bg-[#3a3a3a] p-4">
-                    <p className="text-xs text-gray-500">Distinct days (30d)</p>
-                    <p className="mt-1 text-2xl font-semibold text-white">
+                    <p className="text-xs text-white">Distinct days (30d)</p>
+                    <p className="mt-1 font-[madina-semibold] text-2xl text-white">
                       {data.login_regularity?.distinct_login_days_last_30 ?? 0}
                     </p>
                   </div>
                   <div className="rounded-lg bg-[#3a3a3a] p-4">
-                    <p className="text-xs text-gray-500">Total logins recorded</p>
-                    <p className="mt-1 text-2xl font-semibold text-white">
+                    <p className="text-xs text-white">Total logins recorded</p>
+                    <p className="mt-1 font-[madina-semibold] text-2xl text-white">
                       {data.login_regularity?.total_logins_recorded ?? 0}
                     </p>
                   </div>
                 </div>
-                <p className="mt-3 text-xs text-gray-500">
+                <p className="mt-3 text-xs text-white">
                   Streak and login counts use the student app login history when available.
                 </p>
               </section>
 
               <section className="rounded-lg border border-[#5a5a5a] bg-[#353535] p-4 sm:p-5">
-                <h2 className="mb-4 text-base font-semibold text-white">How results look</h2>
+                <h2 className="mb-4 font-[madina-semibold] text-base text-white">How results look</h2>
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                   <div className="rounded-lg bg-[#3a3a3a] p-4">
-                    <p className="text-xs text-gray-500">Avg exam score</p>
-                    <p className="mt-1 text-xl font-semibold text-white sm:text-2xl">
-                      {data.performance_overview?.average_submitted_exam_score ?? "—"}
+                    <p className="text-xs text-white">Avg exam score</p>
+                    <p className="mt-1 font-[madina-semibold] text-xl text-white sm:text-2xl">
+                      {data.performance_overview?.average_submitted_exam_score ?? "-"}
                     </p>
                   </div>
                   <div className="rounded-lg bg-[#3a3a3a] p-4">
-                    <p className="text-xs text-gray-500">Submitted attempts</p>
-                    <p className="mt-1 text-xl font-semibold text-white sm:text-2xl">
+                    <p className="text-xs text-white">Submitted attempts</p>
+                    <p className="mt-1 font-[madina-semibold] text-xl text-white sm:text-2xl">
                       {data.performance_overview?.submitted_attempts_count ?? 0}
                     </p>
                   </div>
                   <div className="rounded-lg bg-[#3a3a3a] p-4">
-                    <p className="text-xs text-gray-500">Contests (live)</p>
-                    <p className="mt-1 text-xl font-semibold text-white sm:text-2xl">
+                    <p className="text-xs text-white">Contests (live)</p>
+                    <p className="mt-1 font-[madina-semibold] text-xl text-white sm:text-2xl">
                       {data.performance_overview?.contests_completed_live ?? 0}
                     </p>
                   </div>
                   <div className="rounded-lg bg-[#3a3a3a] p-4">
-                    <p className="text-xs text-gray-500">Contests (practice)</p>
-                    <p className="mt-1 text-xl font-semibold text-white sm:text-2xl">
+                    <p className="text-xs text-white">Contests (practice)</p>
+                    <p className="mt-1 font-[madina-semibold] text-xl text-white sm:text-2xl">
                       {data.performance_overview?.contests_completed_practice ?? 0}
                     </p>
                   </div>
@@ -752,41 +806,41 @@ const StudentAnalyticsPage = ({ student, onBack }) => {
               </section>
 
               <section className="rounded-lg border border-[#5a5a5a] bg-[#353535] p-4 sm:p-5">
-                <h2 className="mb-4 text-base font-semibold text-white">Exam participation</h2>
+                <h2 className="mb-4 font-[madina-semibold] text-base text-white">Exam participation</h2>
                 <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
                   <div className="rounded-lg bg-[#3a3a3a] px-4 py-3">
-                    <span className="text-xs text-gray-500">Eligible</span>
-                    <p className="text-lg font-semibold text-white">
+                    <span className="text-xs text-white">Eligible</span>
+                    <p className="font-[madina-semibold] text-lg text-white">
                       {data.exam_participation?.eligible_exams ?? 0}
                     </p>
                   </div>
                   <div className="rounded-lg bg-[#3a3a3a] px-4 py-3">
-                    <span className="text-xs text-gray-500">Started</span>
-                    <p className="text-lg font-semibold text-white">
+                    <span className="text-xs text-white">Started</span>
+                    <p className="font-[madina-semibold] text-lg text-white">
                       {data.exam_participation?.exams_started ?? 0}
                     </p>
                   </div>
                   <div className="rounded-lg bg-[#3a3a3a] px-4 py-3">
-                    <span className="text-xs text-gray-500">Submitted</span>
-                    <p className="text-lg font-semibold text-white">
+                    <span className="text-xs text-white">Submitted</span>
+                    <p className="font-[madina-semibold] text-lg text-white">
                       {data.exam_participation?.exams_with_submission ?? 0}
                     </p>
                   </div>
                   <div className="rounded-lg bg-[#3a3a3a] px-4 py-3">
-                    <span className="text-xs text-gray-500">No-show (eligible)</span>
-                    <p className="text-lg font-semibold text-amber-400">
+                    <span className="text-xs text-white">No-show (eligible)</span>
+                    <p className="font-[madina-semibold] text-lg text-white">
                       {data.exam_participation?.no_show_eligible ?? 0}
                     </p>
                   </div>
                 </div>
-                <h3 className="mb-2 text-sm font-medium text-gray-300">Assessments attempted</h3>
-                <p className="mb-3 text-xs text-gray-500">
+                <h3 className="mb-2 font-[madina-semibold] text-sm text-white">Assessments attempted</h3>
+                <p className="mb-3 text-xs text-white">
                   Campus exams, ranked assessments, and contests (practice and job-only exams are excluded). Each row
                   is an attempt; totals are MCQ + coding. In-progress rows show scores so far.
                 </p>
                 <div className="max-h-72 overflow-auto rounded-lg border border-[#555] sm:max-h-96">
                   <table className="w-full min-w-[720px] text-left text-sm">
-                    <thead className="sticky top-0 z-[1] bg-[#4a4a4a] text-gray-300">
+                    <thead className="sticky top-0 z-[1] bg-[#4a4a4a] font-[madina-semibold] text-white">
                       <tr>
                         <th className="px-3 py-3">Exam</th>
                         <th className="px-3 py-3">Type</th>
@@ -803,7 +857,7 @@ const StudentAnalyticsPage = ({ student, onBack }) => {
                         <tr>
                           <td
                             colSpan={8}
-                            className="px-3 py-10 text-center text-gray-500"
+                            className="px-3 py-10 text-center text-white"
                           >
                             No assessment attempts yet (submitted or in progress) for this student in your
                             organization.
@@ -811,27 +865,27 @@ const StudentAnalyticsPage = ({ student, onBack }) => {
                         </tr>
                       ) : (
                         (data.ranked_exam_attempts || []).map((row) => (
-                          <tr key={row.attempt_id} className="border-t border-[#555] text-gray-200">
+                          <tr key={row.attempt_id} className="border-t border-[#555] text-white">
                             <td className="max-w-[200px] truncate px-3 py-2.5" title={row.exam_name}>
                               {row.exam_name}
                             </td>
-                            <td className="whitespace-nowrap px-3 py-2.5 text-gray-300">
+                            <td className="whitespace-nowrap px-3 py-2.5 text-white">
                               {assessmentTypeLabel(row.assessment_type)}
                               {row.is_ranked_flag ? (
-                                <span className="ml-1 text-[10px] font-medium text-[#A294F9]">(CTC)</span>
+                                <span className="ml-1 font-[madina-semibold] text-[10px] text-white">(CTC)</span>
                               ) : null}
                             </td>
                             <td className="whitespace-nowrap px-3 py-2.5">{row.attempt_number}</td>
                             <td className="whitespace-nowrap px-3 py-2.5">
                               {statusLabel(row.status)}
                             </td>
-                            <td className="whitespace-nowrap px-3 py-2.5 font-semibold text-white">
+                            <td className="whitespace-nowrap px-3 py-2.5 font-[madina-semibold] text-white">
                               {row.marks_obtained}
                             </td>
-                            <td className="whitespace-nowrap px-3 py-2.5 text-gray-300">{row.mcq_score}</td>
-                            <td className="whitespace-nowrap px-3 py-2.5 text-gray-300">{row.coding_score}</td>
-                            <td className="whitespace-nowrap px-3 py-2.5 text-gray-400">
-                              {row.end_time ? formatDt(row.end_time) : "—"}
+                            <td className="whitespace-nowrap px-3 py-2.5 text-white">{row.mcq_score}</td>
+                            <td className="whitespace-nowrap px-3 py-2.5 text-white">{row.coding_score}</td>
+                            <td className="whitespace-nowrap px-3 py-2.5 text-white">
+                              {row.end_time ? formatDt(row.end_time) : "-"}
                             </td>
                           </tr>
                         ))
@@ -842,15 +896,15 @@ const StudentAnalyticsPage = ({ student, onBack }) => {
               </section>
 
               <section className="rounded-lg border border-[#5a5a5a] bg-[#353535] p-4 sm:p-5">
-                <h2 className="mb-1 text-base font-semibold text-white">Assessment score progress — graphs</h2>
-                <p className="mb-4 text-xs text-gray-500">
-                  Same scope as the table above: <strong className="text-gray-400">campus, ranked, and contest</strong>{" "}
+                <h2 className="mb-1 font-[madina-semibold] text-base text-white">Assessment score progress: graphs</h2>
+                <p className="mb-4 text-xs text-white">
+                  Same scope as the table above: <strong className="text-white">campus, ranked, and contest</strong>{" "}
                   finishes (submitted attempts, total score). Line = score over time; bars = finishes in order. If
                   none, charts fall back to all exam types including practice.
                 </p>
                 <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
                   <div>
-                    <h3 className="mb-2 text-sm font-medium text-gray-300">Trend (line)</h3>
+                    <h3 className="mb-2 font-[madina-semibold] text-sm text-white">Trend (line)</h3>
                     <ScoreLineChart
                       points={examSeries}
                       color="#A294F9"
@@ -858,7 +912,7 @@ const StudentAnalyticsPage = ({ student, onBack }) => {
                     />
                   </div>
                   <div>
-                    <h3 className="mb-2 text-sm font-medium text-gray-300">Per finish (bars)</h3>
+                    <h3 className="mb-2 font-[madina-semibold] text-sm text-white">Per finish (bars)</h3>
                     <ScoreBarChart
                       points={examSeries}
                       color="#A294F9"
@@ -869,30 +923,30 @@ const StudentAnalyticsPage = ({ student, onBack }) => {
               </section>
 
               <section className="rounded-lg border border-[#5a5a5a] bg-[#353535] p-4 sm:p-5">
-                <h2 className="mb-1 text-base font-semibold text-white">Contest scores — graphs</h2>
-                <p className="mb-4 text-xs text-gray-500">
+                <h2 className="mb-1 font-[madina-semibold] text-base text-white">Contest scores: graphs</h2>
+                <p className="mb-4 text-xs text-white">
                   Based on finished contest attempts (live and practice). Same layout as exams.
                 </p>
                 <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
                   <div>
-                    <h3 className="mb-2 text-sm font-medium text-gray-300">Trend (line)</h3>
+                    <h3 className="mb-2 font-[madina-semibold] text-sm text-white">Trend (line)</h3>
                     <ScoreLineChart points={contestSeries} color="#34d399" />
                   </div>
                   <div>
-                    <h3 className="mb-2 text-sm font-medium text-gray-300">Per finish (bars)</h3>
+                    <h3 className="mb-2 font-[madina-semibold] text-sm text-white">Per finish (bars)</h3>
                     <ScoreBarChart points={contestSeries} color="#34d399" />
                   </div>
                 </div>
               </section>
 
               <section className="rounded-lg border border-[#5a5a5a] bg-[#353535] p-4 sm:p-5">
-                <h2 className="mb-4 text-base font-semibold text-white">Section strengths</h2>
+                <h2 className="mb-4 font-[madina-semibold] text-base text-white">Section strengths</h2>
                 <div className="max-h-72 overflow-auto rounded-lg border border-[#555]">
                   {(data.section_breakdown || []).length === 0 ? (
-                    <p className="p-4 text-sm text-gray-500">No graded section data yet.</p>
+                    <p className="p-4 text-sm text-white">No graded section data yet.</p>
                   ) : (
                     <table className="w-full text-left text-sm">
-                      <thead className="sticky top-0 z-[1] bg-[#4a4a4a] text-gray-300">
+                      <thead className="sticky top-0 z-[1] bg-[#4a4a4a] font-[madina-semibold] text-white">
                         <tr>
                           <th className="px-3 py-3">Section</th>
                           <th className="px-3 py-3">Marks</th>
@@ -902,11 +956,11 @@ const StudentAnalyticsPage = ({ student, onBack }) => {
                       <tbody>
                         {data.section_breakdown.map((s) => (
                           <tr key={s.section} className="border-t border-[#555]">
-                            <td className="px-3 py-2.5 text-gray-200">{s.section}</td>
-                            <td className="px-3 py-2.5 text-gray-200">
+                            <td className="px-3 py-2.5 text-white">{s.section}</td>
+                            <td className="px-3 py-2.5 text-white">
                               {s.obtained}/{s.max}
                             </td>
-                            <td className="px-3 py-2.5 text-gray-200">{s.accuracy}%</td>
+                            <td className="px-3 py-2.5 text-white">{s.accuracy}%</td>
                           </tr>
                         ))}
                       </tbody>
@@ -916,75 +970,103 @@ const StudentAnalyticsPage = ({ student, onBack }) => {
               </section>
 
               <section className="rounded-lg border border-[#5a5a5a] bg-[#353535] p-4 sm:p-5">
-                <h2 className="mb-4 text-base font-semibold text-white">Custom learning</h2>
+                <h2 className="mb-1 font-[madina-semibold] text-base text-white">Custom learning</h2>
+                <p className="mb-4 text-sm text-white">
+                  Courses assigned to this student from admin (Custom Learning assignments only).
+                </p>
                 <div className="mb-4 flex flex-wrap gap-4 text-sm">
-                  <span className="text-gray-400">
+                  <span className="text-white">
                     Assigned:{" "}
                     <strong className="text-white">
                       {data.custom_learning?.modules_assigned_count ?? 0}
                     </strong>
                   </span>
-                  <span className="text-gray-400">
+                  <span className="text-white">
                     Fully completed:{" "}
-                    <strong className="text-green-400">
+                    <strong className="text-white">
                       {data.custom_learning?.modules_fully_completed_count ?? 0}
                     </strong>
                   </span>
                 </div>
-                <div className="max-h-48 space-y-2 overflow-y-auto">
-                  {(data.custom_learning?.modules || []).map((m) => (
-                    <div
-                      key={m.module_id}
-                      className="flex items-center justify-between gap-3 rounded-lg border border-[#555] bg-[#3a3a3a] px-4 py-3 text-sm"
-                    >
-                      <span className="truncate text-gray-200" title={m.name}>
-                        {m.name}
-                      </span>
-                      <span className="shrink-0 font-medium text-[#A294F9]">
-                        {m.chapters_completed}/{m.chapters_total} ({m.progress_percent}%)
-                      </span>
-                    </div>
-                  ))}
-                </div>
+                {(data.custom_learning?.modules || []).length === 0 ? (
+                  <p className="text-sm text-white">No admin-assigned custom courses for this student yet.</p>
+                ) : (
+                  <div className="max-h-48 space-y-2 overflow-y-auto">
+                    {(data.custom_learning?.modules || []).map((m) => (
+                      <div
+                        key={m.module_id}
+                        className="flex items-center justify-between gap-3 rounded-lg border border-[#555] bg-[#3a3a3a] px-4 py-3 text-sm"
+                      >
+                        <span className="truncate text-white" title={m.name}>
+                          {m.name}
+                        </span>
+                        <span className="shrink-0 font-[madina-semibold] text-white">
+                          {m.chapters_completed}/{m.chapters_total} ({m.progress_percent}%)
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </section>
 
               <section className="rounded-lg border border-[#5a5a5a] bg-[#353535] p-4 sm:p-5">
-                <h2 className="mb-1 text-base font-semibold text-white">Skill center</h2>
-                <p className="mb-4 text-sm text-gray-500">
-                  Custom learning courses: completed vs in progress (chapters started but not finished).
+                <h2 className="mb-1 font-[madina-semibold] text-base text-white">Skill center</h2>
+                <p className="mb-4 text-sm text-white">
+                  All modules this student has activity in (admin-assigned custom courses plus catalog /
+                  self-serve). Completed vs in progress uses chapter state from StudyLog.
+                </p>
+                <p className="mb-4 text-xs text-white">
+                  Modules on file:{" "}
+                  <strong className="text-white">
+                    {data.skill_center_activity?.modules_tracked_count ??
+                      (
+                        data.skill_center_activity?.modules ??
+                        data.custom_learning?.modules ??
+                        []
+                      ).length}
+                  </strong>
                 </p>
                 <div className="mb-5 grid grid-cols-2 gap-3 sm:gap-4">
                   <div className="rounded-lg border border-emerald-700/30 bg-[#2a2a2a] px-4 py-4 text-center sm:px-5 sm:py-5">
-                    <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
+                    <p className="font-[madina-semibold] text-xs uppercase tracking-wide text-white">
                       Courses completed
                     </p>
-                    <p className="mt-2 text-3xl font-bold tabular-nums text-emerald-400 sm:text-4xl">
+                    <p className="mt-2 font-[madina-semibold] text-3xl tabular-nums text-white sm:text-4xl">
                       {skillCenter.completed.length}
                     </p>
                   </div>
                   <div className="rounded-lg border border-[#A294F9]/35 bg-[#2a2a2a] px-4 py-4 text-center sm:px-5 sm:py-5">
-                    <p className="text-xs font-medium uppercase tracking-wide text-gray-500">Ongoing</p>
-                    <p className="mt-2 text-3xl font-bold tabular-nums text-[#A294F9] sm:text-4xl">
+                    <p className="font-[madina-semibold] text-xs uppercase tracking-wide text-white">Ongoing</p>
+                    <p className="mt-2 font-[madina-semibold] text-3xl tabular-nums text-white sm:text-4xl">
                       {skillCenter.ongoing.length}
                     </p>
                   </div>
                 </div>
                 <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                   <div className="flex min-h-[200px] flex-col rounded-lg border border-[#555] bg-[#2d2d2d] p-4">
-                    <h3 className="mb-3 text-sm font-semibold text-emerald-400/90">Completed courses</h3>
+                    <h3 className="mb-3 font-[madina-semibold] text-sm text-white">Completed courses</h3>
                     {skillCenter.completed.length === 0 ? (
-                      <p className="text-sm text-gray-500">No fully completed modules yet.</p>
+                      <p className="text-sm text-white">No fully completed modules yet.</p>
                     ) : (
                       <ul className="max-h-56 space-y-2 overflow-y-auto text-sm">
                         {skillCenter.completed.map((m) => (
                           <li
                             key={m.module_id}
-                            className="flex items-center justify-between gap-2 rounded-md bg-[#353535] px-3 py-2 text-gray-200"
+                            className="flex items-center justify-between gap-2 rounded-md bg-[#353535] px-3 py-2 text-white"
                           >
-                            <span className="truncate font-medium" title={m.name}>
+                            <span className="truncate font-[madina-regular]" title={m.name}>
                               {m.name}
+                              {m.admin_assigned ? (
+                                <span className="ml-2 shrink-0 rounded bg-emerald-900/40 px-1.5 py-0.5 font-[madina-semibold] text-[10px] uppercase tracking-wide text-white">
+                                  Admin
+                                </span>
+                              ) : (
+                                <span className="ml-2 shrink-0 rounded bg-gray-600/50 px-1.5 py-0.5 font-[madina-semibold] text-[10px] uppercase tracking-wide text-white">
+                                  Catalog
+                                </span>
+                              )}
                             </span>
-                            <span className="shrink-0 text-xs text-emerald-400/90">
+                            <span className="shrink-0 text-xs text-white">
                               {m.chapters_completed}/{m.chapters_total} ch.
                             </span>
                           </li>
@@ -993,18 +1075,29 @@ const StudentAnalyticsPage = ({ student, onBack }) => {
                     )}
                   </div>
                   <div className="flex min-h-[200px] flex-col rounded-lg border border-[#555] bg-[#2d2d2d] p-4">
-                    <h3 className="mb-3 text-sm font-semibold text-[#c4b5fd]">Ongoing courses</h3>
+                    <h3 className="mb-3 font-[madina-semibold] text-sm text-white">Ongoing courses</h3>
                     {skillCenter.ongoing.length === 0 ? (
-                      <p className="text-sm text-gray-500">No courses in progress (or none assigned).</p>
+                      <p className="text-sm text-white">
+                        No courses in progress (no chapters in progress or partially completed).
+                      </p>
                     ) : (
                       <ul className="max-h-56 space-y-3 overflow-y-auto text-sm">
                         {skillCenter.ongoing.map((m) => (
                           <li key={m.module_id} className="rounded-md bg-[#353535] px-3 py-2.5">
                             <div className="flex items-center justify-between gap-2">
-                              <span className="truncate font-medium text-gray-200" title={m.name}>
+                              <span className="truncate font-[madina-regular] text-white" title={m.name}>
                                 {m.name}
+                                {m.admin_assigned ? (
+                                  <span className="ml-2 shrink-0 rounded bg-[#A294F9]/20 px-1.5 py-0.5 font-[madina-semibold] text-[10px] uppercase tracking-wide text-white">
+                                    Admin
+                                  </span>
+                                ) : (
+                                  <span className="ml-2 shrink-0 rounded bg-gray-600/50 px-1.5 py-0.5 font-[madina-semibold] text-[10px] uppercase tracking-wide text-white">
+                                    Catalog
+                                  </span>
+                                )}
                               </span>
-                              <span className="shrink-0 text-xs text-gray-400">
+                              <span className="shrink-0 text-xs text-white">
                                 {m.chapters_completed}/{m.chapters_total} · {m.progress_percent}%
                               </span>
                             </div>
@@ -1023,22 +1116,22 @@ const StudentAnalyticsPage = ({ student, onBack }) => {
                   </div>
                 </div>
                 {skillCenter.notStarted.length > 0 ? (
-                  <p className="mt-4 text-xs text-gray-500">
-                    Not started yet:{" "}
-                    <span className="text-gray-400">{skillCenter.notStarted.length}</span> assigned module(s)
-                    with no chapter progress recorded.
+                  <p className="mt-4 text-xs text-white">
+                    No chapter progress yet:{" "}
+                    <span className="text-white">{skillCenter.notStarted.length}</span> module(s) on file
+                    (e.g. catalog enrolled or assigned) with no completed or in-progress chapter.
                   </p>
                 ) : null}
               </section>
 
               <section className="rounded-lg border border-[#5a5a5a] bg-[#353535] p-4 sm:p-5">
-                <h2 className="mb-4 text-base font-semibold text-white">Attempt history</h2>
+                <h2 className="mb-4 font-[madina-semibold] text-base text-white">Attempt history</h2>
                 {detailLoading ? (
-                  <p className="mb-2 text-sm text-gray-400">Loading attempt…</p>
+                  <p className="mb-2 text-sm text-white">Loading attempt…</p>
                 ) : null}
                 <div className="max-h-96 overflow-auto rounded-lg border border-[#555]">
                   <table className="w-full min-w-[480px] text-left text-sm">
-                    <thead className="sticky top-0 z-[1] bg-[#4a4a4a] text-gray-300">
+                    <thead className="sticky top-0 z-[1] bg-[#4a4a4a] font-[madina-semibold] text-white">
                       <tr>
                         <th className="px-3 py-3">Exam</th>
                         <th className="px-3 py-3">#</th>
@@ -1051,25 +1144,25 @@ const StudentAnalyticsPage = ({ student, onBack }) => {
                       {(data.attempt_history || []).map((row) => (
                         <tr key={row.attempt_id} className="border-t border-[#555]">
                           <td
-                            className="max-w-[200px] truncate px-3 py-2.5 text-gray-200"
+                            className="max-w-[200px] truncate px-3 py-2.5 text-white"
                             title={row.exam_name}
                           >
                             {row.exam_name}
                           </td>
-                          <td className="px-3 py-2.5 text-gray-200">{row.attempt_number}</td>
-                          <td className="px-3 py-2.5 text-gray-200">{row.total_score}</td>
-                          <td className="px-3 py-2.5 text-gray-200">{row.trust_score}</td>
+                          <td className="px-3 py-2.5 text-white">{row.attempt_number}</td>
+                          <td className="px-3 py-2.5 text-white">{row.total_score}</td>
+                          <td className="px-3 py-2.5 text-white">{row.trust_score}</td>
                           <td className="px-3 py-2.5">
                             {row.status === "submitted" ? (
                               <button
                                 type="button"
                                 onClick={() => loadAttemptDetail(row)}
-                                className="font-medium text-[#A294F9] hover:underline"
+                                className="font-[madina-semibold] text-white hover:underline"
                               >
                                 View
                               </button>
                             ) : (
-                              <span className="text-gray-500">{row.status}</span>
+                              <span className="text-white">{row.status}</span>
                             )}
                           </td>
                         </tr>
@@ -1080,37 +1173,65 @@ const StudentAnalyticsPage = ({ student, onBack }) => {
               </section>
 
               <section
-                className={`rounded-lg border p-4 sm:p-5 ${
-                  progressComment.tone === "positive"
-                    ? "border-emerald-600/50 bg-emerald-950/20"
-                    : progressComment.tone === "attention"
-                      ? "border-amber-600/50 bg-amber-950/20"
-                      : "border-[#A294F9]/35 bg-[#353535]"
-                }`}
+                className={`relative overflow-hidden rounded-xl border p-0 ${progressSummaryUi.shell}`}
               >
-                <h2 className="mb-2 text-base font-semibold text-white">Progress summary (comment)</h2>
-                <p
-                  className={`mb-4 text-sm font-medium ${
-                    progressComment.tone === "positive"
-                      ? "text-emerald-300"
-                      : progressComment.tone === "attention"
-                        ? "text-amber-200"
-                        : "text-gray-200"
-                  }`}
-                >
-                  {progressComment.title}
-                </p>
-                <div className="space-y-3 text-sm leading-relaxed text-gray-300">
-                  {progressComment.lines.map((line, idx) => (
-                    <p key={idx} className="flex gap-2">
-                      <span className="shrink-0 font-medium text-gray-500">•</span>
-                      <span>{line}</span>
+                <div className="relative flex flex-col sm:flex-row sm:gap-1">
+                  <div
+                    className={`h-1 w-full shrink-0 bg-gradient-to-r sm:hidden ${progressSummaryUi.railMobile}`}
+                    aria-hidden
+                  />
+                  <div
+                    className={`hidden w-1.5 shrink-0 bg-gradient-to-b sm:block ${progressSummaryUi.rail}`}
+                    aria-hidden
+                  />
+                  <div className="min-w-0 flex-1 px-4 py-5 sm:px-6 sm:py-6">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-5">
+                      <div
+                        className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border ${progressSummaryUi.iconBox}`}
+                        aria-hidden
+                      >
+                        {createElement(progressSummaryUi.Icon, {
+                          className: "h-5 w-5 sm:h-6 sm:w-6",
+                        })}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="font-[madina-semibold] text-[11px] uppercase tracking-[0.14em] text-white/75">
+                          {progressComment.tone === "positive"
+                            ? "Positive outlook"
+                            : progressComment.tone === "attention"
+                              ? "Needs attention"
+                              : "Balanced view"}
+                        </p>
+                        <h2 className="mt-1 font-[madina-semibold] text-base text-white sm:text-lg">
+                          Progress summary (comment)
+                        </h2>
+                        <p className="mt-3 font-[madina-semibold] text-sm leading-snug text-white sm:text-[15px]">
+                          {progressComment.title}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div
+                      className={`mt-6 space-y-3.5 border-t pt-5 text-sm leading-relaxed text-white sm:space-y-4 ${progressSummaryUi.listTop}`}
+                    >
+                      {progressComment.lines.map((line, idx) => (
+                        <p key={idx} className="flex gap-3 sm:gap-3.5">
+                          <span
+                            className={`mt-2 h-1.5 w-1.5 shrink-0 rounded-full sm:mt-2.5 ${progressSummaryUi.bullet}`}
+                            aria-hidden
+                          />
+                          <span className="min-w-0 font-[madina-regular]">{line}</span>
+                        </p>
+                      ))}
+                    </div>
+
+                    <p
+                      className={`mt-6 border-t pt-4 text-xs leading-relaxed text-white/90 ${progressSummaryUi.disclaimerRule}`}
+                    >
+                      {progressComment.disclaimer}
                     </p>
-                  ))}
+                  </div>
                 </div>
-                <p className="mt-4 border-t border-white/10 pt-4 text-xs leading-relaxed text-gray-500">
-                  {progressComment.disclaimer}
-                </p>
               </section>
             </div>
           ) : null}
