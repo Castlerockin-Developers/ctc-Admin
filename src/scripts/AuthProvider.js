@@ -1,6 +1,7 @@
 import { error as logError } from '../utils/logger';
 import cacheService from '../utils/cacheService';
 
+/** Django mounts REST routes under /api/ (see crackthecampus/urls.py). */
 export const baseUrl = 'https://api.corp.crackthecampus.com/api';
 export const staticUrl = '';
 export const SESSION_EXPIRED_MESSAGE = 'Failed to refresh access token';
@@ -16,6 +17,7 @@ function clearSession() {
   localStorage.removeItem('access');
   localStorage.removeItem('refresh');
   localStorage.removeItem('userdata');
+  localStorage.removeItem('panelScope');
   // Clear cached dashboard/student/exam/result data to prevent showing previous user's data after re-login
   cacheService.clearAll();
   invalidatePlanCache();

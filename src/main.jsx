@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import ErrorBoundary from './component/ErrorBoundary'
 import './index.css'
+import './sweetalert-dark.css'
 import App from './App.jsx'
 
 createRoot(document.getElementById('root')).render(

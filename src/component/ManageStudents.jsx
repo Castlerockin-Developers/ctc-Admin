@@ -25,10 +25,11 @@ const truncateText = (text, maxLength) => {
   }
 };
 
-const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed }) => {
+const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed, onOpenStudentAnalytics }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchInput, setSearchInput] = useState("");
-  const totalAllowedStudents = useRef(0);
+  const [studentCapEnforced, setStudentCapEnforced] = useState(false);
+  const [maxUsersCap, setMaxUsersCap] = useState(null);
   const [totalStudents, setTotalStudents] = useState(0);
   const [activeTab, setActiveTab] = useState("all");
   const [studentsData, setStudentsData] = useState(null);
@@ -108,6 +109,7 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed })
         totalCount: data.count,
         user_count: data.user_count,
         max_users: data.max_users,
+        student_cap_enforced: data.student_cap_enforced,
       };
     }
     if (data && data.data && typeof data.user_count === "number") {
@@ -121,6 +123,7 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed })
         totalCount: flat.length,
         user_count: data.user_count,
         max_users: data.max_users,
+        student_cap_enforced: data.student_cap_enforced,
       };
     }
     throw new Error("Unexpected response format");
@@ -131,13 +134,15 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed })
     setLoading(true);
     setError(null);
     fetchStudentsPage(currentPage, studentsPerPage, activeTab, searchQuery)
-      .then(({ paginated, results, totalCount: count, user_count, max_users }) => {
+      .then(({ paginated, results, totalCount: count, user_count, max_users, student_cap_enforced }) => {
         if (cancelled) return;
         setIsPaginated(paginated);
         setStudentsData(results);
         setTotalCount(count);
         setTotalStudents(user_count ?? 0);
-        totalAllowedStudents.current = max_users;
+        const capOn = !!student_cap_enforced;
+        setStudentCapEnforced(capOn);
+        setMaxUsersCap(capOn && max_users != null ? max_users : null);
       })
       .catch((err) => {
         if (!cancelled) {
@@ -191,6 +196,16 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed })
     setCurrentPage(1);
     setRetryCount((c) => c + 1);
   }, []);
+
+  const openStudentAnalytics = useCallback(
+    (e, student) => {
+      if (deleteMode) return;
+      if (e?.target?.closest?.('input[type="checkbox"]')) return;
+      if (!student?.id || !onOpenStudentAnalytics) return;
+      onOpenStudentAnalytics(student);
+    },
+    [deleteMode, onOpenStudentAnalytics]
+  );
 
   const toggleSelectAll = () => {
     if (selectedIds.size === currentStudents.length) {
@@ -294,9 +309,13 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed })
               Manage Students
             </motion.h1>
             <motion.div variants={itemSlide} className="rounded-lg border border-[#666] bg-[#4B4B4B] px-4 py-3">
-              <p className="text-xs text-gray-400">Total Students</p>
+              <p className="text-xs text-gray-400">
+                Total students{studentCapEnforced ? " (subscription cap)" : ""}
+              </p>
               <p className="text-lg font-semibold text-white sm:text-xl">
-                {totalCount} / {totalAllowedStudents.current || 500}
+                {studentCapEnforced && maxUsersCap != null
+                  ? `${totalStudents} / ${maxUsersCap}`
+                  : `${totalStudents}`}
               </p>
             </motion.div>
           </div>
@@ -397,7 +416,16 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed })
                   variants={tableRowSlide}
                   initial="hidden"
                   animate="visible"
-                  className="flex flex-col gap-3 rounded-lg border border-[#5a5a5a] bg-[#3a3a3a] p-4"
+                  role="button"
+                  tabIndex={0}
+                  onClick={(e) => openStudentAnalytics(e, student)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      openStudentAnalytics(e, student);
+                    }
+                  }}
+                  className={`flex flex-col gap-3 rounded-lg border border-[#5a5a5a] bg-[#3a3a3a] p-4 ${deleteMode ? "" : "cursor-pointer hover:border-[#A294F9]/40"}`}
                 >
                   <div className="flex items-start justify-between gap-2">
                     {deleteMode && student.id && (
@@ -405,6 +433,7 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed })
                         type="checkbox"
                         checked={selectedIds.has(student.id)}
                         onChange={() => toggleSelect(student.id)}
+                        onClick={(e) => e.stopPropagation()}
                         className="mt-1 h-4 w-4 shrink-0 cursor-pointer rounded border-[#5a5a5a] bg-[#3d3d3d] text-[#A294F9] focus:ring-[#A294F9]"
                       />
                     )}
@@ -422,7 +451,7 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed })
                     <span className="text-gray-500">Email</span>
                     <span className="truncate text-right">{student.email}</span>
                     <span className="text-gray-500">Phone</span>
-                    <span className="text-right">{student.contact ?? student.phone ?? "—"}</span>
+                    <span className="text-right">{student.contact ?? student.phone ?? "-"}</span>
                   </div>
                 </motion.div>
               )})}
@@ -464,7 +493,8 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed })
                         variants={tableRowSlide}
                         initial="hidden"
                         animate="visible"
-                        className={`border-b border-[#555] transition-colors hover:bg-[#404040] ${index % 2 === 0 ? "bg-[#3a3a3a]" : "bg-[#353535]"}`}
+                        onClick={(e) => openStudentAnalytics(e, student)}
+                        className={`border-b border-[#555] transition-colors hover:bg-[#404040] ${deleteMode ? "" : "cursor-pointer"} ${index % 2 === 0 ? "bg-[#3a3a3a]" : "bg-[#353535]"}`}
                       >
                         {deleteMode && (
                           <td className="w-12 px-4 py-3.5 text-center">
@@ -473,6 +503,7 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed })
                                 type="checkbox"
                                 checked={selectedIds.has(student.id)}
                                 onChange={() => toggleSelect(student.id)}
+                                onClick={(e) => e.stopPropagation()}
                                 className="h-4 w-4 cursor-pointer rounded border-[#5a5a5a] bg-[#3d3d3d] text-[#A294F9] focus:ring-[#A294F9]"
                               />
                             )}
