@@ -76,6 +76,18 @@ const Home = () => {
                     navigate('/access-denied', { replace: true });
                     return;
                 }
+                try {
+                    localStorage.setItem(
+                        'panelScope',
+                        JSON.stringify({
+                            admin_panel_access_level: data.admin_panel_access_level || 'full',
+                            admin_panel_groups_detail: data.admin_panel_groups_detail || [],
+                            is_full_org_admin_panel: data.is_full_org_admin_panel !== false,
+                        })
+                    );
+                } catch (e) {
+                    logError('Home - panelScope cache:', e);
+                }
             } catch (error) {
                 // If backend says forbidden, send user to access denied
                 if (error.status === 403) {
@@ -282,7 +294,7 @@ const Home = () => {
                 </div>
 
                 {/* Main Content Area - scrolls internally; tall content (e.g. skeleton) does not affect sidebar */}
-                <div className="min-h-0 flex-1 min-w-0 overflow-y-auto pl-0 sm:w-full md:w-full lg:w-[75%] xl:w-[80%] 2xl:w-[82%]">
+                <div className="min-h-0 flex-1 min-w-0 overflow-y-auto overflow-x-hidden pl-0 sm:w-full md:w-full lg:w-[75%] xl:w-[80%] 2xl:w-[82%]">
                     {/* Main Navigation Components */}
                     {activeComponent === "dashboard" && (
                         <Dashboard

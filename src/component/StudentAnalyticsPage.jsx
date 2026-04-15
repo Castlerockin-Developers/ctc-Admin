@@ -9,7 +9,7 @@ import Spinner from "../loader/Spinner";
 import ParticularResult from "./PerticularResult";
 
 function formatDt(iso) {
-  if (!iso) return "—";
+  if (!iso) return "-";
   try {
     return new Date(iso).toLocaleString(undefined, {
       dateStyle: "short",
@@ -41,7 +41,7 @@ function assessmentTypeLabel(t) {
     contest: "Contest",
     practice: "Practice",
   };
-  return m[t] || (t ? String(t) : "—");
+  return m[t] || (t ? String(t) : "-");
 }
 
 /** Normalize API series to points { label, value, date }; sort by date when present. */
@@ -291,7 +291,7 @@ function partitionLearningModules(modules) {
 
 /**
  * Heuristic progress narrative from analytics payload.
- * Returns { tone, title, lines, disclaimer } — tone: positive | attention | neutral
+ * Returns { tone, title, lines, disclaimer } - tone: positive | attention | neutral
  */
 function buildProgressComment(data) {
   if (!data) {
@@ -348,14 +348,14 @@ function buildProgressComment(data) {
       );
     } else if (exTrend.key === "declining") {
       lines.push(
-        "Exam scores have softened recently compared with this student’s earlier attempts — worth reviewing weak topics or timing."
+        "Exam scores have softened recently compared with this student’s earlier attempts - worth reviewing weak topics or timing."
       );
     } else {
-      lines.push("Exam scores are relatively steady across completed attempts — consistent performance without a strong up or down drift.");
+      lines.push("Exam scores are relatively steady across completed attempts - consistent performance without a strong up or down drift.");
     }
   } else if (examScores.length === 1) {
     lines.push(
-      "Only one completed exam attempt is on record, so a trend line is not meaningful yet — collect a few more assessments to judge progress."
+      "Only one completed exam attempt is on record, so a trend line is not meaningful yet - collect a few more assessments to judge progress."
     );
   } else {
     lines.push("There are no completed exam attempts with scores in this window, so exam progress cannot be assessed from graphs.");
@@ -370,24 +370,24 @@ function buildProgressComment(data) {
       lines.push("Contest scores look stable across recorded finishes.");
     }
   } else if (contestScores.length === 1) {
-    lines.push("Only one finished contest score is recorded — more contests are needed to comment on contest progress.");
+    lines.push("Only one finished contest score is recorded - more contests are needed to comment on contest progress.");
   } else {
     lines.push("No finished contest attempts with scores were found for this student.");
   }
 
   if (noShowRatio > 0.35 && eligible >= 3) {
     lines.push(
-      `Participation: a notable share of eligible exams (${noShow} of ${eligible}) were not started — progress also depends on showing up for assigned tests.`
+      `Participation: a notable share of eligible exams (${noShow} of ${eligible}) were not started - progress also depends on showing up for assigned tests.`
     );
   } else if (eligible > 0 && noShow === 0) {
-    lines.push("Participation: the student has started every eligible exam listed — good engagement with assigned assessments.");
+    lines.push("Participation: the student has started every eligible exam listed - good engagement with assigned assessments.");
   }
 
   if (streak >= 5 || distinct30 >= 12) {
     lines.push("Login activity looks healthy: regular sign-ins suggest steady engagement with the platform.");
   } else if (submittedAttempts >= 3 && logins30 === 0 && distinct30 <= 2) {
     lines.push(
-      "Login activity is sparse in the last 30 days despite some exam attempts — encourage consistent sign-in so habits and reminders stay aligned."
+      "Login activity is sparse in the last 30 days despite some exam attempts - encourage consistent sign-in so habits and reminders stay aligned."
     );
   } else if (logins30 > 0) {
     lines.push("The student has signed in during the last 30 days; use streak and distinct-day counts above for finer engagement context.");
@@ -395,21 +395,21 @@ function buildProgressComment(data) {
 
   if (modulesAssigned > 0) {
     if (modulesDone >= modulesAssigned) {
-      lines.push("Custom learning: all assigned modules are fully completed — strong follow-through on coursework.");
+      lines.push("Custom learning: all assigned modules are fully completed - strong follow-through on coursework.");
     } else if (modulesDone > 0) {
       lines.push(
-        `Custom learning: ${modulesDone} of ${modulesAssigned} assigned module(s) fully completed — room to push remaining modules to completion.`
+        `Custom learning: ${modulesDone} of ${modulesAssigned} assigned module(s) fully completed - room to push remaining modules to completion.`
       );
     } else {
       lines.push(
-        "Custom learning: modules are assigned but none are fully completed yet — progress on self-paced content is still building."
+        "Custom learning: modules are assigned but none are fully completed yet - progress on self-paced content is still building."
       );
     }
   }
 
   if (lowTrust >= 2 && submittedAttempts >= 2) {
     lines.push(
-      "Several low-trust attempts were flagged — review proctoring notes alongside scores before drawing conclusions about skill gains."
+      "Several low-trust attempts were flagged - review proctoring notes alongside scores before drawing conclusions about skill gains."
     );
   }
 
@@ -438,7 +438,7 @@ function buildProgressComment(data) {
     tone === "positive"
       ? "Overall: signs of progress"
       : tone === "attention"
-        ? "Overall: mixed signals — needs attention"
+        ? "Overall: mixed signals - needs attention"
         : "Overall: steady or early-stage";
 
   const disclaimer =
@@ -607,7 +607,7 @@ const StudentAnalyticsPage = ({ student, onBack }) => {
                 {id?.name || student.name || student.email || "Student"}
               </h1>
               <p className="mt-1 text-sm text-gray-400 sm:text-base">
-                {id?.usn || student.usn || student.slNo || "—"}
+                {id?.usn || student.usn || student.slNo || "-"}
               </p>
             </div>
           </div>
@@ -647,23 +647,23 @@ const StudentAnalyticsPage = ({ student, onBack }) => {
                 <dl className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2 lg:grid-cols-3">
                   <div>
                     <dt className="text-gray-500">Email</dt>
-                    <dd className="mt-0.5 text-white">{id?.email || "—"}</dd>
+                    <dd className="mt-0.5 text-white">{id?.email || "-"}</dd>
                   </div>
                   <div>
                     <dt className="text-gray-500">Phone</dt>
-                    <dd className="mt-0.5 text-white">{id?.phone || "—"}</dd>
+                    <dd className="mt-0.5 text-white">{id?.phone || "-"}</dd>
                   </div>
                   <div className="sm:col-span-2 lg:col-span-1">
                     <dt className="text-gray-500">Branch / group</dt>
                     <dd className="mt-0.5 text-white">
                       {(id?.branch_groups || []).length
                         ? id.branch_groups.join(", ")
-                        : "—"}
+                        : "-"}
                     </dd>
                   </div>
                   <div>
                     <dt className="text-gray-500">Batch</dt>
-                    <dd className="mt-0.5 text-white">{id?.batch ?? "—"}</dd>
+                    <dd className="mt-0.5 text-white">{id?.batch ?? "-"}</dd>
                   </div>
                   <div>
                     <dt className="text-gray-500">Active</dt>
@@ -727,7 +727,7 @@ const StudentAnalyticsPage = ({ student, onBack }) => {
                   <div className="rounded-lg bg-[#3a3a3a] p-4">
                     <p className="text-xs text-gray-500">Avg exam score</p>
                     <p className="mt-1 text-xl font-semibold text-white sm:text-2xl">
-                      {data.performance_overview?.average_submitted_exam_score ?? "—"}
+                      {data.performance_overview?.average_submitted_exam_score ?? "-"}
                     </p>
                   </div>
                   <div className="rounded-lg bg-[#3a3a3a] p-4">
@@ -831,7 +831,7 @@ const StudentAnalyticsPage = ({ student, onBack }) => {
                             <td className="whitespace-nowrap px-3 py-2.5 text-gray-300">{row.mcq_score}</td>
                             <td className="whitespace-nowrap px-3 py-2.5 text-gray-300">{row.coding_score}</td>
                             <td className="whitespace-nowrap px-3 py-2.5 text-gray-400">
-                              {row.end_time ? formatDt(row.end_time) : "—"}
+                              {row.end_time ? formatDt(row.end_time) : "-"}
                             </td>
                           </tr>
                         ))
@@ -842,7 +842,7 @@ const StudentAnalyticsPage = ({ student, onBack }) => {
               </section>
 
               <section className="rounded-lg border border-[#5a5a5a] bg-[#353535] p-4 sm:p-5">
-                <h2 className="mb-1 text-base font-semibold text-white">Assessment score progress — graphs</h2>
+                <h2 className="mb-1 text-base font-semibold text-white">Assessment score progress - graphs</h2>
                 <p className="mb-4 text-xs text-gray-500">
                   Same scope as the table above: <strong className="text-gray-400">campus, ranked, and contest</strong>{" "}
                   finishes (submitted attempts, total score). Line = score over time; bars = finishes in order. If
@@ -869,7 +869,7 @@ const StudentAnalyticsPage = ({ student, onBack }) => {
               </section>
 
               <section className="rounded-lg border border-[#5a5a5a] bg-[#353535] p-4 sm:p-5">
-                <h2 className="mb-1 text-base font-semibold text-white">Contest scores — graphs</h2>
+                <h2 className="mb-1 text-base font-semibold text-white">Contest scores - graphs</h2>
                 <p className="mb-4 text-xs text-gray-500">
                   Based on finished contest attempts (live and practice). Same layout as exams.
                 </p>

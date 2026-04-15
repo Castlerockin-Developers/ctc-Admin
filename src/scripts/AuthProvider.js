@@ -17,6 +17,7 @@ function clearSession() {
   localStorage.removeItem('access');
   localStorage.removeItem('refresh');
   localStorage.removeItem('userdata');
+  localStorage.removeItem('panelScope');
   // Clear cached dashboard/student/exam/result data to prevent showing previous user's data after re-login
   cacheService.clearAll();
   invalidatePlanCache();
