@@ -135,7 +135,7 @@ const LoginPage = () => {
     }
     setResetLoading(true);
     try {
-      const response = await fetch(`${baseUrl}/auth/password-reset/`, {
+      const response = await fetch(`${baseUrl}/forget-password/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: resetEmail }),

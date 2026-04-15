@@ -25,7 +25,7 @@ const truncateText = (text, maxLength) => {
   }
 };
 
-const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed }) => {
+const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed, onOpenStudentAnalytics }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchInput, setSearchInput] = useState("");
   const totalAllowedStudents = useRef(0);
@@ -191,6 +191,16 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed })
     setCurrentPage(1);
     setRetryCount((c) => c + 1);
   }, []);
+
+  const openStudentAnalytics = useCallback(
+    (e, student) => {
+      if (deleteMode) return;
+      if (e?.target?.closest?.('input[type="checkbox"]')) return;
+      if (!student?.id || !onOpenStudentAnalytics) return;
+      onOpenStudentAnalytics(student);
+    },
+    [deleteMode, onOpenStudentAnalytics]
+  );
 
   const toggleSelectAll = () => {
     if (selectedIds.size === currentStudents.length) {
@@ -397,7 +407,16 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed })
                   variants={tableRowSlide}
                   initial="hidden"
                   animate="visible"
-                  className="flex flex-col gap-3 rounded-lg border border-[#5a5a5a] bg-[#3a3a3a] p-4"
+                  role="button"
+                  tabIndex={0}
+                  onClick={(e) => openStudentAnalytics(e, student)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      openStudentAnalytics(e, student);
+                    }
+                  }}
+                  className={`flex flex-col gap-3 rounded-lg border border-[#5a5a5a] bg-[#3a3a3a] p-4 ${deleteMode ? "" : "cursor-pointer hover:border-[#A294F9]/40"}`}
                 >
                   <div className="flex items-start justify-between gap-2">
                     {deleteMode && student.id && (
@@ -405,6 +424,7 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed })
                         type="checkbox"
                         checked={selectedIds.has(student.id)}
                         onChange={() => toggleSelect(student.id)}
+                        onClick={(e) => e.stopPropagation()}
                         className="mt-1 h-4 w-4 shrink-0 cursor-pointer rounded border-[#5a5a5a] bg-[#3d3d3d] text-[#A294F9] focus:ring-[#A294F9]"
                       />
                     )}
@@ -464,7 +484,8 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed })
                         variants={tableRowSlide}
                         initial="hidden"
                         animate="visible"
-                        className={`border-b border-[#555] transition-colors hover:bg-[#404040] ${index % 2 === 0 ? "bg-[#3a3a3a]" : "bg-[#353535]"}`}
+                        onClick={(e) => openStudentAnalytics(e, student)}
+                        className={`border-b border-[#555] transition-colors hover:bg-[#404040] ${deleteMode ? "" : "cursor-pointer"} ${index % 2 === 0 ? "bg-[#3a3a3a]" : "bg-[#353535]"}`}
                       >
                         {deleteMode && (
                           <td className="w-12 px-4 py-3.5 text-center">
@@ -473,6 +494,7 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed })
                                 type="checkbox"
                                 checked={selectedIds.has(student.id)}
                                 onChange={() => toggleSelect(student.id)}
+                                onClick={(e) => e.stopPropagation()}
                                 className="h-4 w-4 cursor-pointer rounded border-[#5a5a5a] bg-[#3d3d3d] text-[#A294F9] focus:ring-[#A294F9]"
                               />
                             )}

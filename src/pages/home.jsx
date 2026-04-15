@@ -12,6 +12,7 @@ import ManageExam from "../component/ManageExam";
 import NewExam from "../component/NewExam";
 import ManageResult from "../component/ManageResult";
 import ManageStudents from "../component/ManageStudents";
+import StudentAnalyticsPage from "../component/StudentAnalyticsPage";
 import AddQuestion from "../component/AddQuestion";
 import AddStudents from "../component/AddStudents";
 import Subcription from "../component/Subcription";
@@ -30,6 +31,7 @@ const Home = () => {
     const navigate = useNavigate();
     const [activeComponent, setActiveComponent] = useState("dashboard");
     const [isStudentModalOpen, setStudentModalOpen] = useState(false);
+    const [studentAnalyticsStudent, setStudentAnalyticsStudent] = useState(null);
     const [openAddUserModal, setOpenAddUserModal] = useState(false);
     const [createExamRequest, setCreateExamRequest] = useState([]);
     const [selectedCourse, setSelectedCourse] = useState(null);
@@ -269,7 +271,9 @@ const Home = () => {
                     <Sidebar activeComponent={
                         ["editExam", "editAddQuestion", "editAddStudents"].includes(activeComponent)
                             ? "manageExam"
-                            : activeComponent
+                            : activeComponent === "studentAnalytics"
+                                ? "student"
+                                : activeComponent
                     }
                         setActiveComponent={setActiveComponent}
                         onCreateExam={() => setActiveComponent("newExam")}
@@ -278,7 +282,7 @@ const Home = () => {
                 </div>
 
                 {/* Main Content Area - scrolls internally; tall content (e.g. skeleton) does not affect sidebar */}
-                <div className="min-h-0 flex-1 min-w-0 overflow-y-auto pl-0 md:pl-1 lg:pl-0 sm:w-full md:w-full lg:w-[75%] xl:w-[80%] 2xl:w-[82%]">
+                <div className="min-h-0 flex-1 min-w-0 overflow-y-auto pl-0 sm:w-full md:w-full lg:w-[75%] xl:w-[80%] 2xl:w-[82%]">
                     {/* Main Navigation Components */}
                     {activeComponent === "dashboard" && (
                         <Dashboard
@@ -345,6 +349,19 @@ const Home = () => {
                             studentModalOpen={isStudentModalOpen}
                             setStudentModalOpen={setStudentModalOpen}
                             cacheAllowed={effectiveCacheAllowed}
+                            onOpenStudentAnalytics={(s) => {
+                                setStudentAnalyticsStudent(s);
+                                setActiveComponent("studentAnalytics");
+                            }}
+                        />
+                    )}
+                    {activeComponent === "studentAnalytics" && studentAnalyticsStudent && (
+                        <StudentAnalyticsPage
+                            student={studentAnalyticsStudent}
+                            onBack={() => {
+                                setStudentAnalyticsStudent(null);
+                                setActiveComponent("student");
+                            }}
                         />
                     )}
 
