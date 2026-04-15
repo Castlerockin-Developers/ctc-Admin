@@ -28,7 +28,8 @@ const truncateText = (text, maxLength) => {
 const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed, onOpenStudentAnalytics }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchInput, setSearchInput] = useState("");
-  const totalAllowedStudents = useRef(0);
+  const [studentCapEnforced, setStudentCapEnforced] = useState(false);
+  const [maxUsersCap, setMaxUsersCap] = useState(null);
   const [totalStudents, setTotalStudents] = useState(0);
   const [activeTab, setActiveTab] = useState("all");
   const [studentsData, setStudentsData] = useState(null);
@@ -108,6 +109,7 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed, o
         totalCount: data.count,
         user_count: data.user_count,
         max_users: data.max_users,
+        student_cap_enforced: data.student_cap_enforced,
       };
     }
     if (data && data.data && typeof data.user_count === "number") {
@@ -121,6 +123,7 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed, o
         totalCount: flat.length,
         user_count: data.user_count,
         max_users: data.max_users,
+        student_cap_enforced: data.student_cap_enforced,
       };
     }
     throw new Error("Unexpected response format");
@@ -131,13 +134,15 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed, o
     setLoading(true);
     setError(null);
     fetchStudentsPage(currentPage, studentsPerPage, activeTab, searchQuery)
-      .then(({ paginated, results, totalCount: count, user_count, max_users }) => {
+      .then(({ paginated, results, totalCount: count, user_count, max_users, student_cap_enforced }) => {
         if (cancelled) return;
         setIsPaginated(paginated);
         setStudentsData(results);
         setTotalCount(count);
         setTotalStudents(user_count ?? 0);
-        totalAllowedStudents.current = max_users;
+        const capOn = !!student_cap_enforced;
+        setStudentCapEnforced(capOn);
+        setMaxUsersCap(capOn && max_users != null ? max_users : null);
       })
       .catch((err) => {
         if (!cancelled) {
@@ -304,9 +309,13 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed, o
               Manage Students
             </motion.h1>
             <motion.div variants={itemSlide} className="rounded-lg border border-[#666] bg-[#4B4B4B] px-4 py-3">
-              <p className="text-xs text-gray-400">Total Students</p>
+              <p className="text-xs text-gray-400">
+                Total students{studentCapEnforced ? " (subscription cap)" : ""}
+              </p>
               <p className="text-lg font-semibold text-white sm:text-xl">
-                {totalCount} / {totalAllowedStudents.current || 500}
+                {studentCapEnforced && maxUsersCap != null
+                  ? `${totalStudents} / ${maxUsersCap}`
+                  : `${totalStudents}`}
               </p>
             </motion.div>
           </div>
@@ -442,7 +451,7 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed, o
                     <span className="text-gray-500">Email</span>
                     <span className="truncate text-right">{student.email}</span>
                     <span className="text-gray-500">Phone</span>
-                    <span className="text-right">{student.contact ?? student.phone ?? "—"}</span>
+                    <span className="text-right">{student.contact ?? student.phone ?? "-"}</span>
                   </div>
                 </motion.div>
               )})}

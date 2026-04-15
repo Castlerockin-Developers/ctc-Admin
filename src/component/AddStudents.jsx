@@ -67,10 +67,38 @@ const AddStudents = ({
   const [allPage, setAllPage] = useState(1);
   const [addedPage, setAddedPage] = useState(1);
   const [isCreating, setIsCreating] = useState(false);
+  const [panelScope, setPanelScope] = useState(null);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("panelScope");
+      setPanelScope(raw ? JSON.parse(raw) : null);
+    } catch {
+      setPanelScope(null);
+    }
+  }, []);
+
+  const studentsInScope = useMemo(() => {
+    if (!panelScope || panelScope.admin_panel_access_level !== "branch") {
+      return allStudents;
+    }
+    const names = new Set((panelScope.admin_panel_groups_detail || []).map((g) => g.name));
+    if (names.size === 0) return allStudents;
+    return allStudents.filter((s) => names.has(s.branch));
+  }, [allStudents, panelScope]);
+
+  useEffect(() => {
+    if (!panelScope || panelScope.admin_panel_access_level !== "branch") return;
+    const g = panelScope.admin_panel_groups_detail || [];
+    if (g.length !== 1) return;
+    const name = g[0].name;
+    if (!name) return;
+    setAllBranchFilter((prev) => prev || name);
+  }, [panelScope]);
 
   const branches = useMemo(
-    () => Array.from(new Set(allStudents.map((s) => s.branch))).filter(Boolean).sort(),
-    [allStudents]
+    () => Array.from(new Set(studentsInScope.map((s) => s.branch))).filter(Boolean).sort(),
+    [studentsInScope]
   );
 
   // Re-hydrate from session when returning to step 3 (non-edit) and fetch students list
@@ -180,14 +208,14 @@ const AddStudents = ({
 
   const filteredAll = useMemo(
     () =>
-      allStudents.filter(
+      studentsInScope.filter(
         (s) =>
           (!allBranchFilter || s.branch === allBranchFilter) &&
           !addedStudents.some((a) => a.studentId === s.studentId) &&
           (String(s.id ?? '').toLowerCase().includes(allSearchQuery.toLowerCase()) ||
             s.name?.toLowerCase().includes(allSearchQuery.toLowerCase()))
       ),
-    [allStudents, addedStudents, allBranchFilter, allSearchQuery]
+    [studentsInScope, addedStudents, allBranchFilter, allSearchQuery]
   );
 
   const filteredAdded = useMemo(

@@ -293,7 +293,7 @@ function partitionLearningModules(modules) {
 
 /**
  * Heuristic progress narrative from analytics payload.
- * Returns { tone, title, lines, disclaimer }. tone: positive | attention | neutral
+ * Returns { tone, title, lines, disclaimer } - tone: positive | attention | neutral
  */
 function buildProgressComment(data) {
   if (!data) {
