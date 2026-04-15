@@ -40,7 +40,7 @@ const AnalyticsBarChart = ({ bars, variant = "purple", valueSuffix = "", emptyMe
 
     if (!bars.length) {
         return (
-            <div className="flex h-52 items-center justify-center rounded-lg bg-[#353535]/80 text-sm text-gray-500">
+            <div className="flex h-52 items-center justify-center rounded-lg bg-[#353535]/80 text-sm text-white">
                 {emptyMessage || "No data"}
             </div>
         );
@@ -49,7 +49,7 @@ const AnalyticsBarChart = ({ bars, variant = "purple", valueSuffix = "", emptyMe
     const allZero = bars.every((b) => Number(b.value) === 0);
     if (allZero && emptyMessage) {
         return (
-            <div className="flex h-52 items-center justify-center rounded-lg bg-[#353535]/80 text-sm text-gray-500">
+            <div className="flex h-52 items-center justify-center rounded-lg bg-[#353535]/80 text-sm text-white">
                 {emptyMessage}
             </div>
         );
@@ -68,7 +68,7 @@ const AnalyticsBarChart = ({ bars, variant = "purple", valueSuffix = "", emptyMe
                                 title={`${b.label}: ${b.value}${valueSuffix}`}
                             />
                         </div>
-                        <span className="line-clamp-2 max-w-full px-0.5 text-center text-[10px] leading-tight text-gray-500 sm:text-xs">
+                        <span className="line-clamp-2 max-w-full px-0.5 text-center text-[10px] leading-tight text-white sm:text-xs">
                             {b.label}
                         </span>
                     </div>
@@ -95,7 +95,7 @@ const CTCDistributionLineChart = ({ points, valueSuffix = " students", emptyMess
 
     if (!points?.length) {
         return (
-            <div className="flex h-52 items-center justify-center rounded-lg bg-[#353535]/80 text-sm text-gray-500">
+            <div className="flex h-52 items-center justify-center rounded-lg bg-[#353535]/80 text-sm text-white">
                 {emptyMessage || "No data"}
             </div>
         );
@@ -104,7 +104,7 @@ const CTCDistributionLineChart = ({ points, valueSuffix = " students", emptyMess
     const allZero = points.every((p) => Number(p.value) === 0);
     if (allZero && emptyMessage) {
         return (
-            <div className="flex h-52 items-center justify-center rounded-lg bg-[#353535]/80 text-sm text-gray-500">
+            <div className="flex h-52 items-center justify-center rounded-lg bg-[#353535]/80 text-sm text-white">
                 {emptyMessage}
             </div>
         );
@@ -176,7 +176,7 @@ const CTCDistributionLineChart = ({ points, valueSuffix = " students", emptyMess
                             x={padL - 6}
                             y={y + 4}
                             textAnchor="end"
-                            fill="#6b7280"
+                            fill="#ffffff"
                             fontSize="10"
                             className="tabular-nums"
                         >
@@ -213,7 +213,7 @@ const CTCDistributionLineChart = ({ points, valueSuffix = " students", emptyMess
                             x={c.x}
                             y={vbH - 10}
                             textAnchor="middle"
-                            fill="#9ca3af"
+                            fill="#ffffff"
                             fontSize="11"
                             fontWeight="500"
                         >
@@ -250,7 +250,7 @@ const PerformanceHistoryLineChart = ({ points, valueSuffix = " marks", emptyMess
 
     if (!points?.length) {
         return (
-            <div className="flex h-52 items-center justify-center rounded-lg bg-[#353535]/80 text-sm text-gray-500">
+            <div className="flex h-52 items-center justify-center rounded-lg bg-[#353535]/80 text-sm text-white">
                 {emptyMessage || "No data"}
             </div>
         );
@@ -258,7 +258,7 @@ const PerformanceHistoryLineChart = ({ points, valueSuffix = " marks", emptyMess
 
     if (numericValues.length === 0 && emptyMessage) {
         return (
-            <div className="flex h-52 items-center justify-center rounded-lg bg-[#353535]/80 text-sm text-gray-500">
+            <div className="flex h-52 items-center justify-center rounded-lg bg-[#353535]/80 text-sm text-white">
                 {emptyMessage}
             </div>
         );
@@ -348,7 +348,7 @@ const PerformanceHistoryLineChart = ({ points, valueSuffix = " marks", emptyMess
                             x={padL - 6}
                             y={y + 4}
                             textAnchor="end"
-                            fill="#6b7280"
+                            fill="#ffffff"
                             fontSize="10"
                             className="tabular-nums"
                         >
@@ -388,7 +388,7 @@ const PerformanceHistoryLineChart = ({ points, valueSuffix = " marks", emptyMess
                             x={c.x}
                             y={vbH - (tiltLabels ? 4 : 10)}
                             textAnchor={tiltLabels ? "end" : "middle"}
-                            fill="#9ca3af"
+                            fill="#ffffff"
                             fontSize={tiltLabels ? 9 : 11}
                             fontWeight="500"
                             transform={
@@ -598,9 +598,9 @@ const Dashboard = ({
     const closeCompletedPopup = () => setShowCompletedPopup(false);
 
     const statCardClass =
-        "flex min-w-0 flex-1 min-h-[8rem] sm:min-h-[10rem] flex-col rounded-lg border border-gray-300 bg-[#4B4B4B] px-5 pt-5 pb-6 text-left shadow-md cursor-pointer transition-colors hover:bg-[#565656]";
-    const statLabelClass = "text-sm text-white sm:text-base md:text-lg lg:text-xl";
-    const statValueClass = "mt-5 flex flex-1 items-center justify-center text-2xl font-semibold text-white sm:text-3xl md:text-4xl";
+        "flex min-w-0 flex-1 min-h-[6.5rem] sm:min-h-[7.5rem] flex-col rounded-xl border border-[#5a5a5a] bg-[#3a3a3a] px-5 pt-4 pb-4 shadow-md cursor-pointer transition-colors hover:bg-white/5";
+    const statLabelClass = "text-sm font-medium text-white";
+    const statValueClass = "mt-2 flex flex-1 items-center justify-center text-3xl font-bold tabular-nums text-white sm:text-4xl";
 
     return (
         <div className="flex h-[calc(100dvh-4.5rem)] w-full max-w-full flex-col overflow-hidden rounded-lg bg-[#282828] p-5 pb-10 sm:p-6 sm:pb-12 md:h-[87vh] md:p-8 md:pb-14 lg:w-full">
@@ -648,14 +648,14 @@ const Dashboard = ({
                                     <h2 className="text-xl font-semibold tracking-tight text-white">
                                         Active Exams
                                     </h2>
-                                    <p className="mt-0.5 text-sm text-gray-400">
+                                    <p className="mt-0.5 text-sm text-white">
                                         {dashboardData?.testDetails?.length ?? 0} exam{dashboardData?.testDetails?.length !== 1 ? "s" : ""} currently active
                                     </p>
                                 </div>
                                 <button
                                     type="button"
                                     onClick={closePopup}
-                                    className="flex h-10 w-10 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-white/10 hover:text-white"
+                                    className="flex h-10 w-10 items-center justify-center rounded-full text-white transition-colors hover:bg-white/10 hover:text-white"
                                     aria-label="Close"
                                 >
                                     <FaTimes className="h-5 w-5" />
@@ -672,7 +672,7 @@ const Dashboard = ({
                                                     </div>
                                                     <div className="min-w-0 flex-1">
                                                         <p className="font-medium text-white truncate">{test.name}</p>
-                                                        <p className="mt-1 text-xs text-gray-500">
+                                                        <p className="mt-1 text-xs text-white">
                                                             {formatDateTime(test.start_time)} → {formatDateTime(test.end_time)}
                                                         </p>
                                                     </div>
@@ -689,8 +689,8 @@ const Dashboard = ({
                                     </ul>
                                 ) : (
                                     <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-white/10 bg-[#252525]/50 py-16 text-center">
-                                        <p className="text-gray-400">No active exams at the moment.</p>
-                                        <p className="mt-1 text-sm text-gray-500">New exams will appear here when scheduled.</p>
+                                        <p className="text-white">No active exams at the moment.</p>
+                                        <p className="mt-1 text-sm text-white">New exams will appear here when scheduled.</p>
                                     </div>
                                 )}
                             </div>
@@ -714,14 +714,14 @@ const Dashboard = ({
                                     <h2 className="text-xl font-semibold tracking-tight text-white">
                                         Completed Exams
                                     </h2>
-                                    <p className="mt-0.5 text-sm text-gray-400">
+                                    <p className="mt-0.5 text-sm text-white">
                                         {dashboardData?.completedResults?.length ?? 0} exam{dashboardData?.completedResults?.length !== 1 ? "s" : ""} completed
                                     </p>
                                 </div>
                                 <button
                                     type="button"
                                     onClick={closeCompletedPopup}
-                                    className="flex h-10 w-10 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-white/10 hover:text-white"
+                                    className="flex h-10 w-10 items-center justify-center rounded-full text-white transition-colors hover:bg-white/10 hover:text-white"
                                     aria-label="Close"
                                 >
                                     <FaTimes className="h-5 w-5" />
@@ -738,7 +738,7 @@ const Dashboard = ({
                                                     </div>
                                                     <div className="min-w-0 flex-1">
                                                         <p className="font-medium text-white truncate">{test.name}</p>
-                                                        <p className="mt-1 text-xs text-gray-500">
+                                                        <p className="mt-1 text-xs text-white">
                                                             {formatDateTime(test.start_time)} → {formatDateTime(test.end_time)}
                                                         </p>
                                                     </div>
@@ -755,8 +755,8 @@ const Dashboard = ({
                                     </ul>
                                 ) : (
                                     <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-white/10 bg-[#252525]/50 py-16 text-center">
-                                        <p className="text-gray-400">No completed exams yet.</p>
-                                        <p className="mt-1 text-sm text-gray-500">Finished exams will appear here.</p>
+                                        <p className="text-white">No completed exams yet.</p>
+                                        <p className="mt-1 text-sm text-white">Finished exams will appear here.</p>
                                     </div>
                                 )}
                             </div>
@@ -766,35 +766,35 @@ const Dashboard = ({
 
                 {/* Student analytics — layout aligned with product preview (KPIs, readiness chart, exports) */}
                 <div className="flex w-full flex-col gap-5">
-                    <p className="text-xs font-medium tracking-widest text-gray-500 uppercase">Student analytics</p>
+                    <p className="text-xs font-medium tracking-widest text-white uppercase">Student analytics</p>
 
                     {sa ? (
                         <>
                             <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-3">
-                                <div className="rounded-xl border border-white/10 bg-[#3a3a3a] px-5 py-5 shadow-inner">
-                                    <p className="text-sm text-gray-400">Avg CTC score</p>
+                                <div className="rounded-xl border border-[#5a5a5a] bg-[#3a3a3a] px-5 py-5 shadow-inner">
+                                    <p className="text-sm text-white">Avg CTC score</p>
                                     <p className="mt-2 text-4xl font-semibold tabular-nums tracking-tight text-white">
                                         {sa.avg_ctc_score != null ? sa.avg_ctc_score : "—"}
                                     </p>
-                                    <p className="mt-2 text-sm text-gray-500">
+                                    <p className="mt-2 text-sm text-white">
                                         Scale 0–10 ·{" "}
                                         {sa.students_with_ctc_profile != null && sa.total_students != null
                                             ? `${sa.students_with_ctc_profile} of ${sa.total_students} with a CTC profile`
                                             : "Gamified score from ranked & contest activity"}
                                     </p>
                                     {sa.avg_combined_score_30d != null ? (
-                                        <div className="mt-2 border-t border-white/10 pt-2 text-xs text-gray-500">
+                                        <div className="mt-2 border-t border-[#5a5a5a] pt-2 text-xs text-white">
                                             {sa.avg_combined_score_prev_30d != null ? (
                                                 <p>
                                                     Prior 30d avg:{" "}
-                                                    <span className="font-medium text-gray-300">
+                                                    <span className="font-medium text-white">
                                                         {sa.avg_combined_score_prev_30d}
                                                     </span>
                                                 </p>
                                             ) : null}
                                             <p className={sa.avg_combined_score_prev_30d != null ? "mt-1" : ""}>
                                                 Avg exam marks (30d):{" "}
-                                                <span className="font-medium text-gray-300">
+                                                <span className="font-medium text-white">
                                                     {sa.avg_combined_score_30d}
                                                 </span>
                                                 {sa.cohort_score_delta != null ? (
@@ -813,11 +813,11 @@ const Dashboard = ({
                                             </p>
                                         </div>
                                     ) : (
-                                        <div className="mt-2 border-t border-white/10 pt-2 text-xs text-gray-600">
+                                        <div className="mt-2 border-t border-[#5a5a5a] pt-2 text-xs text-white">
                                             {sa.avg_combined_score_prev_30d != null ? (
-                                                <p className="text-gray-500">
+                                                <p className="text-white">
                                                     Prior 30d avg:{" "}
-                                                    <span className="font-medium text-gray-300">
+                                                    <span className="font-medium text-white">
                                                         {sa.avg_combined_score_prev_30d}
                                                     </span>
                                                 </p>
@@ -828,33 +828,33 @@ const Dashboard = ({
                                         </div>
                                     )}
                                 </div>
-                                <div className="rounded-xl border border-white/10 bg-[#3a3a3a] px-5 py-5 shadow-inner">
-                                    <p className="text-sm text-gray-400">At risk</p>
-                                    <p className="mt-2 text-4xl font-semibold tabular-nums tracking-tight text-amber-300">
+                                <div className="rounded-xl border border-[#5a5a5a] bg-[#3a3a3a] px-5 py-5 shadow-inner">
+                                    <p className="text-sm text-white">At risk</p>
+                                    <p className="mt-2 text-4xl font-semibold tabular-nums tracking-tight text-white">
                                         {sa.at_risk_student_count ?? "—"}
                                     </p>
-                                    <p className="mt-2 text-sm text-gray-500">Students with proctoring flags (30d)</p>
+                                    <p className="mt-2 text-sm text-white">Students with proctoring flags (30d)</p>
                                 </div>
-                                <div className="flex min-h-[12rem] flex-col rounded-xl border border-white/10 bg-[#3a3a3a] px-5 py-5 shadow-inner">
-                                    <p className="text-sm text-gray-400">Module attendance</p>
-                                    <p className="mt-1 text-xs text-gray-500">
+                                <div className="flex flex-col h-full rounded-xl border border-[#5a5a5a] bg-[#3a3a3a] px-5 py-5 shadow-inner">
+                                    <p className="text-sm text-white">Module attendance</p>
+                                    <p className="mt-1 text-xs text-white">
                                         Org students who viewed, opened, or started each module (Skill Center).
                                         Includes global courses, your org’s custom modules, and modules assigned to
                                         your students.
                                     </p>
-                                    <ul className="mt-3 max-h-64 min-h-0 flex-1 space-y-2 overflow-y-auto pr-1 text-sm [scrollbar-width:thin]">
+                                    <ul className="mt-3 max-h-20 min-h-0 flex-1 space-y-2 overflow-y-auto pr-1 text-sm [scrollbar-width:thin] [scrollbar-color:rgba(255,255,255,0.2)_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/20">
                                         {(sa.module_attendance || []).length > 0 ? (
                                             (sa.module_attendance || []).map((m) => (
                                                 <li
                                                     key={m.id}
                                                     className="flex items-baseline justify-between gap-2 border-b border-white/5 pb-2 last:border-0 last:pb-0"
                                                 >
-                                                    <span className="min-w-0 truncate text-gray-200" title={m.name}>
+                                                    <span className="min-w-0 truncate text-white" title={m.name}>
                                                         {m.name || `Module ${m.id}`}
                                                     </span>
                                                     <span
                                                         className={`shrink-0 tabular-nums font-semibold ${
-                                                            m.student_count > 0 ? "text-[#A294F9]" : "text-gray-500"
+                                                            m.student_count > 0 ? "text-[#A294F9]" : "text-white"
                                                         }`}
                                                     >
                                                         {m.student_count}
@@ -862,7 +862,7 @@ const Dashboard = ({
                                                 </li>
                                             ))
                                         ) : (
-                                            <li className="text-gray-500">
+                                            <li className="text-white">
                                                 No learning modules available for your organization.
                                             </li>
                                         )}
@@ -871,61 +871,61 @@ const Dashboard = ({
                             </div>
 
                             <div className="flex flex-col gap-3">
-                                <p className="text-xs font-medium tracking-widest text-gray-500 uppercase">
+                                <p className="text-xs font-medium tracking-widest text-white uppercase">
                                     Cohort activity
                                 </p>
                                 <div className="grid w-full grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-                                    <div className="min-w-0 rounded-xl border border-white/10 bg-[#3a3a3a] px-4 py-4 shadow-inner">
-                                        <p className="text-xs text-gray-400">Logged in (7d)</p>
+                                    <div className="min-w-0 rounded-xl border border-[#5a5a5a] bg-[#3a3a3a] px-4 py-4 shadow-inner">
+                                        <p className="text-xs text-white">Logged in (7d)</p>
                                         <p className="mt-1 text-2xl font-semibold tabular-nums tracking-tight text-white sm:text-3xl">
                                             {sa.students_logged_in_7d ?? "—"}
                                         </p>
-                                        <p className="mt-1 text-[11px] leading-snug text-gray-500 sm:text-xs">
+                                        <p className="mt-1 text-[11px] leading-snug text-white sm:text-xs">
                                             Unique students · last 7 days
                                         </p>
                                     </div>
-                                    <div className="min-w-0 rounded-xl border border-white/10 bg-[#3a3a3a] px-4 py-4 shadow-inner">
-                                        <p className="text-xs text-gray-400">Logged in (30d)</p>
+                                    <div className="min-w-0 rounded-xl border border-[#5a5a5a] bg-[#3a3a3a] px-4 py-4 shadow-inner">
+                                        <p className="text-xs text-white">Logged in (30d)</p>
                                         <p className="mt-1 text-2xl font-semibold tabular-nums tracking-tight text-white sm:text-3xl">
                                             {sa.students_logged_in_30d ?? "—"}
                                         </p>
-                                        <p className="mt-1 text-[11px] leading-snug text-gray-500 sm:text-xs">
+                                        <p className="mt-1 text-[11px] leading-snug text-white sm:text-xs">
                                             Unique students · last 30 days
                                         </p>
                                     </div>
-                                    <div className="min-w-0 rounded-xl border border-white/10 bg-[#3a3a3a] px-4 py-4 shadow-inner">
-                                        <p className="text-xs text-gray-400">Inactive (30d)</p>
+                                    <div className="min-w-0 rounded-xl border border-[#5a5a5a] bg-[#3a3a3a] px-4 py-4 shadow-inner">
+                                        <p className="text-xs text-white">Inactive (30d)</p>
                                         <p className="mt-1 text-2xl font-semibold tabular-nums tracking-tight text-white sm:text-3xl">
                                             {sa.students_inactive_30d ?? "—"}
                                         </p>
-                                        <p className="mt-1 text-[11px] leading-snug text-gray-500 sm:text-xs">
+                                        <p className="mt-1 text-[11px] leading-snug text-white sm:text-xs">
                                             No login in 30 days
                                         </p>
                                     </div>
-                                    <div className="min-w-0 rounded-xl border border-white/10 bg-[#3a3a3a] px-4 py-4 shadow-inner">
-                                        <p className="text-xs text-gray-400">Finished attempts (7d)</p>
+                                    <div className="min-w-0 rounded-xl border border-[#5a5a5a] bg-[#3a3a3a] px-4 py-4 shadow-inner">
+                                        <p className="text-xs text-white">Finished attempts (7d)</p>
                                         <p className="mt-1 text-2xl font-semibold tabular-nums tracking-tight text-white sm:text-3xl">
                                             {sa.completed_submissions_7d ?? "—"}
                                         </p>
-                                        <p className="mt-1 text-[11px] leading-snug text-gray-500 sm:text-xs">
+                                        <p className="mt-1 text-[11px] leading-snug text-white sm:text-xs">
                                             Completed exam submissions
                                         </p>
                                     </div>
-                                    <div className="min-w-0 rounded-xl border border-white/10 bg-[#3a3a3a] px-4 py-4 shadow-inner">
-                                        <p className="text-xs text-gray-400">Distinct submitters (30d)</p>
+                                    <div className="min-w-0 rounded-xl border border-[#5a5a5a] bg-[#3a3a3a] px-4 py-4 shadow-inner">
+                                        <p className="text-xs text-white">Distinct submitters (30d)</p>
                                         <p className="mt-1 text-2xl font-semibold tabular-nums tracking-tight text-white sm:text-3xl">
                                             {sa.distinct_submitters_30d ?? "—"}
                                         </p>
-                                        <p className="mt-1 text-[11px] leading-snug text-gray-500 sm:text-xs">
+                                        <p className="mt-1 text-[11px] leading-snug text-white sm:text-xs">
                                             ≥1 finished attempt
                                         </p>
                                     </div>
-                                    <div className="min-w-0 rounded-xl border border-white/10 bg-[#3a3a3a] px-4 py-4 shadow-inner">
-                                        <p className="text-xs text-gray-400">In exam now</p>
+                                    <div className="min-w-0 rounded-xl border border-[#5a5a5a] bg-[#3a3a3a] px-4 py-4 shadow-inner">
+                                        <p className="text-xs text-white">In exam now</p>
                                         <p className="mt-1 text-2xl font-semibold tabular-nums tracking-tight text-white sm:text-3xl">
                                             {sa.students_in_live_exam_now ?? "—"}
                                         </p>
-                                        <p className="mt-1 text-[11px] leading-snug text-gray-500 sm:text-xs">
+                                        <p className="mt-1 text-[11px] leading-snug text-white sm:text-xs">
                                             Active attempts, live window
                                         </p>
                                     </div>
@@ -933,10 +933,10 @@ const Dashboard = ({
                             </div>
 
                             <div className="grid w-full grid-cols-1 gap-4 lg:grid-cols-2">
-                                <div className="overflow-hidden rounded-xl border border-white/10 bg-[#3a3a3a]">
-                                    <div className="border-b border-white/10 px-5 py-4">
+                                <div className="overflow-hidden rounded-xl border border-[#5a5a5a] bg-[#3a3a3a]">
+                                    <div className="border-b border-[#5a5a5a] px-5 py-4">
                                         <h3 className="text-base font-medium text-white">CTC score distribution</h3>
-                                        <p className="text-xs text-gray-500">Students per band (org cohort)</p>
+                                        <p className="text-xs text-white">Students per band (org cohort)</p>
                                     </div>
                                     <div className="px-3 py-5 sm:px-5">
                                         <CTCDistributionLineChart
@@ -946,18 +946,18 @@ const Dashboard = ({
                                         />
                                     </div>
                                 </div>
-                                <div className="overflow-hidden rounded-xl border border-white/10 bg-[#3a3a3a]">
-                                    <div className="border-b border-white/10 px-5 py-4">
+                                <div className="overflow-hidden rounded-xl border border-[#5a5a5a] bg-[#3a3a3a]">
+                                    <div className="border-b border-[#5a5a5a] px-5 py-4">
                                         <div className="flex flex-wrap items-start justify-between gap-2">
                                             <div>
                                                 <h3 className="text-base font-medium text-white">All students — marks &amp; improvement</h3>
-                                                <p className="mt-0.5 text-xs text-gray-500">
-                                                    Each month we average <span className="text-gray-400">MCQ + coding</span> per
+                                                <p className="mt-0.5 text-xs text-white">
+                                                    Each month we average <span className="text-white">MCQ + coding</span> per
                                                     student (finished attempts only), then average across{" "}
-                                                    <span className="text-gray-400">all students who assessed that month</span> so
+                                                    <span className="text-white">all students who assessed that month</span> so
                                                     everyone counts equally. Timeline:{" "}
-                                                    <span className="text-gray-400">first org assessment through today</span>. The
-                                                    badge compares <span className="text-gray-400">early months vs recent months</span>{" "}
+                                                    <span className="text-white">first org assessment through today</span>. The
+                                                    badge compares <span className="text-white">early months vs recent months</span>{" "}
                                                     to signal improvement.
                                                 </p>
                                                 {sa.performance_history_chart?.length === 1 ? (
@@ -980,7 +980,7 @@ const Dashboard = ({
                                                     {sa.performance_trend_delta != null ? ` (${sa.performance_trend_delta})` : ""}
                                                 </span>
                                             ) : sa.performance_trend_direction === "steady" ? (
-                                                <span className="shrink-0 rounded-full bg-white/10 px-2.5 py-1 text-xs font-semibold text-gray-400">
+                                                <span className="shrink-0 rounded-full bg-white/10 px-2.5 py-1 text-xs font-semibold text-white">
                                                     Trend: steady
                                                 </span>
                                             ) : null}
@@ -996,22 +996,22 @@ const Dashboard = ({
                                 </div>
                             </div>
 
-                            <div className="overflow-hidden rounded-xl border border-white/10 bg-[#3a3a3a]">
-                                <div className="flex flex-col gap-3 border-b border-white/10 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+                            <div className="overflow-hidden rounded-xl border border-[#5a5a5a] bg-[#3a3a3a]">
+                                <div className="flex flex-col gap-3 border-b border-[#5a5a5a] px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
                                     <div>
                                         <h3 className="text-lg font-medium text-white">
                                             Placement readiness
                                             {sa.primary_batch != null ? ` · Batch ${sa.primary_batch}` : ""}
                                         </h3>
-                                        <p className="text-xs text-gray-500">Share of org students who started each recent exam</p>
+                                        <p className="text-xs text-white">Share of org students who started each recent exam</p>
                                     </div>
-                                    <button
+                                    {/* <button
                                         type="button"
                                         onClick={handleExportAnalyticsCsv}
                                         className="shrink-0 text-sm font-medium text-[#A294F9] underline-offset-4 hover:underline"
                                     >
                                         Export CSV
-                                    </button>
+                                    </button> */}
                                 </div>
                                 <div className="px-3 py-5 sm:px-5">
                                     <AnalyticsBarChart
@@ -1021,37 +1021,37 @@ const Dashboard = ({
                                         emptyMessage="Add exams to see participation across your cohort"
                                     />
                                 </div>
-                                <div className="border-t border-white/10 px-5 py-3">
-                                    <p className="text-xs text-gray-500">
+                                <div className="border-t border-[#5a5a5a] px-5 py-3">
+                                    <p className="text-xs text-white">
                                         Tap an exam in Manage Exams for full breakdown. Bars use the same participation % as the
                                         export.
                                     </p>
                                 </div>
                             </div>
 
-                            <div className="rounded-xl border border-white/10 bg-[#3a3a3a] px-5 py-4">
-                                <h3 className="text-xs font-semibold tracking-widest text-gray-500 uppercase">Recent exports</h3>
+                            {/* <div className="rounded-xl border border-white/10 bg-[#3a3a3a] px-5 py-4">
+                                <h3 className="text-xs font-semibold tracking-widest text-white uppercase">Recent exports</h3>
                                 {recentExports.length === 0 ? (
-                                    <p className="mt-3 text-sm text-gray-500">CSV downloads from this dashboard will appear here.</p>
+                                    <p className="mt-3 text-sm text-white">CSV downloads from this dashboard will appear here.</p>
                                 ) : (
                                     <ul className="mt-3 divide-y divide-white/10">
                                         {recentExports.slice(0, 5).map((ex) => (
                                             <li key={ex.id} className="flex flex-wrap items-baseline justify-between gap-2 py-3 first:pt-0">
                                                 <span className="text-sm text-white">{ex.title}</span>
-                                                <span className="text-xs tabular-nums text-gray-500">
+                                                <span className="text-xs tabular-nums text-white">
                                                     .{ex.format} · {new Date(ex.at).toLocaleString()}
                                                 </span>
                                             </li>
                                         ))}
                                     </ul>
                                 )}
-                            </div>
+                            </div> */}
                         </>
                     ) : (
-                        <div className="rounded-xl border border-dashed border-white/20 bg-[#3a3a3a]/50 px-6 py-10 text-center text-sm text-gray-400">
+                        <div className="rounded-xl border border-dashed border-[#5a5a5a] bg-[#3a3a3a]/50 px-6 py-10 text-center text-sm text-white">
                             Student analytics require an updated API. Deploy the latest backend with{" "}
-                            <code className="rounded bg-black/30 px-1.5 py-0.5 text-gray-300">student_analytics</code> on{" "}
-                            <code className="rounded bg-black/30 px-1.5 py-0.5 text-gray-300">/admin/home/</code>.
+                            <code className="rounded bg-black/30 px-1.5 py-0.5 text-white">student_analytics</code> on{" "}
+                            <code className="rounded bg-black/30 px-1.5 py-0.5 text-white">/admin/home/</code>.
                         </div>
                     )}
                 </div>
