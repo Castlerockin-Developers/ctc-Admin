@@ -11,7 +11,7 @@ function InfoTooltip({ label, children, align = "start" }) {
         <span className="group relative inline-flex align-middle">
             <button
                 type="button"
-                className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-[#5a5a5a] bg-[#404040] text-[#b4a9f5] transition-colors hover:border-[#A294F9]/55 hover:bg-[#4a4a4a] hover:text-[#ddd6fe] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#A294F9] focus-visible:ring-offset-2 focus-visible:ring-offset-[#3a3a3a]"
+                className="inline-flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded-full border border-[#5a5a5a] bg-[#404040] text-[#b4a9f5] transition-colors hover:border-[#A294F9]/55 hover:bg-[#4a4a4a] hover:text-[#ddd6fe] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#A294F9] focus-visible:ring-offset-2 focus-visible:ring-offset-[#3a3a3a]"
                 aria-label={label}
             >
                 <FaInfoCircle className="h-3 w-3" aria-hidden />
@@ -396,26 +396,35 @@ const PerformanceHistoryLineChart = ({ points, valueSuffix = " marks", emptyMess
  */
 export default function StudentAnalyticsSection({
     sa,
+    pageTitle = null,
     scopeSubtitle = null,
     sectionEyebrow = "Student analytics",
     ctcCohortLabel = "Students per band (org cohort)",
     readinessSubtitle = "Share of org students who started each recent exam",
 }) {
-    return (
-        <div className="flex w-full min-w-0 max-w-full flex-col gap-5">
-            <div>
-                <p className="text-xs font-medium tracking-widest text-white uppercase">{sectionEyebrow}</p>
-                {scopeSubtitle ? (
-                    <p className="mt-1 text-sm text-gray-400">{scopeSubtitle}</p>
-                ) : null}
-            </div>
+    const containerClass = pageTitle
+        ? "flex h-[87vh] min-h-[calc(100dvh-4.5rem)] w-full max-w-full flex-col overflow-hidden rounded-lg bg-[#282828] p-4 sm:p-5 md:h-[87vh] md:min-h-0 md:p-6 md:pb-8"
+        : "flex w-full min-w-0 max-w-full flex-col rounded-lg bg-[#282828] p-4 sm:p-5 md:p-6 md:pb-8";
 
-            {sa ? (
-                <>
+    return (
+        <div className={containerClass}>
+            <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto overflow-x-hidden">
+                <div>
+                    {pageTitle ? (
+                        <h1 className="mb-4 text-xl font-semibold text-white sm:text-2xl">{pageTitle}</h1>
+                    ) : null}
+                    <p className="text-xs font-medium tracking-widest text-white uppercase">{sectionEyebrow}</p>
+                    {scopeSubtitle ? (
+                        <p className="mt-1 text-sm leading-relaxed text-gray-400">{scopeSubtitle}</p>
+                    ) : null}
+                </div>
+
+                {sa ? (
+                    <>
                     <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-3">
-                        <div className="rounded-xl border border-[#5a5a5a] bg-[#3a3a3a] px-5 py-5 shadow-inner">
+                        <div className="min-w-0 rounded-xl border border-[#5a5a5a] bg-[#3a3a3a] px-4 py-4 shadow-inner sm:px-5 sm:py-5">
                             <p className="text-sm text-white">Avg CTC score</p>
-                            <p className="mt-2 text-4xl font-semibold tabular-nums tracking-tight text-white">
+                            <p className="mt-2 text-3xl font-semibold tabular-nums tracking-tight text-white sm:text-4xl">
                                 {sa.avg_ctc_score != null ? sa.avg_ctc_score : "-"}
                             </p>
                             <p className="mt-2 text-sm text-white">
@@ -462,14 +471,14 @@ export default function StudentAnalyticsSection({
                                 </div>
                             )}
                         </div>
-                        <div className="rounded-xl border border-[#5a5a5a] bg-[#3a3a3a] px-5 py-5 shadow-inner">
+                        <div className="min-w-0 rounded-xl border border-[#5a5a5a] bg-[#3a3a3a] px-4 py-4 shadow-inner sm:px-5 sm:py-5">
                             <p className="text-sm text-white">At risk</p>
-                            <p className="mt-2 text-4xl font-semibold tabular-nums tracking-tight text-white">
+                            <p className="mt-2 text-3xl font-semibold tabular-nums tracking-tight text-white sm:text-4xl">
                                 {sa.at_risk_student_count ?? "-"}
                             </p>
                             <p className="mt-2 text-sm text-white">Students with proctoring flags (30d)</p>
                         </div>
-                        <div className="flex h-full flex-col rounded-xl border border-[#5a5a5a] bg-[#3a3a3a] px-5 py-5 shadow-inner">
+                        <div className="flex min-w-0 h-full flex-col rounded-xl border border-[#5a5a5a] bg-[#3a3a3a] px-4 py-4 shadow-inner sm:px-5 sm:py-5">
                             <div className="flex min-w-0 items-center gap-1.5">
                                 <p className="min-w-0 flex-1 text-sm text-white">Module attendance</p>
                                 <InfoTooltip align="end" label="What module attendance includes (Skill Center)">
@@ -486,9 +495,9 @@ export default function StudentAnalyticsSection({
                                 </InfoTooltip>
                             </div>
                             <p className="mt-1 text-xs text-gray-400">
-                                Skill Center reach by module — use the info icon for full scope.
+                                Skill Center reach by module use the info icon for full scope.
                             </p>
-                            <ul className="mt-3 max-h-20 min-h-0 flex-1 space-y-2 overflow-y-auto pr-1 text-sm [scrollbar-width:thin] [scrollbar-color:rgba(255,255,255,0.2)_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/20">
+                            <ul className="mt-3 max-h-24 min-h-0 flex-1 space-y-2 overflow-y-auto pr-1 text-sm [scrollbar-width:thin] [scrollbar-color:rgba(255,255,255,0.2)_transparent] sm:max-h-20 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/20">
                                 {(sa.module_attendance || []).length > 0 ? (
                                     (sa.module_attendance || []).map((m) => (
                                         <li
@@ -516,7 +525,7 @@ export default function StudentAnalyticsSection({
 
                     <div className="flex flex-col gap-3">
                         <p className="text-xs font-medium tracking-widest text-white uppercase">Cohort activity</p>
-                        <div className="grid w-full grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+                        <div className="grid w-full grid-cols-1 gap-3 min-[480px]:grid-cols-2 sm:grid-cols-3 xl:grid-cols-6">
                             <div className="min-w-0 rounded-xl border border-[#5a5a5a] bg-[#3a3a3a] px-4 py-4 shadow-inner">
                                 <p className="text-xs text-white">Logged in (7d)</p>
                                 <p className="mt-1 text-2xl font-semibold tabular-nums tracking-tight text-white sm:text-3xl">
@@ -571,12 +580,12 @@ export default function StudentAnalyticsSection({
                     </div>
 
                     <div className="grid w-full grid-cols-1 gap-4 lg:grid-cols-2">
-                        <div className="overflow-hidden rounded-xl border border-[#5a5a5a] bg-[#3a3a3a]">
-                            <div className="border-b border-[#5a5a5a] px-5 py-4">
+                        <div className="min-w-0 overflow-hidden rounded-xl border border-[#5a5a5a] bg-[#3a3a3a]">
+                            <div className="border-b border-[#5a5a5a] px-4 py-4 sm:px-5">
                                 <h3 className="text-base font-medium text-white">CTC score distribution</h3>
                                 <p className="text-xs text-white">{ctcCohortLabel}</p>
                             </div>
-                            <div className="px-3 py-5 sm:px-5">
+                            <div className="px-2 py-4 sm:px-5 sm:py-5">
                                 <CTCDistributionLineChart
                                     points={sa.ctc_distribution_chart || []}
                                     valueSuffix=" students"
@@ -584,8 +593,8 @@ export default function StudentAnalyticsSection({
                                 />
                             </div>
                         </div>
-                        <div className="rounded-xl border border-[#5a5a5a] bg-[#3a3a3a]">
-                            <div className="border-b border-[#5a5a5a] px-5 py-4">
+                        <div className="min-w-0 rounded-xl border border-[#5a5a5a] bg-[#3a3a3a]">
+                            <div className="border-b border-[#5a5a5a] px-4 py-4 sm:px-5">
                                 <div className="flex flex-wrap items-start justify-between gap-2">
                                     <div className="min-w-0">
                                         <div className="flex flex-wrap items-center gap-2">
@@ -639,7 +648,7 @@ export default function StudentAnalyticsSection({
                                     ) : null}
                                 </div>
                             </div>
-                            <div className="overflow-hidden px-3 py-5 sm:px-5">
+                            <div className="overflow-hidden px-2 py-4 sm:px-5 sm:py-5">
                                 <PerformanceHistoryLineChart
                                     points={sa.performance_history_chart || []}
                                     valueSuffix=" marks"
@@ -650,16 +659,16 @@ export default function StudentAnalyticsSection({
                     </div>
 
                     <div className="overflow-hidden rounded-xl border border-[#5a5a5a] bg-[#3a3a3a]">
-                        <div className="flex flex-col gap-3 border-b border-[#5a5a5a] px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="flex flex-col gap-3 border-b border-[#5a5a5a] px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
                             <div>
-                                <h3 className="text-lg font-medium text-white">
+                                <h3 className="text-base font-medium text-white sm:text-lg">
                                     Placement readiness
                                     {sa.primary_batch != null ? ` · Batch ${sa.primary_batch}` : ""}
                                 </h3>
                                 <p className="text-xs text-white">{readinessSubtitle}</p>
                             </div>
                         </div>
-                        <div className="px-3 py-5 sm:px-5">
+                        <div className="px-2 py-4 sm:px-5 sm:py-5">
                             <AnalyticsBarChart
                                 bars={sa.readiness_chart || []}
                                 variant="purple"
@@ -667,21 +676,22 @@ export default function StudentAnalyticsSection({
                                 emptyMessage="Add exams to see participation across your cohort"
                             />
                         </div>
-                        <div className="border-t border-[#5a5a5a] px-5 py-3">
+                        <div className="border-t border-[#5a5a5a] px-4 py-3 sm:px-5">
                             <p className="text-xs text-white">
                                 Tap an exam in Manage Exams for full breakdown. Bars use the same participation % as the
                                 export.
                             </p>
                         </div>
                     </div>
-                </>
-            ) : (
-                <div className="rounded-xl border border-dashed border-[#5a5a5a] bg-[#3a3a3a]/50 px-6 py-10 text-center text-sm text-white">
-                    Student analytics require an updated API. Deploy the latest backend with{" "}
-                    <code className="rounded bg-black/30 px-1.5 py-0.5 text-white">student_analytics</code> on{" "}
-                    <code className="rounded bg-black/30 px-1.5 py-0.5 text-white">/admin/home/</code>.
-                </div>
-            )}
+                    </>
+                ) : (
+                    <div className="rounded-xl border border-dashed border-[#5a5a5a] bg-[#3a3a3a]/50 px-6 py-10 text-center text-sm text-white">
+                        Student analytics require an updated API. Deploy the latest backend with{" "}
+                        <code className="rounded bg-black/30 px-1.5 py-0.5 text-white">student_analytics</code> on{" "}
+                        <code className="rounded bg-black/30 px-1.5 py-0.5 text-white">/admin/home/</code>.
+                    </div>
+                )}
+            </div>
         </div>
     );
 }

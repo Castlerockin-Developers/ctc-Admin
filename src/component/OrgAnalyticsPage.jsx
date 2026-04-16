@@ -111,10 +111,10 @@ export default function OrgAnalyticsPage({ cacheAllowed }) {
     }
 
     return (
-        <div className="box-border w-full max-w-full min-w-0 overflow-x-hidden px-4 py-6 sm:px-6 lg:px-8">
-            <h1 className="mb-6 text-2xl font-semibold text-white">Analytics</h1>
+        <div className="box-border flex h-full w-full max-w-full min-w-0 flex-col overflow-hidden">
             <StudentAnalyticsSection
                 sa={sa}
+                pageTitle="Analytics"
                 scopeSubtitle={scopeSubtitle}
                 sectionEyebrow="Org analytics"
                 ctcCohortLabel={isBranchScope ? "Students per band (your cohort)" : "Students per band (org cohort)"}

@@ -648,7 +648,7 @@ const StudentAnalyticsPage = ({ student, onBack }) => {
                 setDetailRow(null);
                 onBack();
               }}
-              className="inline-flex w-fit shrink-0 items-center gap-2 self-start rounded-lg border border-[#5a5a5a] bg-[#3d3d3d] px-3 py-2 font-[madina-semibold] text-sm text-white transition-colors hover:bg-[#4a4a4a] sm:self-auto"
+              className="inline-flex cursor-pointer w-fit shrink-0 items-center gap-2 self-start rounded-lg border border-[#5a5a5a] bg-[#3d3d3d] px-3 py-2 font-[madina-semibold] text-sm text-white transition-colors hover:bg-[#4a4a4a] sm:self-auto"
             >
               <FaChevronLeft className="h-4 w-4" />
               Back to Manage Students
