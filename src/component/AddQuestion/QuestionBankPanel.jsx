@@ -36,8 +36,10 @@ export default function QuestionBankPanel({
 }) {
   const banks = getBanksList();
   const isMcqBank = (b) => b.type === 'mcq';
+  const isPuzzleBank = (b) => b.type === 'puzzle';
   const isCodingBank = (b) => b.type === 'coding';
   const hasMcq = banks.some(isMcqBank);
+  const hasPuzzle = banks.some(isPuzzleBank);
   const hasCoding = banks.some(isCodingBank);
 
   const handleBackToBanks = () => {
@@ -112,6 +114,19 @@ export default function QuestionBankPanel({
                       MCQ
                     </button>
                   )}
+                  {hasPuzzle && (
+                    <button
+                      type="button"
+                      onClick={() => setHighlightBankFilter((h) => (h === 'puzzle' ? null : 'puzzle'))}
+                      className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors cursor-pointer ${
+                        highlightBankFilter === 'puzzle'
+                          ? 'bg-[#f59e0b] text-white'
+                          : 'border border-[#5a5a5a] bg-[#404040] text-gray-200 hover:bg-[#4a4a4a]'
+                      }`}
+                    >
+                      Puzzle
+                    </button>
+                  )}
                   {hasCoding && (
                     <button
                       type="button"
@@ -131,9 +146,11 @@ export default function QuestionBankPanel({
                 <div className="flex flex-col gap-3 overflow-y-auto min-h-0 flex-1 pr-1">
                   {banks.map((bank, index) => {
                     const mcqHighlight = isMcqBank(bank);
+                    const puzzleHighlight = isPuzzleBank(bank);
                     const codingHighlight = isCodingBank(bank);
                     const isHighlighted =
                       (highlightBankFilter === 'mcq' && mcqHighlight) ||
+                      (highlightBankFilter === 'puzzle' && puzzleHighlight) ||
                       (highlightBankFilter === 'coding' && codingHighlight);
                     const isFirstMcq = mcqHighlight && banks.findIndex(isMcqBank) === index;
                     const isFirstCoding =
@@ -151,7 +168,9 @@ export default function QuestionBankPanel({
                         }}
                         className={`w-full text-left rounded-lg border px-4 py-3 flex items-center justify-between gap-2 transition-colors shrink-0 ${
                           isHighlighted
-                            ? 'border-[#A294F9] bg-[#4a4a6a] ring-2 ring-[#A294F9]/50'
+                            ? puzzleHighlight
+                              ? 'border-[#f59e0b] bg-[#4a4030] ring-2 ring-[#f59e0b]/50'
+                              : 'border-[#A294F9] bg-[#4a4a6a] ring-2 ring-[#A294F9]/50'
                             : 'border-[#5a5a5a] bg-[#404040] hover:bg-[#4a4a4a] hover:border-[#A294F9]/50'
                         }`}
                       >

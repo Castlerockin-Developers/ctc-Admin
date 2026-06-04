@@ -17,6 +17,7 @@ const AddQuestion = ({
   onBack,
   onNexts,
   onCreateMCQ,
+  onCreatePuzzle,
   onCreateCoding,
   isEditing = false,
   editExamData = null,
@@ -33,6 +34,7 @@ const AddQuestion = ({
     setSectionTimers,
   } = useAddQuestionState(isEditing, editExamData);
 
+  const [enablePuzzleSections, setEnablePuzzleSections] = useState(true);
   const [isQuestionBankVisible, setIsQuestionBankVisible] = useState(true);
   const [bulkMcqScore, setBulkMcqScore] = useState({});
   const [bulkCodingScore, setBulkCodingScore] = useState('');
@@ -52,6 +54,14 @@ const AddQuestion = ({
     addSelectedQuestions: bankAddSelectedQuestions,
     addRandomFromBank: bankAddRandomFromBank,
   } = bank;
+
+  const getFilteredBanksList = useCallback(
+    () =>
+      enablePuzzleSections
+        ? bank.getBanksList()
+        : bank.getBanksList().filter((b) => b.type !== 'puzzle'),
+    [enablePuzzleSections, bank],
+  );
 
   const importQuestions = useImportQuestions(fetchQuestions);
 
@@ -74,7 +84,7 @@ const AddQuestion = ({
       if (!('score' in q)) q.score = 0;
       const exists = [...mcqQuestions, ...codingQuestions].some((x) => x.id === q.id);
       if (exists) return;
-      if (type === 'mcq') {
+      if (type === 'mcq' || type === 'puzzle') {
         setMcqQuestions((prev) => [...prev, q]);
       } else {
         setCodingQuestions((prev) => [...prev, q]);
@@ -89,16 +99,28 @@ const AddQuestion = ({
   );
 
   const addSelectedQuestions = useCallback(() => {
-    const type = bank.activeBank === 'coding' ? 'coding' : 'mcq';
+    const bankMeta = bank.getBanksList().find((b) => b.id === bank.activeBank);
+    const type =
+      bank.activeBank === 'coding'
+        ? 'coding'
+        : bankMeta?.type === 'puzzle'
+          ? 'puzzle'
+          : 'mcq';
     const toAdd = questionsInBank.filter((q) => bank.selectedIds.has(q.id));
     toAdd.forEach((q) => addSingleQuestion(q, type));
     bank.clearSelection();
-  }, [bank.activeBank, bank.selectedIds, questionsInBank, addSingleQuestion, bank.clearSelection]);
+  }, [bank, bank.activeBank, bank.selectedIds, questionsInBank, addSingleQuestion, bank.clearSelection]);
 
   const addRandomFromBank = useCallback(
     (count) => {
       if (bank.activeBank === null || count < 1) return;
-      const type = bank.activeBank === 'coding' ? 'coding' : 'mcq';
+      const bankMeta = bank.getBanksList().find((b) => b.id === bank.activeBank);
+      const type =
+        bank.activeBank === 'coding'
+          ? 'coding'
+          : bankMeta?.type === 'puzzle'
+            ? 'puzzle'
+            : 'mcq';
       const n = Math.min(count, questionsInBank.length);
       if (n === 0) {
         Swal.fire({
@@ -274,12 +296,28 @@ const AddQuestion = ({
               Add Questions
             </h2>
             <div className="flex flex-wrap items-center gap-3">
+              <label className="flex items-center gap-2 text-sm text-gray-300 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={enablePuzzleSections}
+                  onChange={(e) => setEnablePuzzleSections(e.target.checked)}
+                  className="w-4 h-4 rounded border-2 border-[#A294F9]"
+                />
+                Enable puzzle sections
+              </label>
               <button
                 type="button"
                 onClick={onCreateMCQ}
                 className={btnPrimary}
               >
                 Create MCQ
+              </button>
+              <button
+                type="button"
+                onClick={onCreatePuzzle}
+                className={btnPrimary}
+              >
+                Create Puzzle
               </button>
               <button
                 type="button"
@@ -332,7 +370,7 @@ const AddQuestion = ({
             highlightBankFilter={bank.highlightBankFilter}
             setHighlightBankFilter={bank.setHighlightBankFilter}
             clearSelection={bank.clearSelection}
-            getBanksList={bank.getBanksList}
+            getBanksList={getFilteredBanksList}
             questionsInBank={questionsInBank}
             paginatedQuestions={paginatedQuestions}
             totalPages={totalPages}
@@ -405,6 +443,7 @@ AddQuestion.propTypes = {
   onBack: PropTypes.func.isRequired,
   onNexts: PropTypes.func.isRequired,
   onCreateMCQ: PropTypes.func.isRequired,
+  onCreatePuzzle: PropTypes.func.isRequired,
   onCreateCoding: PropTypes.func.isRequired,
   isEditing: PropTypes.bool,
   editExamData: PropTypes.object,

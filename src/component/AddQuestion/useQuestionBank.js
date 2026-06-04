@@ -58,15 +58,23 @@ export function useQuestionBank(mcqQuestions, codingQuestions) {
   const getBanksList = useCallback(() => {
     const banks = [];
     uniqueSections.forEach((sectionId) => {
-      const sectionQs = sourceQuestions.filter(
-        (q) => q.group_id === sectionId && q.type === 'mcq'
-      );
-      if (sectionQs.length > 0) {
+      const sectionQs = sourceQuestions.filter((q) => q.group_id === sectionId);
+      const mcqQs = sectionQs.filter((q) => q.type === 'mcq');
+      const puzzleQs = sectionQs.filter((q) => q.type === 'puzzle');
+      if (puzzleQs.length > 0) {
+        banks.push({
+          id: sectionId,
+          type: 'puzzle',
+          label: `${puzzleQs[0].title || `Section ${sectionId}`} (Puzzle)`,
+          count: puzzleQs.length,
+        });
+      }
+      if (mcqQs.length > 0) {
         banks.push({
           id: sectionId,
           type: 'mcq',
-          label: sectionQs[0].title || `Section ${sectionId}`,
-          count: sectionQs.length,
+          label: mcqQs[0].title || `Section ${sectionId}`,
+          count: mcqQs.length,
         });
       }
     });
@@ -84,12 +92,16 @@ export function useQuestionBank(mcqQuestions, codingQuestions) {
 
   const getQuestionsInActiveBank = useCallback(() => {
     if (activeBank === null) return [];
-    const q =
-      activeBank === 'coding'
-        ? sourceQuestions.filter((x) => x.type === 'coding')
-        : sourceQuestions.filter(
-            (x) => x.group_id === activeBank && x.type === 'mcq'
-          );
+    let q;
+    if (activeBank === 'coding') {
+      q = sourceQuestions.filter((x) => x.type === 'coding');
+    } else {
+      const bankMeta = getBanksList().find((b) => b.id === activeBank);
+      const bankType = bankMeta?.type || 'mcq';
+      q = sourceQuestions.filter(
+        (x) => x.group_id === activeBank && x.type === bankType,
+      );
+    }
     const available = q.filter((x) => !addedIdsSet.has(x.id));
     if (!bankSearchQuery.trim()) return available;
     const lower = bankSearchQuery.trim().toLowerCase();
@@ -98,7 +110,7 @@ export function useQuestionBank(mcqQuestions, codingQuestions) {
         (x.title || '').toLowerCase().includes(lower) ||
         (x.content || '').toLowerCase().includes(lower)
     );
-  }, [activeBank, sourceQuestions, bankSearchQuery, addedIdsSet]);
+  }, [activeBank, sourceQuestions, bankSearchQuery, addedIdsSet, getBanksList]);
 
   const questionsInBank = getQuestionsInActiveBank();
   const totalPages = Math.max(1, Math.ceil(questionsInBank.length / BANK_PAGE_SIZE));

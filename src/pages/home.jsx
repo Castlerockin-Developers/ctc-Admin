@@ -21,6 +21,7 @@ import Settings from "../component/Settings";
 import ViewResult from "../component/ViewResult";
 import PerticularResult from "../component/PerticularResult";
 import NewMcq from "../component/NewMcq";
+import NewPuzzleQuestion from "../component/NewPuzzleQuestion";
 import NewCoding from "../component/NewCoding";
 import CustomLearning from "../component/CustomLearning";
 import NewCoursefirst from "../component/NewCoursefirst";
@@ -492,6 +493,12 @@ const Home = () => {
                             onCancel={() => setActiveComponent("addQuestion")}
                         />
                     )}
+                    {activeComponent === "newPuzzle" && (
+                        <NewPuzzleQuestion
+                            onSave={() => setActiveComponent("addQuestion")}
+                            onCancel={() => setActiveComponent("addQuestion")}
+                        />
+                    )}
                     {activeComponent === "newCoding" && (
                         <NewCoding
                             onSave={() => setActiveComponent("addQuestion")}
@@ -506,6 +513,7 @@ const Home = () => {
                             }}
                             onNexts={() => setActiveComponent("addStudents")}
                             onCreateMCQ={() => setActiveComponent("newMcq")}
+                            onCreatePuzzle={() => setActiveComponent("newPuzzle")}
                             onCreateCoding={() => setActiveComponent("newCoding")}
                             createExamRequest={createExamRequest}
                             setCreateExamRequest={setCreateExamRequest}
@@ -551,6 +559,7 @@ const Home = () => {
                             onBack={() => setActiveComponent("editExam")}
                             onNexts={() => setActiveComponent("editAddStudents")}
                             onCreateMCQ={() => setActiveComponent("newMcq")}
+                            onCreatePuzzle={() => setActiveComponent("newPuzzle")}
                             onCreateCoding={() => setActiveComponent("newCoding")}
                             createExamRequest={createExamRequest}
                             setCreateExamRequest={setCreateExamRequest}

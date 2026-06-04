@@ -12,7 +12,7 @@ const Sidebar = ({ activeComponent, setActiveComponent, onManageExamClick }) => 
     const [isMobile, setIsMobile] = useState(() => typeof window !== "undefined" && window.innerWidth < 1024);
     const navigate = useNavigate();
 
-    const currentActive = ["newExam", "addQuestion", "addStudents", "newMcq", "newCoding"].includes(activeComponent)
+    const currentActive = ["newExam", "addQuestion", "addStudents", "newMcq", "newPuzzle", "newCoding"].includes(activeComponent)
         ? "manageExam"
         : ["partone", "parttwo", "partthree", "viewcourse"].includes(activeComponent)
             ? "custom"
@@ -30,8 +30,8 @@ const Sidebar = ({ activeComponent, setActiveComponent, onManageExamClick }) => 
 
     const handleNavigation = (componentName) => {
         if (
-            ["newExam", "addQuestion", "addStudents", "newMcq", "newCoding"].includes(activeComponent) &&
-            !["newExam", "addQuestion", "addStudents", "newMcq", "newCoding"].includes(componentName)
+            ["newExam", "addQuestion", "addStudents", "newMcq", "newPuzzle", "newCoding"].includes(activeComponent) &&
+            !["newExam", "addQuestion", "addStudents", "newMcq", "newPuzzle", "newCoding"].includes(componentName)
         ) {
             log("Sidebar - Clearing session storage when navigating away from exam creation");
             const allKeys = [
