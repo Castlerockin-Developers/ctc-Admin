@@ -4,7 +4,7 @@ import { log, error as logError } from "../utils/logger";
 import TopBar from "../component/TopBar";
 import Sidebar from "../component/Sibebar";
 import Swal from "sweetalert2";
-import { authFetch } from "../scripts/AuthProvider";
+import { authFetch, logout } from "../scripts/AuthProvider";
 import { useCacheConsent } from "../hooks/useCache";
 
 import Dashboard from "../component/Dashboard";
@@ -78,7 +78,6 @@ const Home = () => {
                 navigate('/');
                 return;
             }
-            setIsAuthenticated(true);
             try {
                 // Use getUserDetails to validate admin access before showing the app
                 const response = await authFetch('/getUserDetails/', { method: 'GET' });
@@ -89,6 +88,7 @@ const Home = () => {
                     navigate('/access-denied', { replace: true });
                     return;
                 }
+                setIsAuthenticated(true);
                 try {
                     const level = data.admin_panel_access_level || 'full';
                     setPanelAccessLevel(level === 'branch' ? 'branch' : 'full');
@@ -110,6 +110,7 @@ const Home = () => {
                     return;
                 }
                 logError('Home - failed to verify admin access:', error);
+                logout();
                 navigate('/', { replace: true });
                 return;
             } finally {

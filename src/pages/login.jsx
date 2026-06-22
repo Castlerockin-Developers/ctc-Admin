@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import logo from "/logo.png";
 import Loadinggif from "../assets/Loading.gif";
-import { login, baseUrl, logout, ACCESS_DENIED_MESSAGE } from "../scripts/AuthProvider";
+import { login, baseUrl, logout, authFetch, ACCESS_DENIED_MESSAGE } from "../scripts/AuthProvider";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 
@@ -52,15 +52,36 @@ const LoginPage = () => {
   }, []);
 
   useEffect(() => {
-    if (localStorage.getItem("access")) {
-      navigate("/home", { replace: true });
-      return;
-    }
-    if (localStorage.getItem("rememberMe") === "true") {
-      setUsername(localStorage.getItem("username") || "");
-      setPassword(localStorage.getItem("password") || "");
-      setRememberMe(true);
-    }
+    const restoreRememberMe = () => {
+      if (localStorage.getItem("rememberMe") === "true") {
+        setUsername(localStorage.getItem("username") || "");
+        setPassword(localStorage.getItem("password") || "");
+        setRememberMe(true);
+      }
+    };
+
+    const tryAutoLogin = async () => {
+      if (!localStorage.getItem("access")) {
+        restoreRememberMe();
+        return;
+      }
+      try {
+        const response = await authFetch("/getUserDetails/", { method: "GET" });
+        const data = await response.json();
+        const hasAdminAccess =
+          data?.can_access_admin_panel === true || data?.is_superuser === true;
+        if (hasAdminAccess) {
+          navigate("/home", { replace: true });
+          return;
+        }
+        logout();
+      } catch {
+        logout();
+      }
+      restoreRememberMe();
+    };
+
+    tryAutoLogin();
   }, [navigate]);
 
   const handleLogin = async (e) => {
