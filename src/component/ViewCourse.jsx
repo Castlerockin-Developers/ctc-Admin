@@ -12,8 +12,10 @@ const ViewCourse = ({ onUnassign, onEdit, onDelete, onBack, selectedCourse }) =>
   const [loading, setLoading] = useState(true);
 
   const [image, setImage] = useState(null);
+  const [imageFileName, setImageFileName] = useState("");
   const [designation, setDesignation] = useState("");
   const editorRef = useRef(null);
+  const avatarFileInputRef = useRef(null);
   const [expandedChapter, setExpandedChapter] = useState(null);
   const [showCompleted, setShowCompleted] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -50,57 +52,108 @@ const ViewCourse = ({ onUnassign, onEdit, onDelete, onBack, selectedCourse }) =>
   const loadAllStudents = async () => {
     try {
       const list = [];
-      // Use paginated admin students API (org-filtered)
-      const baseParams = new URLSearchParams();
-      baseParams.set('page', '1');
-      baseParams.set('page_size', '500');
-      const firstRes = await authFetch(`/admin/students/?${baseParams.toString()}`, { method: 'GET' });
-      if (!firstRes.ok) return;
-      const firstData = await firstRes.json();
+      const pageSize = 100; // backend caps page_size at 100
+      let page = 1;
+      let hasNext = true;
 
       const mapStudent = (s) => ({
         id: s.id,
-        first_name: s.first_name ?? (s.name ? s.name.split(' ')[0] || '' : ''),
-        last_name: s.last_name ?? (s.name ? s.name.split(' ').slice(1).join(' ').trim() || '' : ''),
-        name: s.name || `${s.first_name || ''} ${s.last_name || ''}`.trim(),
+        first_name: s.first_name ?? (s.name ? s.name.split(" ")[0] || "" : ""),
+        last_name:
+          s.last_name ??
+          (s.name ? s.name.split(" ").slice(1).join(" ").trim() || "" : ""),
+        name:
+          s.name ||
+          `${s.first_name || ""} ${s.last_name || ""}`.trim() ||
+          s.email ||
+          `User ${s.id}`,
         email: s.email,
       });
 
-      if (Array.isArray(firstData.results)) {
-        const pageSize = firstData.results.length || 500;
-        const totalCount = typeof firstData.count === 'number' ? firstData.count : firstData.results.length;
-        const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
-        firstData.results.filter((s) => s.id).forEach((s) => list.push(mapStudent(s)));
-        for (let page = 2; page <= totalPages; page += 1) {
-          const params = new URLSearchParams();
-          params.set('page', String(page));
-          params.set('page_size', String(pageSize));
-          const res = await authFetch(`/admin/students/?${params.toString()}`, { method: 'GET' });
-          const data = await res.json();
-          if (Array.isArray(data.results)) {
-            data.results.filter((s) => s.id).forEach((s) => list.push(mapStudent(s)));
-          } else break;
+      while (hasNext) {
+        const params = new URLSearchParams();
+        params.set("page", String(page));
+        params.set("page_size", String(pageSize));
+        const res = await authFetch(`/admin/students/?${params.toString()}`, {
+          method: "GET",
+        });
+        const data = await res.json();
+
+        if (Array.isArray(data.results)) {
+          data.results
+            .filter((s) => s.id != null)
+            .forEach((s) => list.push(mapStudent(s)));
+          hasNext = Boolean(data.next);
+          page += 1;
+        } else if (data.data && typeof data.data === "object") {
+          Object.values(data.data)
+            .flat()
+            .filter((s) => s && s.id != null)
+            .forEach((s) => list.push(mapStudent(s)));
+          hasNext = false;
+        } else {
+          hasNext = false;
         }
-      } else if (firstData.data && typeof firstData.data === 'object') {
-        Object.values(firstData.data).flat().filter((s) => s.id).forEach((s) => list.push(mapStudent(s)));
       }
+
       setAllStudents(list);
+      return list;
     } catch (error) {
-      logError('Error loading students:', error);
+      logError("Error loading students:", error);
+      setAllStudents([]);
+      return [];
     }
+  };
+
+  const parseAssignedStudents = (assignments, moduleId) => {
+    const moduleIdNum = Number(moduleId);
+    const moduleAssignments = (Array.isArray(assignments) ? assignments : []).filter(
+      (assignment) => Number(assignment.module) === moduleIdNum
+    );
+
+    const byId = new Map();
+    moduleAssignments.forEach((assignment) => {
+      if (Array.isArray(assignment.students_detail) && assignment.students_detail.length) {
+        assignment.students_detail.forEach((student) => {
+          if (student?.id == null) return;
+          byId.set(student.id, {
+            id: student.id,
+            name: student.name || student.email || `User ${student.id}`,
+            email: student.email || "",
+            completed: false,
+            assignment_date: assignment.date_assigned,
+          });
+        });
+        return;
+      }
+
+      const ids = Array.isArray(assignment.students) ? assignment.students : [];
+      const names = Array.isArray(assignment.students_names)
+        ? assignment.students_names
+        : [];
+      ids.forEach((id, index) => {
+        if (id == null) return;
+        byId.set(id, {
+          id,
+          name: names[index] || `User ${id}`,
+          email: "",
+          completed: false,
+          assignment_date: assignment.date_assigned,
+        });
+      });
+    });
+
+    return Array.from(byId.values());
   };
 
   // Load course details, chapters, and assigned students
   const loadCourseData = async (moduleId) => {
     try {
       setLoading(true);
-      
+
       // Load module details with chapters
       const moduleResponse = await authFetch(`/learning/custom-modules/${moduleId}/`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
-        }
+        method: "GET",
       });
 
       if (moduleResponse.ok) {
@@ -109,52 +162,31 @@ const ViewCourse = ({ onUnassign, onEdit, onDelete, onBack, selectedCourse }) =>
         setChapters(moduleData.chapters || []);
         setImage(moduleData.module.image);
         setDesignation(moduleData.module.author_designation || "Faculty");
-        
-        // Set edit form data
+
         setEditFormData({
           name: moduleData.module.name,
-          desc: moduleData.module.desc
+          desc: moduleData.module.desc,
         });
       }
 
-      // Load assigned students/assignments
-      const assignmentsResponse = await authFetch('/learning/assignments/', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
-        }
+      const assignmentsResponse = await authFetch("/learning/assignments/", {
+        method: "GET",
       });
 
       if (assignmentsResponse.ok) {
         const assignments = await assignmentsResponse.json();
-        // Filter assignments for this module
-        const moduleAssignments = assignments.filter(assignment => assignment.module === moduleId);
-        
-        // Get all students assigned to this module
-        const allStudents = [];
-        moduleAssignments.forEach(assignment => {
-          assignment.students_names.forEach((name, index) => {
-            allStudents.push({
-              id: assignment.students[index],
-              name: name,
-              completed: false, // You might want to add completion tracking later
-              assignment_date: assignment.date_assigned
-            });
-          });
-        });
-        setAssignedStudents(allStudents);
-        // Set selected student IDs for editing
-        setSelectedStudentIds(allStudents.map(student => student.id));
+        const assigned = parseAssignedStudents(assignments, moduleId);
+        setAssignedStudents(assigned);
+        setSelectedStudentIds(assigned.map((student) => student.id));
       }
-
     } catch (error) {
-      logError('Error loading course data:', error);
+      logError("Error loading course data:", error);
       Swal.fire({
-        title: 'Error!',
-        text: 'Failed to load course data. Please try again.',
-        icon: 'error',
+        title: "Error!",
+        text: "Failed to load course data. Please try again.",
+        icon: "error",
         background: "#181817",
-        color: "#fff"
+        color: "#fff",
       });
     } finally {
       setLoading(false);
@@ -400,61 +432,83 @@ const ViewCourse = ({ onUnassign, onEdit, onDelete, onBack, selectedCourse }) =>
   };
 
   // Assignment editing functions
-  const handleStartAssignmentEdit = () => {
+  const handleStartAssignmentEdit = async () => {
     setIsEditingAssignments(true);
+    const students = await loadAllStudents();
+    if (!students.length) {
+      Swal.fire({
+        title: "No students found",
+        text: "Add students under Manage Students first, then assign them to this course.",
+        icon: "info",
+        background: "#181817",
+        color: "#fff",
+      });
+    }
   };
 
   const handleStudentSelectionChange = (studentId) => {
-    setSelectedStudentIds(prev => {
-      if (prev.includes(studentId)) {
-        return prev.filter(id => id !== studentId);
-      } else {
-        return [...prev, studentId];
+    const id = Number(studentId);
+    setSelectedStudentIds((prev) => {
+      if (prev.some((x) => Number(x) === id)) {
+        return prev.filter((x) => Number(x) !== id);
       }
+      return [...prev, id];
     });
   };
 
   const handleSaveAssignments = async () => {
     if (!courseData) return;
 
+    if (selectedStudentIds.length === 0) {
+      const result = await Swal.fire({
+        title: "Clear all students?",
+        text: "No students are selected. This will remove everyone assigned to this course.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Yes, clear",
+        cancelButtonText: "Cancel",
+        background: "#181817",
+        color: "#fff",
+      });
+      if (!result.isConfirmed) return;
+    }
+
     try {
-      const response = await authFetch('/learning/assignments/', {
-        method: 'POST',
+      const response = await authFetch("/learning/assignments/", {
+        method: "POST",
         body: JSON.stringify({
           module_id: courseData.id,
-          student_ids: selectedStudentIds
+          student_ids: selectedStudentIds.map((id) => Number(id)),
         }),
-        headers: {
-          'Content-Type': 'application/json'
-        }
       });
 
       if (response.ok) {
-        // Reload assignments to get updated data
         await loadCourseData(courseData.id);
-        
         setIsEditingAssignments(false);
-        
+
         Swal.fire({
-          title: 'Success!',
-          text: 'Student assignments updated successfully!',
-        iconColor: "#A294F9", // Set the icon color to purple
-          icon: 'success',
+          title: "Success!",
+          text:
+            selectedStudentIds.length === 0
+              ? "All student assignments were cleared."
+              : `Assigned ${selectedStudentIds.length} student(s) successfully!`,
+          iconColor: "#A294F9",
+          icon: "success",
           background: "#181817",
-          color: "#fff"
+          color: "#fff",
         });
       } else {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to update assignments');
+        throw new Error(errorData.error || "Failed to update assignments");
       }
     } catch (error) {
-      logError('Error updating assignments:', error);
+      logError("Error updating assignments:", error);
       Swal.fire({
-        title: 'Error!',
-        text: error.message || 'Failed to update assignments. Please try again.',
-        icon: 'error',
+        title: "Error!",
+        text: error.message || "Failed to update assignments. Please try again.",
+        icon: "error",
         background: "#181817",
-        color: "#fff"
+        color: "#fff",
       });
     }
   };
@@ -466,8 +520,13 @@ const ViewCourse = ({ onUnassign, onEdit, onDelete, onBack, selectedCourse }) =>
   };
 
   const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) setImage(file);
+    const file = e.target.files?.[0];
+    if (!file) {
+      setImageFileName("");
+      return;
+    }
+    setImage(file);
+    setImageFileName(file.name);
   };
 
   const saveEditedImage = () => {
@@ -534,13 +593,26 @@ const ViewCourse = ({ onUnassign, onEdit, onDelete, onBack, selectedCourse }) =>
                 scale={1.2}
                 className="avatar-editor-canvas"
               />
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleImageChange}
-                className="avatar-file-input"
-              />
-              <button onClick={saveEditedImage} className="save-avatar-btn">
+              <div className="avatar-file-picker">
+                <input
+                  ref={avatarFileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="avatar-file-input-hidden"
+                />
+                <button
+                  type="button"
+                  className="avatar-choose-btn"
+                  onClick={() => avatarFileInputRef.current?.click()}
+                >
+                  Choose File
+                </button>
+                <span className="avatar-file-name" title={imageFileName || "No file chosen"}>
+                  {imageFileName || "No file chosen"}
+                </span>
+              </div>
+              <button type="button" onClick={saveEditedImage} className="save-avatar-btn">
                 Save Avatar
               </button>
             </div>
@@ -877,7 +949,7 @@ const ViewCourse = ({ onUnassign, onEdit, onDelete, onBack, selectedCourse }) =>
                         <label style={{ display: 'flex', alignItems: 'center', color: '#fff', cursor: 'pointer' }}>
                           <input
                             type="checkbox"
-                            checked={selectedStudentIds.includes(student.id)}
+                            checked={selectedStudentIds.some((id) => Number(id) === Number(student.id))}
                             onChange={() => handleStudentSelectionChange(student.id)}
                             style={{ marginRight: '8px' }}
                           />

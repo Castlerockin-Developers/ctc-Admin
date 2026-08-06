@@ -34,6 +34,9 @@
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
     padding: 1rem;
     border-radius: 8px;
+    min-width: 0;
+    max-width: 220px;
+    overflow: hidden;
 }
 
 /* Style for the AvatarEditor canvas */
@@ -43,46 +46,59 @@
     overflow: hidden;
 }
 
-.avatar-file-input {
+.avatar-file-picker {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    max-width: 180px;
+    min-width: 0;
+    box-sizing: border-box;
     background-color: #333;
-    color: white;
-    padding: 8px;
     border: 1px solid #555;
     border-radius: 5px;
-    cursor: pointer;
-    font-size: 0.9rem;
-    width: 100%;
-    /* Make it take full width of its container */
-    box-sizing: border-box;
+    padding: 6px 8px;
+    overflow: hidden;
 }
 
-.avatar-file-input::-webkit-file-upload-button {
-    visibility: hidden;
+.avatar-file-input-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
 }
 
-.avatar-file-input::before {
-    content: 'Choose File';
-    display: inline-block;
+.avatar-choose-btn {
+    flex-shrink: 0;
     background: #444;
     border: 1px solid #777;
     border-radius: 3px;
     padding: 5px 8px;
-    outline: none;
-    white-space: nowrap;
-    -webkit-user-select: none;
+    color: #fff;
     cursor: pointer;
     font-weight: 700;
-    font-size: 0.9rem;
+    font-size: 0.8rem;
+    white-space: nowrap;
 }
 
-.avatar-file-input:hover::before {
+.avatar-choose-btn:hover {
     background: #666;
 }
 
-.avatar-file-input:active::before {
-    background: #777;
+.avatar-file-name {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #cfcfcf;
+    font-size: 0.8rem;
 }
-
 
 .save-avatar-btn {
     background-color: #A294F9;
@@ -434,8 +450,9 @@
     margin-left: -20px;
 
   }
-  .avatar-file-input{
-    padding: 8px 8px 8px 10px;
+  .avatar-file-picker{
+    max-width: 160px;
+    padding: 6px;
   }
   .view-back-btn{
     margin-left: -50px;
@@ -462,11 +479,13 @@
         width: 159px;
         padding: 8px 5px;
     }
-    .avatar-file-input{
-        padding: 8px 6px 8px 8px;
+    .avatar-file-picker{
+        max-width: 140px;
+        padding: 5px 6px;
     }
-    .avatar-file-input::before{
-        padding: 5px 3px;
+    .avatar-choose-btn{
+        padding: 4px 6px;
+        font-size: 0.75rem;
     }
     .profile-flex {
         gap: 1px;
@@ -492,11 +511,13 @@
     .chapters-column, .students-column{
         min-width: 285px;
     }
-    .avatar-file-input{
-        padding: 8px 6px 8px 4px;
+    .avatar-file-picker{
+        max-width: 120px;
+        padding: 4px 5px;
     }
-       .avatar-file-input::before{
-        padding: 5px 5px;
+    .avatar-choose-btn{
+        padding: 4px 5px;
+        font-size: 0.7rem;
     }
         .Custom-container{
             overflow-x: hidden;
