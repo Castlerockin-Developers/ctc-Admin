@@ -168,8 +168,15 @@ const CustomLearning = ({ onNewcourse, onView }) => {
                 className="flex flex-col gap-4 rounded-lg border border-[#5a5a5a] bg-[#3d3d3d] p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:gap-4"
               >
                 <div className="min-w-0 flex-1">
-                  <div className="mb-2 inline-block rounded-md bg-[#282828] px-3 py-1.5 text-xs font-medium text-white">
-                    {course.total_chapters ?? 0} chapters
+                  <div className="mb-2 flex flex-wrap items-center gap-2">
+                    <span className="inline-block rounded-md bg-[#282828] px-3 py-1.5 text-xs font-medium text-white">
+                      {course.total_chapters ?? 0} chapters
+                    </span>
+                    {!course.is_custom && (
+                      <span className="inline-block rounded-md bg-[#4a3f7a] px-3 py-1.5 text-xs font-medium text-[#cbbfff]">
+                        Catalog
+                      </span>
+                    )}
                   </div>
                   <h2 className="truncate text-lg font-medium text-white">
                     {course.name}
@@ -199,8 +206,8 @@ const CustomLearning = ({ onNewcourse, onView }) => {
                   >
                     <option value="">Options</option>
                     <option value="view">View</option>
-                    <option value="edit">Edit</option>
-                    <option value="delete">Delete</option>
+                    {course.is_custom && <option value="edit">Edit</option>}
+                    {course.is_custom && <option value="delete">Delete</option>}
                   </select>
                 </div>
               </motion.div>
