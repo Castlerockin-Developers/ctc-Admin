@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { log, error as logError } from "../utils/logger";
-import AvatarEditor from "react-avatar-editor";
+import { error as logError } from "../utils/logger";
 import "./ViewCourse.css";
 import { authFetch } from '../scripts/AuthProvider';
 import Swal from 'sweetalert2';
@@ -12,9 +11,7 @@ const ViewCourse = ({ onUnassign, onEdit, onDelete, onBack, selectedCourse }) =>
   const [loading, setLoading] = useState(true);
 
   const [image, setImage] = useState(null);
-  const [imageFileName, setImageFileName] = useState("");
   const [designation, setDesignation] = useState("");
-  const editorRef = useRef(null);
   const avatarFileInputRef = useRef(null);
   const [expandedChapter, setExpandedChapter] = useState(null);
   const [showCompleted, setShowCompleted] = useState(false);
@@ -521,19 +518,66 @@ const ViewCourse = ({ onUnassign, onEdit, onDelete, onBack, selectedCourse }) =>
 
   const handleImageChange = (e) => {
     const file = e.target.files?.[0];
-    if (!file) {
-      setImageFileName("");
-      return;
-    }
+    if (!file) return;
     setImage(file);
-    setImageFileName(file.name);
   };
 
-  const saveEditedImage = () => {
-    if (editorRef.current) {
-      const canvas = editorRef.current.getImageScaledToCanvas().toDataURL();
-      log("Cropped image base64:", canvas);
-      alert("Avatar saved! Check console for base64 string.");
+  const [imagePreviewUrl, setImagePreviewUrl] = useState("");
+
+  useEffect(() => {
+    if (!image) {
+      setImagePreviewUrl("");
+      return undefined;
+    }
+    if (typeof image === "string") {
+      setImagePreviewUrl(image);
+      return undefined;
+    }
+    const objectUrl = URL.createObjectURL(image);
+    setImagePreviewUrl(objectUrl);
+    return () => URL.revokeObjectURL(objectUrl);
+  }, [image]);
+
+  const saveEditedImage = async () => {
+    if (!(image instanceof File) || !courseData?.id) {
+      Swal.fire({
+        title: "No new image",
+        text: "Choose a new image file before saving.",
+        icon: "info",
+        background: "#181817",
+        color: "#fff",
+      });
+      return;
+    }
+    try {
+      const formData = new FormData();
+      formData.append("image", image);
+      const response = await authFetch(`/learning/custom-modules/${courseData.id}/`, {
+        method: "PUT",
+        body: formData,
+      });
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.error || "Failed to save image");
+      }
+      Swal.fire({
+        title: "Saved!",
+        text: "Course image updated.",
+        icon: "success",
+        iconColor: "#A294F9",
+        background: "#181817",
+        color: "#fff",
+      });
+      await loadCourseData(courseData.id);
+    } catch (error) {
+      logError("Error saving course image:", error);
+      Swal.fire({
+        title: "Error!",
+        text: error.message || "Failed to save image.",
+        icon: "error",
+        background: "#181817",
+        color: "#fff",
+      });
     }
   };
 
@@ -566,33 +610,34 @@ const ViewCourse = ({ onUnassign, onEdit, onDelete, onBack, selectedCourse }) =>
   }
 
   return (
-    <div className="flex h-[87vh] min-h-[calc(100dvh-4.5rem)] w-full max-w-full flex-col overflow-hidden rounded-lg bg-[#282828] p-4 sm:p-5 md:h-[87vh] md:min-h-0 md:p-6 md:pb-8">
-      <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto overflow-x-hidden pb-6 sm:pb-8 sm:gap-6">
-      <div className="new-c-top new-c-top1 flex items-center gap-4 shrink-0">
+    <div className="custom-learning-view flex h-[87vh] min-h-[calc(100dvh-4.5rem)] w-full max-w-full flex-col overflow-hidden rounded-lg bg-[#282828] p-4 sm:p-5 md:h-[87vh] md:min-h-0 md:p-6 md:pb-8">
+      <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto overflow-x-hidden pb-6 sm:gap-6 sm:pb-8">
+      <div className="new-c-top new-c-top1 flex items-center gap-3 sm:gap-4 shrink-0">
         <button
           onClick={onBack}
-          className="view-back-btn back-btn  cursor-pointer text-1xl text-white rounded-lg border border-[#5a5a5a] bg-[#3d3d3d] px-2 py-0 hover:bg-[#4a4a4a]"
+          className="view-back-btn back-btn cursor-pointer text-xl text-white rounded-lg border border-[#5a5a5a] bg-[#3d3d3d] px-3 py-1.5 hover:bg-[#4a4a4a]"
           aria-label="Go back"
         >
           &lt;
         </button>
-        <h1 className="text-white text-3xl font-semibold">View Course</h1>
+        <h1 className="text-white text-2xl font-semibold sm:text-3xl">View Course</h1>
       </div>
       <div className="view-details-container">
         <div className="view-details">
-          <div className="flex items-center md:gap-10 gap-2 profile-flex">
+          <div className="flex items-start md:gap-6 gap-4 profile-flex min-w-0 flex-1">
             {/* Left side: Avatar and info */}
             <div className="profile-avatar-section">
-              <AvatarEditor
-                ref={editorRef}
-                image={image || "https://via.placeholder.com/150"}
-                width={80}
-                height={80}
-                border={10}
-                borderRadius={40}
-                scale={1.2}
-                className="avatar-editor-canvas"
-              />
+              <div className="avatar-preview-frame">
+                {imagePreviewUrl ? (
+                  <img
+                    src={imagePreviewUrl}
+                    alt={courseData.name || "Course"}
+                    className="avatar-preview-image"
+                  />
+                ) : (
+                  <div className="avatar-preview-placeholder">No image</div>
+                )}
+              </div>
               <div className="avatar-file-picker">
                 <input
                   ref={avatarFileInputRef}
@@ -608,9 +653,6 @@ const ViewCourse = ({ onUnassign, onEdit, onDelete, onBack, selectedCourse }) =>
                 >
                   Choose File
                 </button>
-                <span className="avatar-file-name" title={imageFileName || "No file chosen"}>
-                  {imageFileName || "No file chosen"}
-                </span>
               </div>
               <button type="button" onClick={saveEditedImage} className="save-avatar-btn">
                 Save Avatar
@@ -918,21 +960,14 @@ const ViewCourse = ({ onUnassign, onEdit, onDelete, onBack, selectedCourse }) =>
 
         {/* Right column: Students */}
         <div className="students-column">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+          <div className="students-column-header">
             <h2>Assigned Students</h2>
             <button
+              type="button"
               onClick={handleStartAssignmentEdit}
-              style={{
-                padding: '6px 12px',
-                fontSize: '12px',
-                backgroundColor: '#007bff',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer'
-              }}
+              className="students-edit-btn"
             >
-              {isEditingAssignments ? 'Editing...' : 'Edit'}
+              {isEditingAssignments ? "Editing..." : "Edit"}
             </button>
           </div>
           
