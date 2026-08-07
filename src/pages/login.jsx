@@ -38,9 +38,14 @@ const LoginPage = () => {
   const [shakeCount, setShakeCount] = useState(0);
   const [showSplash, setShowSplash] = useState(true);
   const [resetEmail, setResetEmail] = useState("");
+  const [resetOtp, setResetOtp] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmNewPassword, setConfirmNewPassword] = useState("");
+  const [resetStep, setResetStep] = useState("email"); // email | otp | password
   const [emailError, setEmailError] = useState("");
   const [resetLoading, setResetLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
 
   useEffect(() => {
     const lastVisit = sessionStorage.getItem("ctc_last_visit");
@@ -143,8 +148,29 @@ const LoginPage = () => {
 
   const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-  const handleResetPassword = async (e) => {
-    e.preventDefault();
+  const resetPopupState = () => {
+    setResetEmail("");
+    setResetOtp("");
+    setNewPassword("");
+    setConfirmNewPassword("");
+    setResetStep("email");
+    setEmailError("");
+    setShowNewPassword(false);
+  };
+
+  const closeResetPopup = () => {
+    setIsPopupOpen(false);
+    resetPopupState();
+  };
+
+  const parseResetError = (data, fallback) =>
+    data?.error ||
+    data?.message ||
+    data?.detail ||
+    data?.email?.[0] ||
+    fallback;
+
+  const handleSendOtp = async () => {
     setEmailError("");
     if (!resetEmail.trim()) {
       setEmailError("Email address is required.");
@@ -156,34 +182,105 @@ const LoginPage = () => {
     }
     setResetLoading(true);
     try {
-      const response = await fetch(`${baseUrl}/forget-password/`, {
+      const response = await fetch(`${baseUrl}/auth/send-otp/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: resetEmail }),
+        body: JSON.stringify({ email: resetEmail.trim() }),
       });
-      const data = await response.json();
-      if (response.ok) {
-        Swal.fire({
-          title: "Reset Link Sent!",
-          text: `Check ${resetEmail} for the password reset link.`,
-          icon: "success",
-          iconColor: "#A294F9",
-          confirmButtonColor: "#a294f9",
-          background: "#181817",
-          color: "#FFFFFF",
-          confirmButtonText: "OK",
-        });
-        setIsPopupOpen(false);
-        setResetEmail("");
-      } else {
-        setEmailError(
-          data.message ||
-            data.error ||
-            data.detail ||
-            data.email?.[0] ||
-            "Failed to send reset link"
-        );
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        setEmailError(parseResetError(data, "Failed to send OTP"));
+        return;
       }
+      setResetStep("otp");
+      setResetOtp("");
+    } catch {
+      setEmailError("Network error. Please try again.");
+    } finally {
+      setResetLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    setEmailError("");
+    const otp = resetOtp.trim();
+    if (!/^\d{6}$/.test(otp)) {
+      setEmailError("Enter the 6-digit OTP from your email.");
+      return;
+    }
+    setResetLoading(true);
+    try {
+      const response = await fetch(`${baseUrl}/auth/verify-otp/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: resetEmail.trim(), otp }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        setEmailError(parseResetError(data, "Invalid or expired OTP"));
+        return;
+      }
+      setResetStep("password");
+      setNewPassword("");
+      setConfirmNewPassword("");
+    } catch {
+      setEmailError("Network error. Please try again.");
+    } finally {
+      setResetLoading(false);
+    }
+  };
+
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+    setEmailError("");
+
+    if (resetStep === "email") {
+      await handleSendOtp();
+      return;
+    }
+    if (resetStep === "otp") {
+      await handleVerifyOtp();
+      return;
+    }
+
+    if (!newPassword || newPassword.length < 8) {
+      setEmailError("Password must be at least 8 characters long.");
+      return;
+    }
+    if (newPassword !== confirmNewPassword) {
+      setEmailError("Passwords do not match.");
+      return;
+    }
+
+    setResetLoading(true);
+    try {
+      const response = await fetch(`${baseUrl}/auth/reset-password/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: resetEmail.trim(),
+          new_password: newPassword,
+          confirm_password: confirmNewPassword,
+        }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        setEmailError(parseResetError(data, "Failed to reset password"));
+        return;
+      }
+      Swal.fire({
+        title: "Password Reset!",
+        text: "Your password was changed. You can sign in now.",
+        icon: "success",
+        iconColor: "#A294F9",
+        confirmButtonColor: "#a294f9",
+        background: "#181817",
+        color: "#FFFFFF",
+        confirmButtonText: "OK",
+      });
+      setUsername(resetEmail.trim());
+      setPassword(newPassword);
+      closeResetPopup();
     } catch {
       setEmailError("Network error. Please try again.");
     } finally {
@@ -194,6 +291,24 @@ const LoginPage = () => {
   const inputBase =
     "w-full rounded-xl border-2 border-[#5a5a5a] bg-[#1e1e1e] px-4 py-3.5 text-white placeholder-gray-500 outline-none transition-colors focus:border-[#A294F9] focus:ring-2 focus:ring-[#A294F9]/30 sm:py-3";
   const labelBase = "mb-2 block text-sm font-semibold text-gray-200";
+
+  const resetStepCopy = {
+    email: "Enter your email to receive a one-time code.",
+    otp: "Enter the 6-digit OTP sent to your email.",
+    password: "Choose a new password for your account.",
+  };
+
+  const resetSubmitLabel = resetLoading
+    ? resetStep === "email"
+      ? "Sending…"
+      : resetStep === "otp"
+        ? "Verifying…"
+        : "Resetting…"
+    : resetStep === "email"
+      ? "Send OTP"
+      : resetStep === "otp"
+        ? "Verify OTP"
+        : "Reset Password";
 
   return (
     <>
@@ -331,7 +446,10 @@ const LoginPage = () => {
                 >
                   <button
                     type="button"
-                    onClick={() => setIsPopupOpen(true)}
+                    onClick={() => {
+                      resetPopupState();
+                      setIsPopupOpen(true);
+                    }}
                     className="font-medium text-white underline-offset-2 hover:underline"
                   >
                     Forgot Password?
@@ -346,11 +464,7 @@ const LoginPage = () => {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    onClick={() => {
-                      setIsPopupOpen(false);
-                      setResetEmail("");
-                      setEmailError("");
-                    }}
+                    onClick={closeResetPopup}
                   >
                     <motion.div
                       className="w-full max-w-md rounded-2xl border border-[#404040] bg-[#282828] p-6 shadow-xl sm:p-8"
@@ -363,17 +477,86 @@ const LoginPage = () => {
                         Reset Password
                       </h3>
                       <p className="mb-5 text-sm text-gray-400">
-                        Enter your email to receive a reset link.
+                        {resetStepCopy[resetStep]}
                       </p>
                       <form onSubmit={handleResetPassword} className="space-y-4">
-                        <input
-                          type="email"
-                          placeholder="Enter your email"
-                          className={inputBase}
-                          value={resetEmail}
-                          onChange={(e) => setResetEmail(e.target.value)}
-                          autoComplete="email"
-                        />
+                        {resetStep === "email" && (
+                          <input
+                            type="email"
+                            placeholder="Enter your email"
+                            className={inputBase}
+                            value={resetEmail}
+                            onChange={(e) => {
+                              setResetEmail(e.target.value);
+                              setEmailError("");
+                            }}
+                            autoComplete="email"
+                          />
+                        )}
+                        {resetStep === "otp" && (
+                          <input
+                            type="text"
+                            inputMode="numeric"
+                            pattern="[0-9]*"
+                            maxLength={6}
+                            placeholder="6-digit OTP"
+                            className={inputBase}
+                            value={resetOtp}
+                            onChange={(e) => {
+                              setResetOtp(
+                                e.target.value.replace(/\D/g, "").slice(0, 6)
+                              );
+                              setEmailError("");
+                            }}
+                            autoComplete="one-time-code"
+                          />
+                        )}
+                        {resetStep === "password" && (
+                          <>
+                            <div className="relative">
+                              <input
+                                type={showNewPassword ? "text" : "password"}
+                                placeholder="New password"
+                                className={`${inputBase} pr-12`}
+                                value={newPassword}
+                                onChange={(e) => {
+                                  setNewPassword(e.target.value);
+                                  setEmailError("");
+                                }}
+                                autoComplete="new-password"
+                                minLength={8}
+                              />
+                              <button
+                                type="button"
+                                onClick={() => setShowNewPassword((p) => !p)}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-200 transition-colors"
+                                aria-label={
+                                  showNewPassword
+                                    ? "Hide password"
+                                    : "Show password"
+                                }
+                              >
+                                {showNewPassword ? (
+                                  <FaEyeSlash size={18} />
+                                ) : (
+                                  <FaEye size={18} />
+                                )}
+                              </button>
+                            </div>
+                            <input
+                              type={showNewPassword ? "text" : "password"}
+                              placeholder="Confirm new password"
+                              className={inputBase}
+                              value={confirmNewPassword}
+                              onChange={(e) => {
+                                setConfirmNewPassword(e.target.value);
+                                setEmailError("");
+                              }}
+                              autoComplete="new-password"
+                              minLength={8}
+                            />
+                          </>
+                        )}
                         {emailError && (
                           <p className="text-sm text-red-400">{emailError}</p>
                         )}
@@ -381,22 +564,38 @@ const LoginPage = () => {
                           <button
                             type="button"
                             onClick={() => {
-                              setIsPopupOpen(false);
-                              setResetEmail("");
-                              setEmailError("");
+                              if (resetStep === "email") {
+                                closeResetPopup();
+                              } else if (resetStep === "otp") {
+                                setResetStep("email");
+                                setEmailError("");
+                              } else {
+                                setResetStep("otp");
+                                setEmailError("");
+                              }
                             }}
                             className="flex-1 rounded-xl border border-[#5a5a5a] bg-[#3d3d3d] py-3 text-sm font-semibold text-white transition-colors hover:bg-[#4a4a4a]"
                           >
-                            Close
+                            {resetStep === "email" ? "Close" : "Back"}
                           </button>
                           <button
                             type="submit"
                             disabled={resetLoading}
                             className="flex-1 rounded-xl bg-[#A294F9] py-3 text-sm font-semibold text-black transition-colors hover:bg-[#8b7ce8] disabled:opacity-70"
                           >
-                            {resetLoading ? "Sending…" : "Submit"}
+                            {resetSubmitLabel}
                           </button>
                         </div>
+                        {resetStep === "otp" && (
+                          <button
+                            type="button"
+                            disabled={resetLoading}
+                            onClick={handleSendOtp}
+                            className="w-full text-sm font-medium text-gray-300 underline-offset-2 hover:underline disabled:opacity-70"
+                          >
+                            Resend OTP
+                          </button>
+                        )}
                       </form>
                     </motion.div>
                   </motion.div>

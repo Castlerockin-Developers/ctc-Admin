@@ -1,18 +1,26 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { error as logError } from "../utils/logger";
 import "./ViewCourse.css";
 import { authFetch } from '../scripts/AuthProvider';
 import Swal from 'sweetalert2';
 
+const CHAPTER_PAGE_SIZE = 50;
+
 const ViewCourse = ({ onUnassign, onEdit, onDelete, onBack, selectedCourse }) => {
   const [courseData, setCourseData] = useState(null);
   const [chapters, setChapters] = useState([]);
+  const [chaptersTotal, setChaptersTotal] = useState(0);
+  const [chaptersPage, setChaptersPage] = useState(1);
+  const [chaptersHasNext, setChaptersHasNext] = useState(false);
+  const [chaptersLoadingMore, setChaptersLoadingMore] = useState(false);
   const [assignedStudents, setAssignedStudents] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const [image, setImage] = useState(null);
+  const [imagePreviewUrl, setImagePreviewUrl] = useState("");
   const [designation, setDesignation] = useState("");
   const avatarFileInputRef = useRef(null);
+  const chaptersColumnRef = useRef(null);
   const [expandedChapter, setExpandedChapter] = useState(null);
   const [showCompleted, setShowCompleted] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -37,11 +45,10 @@ const ViewCourse = ({ onUnassign, onEdit, onDelete, onBack, selectedCourse }) =>
     ? assignedStudents.filter(student => student.completed)
     : assignedStudents;
 
-  // Load course data when component mounts
+  // Load course data when component mounts (students load lazily on assignment edit)
   useEffect(() => {
     if (selectedCourse && selectedCourse.id) {
       loadCourseData(selectedCourse.id);
-      loadAllStudents();
     }
   }, [selectedCourse]);
 
@@ -143,31 +150,51 @@ const ViewCourse = ({ onUnassign, onEdit, onDelete, onBack, selectedCourse }) =>
     return Array.from(byId.values());
   };
 
-  // Load course details, chapters, and assigned students
+  const fetchChaptersPage = async (moduleId, page) => {
+    const params = new URLSearchParams({
+      page: String(page),
+      page_size: String(CHAPTER_PAGE_SIZE),
+      summary: "1",
+    });
+    const response = await authFetch(
+      `/learning/custom-modules/${moduleId}/?${params.toString()}`,
+      { method: "GET" }
+    );
+    if (!response.ok) {
+      throw new Error("Failed to load course chapters");
+    }
+    return response.json();
+  };
+
+  // Load course details (paginated chapters) and assigned students in parallel
   const loadCourseData = async (moduleId) => {
     try {
       setLoading(true);
+      setChapters([]);
+      setChaptersPage(1);
+      setChaptersHasNext(false);
+      setChaptersTotal(0);
+      setExpandedChapter(null);
 
-      // Load module details with chapters
-      const moduleResponse = await authFetch(`/learning/custom-modules/${moduleId}/`, {
-        method: "GET",
-      });
+      const [moduleData, assignmentsResponse] = await Promise.all([
+        fetchChaptersPage(moduleId, 1),
+        authFetch(`/learning/assignments/?module_id=${moduleId}`, { method: "GET" }),
+      ]);
 
-      if (moduleResponse.ok) {
-        const moduleData = await moduleResponse.json();
-        setCourseData(moduleData.module);
-        setChapters(moduleData.chapters || []);
-        setImage(moduleData.module.image);
-        setDesignation(moduleData.module.author_designation || "Faculty");
-
-        setEditFormData({
-          name: moduleData.module.name,
-          desc: moduleData.module.desc,
-        });
-      }
-
-      const assignmentsResponse = await authFetch("/learning/assignments/", {
-        method: "GET",
+      setCourseData(moduleData.module);
+      setChapters(Array.isArray(moduleData.chapters) ? moduleData.chapters : []);
+      setChaptersPage(moduleData.page || 1);
+      setChaptersHasNext(Boolean(moduleData.has_next));
+      setChaptersTotal(
+        typeof moduleData.total === "number"
+          ? moduleData.total
+          : (moduleData.chapters || []).length
+      );
+      setImage(moduleData.module?.image || null);
+      setDesignation(moduleData.module?.author_designation || "Faculty");
+      setEditFormData({
+        name: moduleData.module?.name || "",
+        desc: moduleData.module?.desc || "",
       });
 
       if (assignmentsResponse.ok) {
@@ -189,6 +216,44 @@ const ViewCourse = ({ onUnassign, onEdit, onDelete, onBack, selectedCourse }) =>
       setLoading(false);
     }
   };
+
+  const loadMoreChapters = useCallback(async () => {
+    if (!courseData?.id || !chaptersHasNext || chaptersLoadingMore) return;
+    try {
+      setChaptersLoadingMore(true);
+      const nextPage = chaptersPage + 1;
+      const data = await fetchChaptersPage(courseData.id, nextPage);
+      const nextChapters = Array.isArray(data.chapters) ? data.chapters : [];
+      setChapters((prev) => {
+        const seen = new Set(prev.map((c) => c.id));
+        return [...prev, ...nextChapters.filter((c) => !seen.has(c.id))];
+      });
+      setChaptersPage(data.page || nextPage);
+      setChaptersHasNext(Boolean(data.has_next));
+      if (typeof data.total === "number") {
+        setChaptersTotal(data.total);
+      }
+    } catch (error) {
+      logError("Error loading more chapters:", error);
+    } finally {
+      setChaptersLoadingMore(false);
+    }
+  }, [courseData?.id, chaptersHasNext, chaptersLoadingMore, chaptersPage]);
+
+  // Infinite scroll chapters list
+  useEffect(() => {
+    const el = chaptersColumnRef.current;
+    if (!el) return undefined;
+
+    const onScroll = () => {
+      if (el.scrollTop + el.clientHeight >= el.scrollHeight - 100) {
+        loadMoreChapters();
+      }
+    };
+
+    el.addEventListener("scroll", onScroll);
+    return () => el.removeEventListener("scroll", onScroll);
+  }, [loadMoreChapters]);
 
   // Delete module
   const handleDelete = async () => {
@@ -522,8 +587,6 @@ const ViewCourse = ({ onUnassign, onEdit, onDelete, onBack, selectedCourse }) =>
     setImage(file);
   };
 
-  const [imagePreviewUrl, setImagePreviewUrl] = useState("");
-
   useEffect(() => {
     if (!image) {
       setImagePreviewUrl("");
@@ -736,7 +799,7 @@ const ViewCourse = ({ onUnassign, onEdit, onDelete, onBack, selectedCourse }) =>
                   </div>
                   <div className="course-stats">
                     <p style={{color: '#888', fontSize: '14px'}}>
-                      {chapters.length} chapters • {assignedStudents.length} students assigned
+                      {chaptersTotal || courseData.total_chapters || chapters.length} chapters • {assignedStudents.length} students assigned
                     </p>
                   </div>
                   <div className="course-description" style={{marginTop: '8px'}}>
@@ -791,14 +854,15 @@ const ViewCourse = ({ onUnassign, onEdit, onDelete, onBack, selectedCourse }) =>
       {/* Your requested columns */}
       <div className="course-columns-container">
         {/* Left column: Chapters */}
-        <div className="chapters-column">
-          <h2>Chapters ({chapters.length})</h2>
+        <div className="chapters-column" ref={chaptersColumnRef}>
+          <h2>Chapters ({chaptersTotal || chapters.length})</h2>
           {chapters.length === 0 ? (
             <div className="no-chapters" style={{color: '#888', textAlign: 'center', padding: '20px'}}>
               No chapters found for this module.
             </div>
           ) : (
-            chapters.map((chapter) => (
+            <>
+            {chapters.map((chapter) => (
               <div key={chapter.id} className="chapter-item">
                 <div className="chapter-header-row" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <div
@@ -954,20 +1018,50 @@ const ViewCourse = ({ onUnassign, onEdit, onDelete, onBack, selectedCourse }) =>
                   </div>
                 )}
               </div>
-            ))
+            ))}
+            <div style={{ textAlign: 'center', padding: '12px 0', color: '#aaa', fontSize: '13px' }}>
+              {chaptersLoadingMore ? (
+                <span>Loading more chapters…</span>
+              ) : chaptersHasNext ? (
+                <button
+                  type="button"
+                  onClick={loadMoreChapters}
+                  style={{
+                    padding: '8px 14px',
+                    borderRadius: '6px',
+                    border: '1px solid #666',
+                    background: '#3d3d3d',
+                    color: '#fff',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Load more ({chapters.length} of {chaptersTotal})
+                </button>
+              ) : chaptersTotal > CHAPTER_PAGE_SIZE ? (
+                <span>Showing all {chaptersTotal} chapters</span>
+              ) : null}
+            </div>
+            </>
           )}
         </div>
 
         {/* Right column: Students */}
         <div className="students-column">
-          <div className="students-column-header">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
             <h2>Assigned Students</h2>
             <button
-              type="button"
               onClick={handleStartAssignmentEdit}
-              className="students-edit-btn"
+              style={{
+                padding: '6px 12px',
+                fontSize: '12px',
+                backgroundColor: '#007bff',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer'
+              }}
             >
-              {isEditingAssignments ? "Editing..." : "Edit"}
+              {isEditingAssignments ? 'Editing...' : 'Edit'}
             </button>
           </div>
           

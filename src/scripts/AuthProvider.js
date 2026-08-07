@@ -177,22 +177,37 @@ export const FixImageRoute = (imageUrl) => {
 };
 
 export async function login(username, password) {
-  // for_admin tells backend this login is for the admin panel (ctc-Admin)
-  const payload = JSON.stringify({ email: username, password: password, for_admin: true });
+  // Use /auth/token/ so for_admin is enforced server-side and tokens include
+  // session_version (dj_rest_auth /auth/login/ skips both).
+  const payload = JSON.stringify({
+    email: username,
+    password: password,
+    for_admin: true,
+  });
   const headers = {
     'Content-Type': 'application/json',
   };
 
   try {
-    const response = await fetch(baseUrl + '/auth/login/', {
+    const response = await fetch(baseUrl + '/auth/token/', {
       method: 'POST',
       headers: headers,
       body: payload,
     });
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Login failed');
+      let message = 'Login failed';
+      try {
+        const error = await response.json();
+        message =
+          error.detail ||
+          error.message ||
+          (Array.isArray(error.non_field_errors) && error.non_field_errors[0]) ||
+          message;
+      } catch (_) {
+        // keep default
+      }
+      throw new Error(message);
     }
 
     const data = await response.json();
