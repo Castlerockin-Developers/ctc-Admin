@@ -121,12 +121,12 @@ const CustomLearning = ({ onNewcourse, onView }) => {
 
   return (
     <div className="flex h-[87vh] min-h-[calc(100dvh-4.5rem)] w-full max-w-full flex-col overflow-hidden rounded-lg bg-[#282828] p-4 sm:p-5 md:h-[87vh] md:min-h-0 md:p-6 md:pb-8">
-      <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto overflow-x-hidden pb-6 sm:gap-6 sm:pb-8">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto overflow-x-hidden pb-6 sm:gap-6 sm:pb-8">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
           <h1 className="text-xl font-semibold text-white sm:text-2xl md:text-3xl">
             Customized Modules
           </h1>
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+          <div className="flex w-full flex-col gap-3 sm:w-auto sm:min-w-[320px] sm:flex-row sm:items-center sm:gap-4">
             <motion.button
               whileTap={{ scale: 1.05 }}
               type="button"
@@ -159,16 +159,16 @@ const CustomLearning = ({ onNewcourse, onView }) => {
             </p>
           </div>
         ) : (
-          <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-2">
+          <div className="grid gap-4 sm:gap-5 lg:grid-cols-2">
             {filteredCourses.map((course) => (
               <motion.div
                 key={course.id}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="flex flex-col gap-4 rounded-lg border border-[#5a5a5a] bg-[#3d3d3d] p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:gap-4"
+                className="flex flex-col gap-4 rounded-xl border border-[#5a5a5a] bg-[#3d3d3d] p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:gap-5 sm:p-5"
               >
                 <div className="min-w-0 flex-1">
-                  <div className="mb-2 flex flex-wrap items-center gap-2">
+                  <div className="mb-2.5 flex flex-wrap items-center gap-2">
                     <span className="inline-block rounded-md bg-[#282828] px-3 py-1.5 text-xs font-medium text-white">
                       {course.total_chapters ?? 0} chapters
                     </span>
@@ -181,13 +181,13 @@ const CustomLearning = ({ onNewcourse, onView }) => {
                   <h2 className="truncate text-lg font-medium text-white">
                     {course.name}
                   </h2>
-                  <p className="mt-0.5 text-sm text-gray-400">
+                  <p className="mt-1 text-sm text-gray-400">
                     {course.author_name
                       ? `${course.author_name}${course.author_designation ? ` (${course.author_designation})` : ""}`
                       : "No Author"}
                   </p>
                   {course.desc && (
-                    <p className="mt-1 line-clamp-2 text-sm text-gray-500">
+                    <p className="mt-1.5 line-clamp-2 text-sm text-gray-500">
                       {course.desc}
                     </p>
                   )}
@@ -202,7 +202,7 @@ const CustomLearning = ({ onNewcourse, onView }) => {
                       }));
                       handleActionChange(e, course.id);
                     }}
-                    className="rounded-lg border border-[#5a5a5a] bg-[#535353] px-4 py-2.5 text-sm font-medium text-white outline-none focus:border-[#A294F9] focus:ring-2 focus:ring-[#A294F9]/30"
+                    className="min-h-[44px] rounded-lg border border-[#5a5a5a] bg-[#535353] px-4 py-2.5 text-sm font-medium text-white outline-none focus:border-[#A294F9] focus:ring-2 focus:ring-[#A294F9]/30"
                   >
                     <option value="">Options</option>
                     <option value="view">View</option>
