@@ -29,26 +29,22 @@ const ViewResult = ({ result, onBack, onNext }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [students, setStudents] = useState([]);
   const [loadingPage, setLoadingPage] = useState(false);
-  const itemsPerPage = result?.attemptsPageSize ?? ITEMS_PER_PAGE;
+  const itemsPerPage = ITEMS_PER_PAGE;
   const totalAttemptsCount = result?.attemptsCount ?? 0;
   const isServerPaginated = totalAttemptsCount > 0;
 
   useEffect(() => {
-    if (result?.students) {
-      setStudents(result.students);
-      setCurrentPage(1);
-    }
+    setCurrentPage(1);
   }, [result?.id]);
 
   useEffect(() => {
-    if (!result?.id || !isServerPaginated) return;
-    if (currentPage === 1 && result.students?.length) {
-      setStudents(result.students);
+    if (!result?.id || !isServerPaginated) {
+      if (result?.students) setStudents(result.students);
       return;
     }
     let cancelled = false;
     setLoadingPage(true);
-    const url = `/admin/results/${result.id}/?attempts_page=${currentPage}&attempts_page_size=${itemsPerPage}`;
+    const url = `/admin/results/${result.id}/?attempts_page=${currentPage}&attempts_page_size=${itemsPerPage}&page_size=${itemsPerPage}`;
     authFetch(url, { method: "GET" })
       .then((res) => res.ok ? res.json() : Promise.reject(new Error("Failed to load")))
       .then((data) => {

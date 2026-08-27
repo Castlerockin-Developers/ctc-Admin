@@ -184,7 +184,7 @@ const ManageResult = ({ onNext, cacheAllowed }) => {
     setLoadingResultId(row.id);
     const pageSize = 50;
     try {
-      const url = `/admin/results/${row.id}/?attempts_page=1&attempts_page_size=${pageSize}`;
+      const url = `/admin/results/${row.id}/?attempts_page=1&attempts_page_size=${pageSize}&page_size=${pageSize}`;
       const resp = await authFetch(url, { method: "GET" });
       if (!resp.ok) throw new Error("Failed to fetch details");
       const details = await resp.json();
