@@ -1,10 +1,16 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { log, error as logError } from "../utils/logger";
-import { FaSearch, FaFileExcel, FaChevronLeft } from "react-icons/fa";
+import { FaSearch, FaFileExcel, FaChevronLeft, FaSort, FaSortUp, FaSortDown } from "react-icons/fa";
 import Swal from "sweetalert2";
 import { authFetch } from "../scripts/AuthProvider";
 
 const ITEMS_PER_PAGE = 50;
+
+const SORT_OPTIONS = [
+  { key: "usn", label: "USN" },
+  { key: "name", label: "Name" },
+  { key: "marks", label: "Marks" },
+];
 
 const mapAttemptToStudent = (a) => ({
   attempt_id: a.id,
@@ -24,18 +30,37 @@ const mapAttemptToStudent = (a) => ({
   trustScore: a.trust_score,
 });
 
+const compareStudents = (a, b, sortBy, sortOrder) => {
+  let cmp = 0;
+  if (sortBy === "usn") {
+    cmp = String(a.usn || "").localeCompare(String(b.usn || ""), undefined, {
+      numeric: true,
+      sensitivity: "base",
+    });
+  } else if (sortBy === "name") {
+    cmp = String(a.name || "").localeCompare(String(b.name || ""), undefined, {
+      sensitivity: "base",
+    });
+  } else if (sortBy === "marks") {
+    cmp = (Number(a.score) || 0) - (Number(b.score) || 0);
+  }
+  return sortOrder === "desc" ? -cmp : cmp;
+};
+
 const ViewResult = ({ result, onBack, onNext }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [students, setStudents] = useState([]);
   const [loadingPage, setLoadingPage] = useState(false);
+  const [sortBy, setSortBy] = useState("");
+  const [sortOrder, setSortOrder] = useState("asc");
   const itemsPerPage = ITEMS_PER_PAGE;
   const totalAttemptsCount = result?.attemptsCount ?? 0;
   const isServerPaginated = totalAttemptsCount > 0;
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [result?.id]);
+  }, [result?.id, searchQuery, sortBy, sortOrder]);
 
   useEffect(() => {
     if (!result?.id || !isServerPaginated) {
@@ -44,7 +69,15 @@ const ViewResult = ({ result, onBack, onNext }) => {
     }
     let cancelled = false;
     setLoadingPage(true);
-    const url = `/admin/results/${result.id}/?attempts_page=${currentPage}&attempts_page_size=${itemsPerPage}&page_size=${itemsPerPage}`;
+    const params = new URLSearchParams();
+    params.set("attempts_page", String(currentPage));
+    params.set("attempts_page_size", String(itemsPerPage));
+    params.set("page_size", String(itemsPerPage));
+    if (sortBy) {
+      params.set("attempts_sort", sortBy);
+      params.set("attempts_order", sortOrder);
+    }
+    const url = `/admin/results/${result.id}/?${params.toString()}`;
     authFetch(url, { method: "GET" })
       .then((res) => res.ok ? res.json() : Promise.reject(new Error("Failed to load")))
       .then((data) => {
@@ -57,7 +90,7 @@ const ViewResult = ({ result, onBack, onNext }) => {
       })
       .finally(() => { if (!cancelled) setLoadingPage(false); });
     return () => { cancelled = true; };
-  }, [result?.id, currentPage, itemsPerPage, isServerPaginated]);
+  }, [result?.id, currentPage, itemsPerPage, isServerPaginated, sortBy, sortOrder]);
 
   if (!result) {
     return (
@@ -142,26 +175,43 @@ const ViewResult = ({ result, onBack, onNext }) => {
       (student.name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
       (student.usn || "").toLowerCase().includes(searchQuery.toLowerCase())
   );
+  const sortedStudents = sortBy
+    ? [...filteredStudents].sort((a, b) => compareStudents(a, b, sortBy, sortOrder))
+    : filteredStudents;
 
   const totalPages = isServerPaginated
     ? Math.max(1, Math.ceil(totalAttemptsCount / itemsPerPage))
-    : Math.max(1, Math.ceil(filteredStudents.length / itemsPerPage));
+    : Math.max(1, Math.ceil(sortedStudents.length / itemsPerPage));
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentStudents = isServerPaginated
-    ? filteredStudents
-    : filteredStudents.slice(indexOfFirstItem, indexOfLastItem);
+    ? sortedStudents
+    : sortedStudents.slice(indexOfFirstItem, indexOfLastItem);
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
   };
 
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchQuery]);
+  const handleSort = (field) => {
+    if (sortBy === field) {
+      setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
+    } else {
+      setSortBy(field);
+      setSortOrder("asc");
+    }
+  };
 
   const formatScore = (val) =>
     typeof val === "number" ? val.toFixed(2) : val;
+
+  const sortIcon = (field) => {
+    if (sortBy !== field) return <FaSort className="h-3 w-3 text-gray-400" />;
+    return sortOrder === "asc" ? (
+      <FaSortUp className="h-3 w-3 text-[#A294F9]" />
+    ) : (
+      <FaSortDown className="h-3 w-3 text-[#A294F9]" />
+    );
+  };
 
   return (
     <div className="flex max-h-[87vh] w-full max-w-full flex-col overflow-y-auto rounded-lg bg-[#282828] p-5 sm:p-6 md:p-8 md:pb-8">
@@ -232,6 +282,22 @@ const ViewResult = ({ result, onBack, onNext }) => {
                 className="min-w-0 flex-1 border-none bg-transparent text-white outline-none placeholder:text-gray-400"
               />
             </div>
+            <select
+                value={sortBy}
+                onChange={(e) => {
+                  setSortBy(e.target.value);
+                  setSortOrder("asc");
+                }}
+                aria-label="Sort by"
+                className="min-h-[44px] rounded-lg border border-[#5a5a5a] bg-[#3d3d3d] px-3 py-2 text-sm text-white outline-none transition-colors focus:border-[#A294F9] focus:ring-2 focus:ring-[#A294F9]/30"
+              >
+                <option value="">Sort by</option>
+                {SORT_OPTIONS.map((opt) => (
+                  <option key={opt.key} value={opt.key}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
             <button
               type="button"
               onClick={() => handleExportToExcel(result)}
@@ -304,10 +370,24 @@ const ViewResult = ({ result, onBack, onNext }) => {
               <thead className="sticky top-0 z-10 bg-[#535353]">
                 <tr>
                   <th className="whitespace-nowrap border-b border-[#666] px-4 py-3 text-center text-sm font-medium text-white">
-                    USN
+                    <button
+                      type="button"
+                      onClick={() => handleSort("usn")}
+                      className="inline-flex w-full cursor-pointer items-center justify-center gap-1.5 text-white hover:text-[#A294F9]"
+                    >
+                      USN
+                      {sortIcon("usn")}
+                    </button>
                   </th>
                   <th className="whitespace-nowrap border-b border-[#666] px-4 py-3 text-left text-sm font-medium text-white">
-                    Name
+                    <button
+                      type="button"
+                      onClick={() => handleSort("name")}
+                      className="inline-flex cursor-pointer items-center gap-1.5 text-white hover:text-[#A294F9]"
+                    >
+                      Name
+                      {sortIcon("name")}
+                    </button>
                   </th>
                   <th className="whitespace-nowrap border-b border-[#666] px-4 py-3 text-center text-sm font-medium text-white">
                     Start Time
@@ -316,7 +396,14 @@ const ViewResult = ({ result, onBack, onNext }) => {
                     End Time
                   </th>
                   <th className="whitespace-nowrap border-b border-[#666] px-4 py-3 text-center text-sm font-medium text-white">
-                    Score
+                    <button
+                      type="button"
+                      onClick={() => handleSort("marks")}
+                      className="inline-flex w-full cursor-pointer items-center justify-center gap-1.5 text-white hover:text-[#A294F9]"
+                    >
+                      Score
+                      {sortIcon("marks")}
+                    </button>
                   </th>
                   <th className="whitespace-nowrap border-b border-[#666] px-4 py-3 text-center text-sm font-medium text-white">
                     Trust Score
