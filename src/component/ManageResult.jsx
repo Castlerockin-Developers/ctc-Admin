@@ -182,7 +182,7 @@ const ManageResult = ({ onNext, cacheAllowed }) => {
   const handleViewResult = async (row) => {
     if (loadingResultId === row.id) return;
     setLoadingResultId(row.id);
-    const pageSize = 10;
+    const pageSize = 50;
     try {
       const url = `/admin/results/${row.id}/?attempts_page=1&attempts_page_size=${pageSize}`;
       const resp = await authFetch(url, { method: "GET" });

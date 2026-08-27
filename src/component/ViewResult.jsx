@@ -4,7 +4,7 @@ import { FaSearch, FaFileExcel, FaChevronLeft } from "react-icons/fa";
 import Swal from "sweetalert2";
 import { authFetch } from "../scripts/AuthProvider";
 
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 50;
 
 const mapAttemptToStudent = (a) => ({
   attempt_id: a.id,
@@ -296,9 +296,9 @@ const ViewResult = ({ result, onBack, onNext }) => {
           )}
         </div>
 
-        {/* Desktop: table - fixed height for 10 rows, not scrollable */}
-        <div className="mt-1 hidden h-[584px] rounded-lg md:block">
-          <div className="h-full overflow-x-auto rounded-lg border border-[#5a5a5a]">
+        {/* Desktop: table — up to 50 rows per page, page scrolls if needed */}
+        <div className="mt-1 hidden rounded-lg md:block">
+          <div className="overflow-x-auto rounded-lg border border-[#5a5a5a]">
             {loadingPage ? (
               <div className="flex h-full items-center justify-center text-gray-400">
                 Loading…
