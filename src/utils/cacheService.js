@@ -133,6 +133,17 @@ class CacheService {
 
     const keysToRemove = cacheTypes[type] || [];
     keysToRemove.forEach(key => this.remove(key));
+    if (type === 'dashboard' || type === 'all') {
+      try {
+        Object.keys(localStorage).forEach((storageKey) => {
+          if (storageKey.startsWith(`${this.cachePrefix}dashboard_data`)) {
+            localStorage.removeItem(storageKey);
+          }
+        });
+      } catch (error) {
+        logError('Cache prefix invalidation error:', error);
+      }
+    }
   }
 
   // Clean up expired caches

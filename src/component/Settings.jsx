@@ -16,7 +16,7 @@ import {
   FaInfoCircle,
 } from "react-icons/fa";
 import swal from "sweetalert";
-import { authFetch, getCachedSettingsDetails, setCachedSettingsDetails } from "../scripts/AuthProvider";
+import { authFetch, getCachedSettingsDetails, setCachedSettingsDetails, invalidateSettingsCache } from "../scripts/AuthProvider";
 import avatar from "../assets/useravatar.jpg";
 import Spinner from "../loader/Spinner";
 
@@ -229,9 +229,8 @@ const Settings = ({ openAddUserModal, setOpenAddUserModal }) => {
 
   const [newUserName, setNewUserName] = useState("");
   const [newUserEmail, setNewUserEmail] = useState("");
-  const [newUserPhone, setNewUserPhone] = useState("");
-  const [newUserRole, setNewUserRole] = useState("Admin");
   const [newUserPassword, setNewUserPassword] = useState("");
+  const [newUserRole, setNewUserRole] = useState("Admin");
   const [newUserBranchIds, setNewUserBranchIds] = useState([]);
   const [isCreatingUser, setIsCreatingUser] = useState(false);
 
@@ -425,14 +424,8 @@ const Settings = ({ openAddUserModal, setOpenAddUserModal }) => {
         errors.newUserEmail = "Invalid email format.";
       }
     }
-    if (!newUserPhone.trim()) {
-      errors.newUserPhone = "Phone number is required.";
-    } else {
-      const phoneRegex = /^\d{10}$/;
-      if (!phoneRegex.test(newUserPhone)) {
-        errors.newUserPhone =
-          "Phone number must be exactly 10 digits and only numbers.";
-      }
+    if (!newUserPassword.trim() || newUserPassword.trim().length < 8) {
+      errors.newUserPassword = "Password must be at least 8 characters.";
     }
 
     if (Object.keys(errors).length > 0) {
@@ -451,8 +444,8 @@ const Settings = ({ openAddUserModal, setOpenAddUserModal }) => {
       request_type: "add_admin",
       name: newUserName,
       email: newUserEmail,
-      phone: newUserPhone,
       role: newUserRole,
+      access_level: newUserRole === "Lecturer" ? "branch" : "full",
       password: newUserPassword,
       group_ids: newUserBranchIds,
     };
@@ -463,16 +456,23 @@ const Settings = ({ openAddUserModal, setOpenAddUserModal }) => {
         body: JSON.stringify(newUserData),
       });
       if (!response.ok) {
-        swal("Error", "Failed to create user. Please try again.", "error");
+        let message = "Failed to create user. Please try again.";
+        try {
+          const body = await response.json();
+          message = body.error || body.detail || message;
+        } catch (_) {}
+        swal("Error", message, "error");
         setIsCreatingUser(false);
         return;
       }
-      fetchSettings();
+      invalidateSettingsCache();
+      await fetchSettings();
       swal("Success", "User created successfully", "success");
     } catch (error) {
       logError("Error creating user:", error);
-      swal("Error", "Failed to create user. Please try again.", "error");
+      swal("Error", error.message || "Failed to create user. Please try again.", "error");
       setIsCreatingUser(false);
+      return;
     }
 
     setOpenAddUserModal(false);
@@ -480,7 +480,6 @@ const Settings = ({ openAddUserModal, setOpenAddUserModal }) => {
     // Clear form fields
     setNewUserName("");
     setNewUserEmail("");
-    setNewUserPhone("");
     setNewUserRole("Admin");
     setNewUserPassword("");
     setNewUserBranchIds([]);
@@ -1112,12 +1111,8 @@ const Settings = ({ openAddUserModal, setOpenAddUserModal }) => {
                 <input type="email" value={newUserEmail} onChange={(e) => setNewUserEmail(e.target.value)} placeholder="Enter email" className={formInput} />
               </div>
               <div className={formRow}>
-                <label className={formLabel}>Phone</label>
-                <input type="text" value={newUserPhone} onChange={(e) => setNewUserPhone(e.target.value)} placeholder="Enter phone" className={formInput} />
-              </div>
-              <div className={formRow}>
                 <label className={formLabel}>Password</label>
-                <input type="password" value={newUserPassword} onChange={(e) => setNewUserPassword(e.target.value)} placeholder="Enter password" className={formInput} />
+                <input type="password" value={newUserPassword} onChange={(e) => setNewUserPassword(e.target.value)} placeholder="Min. 8 characters" className={formInput} />
               </div>
               <div className={formRow}>
                 <label className={formLabel}>Role</label>

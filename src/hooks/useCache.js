@@ -144,12 +144,12 @@ export const useCache = (cacheKey, fetchFunction, options = {}) => {
     return () => clearInterval(interval);
   }, [enabled, autoRefresh, refreshInterval, cacheKey, expiryMs, onCacheMiss, onError, getCacheInfo]);
 
-  // Initial load - only run once when component mounts
+  // Initial load, and reload when the cache key changes (e.g. dashboard group filter)
   useEffect(() => {
     if (enabled) {
       loadData();
     }
-  }, [enabled]); // Only depend on enabled, not loadData
+  }, [enabled, cacheKey]);
 
   // Update cache info when data changes
   useEffect(() => {

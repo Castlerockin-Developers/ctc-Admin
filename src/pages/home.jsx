@@ -338,6 +338,7 @@ const Home = () => {
                             onManageStudents={() => {
                                 setActiveComponent("student");
                             }}
+                            onOpenAnalytics={() => setActiveComponent("analytics")}
                             cacheAllowed={effectiveCacheAllowed}
                             onBackToDashboard={() => {
                                 setExamToView(null);

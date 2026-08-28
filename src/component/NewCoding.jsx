@@ -14,6 +14,28 @@ const btnPrimary = 'rounded-lg bg-[#A294F9] hover:bg-[#8E7AE6] text-white px-4 p
 const btnSecondary = 'rounded-lg border border-[#5a5a5a] bg-[#404040] text-gray-200 hover:bg-[#4a4a4a] px-4 py-2.5 text-sm font-medium transition-colors cursor-pointer disabled:opacity-50';
 const btnDanger = 'rounded-lg bg-red-600/80 hover:bg-red-600 text-white px-3 py-1.5 text-xs font-medium cursor-pointer';
 
+const STARTER_CODE_LANGUAGES = [
+    { key: 'python', label: 'Python' },
+    { key: 'javascript', label: 'JavaScript' },
+    { key: 'java', label: 'Java' },
+    { key: 'c', label: 'C' },
+    { key: 'golang', label: 'Go' },
+    { key: 'c++', label: 'C++' },
+    { key: 'c#', label: 'C#' },
+];
+
+const emptyStarterCode = () =>
+    Object.fromEntries(STARTER_CODE_LANGUAGES.map(({ key }) => [key, '']));
+
+const compactStarterCode = (map) => {
+    const out = {};
+    STARTER_CODE_LANGUAGES.forEach(({ key }) => {
+        const text = typeof map?.[key] === 'string' ? map[key] : '';
+        if (text.trim()) out[key] = text;
+    });
+    return out;
+};
+
 const NewCoding = ({ setActiveComponent, onSave, onBack }) => {
     const [file, setFile] = useState(null);
     const [preview, setPreview] = useState('');
@@ -24,6 +46,8 @@ const NewCoding = ({ setActiveComponent, onSave, onBack }) => {
     const [statement, setStatement] = useState('');
     const [sampleInput, setSampleInput] = useState('');
     const [sampleOutput, setSampleOutput] = useState('');
+    const [starterCode, setStarterCode] = useState(emptyStarterCode);
+    const [starterLang, setStarterLang] = useState(STARTER_CODE_LANGUAGES[0].key);
     const [isSaving, setIsSaving] = useState(false);
 
     const shortDescriptionRef = useRef(null);
@@ -217,6 +241,7 @@ const NewCoding = ({ setActiveComponent, onSave, onBack }) => {
                 sampleOutput,
                 testCases: validTestCases,
                 score: 10,
+                starter_code: compactStarterCode(starterCode),
             };
             const response = await authFetch('/admin/coding/', {
                 method: 'POST',
@@ -400,6 +425,55 @@ const NewCoding = ({ setActiveComponent, onSave, onBack }) => {
                                     className={`${inputClass} min-h-[80px] resize-y`}
                                 />
                             </div>
+                        </div>
+                    </div>
+
+                    {/* Starter code — one editor per language */}
+                    <div className={cardClass}>
+                        <div className="px-4 py-3 border-b border-[#5a5a5a] bg-[#313131]">
+                            <h2 className="text-base font-semibold text-white">Starter code</h2>
+                            <p className="mt-1 text-xs text-gray-400">
+                                Optional templates for each exam language. Leave a language blank to use the default driver.
+                            </p>
+                        </div>
+                        <div className="p-4 space-y-3">
+                            <div className="flex flex-wrap gap-1.5">
+                                {STARTER_CODE_LANGUAGES.map(({ key, label }) => {
+                                    const isActive = starterLang === key;
+                                    const filled = Boolean((starterCode[key] || '').trim());
+                                    return (
+                                        <button
+                                            key={key}
+                                            type="button"
+                                            onClick={() => setStarterLang(key)}
+                                            className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer ${
+                                                isActive
+                                                    ? 'bg-[#A294F9] text-white'
+                                                    : 'border border-[#5a5a5a] bg-[#404040] text-gray-300 hover:bg-[#4a4a4a]'
+                                            }`}
+                                        >
+                                            {label}
+                                            {filled && (
+                                                <span className={`ml-1.5 ${isActive ? 'text-white/80' : 'text-[#A294F9]'}`}>•</span>
+                                            )}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                            <textarea
+                                value={starterCode[starterLang] || ''}
+                                onChange={(e) =>
+                                    setStarterCode((prev) => ({
+                                        ...prev,
+                                        [starterLang]: e.target.value,
+                                    }))
+                                }
+                                placeholder={`Optional ${
+                                    STARTER_CODE_LANGUAGES.find((l) => l.key === starterLang)?.label || ''
+                                } starter code`}
+                                spellCheck={false}
+                                className={`${inputClass} min-h-[220px] resize-y font-mono text-sm`}
+                            />
                         </div>
                     </div>
 
