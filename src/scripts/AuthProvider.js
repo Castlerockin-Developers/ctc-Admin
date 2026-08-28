@@ -1,11 +1,57 @@
 import { error as logError } from '../utils/logger';
 import cacheService from '../utils/cacheService';
+import {
+  getOrCreateAdminWebDeviceId,
+  parseSessionSuperseded,
+} from './web-device-id';
 
 /** Django mounts REST routes under /api/ (see crackthecampus/urls.py). */
 export const baseUrl = 'https://api.corp.crackthecampus.com/api';
 export const staticUrl = '';
 export const SESSION_EXPIRED_MESSAGE = 'Failed to refresh access token';
 export const ACCESS_DENIED_MESSAGE = 'You do not have access to the admin panel.';
+export const SESSION_SUPERSEDED_MESSAGE =
+  'Another device has logged in with the same credentials.';
+
+let refreshInFlight = null;
+
+async function performTokenRefresh() {
+  const refreshToken = localStorage.getItem('refresh');
+  if (!refreshToken) {
+    throw new Error('no_refresh_token');
+  }
+
+  const refreshResponse = await fetch(baseUrl + '/auth/token/refresh/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ refresh: refreshToken }),
+  });
+
+  if (!refreshResponse.ok) {
+    if (await parseSessionSuperseded(refreshResponse)) {
+      clearSession();
+      throw new Error(SESSION_SUPERSEDED_MESSAGE);
+    }
+    clearSession();
+    throw new Error(SESSION_EXPIRED_MESSAGE);
+  }
+
+  const data = await refreshResponse.json();
+  localStorage.setItem('access', data.access);
+  if (data.refresh) {
+    localStorage.setItem('refresh', data.refresh);
+  }
+  return data.access;
+}
+
+function refreshAccessTokenShared() {
+  if (!refreshInFlight) {
+    refreshInFlight = performTokenRefresh().finally(() => {
+      refreshInFlight = null;
+    });
+  }
+  return refreshInFlight;
+}
 
 const PLAN_CACHE_KEY = 'subscription_plan_cache';
 const PLAN_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
@@ -113,35 +159,16 @@ export async function authFetch(url, options) {
   let response = await fetch(baseUrl + url, requestOptions);
 
   if (response.status === 401) {
-    // No refresh token or refresh failed = session expired
     if (!refreshToken) {
       clearSession();
       throw new Error(SESSION_EXPIRED_MESSAGE);
     }
-    const refreshOptions = {
-      method: 'POST',
-      headers: {
-        Authorization: 'Bearer ' + refreshToken,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ refresh: refreshToken }), // Sending refresh token in the body with key "refresh"
-    };
-
-    const refreshResponse = await fetch(
-      baseUrl + '/auth/token/refresh/',
-      refreshOptions,
-    );
-    if (refreshResponse.ok) {
-      const data = await refreshResponse.json();
-      accessToken = data.access;
-      localStorage.setItem('access', accessToken); // Update the access token in localStorage
-      requestOptions.headers['Authorization'] = 'Bearer ' + accessToken; // Update headers with new access token
-
-      // Retry original request with the new access token
+    try {
+      accessToken = await refreshAccessTokenShared();
+      requestOptions.headers.Authorization = 'Bearer ' + accessToken;
       response = await fetch(baseUrl + url, requestOptions);
-    } else {
-      clearSession();
-      throw new Error(SESSION_EXPIRED_MESSAGE);
+    } catch (err) {
+      throw err;
     }
   }
 
@@ -183,6 +210,8 @@ export async function login(username, password) {
     email: username,
     password: password,
     for_admin: true,
+    device_id: getOrCreateAdminWebDeviceId(),
+    device_name: 'Admin Web Browser',
   });
   const headers = {
     'Content-Type': 'application/json',
@@ -234,83 +263,7 @@ export function useAuth() {
 }
 
 export async function authFetchPayload(path, payload, method) {
-  let accessToken = localStorage.getItem('access');
-  const refreshToken = localStorage.getItem('refresh');
-
-
-  const options = {
-    method: method,
-    headers: {
-      'Authorization': 'Bearer ' + accessToken,
-    },
-    body: payload instanceof FormData ? payload : JSON.stringify(payload)
-  };
-
-  // Fetch request
-  const response = await fetch(baseUrl + path, options);
-
-  if (response.status === 401) {
-    if (!refreshToken) {
-      clearSession();
-      throw new Error(SESSION_EXPIRED_MESSAGE);
-    }
-    // If the response is 401 (Unauthorized), attempt to refresh the access token
-    const refreshOptions = {
-      method: 'POST',
-      headers: {
-        'Authorization': 'Bearer ' + refreshToken,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ refresh: refreshToken }) // Sending refresh token in the body with key "refresh"
-    };
-
-    const refreshResponse = await fetch(baseUrl + '/auth/token/refresh/', refreshOptions);
-    if (refreshResponse.ok) {
-      const data = await refreshResponse.json();
-      accessToken = data.access;
-      localStorage.setItem('access', accessToken); // Update the access token in localStorage
-      options.headers['Authorization'] = 'Bearer ' + accessToken; // Update headers with new access token
-      // Retry original request with the new access token
-      return fetch(baseUrl + path, options)
-        .then(async (response) => {
-          if (response.status === 403) {
-            let message = ACCESS_DENIED_MESSAGE;
-            try {
-              const body = await response.json();
-              message = body.detail || message;
-            } catch (_) {}
-            const err = new Error(message);
-            err.status = 403;
-            throw err;
-          }
-          if (!response.ok) {
-            throw new Error('Network response was not ok');
-          }
-          return response;
-        })
-        .catch(error => {
-          logError('There was a problem with the fetch operation:', error);
-          throw error; // Propagate the error to the caller
-        });
-    } else {
-      clearSession();
-      throw new Error(SESSION_EXPIRED_MESSAGE);
-    }
-  } else if (response.status === 403) {
-    let message = ACCESS_DENIED_MESSAGE;
-    try {
-      const body = await response.json();
-      message = body.detail || message;
-    } catch (_) {}
-    const err = new Error(message);
-    err.status = 403;
-    throw err;
-  } else if (response.status === 400) {
-    const errorData = await response.json();
-    throw JSON.stringify(errorData);
-  } else if (!response.ok) {
-    throw new Error('Network response was not ok');
-  }
-
-  return response;
+  const body =
+    payload instanceof FormData ? payload : JSON.stringify(payload);
+  return authFetch(path, { method, body });
 }
