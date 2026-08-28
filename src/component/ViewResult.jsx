@@ -10,6 +10,7 @@ const SORT_OPTIONS = [
   { key: "usn", label: "USN" },
   { key: "name", label: "Name" },
   { key: "marks", label: "Marks" },
+  { key: "campus_score", label: "Campus Score" },
 ];
 
 const mapAttemptToStudent = (a) => ({
@@ -28,6 +29,7 @@ const mapAttemptToStudent = (a) => ({
   }),
   score: a.score,
   trustScore: a.trust_score,
+  campusScore: a.campus_score,
 });
 
 const compareStudents = (a, b, sortBy, sortOrder) => {
@@ -43,6 +45,8 @@ const compareStudents = (a, b, sortBy, sortOrder) => {
     });
   } else if (sortBy === "marks") {
     cmp = (Number(a.score) || 0) - (Number(b.score) || 0);
+  } else if (sortBy === "campus_score") {
+    cmp = (Number(a.campusScore) || 0) - (Number(b.campusScore) || 0);
   }
   return sortOrder === "desc" ? -cmp : cmp;
 };
@@ -50,20 +54,32 @@ const compareStudents = (a, b, sortBy, sortOrder) => {
 const ViewResult = ({ result, onBack, onNext }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [students, setStudents] = useState([]);
+  const [students, setStudents] = useState(() => result?.students || []);
   const [loadingPage, setLoadingPage] = useState(false);
   const [sortBy, setSortBy] = useState("");
   const [sortOrder, setSortOrder] = useState("asc");
+  const [resultsTab, setResultsTab] = useState("students");
+  const [leaderboardSearch, setLeaderboardSearch] = useState("");
   const itemsPerPage = ITEMS_PER_PAGE;
   const totalAttemptsCount = result?.attemptsCount ?? 0;
   const isServerPaginated = totalAttemptsCount > 0;
+  const hasPrefetchedPage =
+    isServerPaginated &&
+    currentPage === 1 &&
+    !sortBy &&
+    Array.isArray(result?.students);
 
   useEffect(() => {
     setCurrentPage(1);
   }, [result?.id, searchQuery, sortBy, sortOrder]);
 
   useEffect(() => {
-    if (!result?.id || !isServerPaginated) {
+    setLeaderboardSearch("");
+  }, [result?.id]);
+
+  useEffect(() => {
+    if (!result?.id) return;
+    if (!isServerPaginated || hasPrefetchedPage) {
       if (result?.students) setStudents(result.students);
       return;
     }
@@ -90,7 +106,7 @@ const ViewResult = ({ result, onBack, onNext }) => {
       })
       .finally(() => { if (!cancelled) setLoadingPage(false); });
     return () => { cancelled = true; };
-  }, [result?.id, currentPage, itemsPerPage, isServerPaginated, sortBy, sortOrder]);
+  }, [result?.id, result?.students, currentPage, itemsPerPage, isServerPaginated, hasPrefetchedPage, sortBy, sortOrder]);
 
   if (!result) {
     return (
@@ -204,6 +220,19 @@ const ViewResult = ({ result, onBack, onNext }) => {
   const formatScore = (val) =>
     typeof val === "number" ? val.toFixed(2) : val;
 
+  const examLeaderboard =
+    result.examScoreLeaderboard?.length > 0
+      ? result.examScoreLeaderboard
+      : result.campusScoreLeaderboard || [];
+  const leaderboardQuery = leaderboardSearch.trim().toLowerCase();
+  const visibleLeaderboard = leaderboardQuery
+    ? examLeaderboard.filter((row) => {
+        const name = String(row.name || "").toLowerCase();
+        const usn = String(row.usn || "").toLowerCase();
+        return name.includes(leaderboardQuery) || usn.includes(leaderboardQuery);
+      })
+    : examLeaderboard;
+
   const sortIcon = (field) => {
     if (sortBy !== field) return <FaSort className="h-3 w-3 text-gray-400" />;
     return sortOrder === "asc" ? (
@@ -243,7 +272,7 @@ const ViewResult = ({ result, onBack, onNext }) => {
       </div>
 
       {/* Stats cards */}
-      <div className="mb-8 grid grid-cols-2 gap-4 sm:gap-5 md:grid-cols-4 md:gap-6">
+      <div className="mb-8 grid grid-cols-2 gap-4 sm:gap-5 md:grid-cols-3 lg:grid-cols-5 md:gap-6">
         {[
           { label: "Students Attempted", value: result.studentsAttempted },
           { label: "Students Unattempted", value: result.studentsUnattempted },
@@ -252,25 +281,59 @@ const ViewResult = ({ result, onBack, onNext }) => {
             label: "Average Score",
             value: formatScore(result.averageScore),
           },
-        ].map(({ label, value }) => (
+          {
+            label: "Top Score",
+            value: formatScore(result.topScore),
+            sub: result.topScorer
+              ? `${result.topScorer.name}${result.topScorer.usn ? ` · ${result.topScorer.usn}` : ""}`
+              : null,
+          },
+        ].map(({ label, value, sub }) => (
           <div
             key={label}
             className="rounded-lg border border-[#666] bg-[#4B4B4B] p-5 sm:p-6"
           >
             <p className="text-sm text-gray-300">{label}</p>
             <p className="mt-3 text-xl font-semibold text-white sm:text-2xl">
-              {value}
+              {value ?? "—"}
             </p>
+            {sub ? (
+              <p className="mt-1 truncate text-xs text-gray-400" title={sub}>
+                {sub}
+              </p>
+            ) : null}
           </div>
         ))}
       </div>
 
-      {/* Students section: label + search + export + table + pagination */}
+      {/* Students / Leaderboard */}
       <div className="flex flex-col gap-5">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
-          <p className="border-b-4 border-[#A294F9] pb-2 text-base font-bold text-white sm:text-lg">
-            Students
-          </p>
+          <div className="flex items-end gap-5">
+            <button
+              type="button"
+              onClick={() => setResultsTab("students")}
+              className={`pb-2 text-base font-bold sm:text-lg ${
+                resultsTab === "students"
+                  ? "border-b-4 border-[#A294F9] text-white"
+                  : "border-b-4 border-transparent text-gray-400 hover:text-white"
+              }`}
+            >
+              Students
+            </button>
+            <button
+              type="button"
+              onClick={() => setResultsTab("leaderboard")}
+              className={`pb-2 text-base font-bold sm:text-lg ${
+                resultsTab === "leaderboard"
+                  ? "border-b-4 border-[#A294F9] text-white"
+                  : "border-b-4 border-transparent text-gray-400 hover:text-white"
+              }`}
+            >
+              Leaderboard
+            </button>
+          </div>
+          {resultsTab === "students" ? (
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-5">
             <div className="flex min-h-[44px] flex-1 min-w-0 items-center gap-2 rounded-lg border border-[#5a5a5a] bg-[#3d3d3d] px-4 py-2.5 transition-colors focus-within:border-[#A294F9] focus-within:ring-2 focus-within:ring-[#A294F9]/30">
               <FaSearch className="h-5 w-5 shrink-0 text-gray-300" />
@@ -307,8 +370,70 @@ const ViewResult = ({ result, onBack, onNext }) => {
               <span>Export</span>
             </button>
           </div>
+          ) : (
+            <div className="flex min-h-[44px] min-w-0 flex-1 items-center gap-3 sm:max-w-md">
+              <div className="flex min-h-[44px] min-w-0 flex-1 items-center gap-2 rounded-lg border border-[#5a5a5a] bg-[#3d3d3d] px-4 py-2.5 transition-colors focus-within:border-[#A294F9] focus-within:ring-2 focus-within:ring-[#A294F9]/30">
+                <FaSearch className="h-5 w-5 shrink-0 text-gray-300" />
+                <input
+                  type="text"
+                  placeholder="Search leaderboard..."
+                  value={leaderboardSearch}
+                  onChange={(e) => setLeaderboardSearch(e.target.value)}
+                  className="min-w-0 flex-1 border-none bg-transparent text-white outline-none placeholder:text-gray-400"
+                />
+              </div>
+              <p className="shrink-0 text-sm text-gray-400">
+                {examLeaderboard.length} students
+              </p>
+            </div>
+          )}
         </div>
 
+        {resultsTab === "leaderboard" ? (
+          <div className="overflow-hidden rounded-lg border border-[#5a5a5a] bg-[#3a3a3a]">
+            {examLeaderboard.length === 0 ? (
+              <div className="py-12 text-center text-sm text-gray-400">
+                No attempts yet
+              </div>
+            ) : visibleLeaderboard.length === 0 ? (
+              <div className="py-12 text-center text-sm text-gray-400">
+                No students match your search
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[480px] table-auto border-collapse">
+                  <thead className="sticky top-0 z-10 bg-[#4a4a4a]">
+                    <tr>
+                      <th className="px-4 py-3 text-center text-xs font-medium text-white">Rank</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-white">Name</th>
+                      <th className="px-4 py-3 text-center text-xs font-medium text-white">USN</th>
+                      <th className="px-4 py-3 text-center text-xs font-medium text-white">Score</th>
+                      <th className="px-4 py-3 text-center text-xs font-medium text-white">Campus Score</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {visibleLeaderboard.map((row) => (
+                      <tr key={row.user_id || row.rank} className="border-t border-[#555]">
+                        <td className="px-4 py-2.5 text-center text-sm font-semibold text-[#A294F9]">
+                          {row.rank}
+                        </td>
+                        <td className="px-4 py-2.5 text-left text-sm text-white">{row.name}</td>
+                        <td className="px-4 py-2.5 text-center text-sm text-white">{row.usn || "—"}</td>
+                        <td className="px-4 py-2.5 text-center text-sm font-medium text-white">
+                          {formatScore(row.exam_score)}
+                        </td>
+                        <td className="px-4 py-2.5 text-center text-sm text-white">
+                          {formatScore(row.campus_score)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        ) : (
+          <>
         {/* Mobile: cards */}
         <div className="mt-1 flex flex-col gap-4 overflow-y-auto pb-2 md:hidden">
           {loadingPage ? (
@@ -344,6 +469,10 @@ const ViewResult = ({ result, onBack, onNext }) => {
                   <span className="text-gray-500">Trust Score</span>
                   <span className="text-right text-white">
                     {formatScore(student.trustScore)}
+                  </span>
+                  <span className="text-gray-500">Campus Score</span>
+                  <span className="text-right text-white">
+                    {formatScore(student.campusScore)}
                   </span>
                 </div>
                 <button
@@ -409,6 +538,16 @@ const ViewResult = ({ result, onBack, onNext }) => {
                     Trust Score
                   </th>
                   <th className="whitespace-nowrap border-b border-[#666] px-4 py-3 text-center text-sm font-medium text-white">
+                    <button
+                      type="button"
+                      onClick={() => handleSort("campus_score")}
+                      className="inline-flex w-full cursor-pointer items-center justify-center gap-1.5 text-white hover:text-[#A294F9]"
+                    >
+                      Campus Score
+                      {sortIcon("campus_score")}
+                    </button>
+                  </th>
+                  <th className="whitespace-nowrap border-b border-[#666] px-4 py-3 text-center text-sm font-medium text-white">
                     {" "}
                   </th>
                 </tr>
@@ -417,7 +556,7 @@ const ViewResult = ({ result, onBack, onNext }) => {
                 {currentStudents.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={7}
+                      colSpan={8}
                       className="py-8 text-center text-gray-400"
                     >
                       No students found
@@ -448,6 +587,9 @@ const ViewResult = ({ result, onBack, onNext }) => {
                       </td>
                       <td className="px-4 py-3 text-center text-sm text-white">
                         {formatScore(student.trustScore)}
+                      </td>
+                      <td className="px-4 py-3 text-center text-sm text-white">
+                        {formatScore(student.campusScore)}
                       </td>
                       <td className="px-4 py-3 text-center">
                         <button
@@ -490,6 +632,8 @@ const ViewResult = ({ result, onBack, onNext }) => {
               Next
             </button>
           </div>
+        )}
+      </>
         )}
       </div>
     </div>

@@ -1,12 +1,16 @@
 import React, { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { log, error as logError } from "../utils/logger";
-import { FaTimes } from "react-icons/fa";
+import { FaTimes, FaPlus, FaUserPlus, FaChartBar, FaClipboardList } from "react-icons/fa";
 import { SESSION_EXPIRED_MESSAGE } from "../scripts/AuthProvider";
 import Spinner from "../loader/Spinner";
 import { useCache } from "../hooks/useCache";
-import { fetchAdminHomeData } from "../api/adminHome";
-import StudentAnalyticsSection from "./StudentAnalyticsSection";
+import {
+    fetchAdminHomeData,
+    getStoredDashboardGroup,
+    setStoredDashboardGroup,
+} from "../api/adminHome";
+import GroupFilterSelect from "./GroupFilterSelect";
 
 const formatDateTime = (dateStr) =>
   new Date(dateStr).toLocaleString("en-US", {
@@ -27,6 +31,7 @@ const Dashboard = ({
     onManageExam,
     onSubscription,
     onManageStudents,
+    onOpenAnalytics,
     cacheAllowed,
     onBackToDashboard,
     isBranchCoordinator = false,
@@ -34,11 +39,21 @@ const Dashboard = ({
     const navigate = useNavigate();
     const [showPopup, setShowPopup] = useState(false);
     const [showCompletedPopup, setShowCompletedPopup] = useState(false);
+    const [selectedGroup, setSelectedGroup] = useState(getStoredDashboardGroup);
 
     const fetchDashboardData = useCallback(async () => {
-        log("Dashboard: fetchDashboardData -> calling /admin/home/");
-        return fetchAdminHomeData();
-    }, []);
+        log("Dashboard: fetchDashboardData -> calling /admin/home/ group=%s", selectedGroup);
+        try {
+            return await fetchAdminHomeData({ group: selectedGroup });
+        } catch (err) {
+            if (selectedGroup !== "all" && err.status === 400) {
+                setSelectedGroup("all");
+                setStoredDashboardGroup("all");
+                return fetchAdminHomeData({ group: "all" });
+            }
+            throw err;
+        }
+    }, [selectedGroup]);
 
     const onCacheHit = useCallback((data) => {
         log("Dashboard data loaded from cache");
@@ -61,11 +76,10 @@ const Dashboard = ({
         forceRefresh,
         invalidateCache,
         clearAllCache,
-    } = useCache("dashboard_data", fetchDashboardData, {
+    } = useCache(`dashboard_home_v3_${selectedGroup || "all"}`, fetchDashboardData, {
         enabled: cacheAllowed !== false,
         expiryMs: 3 * 60 * 1000,
-        autoRefresh: true,
-        refreshInterval: 60 * 1000,
+        autoRefresh: false,
         onCacheHit,
         onCacheMiss,
         onError,
@@ -112,9 +126,13 @@ const Dashboard = ({
     }
 
     const handleViewExam = (exam) => onManageExam(exam);
+    const handleGroupChange = (value) => {
+        setSelectedGroup(value);
+        setStoredDashboardGroup(value);
+    };
 
-    const sa = dashboardData?.studentAnalytics;
     const recentExams = dashboardData?.recentExams ?? [];
+    const orgGroups = dashboardData?.groups ?? [];
 
     const renderCoordinatorExamList = (tests, emptyMessage) => {
         if (!tests?.length) {
@@ -157,6 +175,8 @@ const Dashboard = ({
     const toggleCompletedPopup = () => setShowCompletedPopup((prev) => !prev);
     const closeCompletedPopup = () => setShowCompletedPopup(false);
 
+    const quickActionClass =
+        "inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl border border-[#5a5a5a] bg-[#3a3a3a] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:border-[#A294F9]/50 hover:bg-[#404040]";
     const statCardClass =
         "flex min-w-0 flex-1 min-h-[6.5rem] sm:min-h-[7.5rem] flex-col rounded-xl border border-[#5a5a5a] bg-[#3a3a3a] px-5 pt-4 pb-4 shadow-md cursor-pointer transition-colors hover:bg-white/5";
     const statLabelClass = "text-sm font-medium text-white";
@@ -165,10 +185,16 @@ const Dashboard = ({
     return (
         <div className="flex h-[calc(100dvh-4.5rem)] w-full max-w-full flex-col overflow-hidden rounded-lg bg-[#282828] p-5 pb-10 sm:p-6 sm:pb-12 md:h-[87vh] md:p-8 md:pb-14 lg:w-full">
             <div className="flex min-h-0 w-full max-w-full flex-1 flex-col gap-6 overflow-y-auto overflow-x-hidden [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-                <div className="flex justify-between items-center pt-2 sm:pt-4">
+                <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:items-center sm:justify-between sm:pt-4">
                     <h1 className="text-xl font-semibold text-white sm:text-2xl md:text-3xl lg:text-4xl">
                         Welcome {dashboardData?.userData}
                     </h1>
+                    <GroupFilterSelect
+                        groups={orgGroups}
+                        value={selectedGroup}
+                        onChange={handleGroupChange}
+                        className="w-full sm:w-auto sm:min-w-[12rem]"
+                    />
                 </div>
 
                 <div className="grid w-full grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3">
@@ -190,6 +216,33 @@ const Dashboard = ({
                             {dashboardData?.dashboardData?.totalStudents || 0}
                         </h2>
                     </div>
+                </div>
+
+                <div className="grid w-full grid-cols-2 gap-3 sm:grid-cols-4">
+                    {onCreateExam ? (
+                        <button type="button" className={quickActionClass} onClick={onCreateExam}>
+                            <FaPlus className="h-3.5 w-3.5 text-[#A294F9]" />
+                            Create exam
+                        </button>
+                    ) : null}
+                    {onAddStudent ? (
+                        <button type="button" className={quickActionClass} onClick={onAddStudent}>
+                            <FaUserPlus className="h-3.5 w-3.5 text-[#A294F9]" />
+                            Add students
+                        </button>
+                    ) : null}
+                    {onManageExam ? (
+                        <button type="button" className={quickActionClass} onClick={() => onManageExam()}>
+                            <FaClipboardList className="h-3.5 w-3.5 text-[#A294F9]" />
+                            Manage exams
+                        </button>
+                    ) : null}
+                    {onOpenAnalytics ? (
+                        <button type="button" className={quickActionClass} onClick={onOpenAnalytics}>
+                            <FaChartBar className="h-3.5 w-3.5 text-[#A294F9]" />
+                            Analytics
+                        </button>
+                    ) : null}
                 </div>
 
                 {/* Active Exams Modal */}
@@ -324,67 +377,61 @@ const Dashboard = ({
                     </div>
                 )}
 
-                {/* Branch coordinators: tests & results instead of org-wide student analytics */}
-                {isBranchCoordinator ? (
-                    <div className="flex w-full flex-col gap-6">
-                        <div>
-                            <p className="text-xs font-medium tracking-widest text-white uppercase">
-                                Your tests &amp; results
-                            </p>
-                            <p className="mt-1 text-sm text-gray-400">
-                                Live exams, recent schedule, and assessments with published results for your branches.
-                            </p>
-                        </div>
-                        <div className="grid w-full grid-cols-1 gap-6 lg:grid-cols-2">
-                            <div className="overflow-hidden rounded-xl border border-[#5a5a5a] bg-[#3a3a3a]">
-                                <div className="border-b border-[#5a5a5a] px-5 py-4">
-                                    <h3 className="text-base font-medium text-white">Live now</h3>
-                                    <p className="text-xs text-gray-400">
-                                        {dashboardData?.testDetails?.length ?? 0} exam
-                                        {(dashboardData?.testDetails?.length ?? 0) !== 1 ? "s" : ""} in the active window
-                                    </p>
-                                </div>
-                                <div className="max-h-[min(28rem,50vh)] overflow-y-auto p-5 [scrollbar-width:thin]">
-                                    {renderCoordinatorExamList(
-                                        dashboardData?.testDetails,
-                                        "No exams are live right now."
-                                    )}
-                                </div>
+                <div className="flex w-full flex-col gap-6">
+                    <div>
+                        <p className="text-xs font-medium tracking-widest text-white uppercase">
+                            Tests &amp; results
+                        </p>
+                        <p className="mt-1 text-sm text-gray-400">
+                            {isBranchCoordinator
+                                ? "Live exams, recent schedule, and assessments with published results for your branches."
+                                : "Live exams, recent schedule, and assessments with published results. Course and student analytics live on the Analytics page."}
+                        </p>
+                    </div>
+                    <div className="grid w-full grid-cols-1 gap-6 lg:grid-cols-2">
+                        <div className="overflow-hidden rounded-xl border border-[#5a5a5a] bg-[#3a3a3a]">
+                            <div className="border-b border-[#5a5a5a] px-5 py-4">
+                                <h3 className="text-base font-medium text-white">Live now</h3>
+                                <p className="text-xs text-gray-400">
+                                    {dashboardData?.testDetails?.length ?? 0} exam
+                                    {(dashboardData?.testDetails?.length ?? 0) !== 1 ? "s" : ""} in the active window
+                                </p>
                             </div>
-                            <div className="overflow-hidden rounded-xl border border-[#5a5a5a] bg-[#3a3a3a]">
-                                <div className="border-b border-[#5a5a5a] px-5 py-4">
-                                    <h3 className="text-base font-medium text-white">Recent tests</h3>
-                                    <p className="text-xs text-gray-400">Latest exams in your scope (by start time)</p>
-                                </div>
-                                <div className="max-h-[min(28rem,50vh)] overflow-y-auto p-5 [scrollbar-width:thin]">
-                                    {renderCoordinatorExamList(
-                                        recentExams,
-                                        "No exams found for your branches yet."
-                                    )}
-                                </div>
+                            <div className="max-h-[min(28rem,50vh)] overflow-y-auto p-5 [scrollbar-width:thin]">
+                                {renderCoordinatorExamList(
+                                    dashboardData?.testDetails,
+                                    "No exams are live right now."
+                                )}
                             </div>
                         </div>
                         <div className="overflow-hidden rounded-xl border border-[#5a5a5a] bg-[#3a3a3a]">
                             <div className="border-b border-[#5a5a5a] px-5 py-4">
-                                <h3 className="text-base font-medium text-white">Tests with published results</h3>
-                                <p className="text-xs text-gray-400">
-                                    Open an exam to review scores and submissions
-                                </p>
+                                <h3 className="text-base font-medium text-white">Recent tests</h3>
+                                <p className="text-xs text-gray-400">Latest exams (by start time)</p>
                             </div>
-                            <div className="max-h-[min(28rem,55vh)] overflow-y-auto p-5 [scrollbar-width:thin]">
+                            <div className="max-h-[min(28rem,50vh)] overflow-y-auto p-5 [scrollbar-width:thin]">
                                 {renderCoordinatorExamList(
-                                    dashboardData?.completedResults,
-                                    "No completed exams with results published yet."
+                                    recentExams,
+                                    "No exams found yet."
                                 )}
                             </div>
                         </div>
                     </div>
-                ) : null}
-
-                {/* Student analytics (org admins); branch coordinators use Analytics page */}
-                {!isBranchCoordinator ? (
-                    <StudentAnalyticsSection sa={sa} sectionEyebrow="Student analytics" />
-                ) : null}
+                    <div className="overflow-hidden rounded-xl border border-[#5a5a5a] bg-[#3a3a3a]">
+                        <div className="border-b border-[#5a5a5a] px-5 py-4">
+                            <h3 className="text-base font-medium text-white">Tests with published results</h3>
+                            <p className="text-xs text-gray-400">
+                                Open an exam to review scores and submissions
+                            </p>
+                        </div>
+                        <div className="max-h-[min(28rem,55vh)] overflow-y-auto p-5 [scrollbar-width:thin]">
+                            {renderCoordinatorExamList(
+                                dashboardData?.completedResults,
+                                "No completed exams with results published yet."
+                            )}
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     );

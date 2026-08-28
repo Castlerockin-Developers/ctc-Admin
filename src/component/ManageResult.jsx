@@ -204,6 +204,7 @@ const ManageResult = ({ onNext, cacheAllowed }) => {
         }),
         score: a.score,
         trustScore: a.trust_score,
+        campusScore: a.campus_score,
       });
       setSelectedResult({
         ...row,
@@ -211,6 +212,10 @@ const ManageResult = ({ onNext, cacheAllowed }) => {
         studentsUnattempted: details.users_unattempted_count,
         malpractice: details.malpractice_recorded_count,
         averageScore: details.users_average_score,
+        topScore: details.top_score,
+        topScorer: details.top_scorer,
+        campusScoreLeaderboard: details.campus_score_leaderboard || [],
+        examScoreLeaderboard: details.exam_score_leaderboard || [],
         students: details.attempts.map(mapAttempt),
         attemptsCount: details.attempts_count ?? details.attempts?.length,
         attemptsPageSize: pageSize,

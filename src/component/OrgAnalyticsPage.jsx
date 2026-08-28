@@ -1,11 +1,16 @@
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { log, error as logError } from "../utils/logger";
 import { SESSION_EXPIRED_MESSAGE } from "../scripts/AuthProvider";
 import Spinner from "../loader/Spinner";
 import { useCache } from "../hooks/useCache";
-import { fetchAdminHomeData } from "../api/adminHome";
+import {
+    fetchAdminHomeData,
+    getStoredDashboardGroup,
+    setStoredDashboardGroup,
+} from "../api/adminHome";
 import StudentAnalyticsSection from "./StudentAnalyticsSection";
+import GroupFilterSelect from "./GroupFilterSelect";
 
 function readPanelScopeSubtitle() {
     try {
@@ -24,7 +29,13 @@ function readPanelScopeSubtitle() {
     }
 }
 
-function buildScopeSubtitle(sa) {
+function buildScopeSubtitle(sa, selectedGroupName) {
+    if (sa?.scope === "group") {
+        const names = Array.isArray(sa.branch_group_names) && sa.branch_group_names.length
+            ? sa.branch_group_names.join(", ")
+            : selectedGroupName;
+        return names ? `Group: ${names}` : "Scoped to the selected user group.";
+    }
     if (sa?.scope === "branch" && Array.isArray(sa.branch_group_names) && sa.branch_group_names.length) {
         return `Branches: ${sa.branch_group_names.join(", ")}`;
     }
@@ -36,11 +47,21 @@ function buildScopeSubtitle(sa) {
  */
 export default function OrgAnalyticsPage({ cacheAllowed }) {
     const navigate = useNavigate();
+    const [selectedGroup, setSelectedGroup] = useState(getStoredDashboardGroup);
 
     const fetchData = useCallback(async () => {
-        log("OrgAnalyticsPage: fetchAdminHomeData");
-        return fetchAdminHomeData();
-    }, []);
+        log("OrgAnalyticsPage: fetchAdminHomeData group=%s", selectedGroup);
+        try {
+            return await fetchAdminHomeData({ group: selectedGroup, includeAnalytics: true });
+        } catch (err) {
+            if (selectedGroup !== "all" && err.status === 400) {
+                setSelectedGroup("all");
+                setStoredDashboardGroup("all");
+                return fetchAdminHomeData({ group: "all", includeAnalytics: true });
+            }
+            throw err;
+        }
+    }, [selectedGroup]);
 
     const onCacheHit = useCallback(() => {
         log("Org analytics loaded from cache");
@@ -59,21 +80,36 @@ export default function OrgAnalyticsPage({ cacheAllowed }) {
         loading,
         error,
         forceRefresh,
-    } = useCache("dashboard_data", fetchData, {
+    } = useCache(`analytics_data_v3_${selectedGroup || "all"}`, fetchData, {
         enabled: cacheAllowed !== false,
         expiryMs: 3 * 60 * 1000,
-        autoRefresh: true,
-        refreshInterval: 60 * 1000,
+        autoRefresh: false,
         onCacheHit,
         onCacheMiss,
         onError,
     });
 
     const sa = payload?.studentAnalytics ?? null;
-    const scopeSubtitle = useMemo(() => buildScopeSubtitle(sa), [sa]);
+    const orgGroups = payload?.groups ?? [];
+    const selectedGroupName = orgGroups.find((g) => String(g.id) === String(selectedGroup))?.name;
+    const payloadGroupId = payload?.selectedGroup?.id ?? null;
+    const analyticsMatchesGroup =
+        selectedGroup === "all"
+            ? payloadGroupId == null
+            : payloadGroupId != null && String(payloadGroupId) === String(selectedGroup);
+    const scopeSubtitle = useMemo(
+        () => buildScopeSubtitle(sa, selectedGroupName),
+        [sa, selectedGroupName]
+    );
     const isBranchScope = sa?.scope === "branch";
+    const isGroupScope = sa?.scope === "group";
 
-    if (loading) return <Spinner className="min-h-[200px]" />;
+    const handleGroupChange = (value) => {
+        setSelectedGroup(value);
+        setStoredDashboardGroup(value);
+    };
+
+    if (loading || (payload && !analyticsMatchesGroup)) return <Spinner className="min-h-[200px]" />;
 
     if (error) {
         const isOrgMissing =
@@ -116,12 +152,28 @@ export default function OrgAnalyticsPage({ cacheAllowed }) {
                 sa={sa}
                 pageTitle="Analytics"
                 scopeSubtitle={scopeSubtitle}
-                sectionEyebrow="Org analytics"
-                ctcCohortLabel={isBranchScope ? "Students per band (your cohort)" : "Students per band (org cohort)"}
+                sectionEyebrow={isGroupScope ? "Group analytics" : "Org analytics"}
+                ctcCohortLabel={
+                    isGroupScope
+                        ? "Students per band (selected group)"
+                        : isBranchScope
+                          ? "Students per band (your cohort)"
+                          : "Students per band (org cohort)"
+                }
                 readinessSubtitle={
-                    isBranchScope
-                        ? "Share of students in your scope who started each recent exam"
-                        : "Share of org students who started each recent exam"
+                    isGroupScope
+                        ? "Share of students in this group who started each recent exam"
+                        : isBranchScope
+                          ? "Share of students in your scope who started each recent exam"
+                          : "Share of org students who started each recent exam"
+                }
+                headerRight={
+                    <GroupFilterSelect
+                        groups={orgGroups}
+                        value={selectedGroup}
+                        onChange={handleGroupChange}
+                        className="w-full sm:w-auto sm:min-w-[12rem]"
+                    />
                 }
             />
         </div>
