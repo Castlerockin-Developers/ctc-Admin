@@ -25,6 +25,8 @@ const truncateText = (text, maxLength) => {
   }
 };
 
+const STUDENTS_PER_PAGE = 100; // backend caps page_size at 100
+
 const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed, onOpenStudentAnalytics }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchInput, setSearchInput] = useState("");
@@ -36,7 +38,6 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed, o
   const [totalCount, setTotalCount] = useState(0);
   const [groups, setGroups] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [studentsPerPage, setStudentsPerPage] = useState(() => (typeof window !== "undefined" && window.innerWidth >= 2560 ? 15 : 10));
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const searchDebounceRef = useRef(null);
@@ -44,12 +45,6 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed, o
   const [isPaginated, setIsPaginated] = useState(true);
   const [selectedIds, setSelectedIds] = useState(new Set());
   const [deleteMode, setDeleteMode] = useState(false);
-
-  useEffect(() => {
-    const onResize = () => setStudentsPerPage(window.innerWidth >= 2560 ? 15 : 10);
-    window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
-  }, []);
 
   useEffect(() => {
     if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
@@ -87,7 +82,7 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed, o
       opacity: 1,
       y: 0,
       transition: {
-        delay: i * 0.03,
+        delay: Math.min(i * 0.01, 0.3),
         duration: 0.3,
       },
     }),
@@ -133,7 +128,7 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed, o
     let cancelled = false;
     setLoading(true);
     setError(null);
-    fetchStudentsPage(currentPage, studentsPerPage, activeTab, searchQuery)
+    fetchStudentsPage(currentPage, STUDENTS_PER_PAGE, activeTab, searchQuery)
       .then(({ paginated, results, totalCount: count, user_count, max_users, student_cap_enforced }) => {
         if (cancelled) return;
         setIsPaginated(paginated);
@@ -154,7 +149,7 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed, o
       })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
-  }, [currentPage, studentsPerPage, activeTab, searchQuery, retryCount, fetchStudentsPage]);
+  }, [currentPage, activeTab, searchQuery, retryCount, fetchStudentsPage]);
 
   useEffect(() => {
     setSelectedIds(new Set());
@@ -184,10 +179,10 @@ const ManageStudents = ({ studentModalOpen, setStudentModalOpen, cacheAllowed, o
   const currentStudents = isPaginated
     ? studentsToDisplay
     : studentsToDisplay.slice(
-        (currentPage - 1) * studentsPerPage,
-        currentPage * studentsPerPage
+        (currentPage - 1) * STUDENTS_PER_PAGE,
+        currentPage * STUDENTS_PER_PAGE
       );
-  const totalPages = Math.max(1, Math.ceil(totalCount / studentsPerPage));
+  const totalPages = Math.max(1, Math.ceil(totalCount / STUDENTS_PER_PAGE));
 
   const goToNextPage = () => { if (currentPage < totalPages) setCurrentPage((p) => p + 1); };
   const goToPrevPage = () => { if (currentPage > 1) setCurrentPage((p) => p - 1); };
