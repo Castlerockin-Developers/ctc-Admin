@@ -205,16 +205,18 @@ export const FixImageRoute = (imageUrl) => {
   return staticUrl + imageUrl;
 };
 
-export async function login(username, password) {
+export async function login(username, password, options = {}) {
+  const { forceTakeover = true } = options;
   // Use /auth/token/ so for_admin is enforced server-side and tokens include
   // session_version (dj_rest_auth /auth/login/ skips both).
-  const payload = JSON.stringify({
+  const payload = {
     email: username,
     password: password,
     for_admin: true,
+    force_takeover: Boolean(forceTakeover),
     device_id: getOrCreateAdminWebDeviceId(),
     device_name: 'Admin Web Browser',
-  });
+  };
   const headers = {
     'Content-Type': 'application/json',
   };
@@ -223,7 +225,7 @@ export async function login(username, password) {
     const response = await fetch(baseUrl + '/auth/token/', {
       method: 'POST',
       headers: headers,
-      body: payload,
+      body: JSON.stringify(payload),
     });
 
     if (!response.ok) {
@@ -231,13 +233,17 @@ export async function login(username, password) {
       let code = null;
       try {
         const error = await response.json();
-        code = error.code || null;
+        const nested =
+          error?.detail && typeof error.detail === 'object' ? error.detail : error;
+        code = nested.code || error.code || null;
         if (code === 'concurrent_session') {
           message =
+            (typeof nested.detail === 'string' && nested.detail) ||
             (typeof error.detail === 'string' && error.detail) ||
             CONCURRENT_SESSION_MESSAGE;
         } else {
           message =
+            (typeof nested.detail === 'string' && nested.detail) ||
             (typeof error.detail === 'string' && error.detail) ||
             error.message ||
             (Array.isArray(error.non_field_errors) && error.non_field_errors[0]) ||
@@ -248,6 +254,7 @@ export async function login(username, password) {
       }
       const err = new Error(message);
       err.code = code;
+      err.status = response.status;
       throw err;
     }
 

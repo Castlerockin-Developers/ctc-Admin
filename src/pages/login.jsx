@@ -135,22 +135,20 @@ const LoginPage = () => {
           color: "#FFFFFF",
           confirmButtonText: "OK",
         });
+      } else if (err.code === "exam_in_progress") {
+        setError(
+          err.message ||
+            "This account has an exam in progress. Finish it before signing in here."
+        );
       } else if (
         err.code === "concurrent_session" ||
         err.message === CONCURRENT_SESSION_MESSAGE ||
         err.message?.toLowerCase().includes("active on another device")
       ) {
-        logout();
-        Swal.fire({
-          title: "Already signed in",
-          text: err.message || CONCURRENT_SESSION_MESSAGE,
-          icon: "warning",
-          iconColor: "#A294F9",
-          confirmButtonColor: "#a294f9",
-          background: "#181817",
-          color: "#FFFFFF",
-          confirmButtonText: "OK",
-        });
+        // Takeover should already have been requested; surface a retryable error.
+        setError(
+          "Could not end the other session automatically. Try signing in again."
+        );
       } else if (
         err.code === "invalid_credentials" ||
         err.message?.toLowerCase().includes("incorrect password")
