@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { log, error as logError } from "../utils/logger";
-import { FaSearch } from "react-icons/fa";
+import { FaSearch, FaFilter } from "react-icons/fa";
 import { motion } from "framer-motion";
 import ViewResult from "./ViewResult";
 import ParticularResult from "./PerticularResult";
@@ -29,13 +29,86 @@ function mapApiRowToDisplay(res) {
       timeStyle: "short",
       hour12: true,
     }),
+    endTimeRaw: end,
+    startTimeRaw: start,
+    isResultDeclared: Boolean(res.is_result_declared),
     analytics: `${res.attempts_allowed} Attempts`,
     status,
   };
 }
 
+const STATUS_OPTIONS = [
+  { key: "all", label: "All Exams" },
+  { key: "active", label: "Active" },
+  { key: "upcoming", label: "Upcoming" },
+  { key: "results_declared", label: "Results Declared" },
+  { key: "completed", label: "Completed" },
+];
+
+const SORT_OPTIONS = [
+  { key: "modified_desc", label: "Newest Modified" },
+  { key: "modified_asc", label: "Oldest Modified" },
+  { key: "start_desc", label: "Newest Start Time" },
+  { key: "start_asc", label: "Oldest Start Time" },
+];
+
+function matchesStatusFilter(row, status) {
+  if (!status || status === "all") return true;
+  if (status === "active") return row.status === "Ongoing";
+  if (status === "upcoming") return row.status === "Upcoming";
+  if (status === "results_declared") return row.status === "Results Declared";
+  if (status === "completed") {
+    return row.status === "Results Declared" || row.status === "Completed";
+  }
+  return true;
+}
+
+function matchesDateModifiedFilter(row, from, to) {
+  const endDate = row.endTimeRaw;
+  if (!endDate || Number.isNaN(endDate.getTime())) return true;
+  if (from) {
+    const fromDate = new Date(`${from}T00:00:00`);
+    if (endDate < fromDate) return false;
+  }
+  if (to) {
+    const toDate = new Date(`${to}T23:59:59.999`);
+    if (endDate > toDate) return false;
+  }
+  return true;
+}
+
+function sortRows(rows, sortKey) {
+  const sorted = [...rows];
+  const compareDates = (a, b, field, direction) => {
+    const av = a[field]?.getTime?.() ?? 0;
+    const bv = b[field]?.getTime?.() ?? 0;
+    if (av === bv) return direction * (a.id - b.id);
+    return direction * (av - bv);
+  };
+  switch (sortKey) {
+    case "modified_asc":
+      sorted.sort((a, b) => compareDates(a, b, "endTimeRaw", 1));
+      break;
+    case "start_desc":
+      sorted.sort((a, b) => compareDates(a, b, "startTimeRaw", -1));
+      break;
+    case "start_asc":
+      sorted.sort((a, b) => compareDates(a, b, "startTimeRaw", 1));
+      break;
+    case "modified_desc":
+    default:
+      sorted.sort((a, b) => compareDates(a, b, "endTimeRaw", -1));
+      break;
+  }
+  return sorted;
+}
+
 const ManageResult = ({ onNext, cacheAllowed }) => {
-  const [activeTab, setActiveTab] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [sortBy, setSortBy] = useState("modified_desc");
+  const [modifiedFrom, setModifiedFrom] = useState("");
+  const [modifiedTo, setModifiedTo] = useState("");
+  const [showFilter, setShowFilter] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchInput, setSearchInput] = useState("");
   const [selectedResult, setSelectedResult] = useState(null);
@@ -50,6 +123,7 @@ const ManageResult = ({ onNext, cacheAllowed }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const searchDebounceRef = useRef(null);
+  const filterRef = useRef(null);
 
   useEffect(() => {
     const onResize = () =>
@@ -66,11 +140,6 @@ const ManageResult = ({ onNext, cacheAllowed }) => {
     },
   };
 
-  const itemVariant = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.2 } },
-  };
-
   const rowVariant = {
     hidden: { opacity: 0, y: 10 },
     visible: (i) => ({
@@ -80,13 +149,47 @@ const ManageResult = ({ onNext, cacheAllowed }) => {
     }),
   };
 
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (filterRef.current && !filterRef.current.contains(e.target)) {
+        setShowFilter(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    const handleEsc = (e) => {
+      if (e.key === "Escape") setShowFilter(false);
+    };
+    document.addEventListener("keydown", handleEsc);
+    return () => document.removeEventListener("keydown", handleEsc);
+  }, []);
+
   const fetchResults = useCallback(
-    async (page, pageSize, status, search) => {
-      log("fetchResults: page=%s pageSize=%s status=%s search=%s", page, pageSize, status, search || "");
+    async (page, pageSize, filters, search) => {
+      log(
+        "fetchResults: page=%s pageSize=%s status=%s sort=%s modifiedFrom=%s modifiedTo=%s search=%s",
+        page,
+        pageSize,
+        filters.status,
+        filters.sort,
+        filters.modifiedFrom || "",
+        filters.modifiedTo || "",
+        search || ""
+      );
       const params = new URLSearchParams();
       params.set("page", String(page));
       params.set("page_size", String(pageSize));
-      if (status && status !== "all") params.set("status", status);
+      if (filters.status && filters.status !== "all") {
+        params.set("status", filters.status);
+      }
+      if (filters.sort && filters.sort !== "modified_desc") {
+        params.set("sort", filters.sort);
+      }
+      if (filters.modifiedFrom) params.set("modified_from", filters.modifiedFrom);
+      if (filters.modifiedTo) params.set("modified_to", filters.modifiedTo);
       if (search) params.set("search", search.trim());
       const url = `/admin/results/?${params.toString()}`;
       const response = await authFetch(url, { method: "GET" });
@@ -120,28 +223,34 @@ const ManageResult = ({ onNext, cacheAllowed }) => {
     let cancelled = false;
     setLoading(true);
     setError(null);
-    fetchResults(currentPage, resultsPerPage, activeTab, searchQuery)
+    const filters = {
+      status: statusFilter,
+      sort: sortBy,
+      modifiedFrom,
+      modifiedTo,
+    };
+    fetchResults(currentPage, resultsPerPage, filters, searchQuery)
       .then(({ paginated, results, totalCount: count }) => {
         if (cancelled) return;
         if (paginated) {
           setResultsData(results);
           setTotalCount(count);
         } else {
-          const filtered = results
-            .filter((row) => {
-              if (activeTab === "all") return true;
-              if (activeTab === "active") return row.status === "Ongoing";
-              if (activeTab === "completed")
-                return row.status === "Results Declared" || row.status === "Completed";
-              return true;
-            })
-            .filter((row) => {
-              if (!searchQuery) return true;
-              const q = searchQuery.toLowerCase();
-              return [row.id, row.name, row.analytics, row.status].some((field) =>
-                String(field).toLowerCase().includes(q)
-              );
-            });
+          const filtered = sortRows(
+            results
+              .filter((row) => matchesStatusFilter(row, statusFilter))
+              .filter((row) =>
+                matchesDateModifiedFilter(row, modifiedFrom, modifiedTo)
+              )
+              .filter((row) => {
+                if (!searchQuery) return true;
+                const q = searchQuery.toLowerCase();
+                return [row.id, row.name, row.analytics, row.status].some((field) =>
+                  String(field).toLowerCase().includes(q)
+                );
+              }),
+            sortBy
+          );
           const start = (currentPage - 1) * resultsPerPage;
           setResultsData(filtered.slice(start, start + resultsPerPage));
           setTotalCount(filtered.length);
@@ -161,7 +270,16 @@ const ManageResult = ({ onNext, cacheAllowed }) => {
     return () => {
       cancelled = true;
     };
-  }, [currentPage, resultsPerPage, activeTab, searchQuery, fetchResults]);
+  }, [
+    currentPage,
+    resultsPerPage,
+    statusFilter,
+    sortBy,
+    modifiedFrom,
+    modifiedTo,
+    searchQuery,
+    fetchResults,
+  ]);
 
   const totalPages = Math.max(1, Math.ceil(totalCount / resultsPerPage));
   const currentResults = resultsData || [];
@@ -242,8 +360,22 @@ const ManageResult = ({ onNext, cacheAllowed }) => {
     return "bg-gray-500/80 text-white";
   };
 
-  const setActiveTabAndResetPage = (key) => {
-    setActiveTab(key);
+  const hasActiveFilters =
+    statusFilter !== "all" ||
+    sortBy !== "modified_desc" ||
+    Boolean(modifiedFrom) ||
+    Boolean(modifiedTo);
+
+  const handleClearFilters = () => {
+    setStatusFilter("all");
+    setSortBy("modified_desc");
+    setModifiedFrom("");
+    setModifiedTo("");
+    setCurrentPage(1);
+  };
+
+  const handleFilterChange = (updater) => {
+    updater();
     setCurrentPage(1);
   };
 
@@ -287,40 +419,115 @@ const ManageResult = ({ onNext, cacheAllowed }) => {
               Results
             </h1>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
-              <div className="flex min-h-[44px] flex-1 min-w-0 items-center gap-2 rounded-lg border border-[#5a5a5a] bg-[#3d3d3d] px-4 py-2.5 transition-colors focus-within:border-[#A294F9] focus-within:ring-2 focus-within:ring-[#A294F9]/30">
-                <FaSearch className="h-5 w-5 shrink-0 text-gray-300" />
-                <input
-                  type="text"
-                  placeholder="Search results..."
-                  value={searchInput}
-                  onChange={(e) => setSearchInput(e.target.value)}
-                  className="min-w-0 flex-1 border-none bg-transparent text-white outline-none placeholder:text-gray-400"
-                />
-              </div>
-              <div className="flex flex-wrap items-center gap-2">
-                {[
-                  { key: "all", label: "All Exams" },
-                  { key: "active", label: "Active" },
-                  { key: "completed", label: "Completed" },
-                ].map(({ key, label }) => (
-                  <motion.button
-                    key={key}
-                    variants={itemVariant}
-                    whileTap={{ scale: 1.05 }}
+              <div ref={filterRef} className="relative flex-1 min-w-0">
+                <div className="flex min-h-[44px] flex-1 min-w-0 items-center gap-2 rounded-lg border border-[#5a5a5a] bg-[#3d3d3d] px-4 py-2.5 transition-colors focus-within:border-[#A294F9] focus-within:ring-2 focus-within:ring-[#A294F9]/30">
+                  <FaSearch className="h-5 w-5 shrink-0 text-gray-300" />
+                  <input
+                    type="text"
+                    placeholder="Search results..."
+                    value={searchInput}
+                    onChange={(e) => setSearchInput(e.target.value)}
+                    className="min-w-0 flex-1 border-none bg-transparent text-white outline-none placeholder:text-gray-400"
+                  />
+                  <button
                     type="button"
-                    onClick={() => {
-                      setActiveTab(key);
-                      setCurrentPage(1);
-                    }}
-                    className={`cursor-pointer rounded-lg px-4 py-2.5 text-sm font-medium transition-colors ${
-                      activeTab === key
+                    onClick={() => setShowFilter((prev) => !prev)}
+                    aria-label="Filter results"
+                    className={`relative flex h-9 w-9 shrink-0 items-center justify-center rounded-md transition-colors sm:h-8 sm:w-8 ${
+                      showFilter || hasActiveFilters
                         ? "bg-[#A294F9] text-white"
-                        : "border border-[#5a5a5a] bg-[#404040] text-gray-300 hover:bg-[#4a4a4a]"
+                        : "bg-[#4a4a4a] text-gray-300 hover:bg-[#5a5a5a]"
                     }`}
                   >
-                    {label}
-                  </motion.button>
-                ))}
+                    <FaFilter className="h-4 w-4" />
+                    {hasActiveFilters && !showFilter && (
+                      <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-white" />
+                    )}
+                  </button>
+                </div>
+                {showFilter && (
+                  <div className="absolute left-0 right-0 top-full z-20 mt-2 rounded-lg border border-gray-600 bg-[#1F1F1F] p-4 shadow-xl sm:left-auto sm:min-w-[320px] sm:max-w-[360px]">
+                    <div className="space-y-4">
+                      <div>
+                        <label className="mb-2 block text-xs font-medium uppercase tracking-wide text-gray-400">
+                          Date Modified
+                        </label>
+                        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                          <input
+                            type="date"
+                            value={modifiedFrom}
+                            onChange={(e) =>
+                              handleFilterChange(() => setModifiedFrom(e.target.value))
+                            }
+                            className="w-full rounded-lg border border-[#5a5a5a] bg-[#353535] px-3 py-2 text-sm text-white outline-none focus:border-[#A294F9]"
+                          />
+                          <input
+                            type="date"
+                            value={modifiedTo}
+                            onChange={(e) =>
+                              handleFilterChange(() => setModifiedTo(e.target.value))
+                            }
+                            className="w-full rounded-lg border border-[#5a5a5a] bg-[#353535] px-3 py-2 text-sm text-white outline-none focus:border-[#A294F9]"
+                          />
+                        </div>
+                        <p className="mt-1 text-xs text-gray-500">From / To</p>
+                      </div>
+                      <div>
+                        <label
+                          htmlFor="results-status-filter"
+                          className="mb-2 block text-xs font-medium uppercase tracking-wide text-gray-400"
+                        >
+                          Status
+                        </label>
+                        <select
+                          id="results-status-filter"
+                          value={statusFilter}
+                          onChange={(e) =>
+                            handleFilterChange(() => setStatusFilter(e.target.value))
+                          }
+                          className="w-full rounded-lg border border-[#5a5a5a] bg-[#353535] px-3 py-2 text-sm text-white outline-none focus:border-[#A294F9]"
+                        >
+                          {STATUS_OPTIONS.map(({ key, label }) => (
+                            <option key={key} value={key}>
+                              {label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label
+                          htmlFor="results-sort-filter"
+                          className="mb-2 block text-xs font-medium uppercase tracking-wide text-gray-400"
+                        >
+                          Sort By
+                        </label>
+                        <select
+                          id="results-sort-filter"
+                          value={sortBy}
+                          onChange={(e) =>
+                            handleFilterChange(() => setSortBy(e.target.value))
+                          }
+                          className="w-full rounded-lg border border-[#5a5a5a] bg-[#353535] px-3 py-2 text-sm text-white outline-none focus:border-[#A294F9]"
+                        >
+                          {SORT_OPTIONS.map(({ key, label }) => (
+                            <option key={key} value={key}>
+                              {label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      {hasActiveFilters && (
+                        <button
+                          type="button"
+                          onClick={handleClearFilters}
+                          className="w-full cursor-pointer rounded-lg border border-[#5a5a5a] px-3 py-2 text-sm text-gray-300 transition-colors hover:bg-[#353535]"
+                        >
+                          Clear filters
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
