@@ -1,6 +1,5 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, useCallback } from "react";
 import { error as logError } from "../utils/logger";
-import { motion } from "framer-motion";
 import { FaChevronLeft, FaCloudUploadAlt } from "react-icons/fa";
 import { authFetch } from "../scripts/AuthProvider";
 import Swal from "sweetalert2";
@@ -10,6 +9,43 @@ const getChaptersSessionKey = (moduleId) => `newModuleChapters_${moduleId || "te
 const inputClass =
   "w-full rounded-lg border border-[#5a5a5a] bg-[#3d3d3d] px-4 py-2.5 text-sm text-white outline-none placeholder:text-gray-500 focus:border-[#A294F9] focus:ring-2 focus:ring-[#A294F9]/30";
 const labelClass = "mb-1.5 block text-sm font-medium text-gray-300";
+
+const mapApiChapter = (ch) => ({
+  id: ch.id,
+  chapterName: ch.name || "",
+  description: ch.desc || "",
+  priority: ch.priority,
+  question: ch.question || "",
+  expectedOutput: ch.expected_output || "",
+});
+
+const fetchAllChapters = async (moduleId) => {
+  const all = [];
+  let page = 1;
+  let hasNext = true;
+  while (hasNext) {
+    const params = new URLSearchParams({
+      page: String(page),
+      page_size: "100",
+      summary: "1",
+    });
+    const res = await authFetch(
+      `/learning/custom-modules/${moduleId}/?${params.toString()}`,
+      { method: "GET" }
+    );
+    if (!res.ok) {
+      throw new Error("Failed to load chapters for this module");
+    }
+    const data = await res.json();
+    const chapters = Array.isArray(data.chapters) ? data.chapters : [];
+    all.push(...chapters.map(mapApiChapter));
+    hasNext = Boolean(data.has_next);
+    page += 1;
+    if (page > 50) break;
+  }
+  all.sort((a, b) => (Number(a.priority) || 0) - (Number(b.priority) || 0));
+  return all;
+};
 
 const ChapterAdding = ({ onBackcc, onNextcc }) => {
   const fileInputRef = useRef(null);
@@ -24,8 +60,29 @@ const ChapterAdding = ({ onBackcc, onNextcc }) => {
   const [chapterList, setChapterList] = useState([]);
   const [expandedIndex, setExpandedIndex] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [loadingChapters, setLoadingChapters] = useState(false);
   const [currentModuleId, setCurrentModuleId] = useState(null);
   const [currentModuleName, setCurrentModuleName] = useState("");
+
+  const reloadChapters = useCallback(async (moduleId) => {
+    if (!moduleId) return;
+    setLoadingChapters(true);
+    try {
+      const chapters = await fetchAllChapters(moduleId);
+      setChapterList(chapters);
+    } catch (e) {
+      logError("Load existing chapters failed:", e);
+      Swal.fire({
+        title: "Error!",
+        text: e.message || "Failed to load chapters for this module.",
+        icon: "error",
+        background: "#181817",
+        color: "#fff",
+      });
+    } finally {
+      setLoadingChapters(false);
+    }
+  }, []);
 
   useEffect(() => {
     const moduleId = localStorage.getItem("currentModuleId");
@@ -43,38 +100,89 @@ const ChapterAdding = ({ onBackcc, onNextcc }) => {
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (parsed?.chapterList?.length) setChapterList(parsed.chapterList);
         if (parsed?.chapterInput) setChapterInput(parsed.chapterInput);
       } catch (_) {}
     }
-  }, [currentModuleId]);
+    void reloadChapters(currentModuleId);
+  }, [currentModuleId, reloadChapters]);
 
   useEffect(() => {
     if (!currentModuleId) return;
     const key = getChaptersSessionKey(currentModuleId);
-    if (chapterList.length > 0 || chapterInput.chapterName || chapterInput.description || chapterInput.question || chapterInput.expectedOutput) {
-      sessionStorage.setItem(key, JSON.stringify({ chapterList, chapterInput }));
+    if (chapterInput.chapterName || chapterInput.description || chapterInput.question || chapterInput.expectedOutput) {
+      sessionStorage.setItem(key, JSON.stringify({ chapterInput }));
     }
-  }, [currentModuleId, chapterList, chapterInput]);
+  }, [currentModuleId, chapterInput]);
 
-  const handleFileChange = (event) => {
-    setFiles(Array.from(event.target.files));
-    setChapterList([
-      {
-        chapterName: "Loops",
-        description: "Intro to loops",
-        priority: 1,
-        question: "Write a for loop",
-        expectedOutput: "Loop output",
-      },
-      {
-        chapterName: "Functions",
-        description: "Functions in JS",
-        priority: 2,
-        question: "Create a function",
-        expectedOutput: "Function Output",
-      },
-    ]);
+  const nextPriority = () => {
+    const max = chapterList.reduce(
+      (acc, ch) => Math.max(acc, Number(ch.priority) || 0),
+      0
+    );
+    return max + 1;
+  };
+
+  const handleFileChange = async (event) => {
+    const selected = Array.from(event.target.files || []);
+    setFiles(selected);
+    event.target.value = "";
+    if (!selected.length) return;
+    if (!currentModuleId) {
+      Swal.fire({
+        title: "Error!",
+        text: "No module selected. Please go back and create a module first.",
+        icon: "error",
+        background: "#181817",
+        color: "#fff",
+      });
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const formData = new FormData();
+      formData.append("file", selected[0]);
+      formData.append("module_id", currentModuleId);
+      const response = await authFetch("/learning/chapters/bulk-import/", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok && response.status !== 207) {
+        const details = Array.isArray(data.details)
+          ? data.details.slice(0, 5).join("\n")
+          : "";
+        throw new Error(
+          data.error || details || "Failed to import chapters from this file"
+        );
+      }
+      await reloadChapters(currentModuleId);
+      const importedCount = Array.isArray(data.created_chapters)
+        ? data.created_chapters.length
+        : 0;
+      const extraErrors = Array.isArray(data.errors) ? data.errors : [];
+      Swal.fire({
+        title: extraErrors.length ? "Imported with warnings" : "Success!",
+        text:
+          data.message ||
+          `Imported ${importedCount} chapter${importedCount === 1 ? "" : "s"} for this module.`,
+        icon: extraErrors.length ? "warning" : "success",
+        iconColor: "#A294F9",
+        background: "#181817",
+        color: "#fff",
+      });
+    } catch (error) {
+      logError("Error importing chapters:", error);
+      Swal.fire({
+        title: "Error!",
+        text: error.message || "Failed to import chapters. Please try again.",
+        icon: "error",
+        background: "#181817",
+        color: "#fff",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleInputChange = (e) => {
@@ -83,7 +191,7 @@ const ChapterAdding = ({ onBackcc, onNextcc }) => {
   };
 
   const handleSaveChapter = async () => {
-    const { chapterName, description, question, expectedOutput } = chapterInput;
+    const { chapterName, description, question, expectedOutput, priority } = chapterInput;
     if (!chapterName?.trim() || !description?.trim() || !question?.trim() || !expectedOutput?.trim()) {
       Swal.fire({
         title: "Error!",
@@ -107,11 +215,14 @@ const ChapterAdding = ({ onBackcc, onNextcc }) => {
 
     try {
       setLoading(true);
+      const parsedPriority = parseInt(priority, 10);
       const chapterData = {
         module: parseInt(currentModuleId, 10),
         name: chapterName,
         desc: description,
-        priority: chapterList.length + 1,
+        priority: Number.isFinite(parsedPriority) && parsedPriority > 0
+          ? parsedPriority
+          : nextPriority(),
         question,
         expected_output: expectedOutput,
       };
@@ -122,16 +233,7 @@ const ChapterAdding = ({ onBackcc, onNextcc }) => {
       });
 
       if (response.ok) {
-        const result = await response.json();
-        const newChapter = {
-          id: result.chapter_id,
-          chapterName,
-          description,
-          priority: chapterList.length + 1,
-          question,
-          expectedOutput,
-        };
-        setChapterList((prev) => [...prev, newChapter]);
+        await reloadChapters(currentModuleId);
         setChapterInput({
           chapterName: "",
           description: "",
@@ -187,7 +289,7 @@ const ChapterAdding = ({ onBackcc, onNextcc }) => {
     sessionStorage.removeItem(getChaptersSessionKey(currentModuleId));
     Swal.fire({
       title: "Success!",
-      text: `Module "${currentModuleName}" created with ${chapterList.length} chapters!`,
+      text: `Module "${currentModuleName}" now has ${chapterList.length} chapter${chapterList.length === 1 ? "" : "s"}.`,
       icon: "success",
       iconColor: "#A294F9",
       background: "#181817",
@@ -216,6 +318,9 @@ const ChapterAdding = ({ onBackcc, onNextcc }) => {
             {currentModuleName && (
               <p className="mt-1 text-sm text-gray-400">
                 Adding chapters to: <span className="text-white">{currentModuleName}</span>
+                {loadingChapters
+                  ? " · loading…"
+                  : ` · ${chapterList.length} submodule${chapterList.length === 1 ? "" : "s"}`}
               </p>
             )}
             <div className="mt-2 h-0.5 w-full rounded bg-[#5a5a5a]" />
@@ -230,7 +335,7 @@ const ChapterAdding = ({ onBackcc, onNextcc }) => {
             <div className="flex flex-col gap-3 rounded-lg border border-[#5a5a5a] bg-[#3d3d3d] p-4 sm:flex-row sm:items-center sm:gap-4">
               <div className={`min-h-[44px] flex-1 rounded-lg border border-[#5a5a5a] bg-[#353535] px-4 py-2.5 text-sm ${files.length ? "text-white" : "text-gray-500"}`}>
                 {files.length === 0
-                  ? "Upload here"
+                  ? "Upload CSV, Excel, or JSON"
                   : files.length === 1
                     ? files[0].name
                     : `${files.length} files selected`}
@@ -238,15 +343,15 @@ const ChapterAdding = ({ onBackcc, onNextcc }) => {
               <input
                 ref={fileInputRef}
                 type="file"
-                accept=".xlsx,.xls"
-                multiple
+                accept=".xlsx,.xls,.csv,.json"
                 className="hidden"
                 onChange={handleFileChange}
               />
               <button
                 type="button"
                 onClick={handleUploadClick}
-                className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#A294F9] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#8b7ce8]"
+                disabled={loading}
+                className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#A294F9] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#8b7ce8] disabled:opacity-50"
               >
                 <FaCloudUploadAlt className="h-4 w-4" /> Upload
               </button>
@@ -289,7 +394,7 @@ const ChapterAdding = ({ onBackcc, onNextcc }) => {
                     value={chapterInput.priority}
                     onChange={handleInputChange}
                     type="number"
-                    placeholder="e.g., 1"
+                    placeholder={`e.g., ${nextPriority()}`}
                     className={inputClass}
                   />
                 </div>
@@ -328,15 +433,17 @@ const ChapterAdding = ({ onBackcc, onNextcc }) => {
 
             <div className="max-h-[500px] overflow-y-auto rounded-xl border border-[#5a5a5a] bg-[#3d3d3d] p-4 sm:p-5">
               <h3 className="mb-4 text-lg font-semibold text-white">
-                Chapter Preview
+                Chapter Preview ({chapterList.length})
               </h3>
-              {chapterList.length === 0 ? (
+              {loadingChapters ? (
+                <p className="text-gray-500 italic">Loading chapters…</p>
+              ) : chapterList.length === 0 ? (
                 <p className="text-gray-500 italic">No chapters yet</p>
               ) : (
                 <div className="space-y-3">
                   {chapterList.map((item, index) => (
                     <div
-                      key={index}
+                      key={item.id || index}
                       onClick={() => toggleExpand(index)}
                       className={`cursor-pointer rounded-lg border p-4 transition-colors ${
                         expandedIndex === index

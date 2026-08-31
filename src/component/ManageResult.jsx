@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { log, error as logError } from "../utils/logger";
-import { FaSearch, FaFilter } from "react-icons/fa";
+import { FaSearch, FaFilter, FaSort, FaSortUp, FaSortDown } from "react-icons/fa";
 import { motion } from "framer-motion";
 import ViewResult from "./ViewResult";
 import ParticularResult from "./PerticularResult";
@@ -46,10 +46,10 @@ const STATUS_OPTIONS = [
 ];
 
 const SORT_OPTIONS = [
-  { key: "modified_desc", label: "Newest Modified" },
-  { key: "modified_asc", label: "Oldest Modified" },
-  { key: "start_desc", label: "Newest Start Time" },
-  { key: "start_asc", label: "Oldest Start Time" },
+  { key: "modified_desc", label: "Newest by date" },
+  { key: "modified_asc", label: "Oldest by date" },
+  { key: "start_desc", label: "Newest start date" },
+  { key: "start_asc", label: "Oldest start date" },
 ];
 
 function matchesStatusFilter(row, status) {
@@ -185,7 +185,7 @@ const ManageResult = ({ onNext, cacheAllowed }) => {
       if (filters.status && filters.status !== "all") {
         params.set("status", filters.status);
       }
-      if (filters.sort && filters.sort !== "modified_desc") {
+      if (filters.sort) {
         params.set("sort", filters.sort);
       }
       if (filters.modifiedFrom) params.set("modified_from", filters.modifiedFrom);
@@ -320,6 +320,8 @@ const ManageResult = ({ onNext, cacheAllowed }) => {
           minute: "2-digit",
           hour12: true,
         }),
+        startTimeRaw: a.start_time,
+        endTimeRaw: a.end_time,
         score: a.score,
         trustScore: a.trust_score,
         campusScore: a.campus_score,
@@ -377,6 +379,31 @@ const ManageResult = ({ onNext, cacheAllowed }) => {
   const handleFilterChange = (updater) => {
     updater();
     setCurrentPage(1);
+  };
+
+  const handleDateColumnSort = (field) => {
+    if (field === "start") {
+      setSortBy((prev) => (prev === "start_desc" ? "start_asc" : "start_desc"));
+    } else {
+      setSortBy((prev) =>
+        prev === "modified_desc" ? "modified_asc" : "modified_desc"
+      );
+    }
+    setCurrentPage(1);
+  };
+
+  const dateSortIcon = (field) => {
+    const active =
+      field === "start"
+        ? sortBy === "start_desc" || sortBy === "start_asc"
+        : sortBy === "modified_desc" || sortBy === "modified_asc";
+    if (!active) return <FaSort className="h-3 w-3 text-gray-400" />;
+    const isAsc = field === "start" ? sortBy === "start_asc" : sortBy === "modified_asc";
+    return isAsc ? (
+      <FaSortUp className="h-3 w-3 text-[#A294F9]" />
+    ) : (
+      <FaSortDown className="h-3 w-3 text-[#A294F9]" />
+    );
   };
 
   if (loading && !resultsData) return <Spinner className="min-h-[200px]" />;
@@ -450,7 +477,7 @@ const ManageResult = ({ onNext, cacheAllowed }) => {
                     <div className="space-y-4">
                       <div>
                         <label className="mb-2 block text-xs font-medium uppercase tracking-wide text-gray-400">
-                          Date Modified
+                          Date range
                         </label>
                         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                           <input
@@ -499,7 +526,7 @@ const ManageResult = ({ onNext, cacheAllowed }) => {
                           htmlFor="results-sort-filter"
                           className="mb-2 block text-xs font-medium uppercase tracking-wide text-gray-400"
                         >
-                          Sort By
+                          Sort by date
                         </label>
                         <select
                           id="results-sort-filter"
@@ -529,6 +556,21 @@ const ManageResult = ({ onNext, cacheAllowed }) => {
                   </div>
                 )}
               </div>
+              <select
+                id="results-sort-by-date"
+                value={sortBy}
+                onChange={(e) =>
+                  handleFilterChange(() => setSortBy(e.target.value))
+                }
+                aria-label="Sort by date"
+                className="min-h-[44px] shrink-0 rounded-lg border border-[#5a5a5a] bg-[#3d3d3d] px-3 py-2 text-sm text-white outline-none transition-colors focus:border-[#A294F9] focus:ring-2 focus:ring-[#A294F9]/30"
+              >
+                {SORT_OPTIONS.map(({ key, label }) => (
+                  <option key={key} value={key}>
+                    {label}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 
@@ -606,10 +648,24 @@ const ManageResult = ({ onNext, cacheAllowed }) => {
                           Name
                         </th>
                         <th className="whitespace-nowrap border-b border-[#666] px-4 py-4 text-center text-sm font-medium text-white">
-                          Start Time
+                          <button
+                            type="button"
+                            onClick={() => handleDateColumnSort("start")}
+                            className="inline-flex w-full cursor-pointer items-center justify-center gap-1.5 text-white hover:text-[#A294F9]"
+                          >
+                            Start Time
+                            {dateSortIcon("start")}
+                          </button>
                         </th>
                         <th className="whitespace-nowrap border-b border-[#666] px-4 py-4 text-center text-sm font-medium text-white">
-                          End Time
+                          <button
+                            type="button"
+                            onClick={() => handleDateColumnSort("end")}
+                            className="inline-flex w-full cursor-pointer items-center justify-center gap-1.5 text-white hover:text-[#A294F9]"
+                          >
+                            End Time
+                            {dateSortIcon("end")}
+                          </button>
                         </th>
                         <th className="whitespace-nowrap border-b border-[#666] px-4 py-4 text-center text-sm font-medium text-white">
                           Analytics

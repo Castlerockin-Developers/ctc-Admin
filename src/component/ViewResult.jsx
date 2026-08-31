@@ -9,6 +9,8 @@ const ITEMS_PER_PAGE = 50;
 const SORT_OPTIONS = [
   { key: "usn", label: "USN" },
   { key: "name", label: "Name" },
+  { key: "start_time", label: "Start Time" },
+  { key: "end_time", label: "End Time" },
   { key: "marks", label: "Marks" },
   { key: "campus_score", label: "Campus Score" },
 ];
@@ -27,6 +29,8 @@ const mapAttemptToStudent = (a) => ({
     minute: "2-digit",
     hour12: true,
   }),
+  startTimeRaw: a.start_time,
+  endTimeRaw: a.end_time,
   score: a.score,
   trustScore: a.trust_score,
   campusScore: a.campus_score,
@@ -47,6 +51,14 @@ const compareStudents = (a, b, sortBy, sortOrder) => {
     cmp = (Number(a.score) || 0) - (Number(b.score) || 0);
   } else if (sortBy === "campus_score") {
     cmp = (Number(a.campusScore) || 0) - (Number(b.campusScore) || 0);
+  } else if (sortBy === "start_time") {
+    cmp =
+      new Date(a.startTimeRaw || 0).getTime() -
+      new Date(b.startTimeRaw || 0).getTime();
+  } else if (sortBy === "end_time") {
+    cmp =
+      new Date(a.endTimeRaw || 0).getTime() -
+      new Date(b.endTimeRaw || 0).getTime();
   }
   return sortOrder === "desc" ? -cmp : cmp;
 };
@@ -213,7 +225,7 @@ const ViewResult = ({ result, onBack, onNext }) => {
       setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
     } else {
       setSortBy(field);
-      setSortOrder("asc");
+      setSortOrder(field === "start_time" || field === "end_time" ? "desc" : "asc");
     }
   };
 
@@ -348,8 +360,11 @@ const ViewResult = ({ result, onBack, onNext }) => {
             <select
                 value={sortBy}
                 onChange={(e) => {
-                  setSortBy(e.target.value);
-                  setSortOrder("asc");
+                  const next = e.target.value;
+                  setSortBy(next);
+                  setSortOrder(
+                    next === "start_time" || next === "end_time" ? "desc" : "asc"
+                  );
                 }}
                 aria-label="Sort by"
                 className="min-h-[44px] rounded-lg border border-[#5a5a5a] bg-[#3d3d3d] px-3 py-2 text-sm text-white outline-none transition-colors focus:border-[#A294F9] focus:ring-2 focus:ring-[#A294F9]/30"
@@ -519,10 +534,24 @@ const ViewResult = ({ result, onBack, onNext }) => {
                     </button>
                   </th>
                   <th className="whitespace-nowrap border-b border-[#666] px-4 py-3 text-center text-sm font-medium text-white">
-                    Start Time
+                    <button
+                      type="button"
+                      onClick={() => handleSort("start_time")}
+                      className="inline-flex w-full cursor-pointer items-center justify-center gap-1.5 text-white hover:text-[#A294F9]"
+                    >
+                      Start Time
+                      {sortIcon("start_time")}
+                    </button>
                   </th>
                   <th className="whitespace-nowrap border-b border-[#666] px-4 py-3 text-center text-sm font-medium text-white">
-                    End Time
+                    <button
+                      type="button"
+                      onClick={() => handleSort("end_time")}
+                      className="inline-flex w-full cursor-pointer items-center justify-center gap-1.5 text-white hover:text-[#A294F9]"
+                    >
+                      End Time
+                      {sortIcon("end_time")}
+                    </button>
                   </th>
                   <th className="whitespace-nowrap border-b border-[#666] px-4 py-3 text-center text-sm font-medium text-white">
                     <button

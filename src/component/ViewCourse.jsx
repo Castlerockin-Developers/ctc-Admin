@@ -799,7 +799,7 @@ const ViewCourse = ({ onUnassign, onEdit, onDelete, onBack, selectedCourse }) =>
                   </div>
                   <div className="course-stats">
                     <p style={{color: '#888', fontSize: '14px'}}>
-                      {chaptersTotal || courseData.total_chapters || chapters.length} chapters • {assignedStudents.length} students assigned
+                      {(typeof chaptersTotal === "number" ? chaptersTotal : (courseData.total_chapters ?? chapters.length))} chapters • {assignedStudents.length} students assigned
                     </p>
                   </div>
                   <div className="course-description" style={{marginTop: '8px'}}>
@@ -855,7 +855,7 @@ const ViewCourse = ({ onUnassign, onEdit, onDelete, onBack, selectedCourse }) =>
       <div className="course-columns-container">
         {/* Left column: Chapters */}
         <div className="chapters-column" ref={chaptersColumnRef}>
-          <h2>Chapters ({chaptersTotal || chapters.length})</h2>
+          <h2>Chapters ({typeof chaptersTotal === "number" ? chaptersTotal : chapters.length})</h2>
           {chapters.length === 0 ? (
             <div className="no-chapters" style={{color: '#888', textAlign: 'center', padding: '20px'}}>
               No chapters found for this module.
