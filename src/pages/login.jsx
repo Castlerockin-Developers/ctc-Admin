@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import logo from "/logo.png";
 import Loadinggif from "../assets/Loading.gif";
-import { login, baseUrl, logout, authFetch, ACCESS_DENIED_MESSAGE } from "../scripts/AuthProvider";
+import { login, baseUrl, logout, authFetch, ACCESS_DENIED_MESSAGE, CONCURRENT_SESSION_MESSAGE } from "../scripts/AuthProvider";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 
@@ -135,6 +135,29 @@ const LoginPage = () => {
           color: "#FFFFFF",
           confirmButtonText: "OK",
         });
+      } else if (
+        err.code === "concurrent_session" ||
+        err.message === CONCURRENT_SESSION_MESSAGE ||
+        err.message?.toLowerCase().includes("active on another device")
+      ) {
+        logout();
+        Swal.fire({
+          title: "Already signed in",
+          text: err.message || CONCURRENT_SESSION_MESSAGE,
+          icon: "warning",
+          iconColor: "#A294F9",
+          confirmButtonColor: "#a294f9",
+          background: "#181817",
+          color: "#FFFFFF",
+          confirmButtonText: "OK",
+        });
+      } else if (
+        err.code === "invalid_credentials" ||
+        err.message?.toLowerCase().includes("incorrect password")
+      ) {
+        setError(err.message || "Invalid username or password.");
+      } else if (err.message && err.message !== "Login failed") {
+        setError(err.message);
       } else if (err.message?.includes("Login failed")) {
         setError("Invalid username or password.");
       } else {

@@ -12,6 +12,8 @@ export const SESSION_EXPIRED_MESSAGE = 'Failed to refresh access token';
 export const ACCESS_DENIED_MESSAGE = 'You do not have access to the admin panel.';
 export const SESSION_SUPERSEDED_MESSAGE =
   'Another device has logged in with the same credentials.';
+export const CONCURRENT_SESSION_MESSAGE =
+  'This account is active on another device.';
 
 let refreshInFlight = null;
 
@@ -226,17 +228,27 @@ export async function login(username, password) {
 
     if (!response.ok) {
       let message = 'Login failed';
+      let code = null;
       try {
         const error = await response.json();
-        message =
-          error.detail ||
-          error.message ||
-          (Array.isArray(error.non_field_errors) && error.non_field_errors[0]) ||
-          message;
+        code = error.code || null;
+        if (code === 'concurrent_session') {
+          message =
+            (typeof error.detail === 'string' && error.detail) ||
+            CONCURRENT_SESSION_MESSAGE;
+        } else {
+          message =
+            (typeof error.detail === 'string' && error.detail) ||
+            error.message ||
+            (Array.isArray(error.non_field_errors) && error.non_field_errors[0]) ||
+            message;
+        }
       } catch (_) {
         // keep default
       }
-      throw new Error(message);
+      const err = new Error(message);
+      err.code = code;
+      throw err;
     }
 
     const data = await response.json();
