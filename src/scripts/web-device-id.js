@@ -24,7 +24,7 @@ export function getOrCreateAdminWebDeviceId() {
   return id;
 }
 
-async function parseSessionSuperseded(response) {
+export async function parseSessionSuperseded(response) {
   try {
     const body = await response.clone().json();
     if (body?.code === 'session_superseded') {
