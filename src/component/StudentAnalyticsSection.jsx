@@ -951,7 +951,6 @@ function DailyCourseAttendanceTable({ attendance }) {
                             <tr>
                                 <th className="px-5 py-3 font-medium sm:px-6">Student</th>
                                 <th className="px-4 py-3 font-medium">USN</th>
-                                <th className="min-w-[9rem] px-4 py-3 font-medium">Progress</th>
                                 <th className="px-4 py-3 font-medium">Courses</th>
                                 <th className="px-5 py-3 font-medium sm:px-6">Started · result</th>
                             </tr>
@@ -960,7 +959,6 @@ function DailyCourseAttendanceTable({ attendance }) {
                             {filteredRows.length > 0 ? (
                                 filteredRows.map((row) => {
                                     const courses = row.courses || [];
-                                    const progress = Number(row.progress_percent) || 0;
                                     return (
                                         <tr
                                             key={`${row.date || "all"}-${row.user_id}`}
@@ -974,15 +972,6 @@ function DailyCourseAttendanceTable({ attendance }) {
                                             </td>
                                             <td className="whitespace-nowrap px-4 py-3.5 text-gray-300">
                                                 {row.usn || "—"}
-                                            </td>
-                                            <td className="px-4 py-3.5">
-                                                <p className="tabular-nums text-sm font-semibold text-white">
-                                                    {progress}%
-                                                </p>
-                                                <ProgressBar percent={progress} className="mt-1 w-28" />
-                                                <p className="mt-1 text-[11px] text-gray-400">
-                                                    {row.chapters_completed ?? 0}/{row.chapters_total ?? 0} chapters
-                                                </p>
                                             </td>
                                             <td className="px-4 py-3.5">
                                                 <span className="tabular-nums font-semibold text-[#A294F9]">
@@ -1039,7 +1028,7 @@ function DailyCourseAttendanceTable({ attendance }) {
                                 })
                             ) : (
                                 <tr>
-                                    <td colSpan={5} className="px-5 py-10 text-center text-sm text-gray-400 sm:px-6">
+                                    <td colSpan={4} className="px-5 py-10 text-center text-sm text-gray-400 sm:px-6">
                                         No students started
                                         {selectedCourse
                                             ? " this course"
