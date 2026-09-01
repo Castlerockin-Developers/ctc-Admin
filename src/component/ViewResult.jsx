@@ -232,6 +232,16 @@ const ViewResult = ({ result, onBack, onNext }) => {
   const formatScore = (val) =>
     typeof val === "number" ? val.toFixed(2) : val;
 
+  const formatScoreOutOfTotal = (val) => {
+    if (val == null || val === "" || val === "—") return "—";
+    const formatted = formatScore(val);
+    const total = result?.examTotalScore;
+    if (total != null && Number(total) > 0) {
+      return `${formatted} / ${formatScore(total)}`;
+    }
+    return formatted;
+  };
+
   const examLeaderboard =
     result.examScoreLeaderboard?.length > 0
       ? result.examScoreLeaderboard
@@ -284,21 +294,35 @@ const ViewResult = ({ result, onBack, onNext }) => {
       </div>
 
       {/* Stats cards */}
-      <div className="mb-8 grid grid-cols-2 gap-4 sm:gap-5 md:grid-cols-3 lg:grid-cols-5 md:gap-6">
+      <div className="mb-8 grid grid-cols-2 gap-4 sm:gap-5 md:grid-cols-3 lg:grid-cols-6 md:gap-6">
         {[
           { label: "Students Attempted", value: result.studentsAttempted },
           { label: "Students Unattempted", value: result.studentsUnattempted },
           { label: "Malpractice", value: result.malpractice },
           {
+            label: "Total score",
+            value:
+              result.examTotalScore != null && Number(result.examTotalScore) > 0
+                ? formatScore(result.examTotalScore)
+                : "—",
+            sub: "Maximum marks for this exam",
+          },
+          {
             label: "Average Score",
-            value: formatScore(result.averageScore),
+            value: formatScoreOutOfTotal(result.averageScore),
+            sub:
+              result.examTotalScore != null && Number(result.examTotalScore) > 0
+                ? `Out of ${formatScore(result.examTotalScore)} total score`
+                : null,
           },
           {
             label: "Top Score",
-            value: formatScore(result.topScore),
+            value: formatScoreOutOfTotal(result.topScore),
             sub: result.topScorer
               ? `${result.topScorer.name}${result.topScorer.usn ? ` · ${result.topScorer.usn}` : ""}`
-              : null,
+              : result.examTotalScore != null && Number(result.examTotalScore) > 0
+                ? `Out of ${formatScore(result.examTotalScore)} total score`
+                : null,
           },
         ].map(({ label, value, sub }) => (
           <div

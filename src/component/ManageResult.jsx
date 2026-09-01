@@ -331,6 +331,7 @@ const ManageResult = ({ onNext, cacheAllowed }) => {
         studentsAttempted: details.users_attempted_count,
         studentsUnattempted: details.users_unattempted_count,
         malpractice: details.malpractice_recorded_count,
+        examTotalScore: details.exam_total_score,
         averageScore: details.users_average_score,
         topScore: details.top_score,
         topScorer: details.top_scorer,
