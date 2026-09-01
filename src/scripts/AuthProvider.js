@@ -4,10 +4,11 @@ import {
   getOrCreateAdminWebDeviceId,
   parseSessionSuperseded,
 } from './web-device-id';
+import { apiBaseUrl, djangoApiOrigin } from './apiConfig';
 
 /** Django mounts REST routes under /api/ (see crackthecampus/urls.py). */
-export const baseUrl = 'http://localhost:8000/api';
-export const staticUrl = '';
+export const baseUrl = apiBaseUrl;
+export const staticUrl = djangoApiOrigin;
 export const SESSION_EXPIRED_MESSAGE = 'Failed to refresh access token';
 export const ACCESS_DENIED_MESSAGE = 'You do not have access to the admin panel.';
 export const SESSION_SUPERSEDED_MESSAGE =
