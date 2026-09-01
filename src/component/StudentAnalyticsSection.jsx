@@ -519,12 +519,17 @@ function AnalyticsPieChart({ slices, emptyMessage, size = "md", centerLabel = "S
     );
 }
 
-function PieChartCard({ title, subtitle, slices, emptyMessage, size = "md", centerLabel }) {
+function PieChartCard({ title, subtitle, slices, emptyMessage, size = "md", centerLabel, headerExtra = null }) {
     return (
         <div className="min-w-0 overflow-hidden rounded-xl border border-[#5a5a5a] bg-[#3a3a3a]">
             <div className="border-b border-[#5a5a5a] px-4 py-4 sm:px-5">
-                <h3 className="text-base font-medium text-white">{title}</h3>
-                {subtitle ? <p className="mt-0.5 text-xs text-gray-400">{subtitle}</p> : null}
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div className="min-w-0">
+                        <h3 className="text-base font-medium text-white">{title}</h3>
+                        {subtitle ? <p className="mt-0.5 text-xs text-gray-400">{subtitle}</p> : null}
+                    </div>
+                    {headerExtra}
+                </div>
             </div>
             <div className="px-4 py-4 sm:px-5 sm:py-5">
                 <AnalyticsPieChart
@@ -695,6 +700,63 @@ function courseFilterKey(c) {
     return `name:${course.name || ""}`;
 }
 
+function buildCourseFilterOptions({ assignedCourses = [], modules = [], extraCourses = [] } = {}) {
+    const map = new Map();
+    const add = (course, { is_assigned = false } = {}) => {
+        const normalized = normalizeCourse(course);
+        const key = courseFilterKey(normalized);
+        if (!key || key === "id:" || key === "name:") return;
+        const existing = map.get(key);
+        if (!existing) {
+            map.set(key, {
+                key,
+                name: normalized.name || "Course",
+                is_custom: Boolean(normalized.is_custom),
+                is_assigned: Boolean(is_assigned || normalized.is_assigned),
+            });
+        } else if (is_assigned || normalized.is_assigned) {
+            existing.is_assigned = true;
+        }
+    };
+    for (const course of assignedCourses) add(course, { is_assigned: true });
+    for (const module of modules) add({ id: module.id, name: module.name });
+    for (const course of extraCourses) add(course);
+    return [...map.values()].sort((a, b) => {
+        if (Boolean(a.is_custom) !== Boolean(b.is_custom)) return a.is_custom ? -1 : 1;
+        if (Boolean(a.is_assigned) !== Boolean(b.is_assigned)) return a.is_assigned ? -1 : 1;
+        return (a.name || "").localeCompare(b.name || "", undefined, { sensitivity: "base" });
+    });
+}
+
+function courseFilterSelectLabel(course) {
+    if (!course) return "All courses";
+    if (course.is_custom) return `${course.name} (custom)`;
+    if (course.is_assigned) return `${course.name} (assigned)`;
+    return course.name;
+}
+
+function CourseFilterSelect({ value, onChange, options, className = "" }) {
+    const selected = options.find((c) => c.key === value);
+    return (
+        <label className={`text-xs text-gray-400 ${className}`}>
+            Course
+            <select
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                title={courseFilterSelectLabel(selected) || "All courses"}
+                className="ml-2 max-w-[16rem] rounded-lg border border-[#5a5a5a] bg-[#404040] px-2.5 py-1.5 text-sm text-white focus:border-[#A294F9] focus:outline-none focus:ring-1 focus:ring-[#A294F9]"
+            >
+                <option value="">All courses</option>
+                {options.map((c) => (
+                    <option key={c.key} value={c.key}>
+                        {courseFilterSelectLabel(c)}
+                    </option>
+                ))}
+            </select>
+        </label>
+    );
+}
+
 function startedCoursesFromRow(row) {
     return (row?.courses || []).map(normalizeCourse).filter(isStartedCourse);
 }
@@ -753,38 +815,12 @@ function DailyCourseAttendanceTable({ attendance }) {
     }, [today, lookbackDays]);
 
     const availableCourses = useMemo(() => {
-        const map = new Map();
-        for (const course of assignedCourses) {
-            const key = courseFilterKey(course);
-            if (!key || key === "id:" || key === "name:") continue;
-            map.set(key, {
-                key,
-                name: course.name || "Course",
-                is_custom: Boolean(course.is_custom),
-                is_assigned: true,
-            });
-        }
+        const extraCourses = [];
         for (const row of sourceRows) {
             if (!isAllTime && selectedDate && row.date !== selectedDate) continue;
-            for (const course of startedCoursesFromRow(row)) {
-                const key = courseFilterKey(course);
-                if (!key || key === "id:" || key === "name:") continue;
-                const existing = map.get(key);
-                if (!existing) {
-                    map.set(key, {
-                        key,
-                        name: course.name || "Course",
-                        is_custom: Boolean(course.is_custom),
-                        is_assigned: false,
-                    });
-                }
-            }
+            extraCourses.push(...startedCoursesFromRow(row));
         }
-        return [...map.values()].sort((a, b) => {
-            if (Boolean(a.is_custom) !== Boolean(b.is_custom)) return a.is_custom ? -1 : 1;
-            if (Boolean(a.is_assigned) !== Boolean(b.is_assigned)) return a.is_assigned ? -1 : 1;
-            return (a.name || "").localeCompare(b.name || "", undefined, { sensitivity: "base" });
-        });
+        return buildCourseFilterOptions({ assignedCourses, extraCourses });
     }, [sourceRows, selectedDate, assignedCourses, isAllTime]);
 
     useEffect(() => {
@@ -885,29 +921,11 @@ function DailyCourseAttendanceTable({ attendance }) {
                         />
                     </label>
                     ) : null}
-                    <label className="text-xs text-gray-400">
-                        Course
-                        <select
-                            value={selectedCourse}
-                            onChange={(e) => setSelectedCourse(e.target.value)}
-                            title={
-                                availableCourses.find((c) => c.key === selectedCourse)?.name ||
-                                "All started courses"
-                            }
-                            className="ml-2 max-w-[16rem] rounded-lg border border-[#5a5a5a] bg-[#404040] px-2.5 py-1.5 text-sm text-white focus:border-[#A294F9] focus:outline-none focus:ring-1 focus:ring-[#A294F9]"
-                        >
-                            <option value="">All courses</option>
-                            {availableCourses.map((c) => (
-                                <option key={c.key} value={c.key}>
-                                    {c.is_custom
-                                        ? `${c.name} (custom)`
-                                        : c.is_assigned
-                                          ? `${c.name} (assigned)`
-                                          : c.name}
-                                </option>
-                            ))}
-                        </select>
-                    </label>
+                    <CourseFilterSelect
+                        value={selectedCourse}
+                        onChange={setSelectedCourse}
+                        options={availableCourses}
+                    />
                     <input
                         type="search"
                         value={query}
@@ -1191,11 +1209,56 @@ function HiddenChartsHint() {
 function CoursesReport({ sa, chartVis }) {
     const modules = sa.module_attendance || [];
     const totalStudents = Number(sa.total_students) || 0;
-    const courseStarters =
+    const assignedCourses = Array.isArray(sa.daily_course_attendance?.available_courses)
+        ? sa.daily_course_attendance.available_courses
+        : EMPTY_ASSIGNED_COURSES;
+    const allTimeRows = sa.daily_course_attendance?.all_time_rows || [];
+    const [selectedCourseForSplit, setSelectedCourseForSplit] = useState("");
+
+    const courseFilterOptions = useMemo(() => {
+        const extraCourses = [];
+        for (const row of allTimeRows) {
+            extraCourses.push(...startedCoursesFromRow(row));
+        }
+        return buildCourseFilterOptions({ assignedCourses, modules, extraCourses });
+    }, [assignedCourses, modules, allTimeRows]);
+
+    useEffect(() => {
+        if (
+            selectedCourseForSplit &&
+            !courseFilterOptions.some((c) => c.key === selectedCourseForSplit)
+        ) {
+            setSelectedCourseForSplit("");
+        }
+    }, [courseFilterOptions, selectedCourseForSplit]);
+
+    const overallCourseStarters =
         sa.students_with_course_activity != null
             ? Number(sa.students_with_course_activity) || 0
-            : new Set((sa.daily_course_attendance?.all_time_rows || []).map((r) => r.user_id)).size;
-    const courseSplit = splitCount(courseStarters, totalStudents);
+            : new Set(allTimeRows.map((r) => r.user_id)).size;
+
+    const selectedCourseMeta = courseFilterOptions.find((c) => c.key === selectedCourseForSplit);
+
+    const courseStartersForSplit = useMemo(() => {
+        if (!selectedCourseForSplit) return overallCourseStarters;
+        const matchedModule = modules.find(
+            (m) => courseFilterKey({ id: m.id, name: m.name }) === selectedCourseForSplit
+        );
+        if (matchedModule) return Number(matchedModule.student_count) || 0;
+        const starterIds = new Set();
+        for (const row of allTimeRows) {
+            const started = startedCoursesFromRow(row).some(
+                (c) => courseFilterKey(c) === selectedCourseForSplit
+            );
+            if (started && row.user_id != null) starterIds.add(row.user_id);
+        }
+        return starterIds.size;
+    }, [selectedCourseForSplit, overallCourseStarters, modules, allTimeRows]);
+
+    const courseSplit = splitCount(courseStartersForSplit, totalStudents);
+    const courseSplitSubtitle = selectedCourseMeta
+        ? `Students who viewed or started ${selectedCourseMeta.name}, vs the rest of the cohort.`
+        : "Students who viewed or started any Skill Center course, vs the rest of the cohort.";
     const courseShareSlices = useMemo(() => {
         const ranked = [...modules]
             .filter((m) => Number(m.student_count) > 0)
@@ -1226,9 +1289,21 @@ function CoursesReport({ sa, chartVis }) {
                     {shown(chartVis, "pieCourseStarted") ? (
                         <PieChartCard
                             title="Started a course vs did not"
-                            subtitle="Students who viewed or started any Skill Center course, vs the rest of the cohort."
+                            subtitle={courseSplitSubtitle}
+                            headerExtra={
+                                <CourseFilterSelect
+                                    value={selectedCourseForSplit}
+                                    onChange={setSelectedCourseForSplit}
+                                    options={courseFilterOptions}
+                                    className="shrink-0"
+                                />
+                            }
                             slices={[
-                                { label: "Started a course", value: courseSplit.took, color: "#2dd4bf" },
+                                {
+                                    label: selectedCourseMeta ? "Started this course" : "Started a course",
+                                    value: courseSplit.took,
+                                    color: "#2dd4bf",
+                                },
                                 { label: "Did not start", value: courseSplit.didNot, color: "#64748b" },
                             ]}
                             emptyMessage="No students in this cohort yet."
