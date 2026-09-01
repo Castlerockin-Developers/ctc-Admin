@@ -80,7 +80,7 @@ export default function OrgAnalyticsPage({ cacheAllowed }) {
         loading,
         error,
         forceRefresh,
-    } = useCache(`analytics_data_v3_${selectedGroup || "all"}`, fetchData, {
+    } = useCache(`analytics_data_v4_${selectedGroup || "all"}`, fetchData, {
         enabled: cacheAllowed !== false,
         expiryMs: 3 * 60 * 1000,
         autoRefresh: false,

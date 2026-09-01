@@ -91,10 +91,7 @@ const LoginPage = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    if (error) {
-      setShakeCount((c) => c + 1);
-      return;
-    }
+    if (loading) return;
     setError("");
     setLoading(true);
     try {

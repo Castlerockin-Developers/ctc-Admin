@@ -1,5 +1,5 @@
-import React, { useMemo, useId, useState, useEffect } from "react";
-import { FaInfoCircle } from "react-icons/fa";
+import React, { useMemo, useId, useState, useEffect, useCallback } from "react";
+import { FaInfoCircle, FaSlidersH } from "react-icons/fa";
 
 /**
  * Theme-matched info tooltip (hover + keyboard focus).
@@ -390,6 +390,268 @@ const PerformanceHistoryLineChart = ({ points, valueSuffix = " marks", emptyMess
         </div>
     );
 };
+
+const PIE_PALETTE = ["#A294F9", "#2dd4bf", "#fb7185", "#fbbf24", "#60a5fa", "#34d399", "#f472b6", "#94a3b8"];
+
+function polarToCartesian(cx, cy, r, angleDeg) {
+    const rad = ((angleDeg - 90) * Math.PI) / 180;
+    return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
+}
+
+function describeDonutSlice(cx, cy, rOuter, rInner, startAngle, endAngle) {
+    const sweep = endAngle - startAngle;
+    if (sweep >= 359.999) {
+        return [
+            `M ${cx} ${cy - rOuter}`,
+            `A ${rOuter} ${rOuter} 0 1 1 ${cx} ${cy + rOuter}`,
+            `A ${rOuter} ${rOuter} 0 1 1 ${cx} ${cy - rOuter}`,
+            `M ${cx} ${cy - rInner}`,
+            `A ${rInner} ${rInner} 0 1 0 ${cx} ${cy + rInner}`,
+            `A ${rInner} ${rInner} 0 1 0 ${cx} ${cy - rInner}`,
+        ].join(" ");
+    }
+    const large = sweep > 180 ? 1 : 0;
+    const p1 = polarToCartesian(cx, cy, rOuter, endAngle);
+    const p2 = polarToCartesian(cx, cy, rOuter, startAngle);
+    const p3 = polarToCartesian(cx, cy, rInner, startAngle);
+    const p4 = polarToCartesian(cx, cy, rInner, endAngle);
+    return [
+        `M ${p1.x.toFixed(3)} ${p1.y.toFixed(3)}`,
+        `A ${rOuter} ${rOuter} 0 ${large} 0 ${p2.x.toFixed(3)} ${p2.y.toFixed(3)}`,
+        `L ${p3.x.toFixed(3)} ${p3.y.toFixed(3)}`,
+        `A ${rInner} ${rInner} 0 ${large} 1 ${p4.x.toFixed(3)} ${p4.y.toFixed(3)}`,
+        "Z",
+    ].join(" ");
+}
+
+function splitCount(took, total) {
+    const t = Math.max(0, Number(took) || 0);
+    const n = Math.max(0, Number(total) || 0);
+    const did = Math.max(0, n - t);
+    return { took: Math.min(t, n), didNot: did, total: n };
+}
+
+function AnalyticsPieChart({ slices, emptyMessage, size = "md", centerLabel = "Students" }) {
+    const mapped = useMemo(
+        () =>
+            (slices || []).map((s) => ({
+                label: s.label,
+                value: Math.max(0, Number(s.value) || 0),
+                color: s.color,
+            })),
+        [slices]
+    );
+    const total = useMemo(() => mapped.reduce((sum, s) => sum + s.value, 0), [mapped]);
+    const dim = size === "sm" ? 132 : 176;
+    const cx = dim / 2;
+    const cy = dim / 2;
+    const rOuter = size === "sm" ? 54 : 74;
+    const rInner = size === "sm" ? 32 : 44;
+
+    if (!slices?.length || total <= 0) {
+        return (
+            <div className="flex h-44 items-center justify-center rounded-lg bg-[#353535]/80 text-sm text-white">
+                {emptyMessage || "No data"}
+            </div>
+        );
+    }
+
+    let cursor = 0;
+    const arcs = mapped.map((s) => {
+        const start = (cursor / total) * 360;
+        cursor += s.value;
+        const end = s.value === 0 ? start : (cursor / total) * 360;
+        return { ...s, start, end, pct: Math.round((s.value / total) * 1000) / 10 };
+    });
+
+    return (
+        <div className={`flex ${size === "sm" ? "flex-col items-center gap-3" : "flex-col items-center gap-4 sm:flex-row sm:items-center"}`}>
+            <svg
+                viewBox={`0 0 ${dim} ${dim}`}
+                className={size === "sm" ? "h-32 w-32 shrink-0" : "h-44 w-44 shrink-0"}
+                role="img"
+                aria-label={arcs.map((a) => `${a.label} ${a.value}`).join(", ")}
+            >
+                {arcs.map((a, i) =>
+                    a.value <= 0 ? null : (
+                    <path
+                        key={`${a.label}-${i}`}
+                        d={describeDonutSlice(cx, cy, rOuter, rInner, a.start, a.end)}
+                        fill={a.color || PIE_PALETTE[i % PIE_PALETTE.length]}
+                        fillRule="evenodd"
+                    >
+                        <title>{`${a.label}: ${a.value} (${a.pct}%)`}</title>
+                    </path>
+                    )
+                )}
+                <text
+                    x={cx}
+                    y={cy - 6}
+                    textAnchor="middle"
+                    fill="#ffffff"
+                    fontSize={size === "sm" ? 16 : 20}
+                    fontWeight="700"
+                    className="tabular-nums"
+                >
+                    {total}
+                </text>
+                <text x={cx} y={cy + 12} textAnchor="middle" fill="#9ca3af" fontSize={size === "sm" ? 8 : 10}>
+                    {centerLabel}
+                </text>
+            </svg>
+            <ul className={`min-w-0 ${size === "sm" ? "w-full space-y-1" : "flex-1 space-y-2"}`}>
+                {arcs.map((a, i) => (
+                    <li key={`${a.label}-${i}`} className="flex items-center justify-between gap-3 text-sm">
+                        <span className="flex min-w-0 items-center gap-2 text-white">
+                            <span
+                                className="h-2.5 w-2.5 shrink-0 rounded-full"
+                                style={{ backgroundColor: a.color || PIE_PALETTE[i % PIE_PALETTE.length] }}
+                            />
+                            <span className="truncate">{a.label}</span>
+                        </span>
+                        <span className="shrink-0 tabular-nums text-gray-300">
+                            {a.value} · {a.pct}%
+                        </span>
+                    </li>
+                ))}
+            </ul>
+        </div>
+    );
+}
+
+function PieChartCard({ title, subtitle, slices, emptyMessage, size = "md", centerLabel }) {
+    return (
+        <div className="min-w-0 overflow-hidden rounded-xl border border-[#5a5a5a] bg-[#3a3a3a]">
+            <div className="border-b border-[#5a5a5a] px-4 py-4 sm:px-5">
+                <h3 className="text-base font-medium text-white">{title}</h3>
+                {subtitle ? <p className="mt-0.5 text-xs text-gray-400">{subtitle}</p> : null}
+            </div>
+            <div className="px-4 py-4 sm:px-5 sm:py-5">
+                <AnalyticsPieChart
+                    slices={slices}
+                    emptyMessage={emptyMessage}
+                    size={size}
+                    centerLabel={centerLabel}
+                />
+            </div>
+        </div>
+    );
+}
+
+const CHART_VIS_KEY = "ctc_admin_analytics_chart_vis_v1";
+
+const DEFAULT_CHART_VIS = {
+    kpis: true,
+    activity: true,
+    pieTookExam: true,
+    pieCompleted30d: true,
+    pieLogin: true,
+    pieCtc: true,
+    pieRisk: true,
+    piePerExam: true,
+    ctcDistribution: true,
+    performanceHistory: true,
+    placementReadiness: true,
+    pieCourseStarted: true,
+    pieCourseShare: true,
+    courseReach: true,
+    dailyAttendance: true,
+};
+
+const EXAM_CHART_TOGGLES = [
+    { id: "kpis", label: "Score & risk" },
+    { id: "activity", label: "Exam activity" },
+    { id: "pieTookExam", label: "Took exam" },
+    { id: "pieCompleted30d", label: "Completed (30d)" },
+    { id: "pieLogin", label: "Logged in" },
+    { id: "pieCtc", label: "CTC profiles" },
+    { id: "pieRisk", label: "At risk" },
+    { id: "piePerExam", label: "Per-exam pies" },
+    { id: "ctcDistribution", label: "CTC distribution" },
+    { id: "performanceHistory", label: "Marks over time" },
+    { id: "placementReadiness", label: "Placement readiness" },
+];
+
+const COURSE_CHART_TOGGLES = [
+    { id: "pieCourseStarted", label: "Started a course" },
+    { id: "pieCourseShare", label: "Course mix" },
+    { id: "courseReach", label: "Course reach" },
+    { id: "dailyAttendance", label: "Daily attendance" },
+];
+
+function readChartVis() {
+    try {
+        const raw = localStorage.getItem(CHART_VIS_KEY);
+        if (!raw) return { ...DEFAULT_CHART_VIS };
+        const parsed = JSON.parse(raw);
+        return { ...DEFAULT_CHART_VIS, ...parsed };
+    } catch {
+        return { ...DEFAULT_CHART_VIS };
+    }
+}
+
+function ChartVisibilityBar({ defs, vis, onToggle, onShowAll, onHideAll }) {
+    const [open, setOpen] = useState(false);
+    const enabledCount = defs.filter((d) => vis[d.id] !== false).length;
+
+    return (
+        <div className="rounded-xl border border-[#5a5a5a] bg-[#353535]">
+            <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2.5 sm:px-4">
+                <button
+                    type="button"
+                    onClick={() => setOpen((v) => !v)}
+                    className="inline-flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium text-white hover:bg-[#404040]"
+                    aria-expanded={open}
+                >
+                    <FaSlidersH className="h-3.5 w-3.5 text-[#A294F9]" aria-hidden />
+                    Customize charts
+                    <span className="text-xs font-normal text-gray-400">
+                        {enabledCount}/{defs.length} shown
+                    </span>
+                </button>
+                <div className="flex items-center gap-1.5">
+                    <button
+                        type="button"
+                        onClick={onShowAll}
+                        className="rounded-md px-2 py-1 text-xs text-gray-300 hover:bg-[#404040] hover:text-white"
+                    >
+                        Show all
+                    </button>
+                    <button
+                        type="button"
+                        onClick={onHideAll}
+                        className="rounded-md px-2 py-1 text-xs text-gray-300 hover:bg-[#404040] hover:text-white"
+                    >
+                        Hide all
+                    </button>
+                </div>
+            </div>
+            {open ? (
+                <div className="flex flex-wrap gap-1.5 border-t border-[#5a5a5a] px-3 py-3 sm:px-4">
+                    {defs.map((d) => {
+                        const on = vis[d.id] !== false;
+                        return (
+                            <button
+                                key={d.id}
+                                type="button"
+                                role="switch"
+                                aria-checked={on}
+                                onClick={() => onToggle(d.id)}
+                                className={`rounded-full border px-2.5 py-1 text-xs font-medium transition-colors ${
+                                    on
+                                        ? "border-[#A294F9]/70 bg-[#A294F9]/20 text-white"
+                                        : "border-[#5a5a5a] bg-[#2f2f2f] text-gray-400 hover:text-gray-200"
+                                }`}
+                            >
+                                {d.label}
+                            </button>
+                        );
+                    })}
+                </div>
+            ) : null}
+        </div>
+    );
+}
 
 function formatAttendanceDate(isoDate) {
     if (!isoDate) return "";
@@ -800,9 +1062,34 @@ export default function StudentAnalyticsSection({
     headerRight = null,
 }) {
     const [reportTab, setReportTab] = useState(readStoredReportTab);
+    const [chartVis, setChartVis] = useState(readChartVis);
     const containerClass = pageTitle
         ? "flex h-[87vh] min-h-[calc(100dvh-4.5rem)] w-full max-w-full flex-col overflow-hidden rounded-lg bg-[#282828] p-5 pb-10 sm:p-6 sm:pb-12 md:h-[87vh] md:min-h-0 md:p-8 md:pb-14"
         : "flex w-full min-w-0 max-w-full flex-col rounded-lg bg-[#282828] p-5 pb-10 sm:p-6 sm:pb-12 md:p-8 md:pb-14";
+
+    const persistChartVis = useCallback((next) => {
+        setChartVis(next);
+        try {
+            localStorage.setItem(CHART_VIS_KEY, JSON.stringify(next));
+        } catch {
+            // ignore quota / private-mode failures
+        }
+    }, []);
+
+    const toggleChart = useCallback(
+        (id) => {
+            persistChartVis({ ...chartVis, [id]: chartVis[id] === false });
+        },
+        [chartVis, persistChartVis]
+    );
+
+    const chartDefs = reportTab === "courses" ? COURSE_CHART_TOGGLES : EXAM_CHART_TOGGLES;
+
+    const setAllCharts = (on) => {
+        const next = { ...chartVis };
+        for (const d of chartDefs) next[d.id] = on;
+        persistChartVis(next);
+    };
 
     const selectTab = (tab) => {
         setReportTab(tab);
@@ -858,15 +1145,25 @@ export default function StudentAnalyticsSection({
                 </div>
 
                 {sa ? (
-                    reportTab === "courses" ? (
-                        <CoursesReport sa={sa} />
-                    ) : (
-                        <ExamReport
-                            sa={sa}
-                            ctcCohortLabel={ctcCohortLabel}
-                            readinessSubtitle={readinessSubtitle}
+                    <>
+                        <ChartVisibilityBar
+                            defs={chartDefs}
+                            vis={chartVis}
+                            onToggle={toggleChart}
+                            onShowAll={() => setAllCharts(true)}
+                            onHideAll={() => setAllCharts(false)}
                         />
-                    )
+                        {reportTab === "courses" ? (
+                            <CoursesReport sa={sa} chartVis={chartVis} />
+                        ) : (
+                            <ExamReport
+                                sa={sa}
+                                chartVis={chartVis}
+                                ctcCohortLabel={ctcCohortLabel}
+                                readinessSubtitle={readinessSubtitle}
+                            />
+                        )}
+                    </>
                 ) : (
                     <div className="rounded-xl border border-dashed border-[#5a5a5a] bg-[#3a3a3a]/50 px-6 py-10 text-center text-sm text-white">
                         Student analytics require an updated API. Deploy the latest backend with{" "}
@@ -879,10 +1176,77 @@ export default function StudentAnalyticsSection({
     );
 }
 
-function CoursesReport({ sa }) {
+function shown(vis, id) {
+    return vis?.[id] !== false;
+}
+
+function HiddenChartsHint() {
+    return (
+        <div className="rounded-xl border border-dashed border-[#5a5a5a] bg-[#3a3a3a]/50 px-6 py-10 text-center text-sm text-gray-400">
+            All charts on this tab are hidden. Use Customize charts to turn some back on.
+        </div>
+    );
+}
+
+function CoursesReport({ sa, chartVis }) {
     const modules = sa.module_attendance || [];
+    const totalStudents = Number(sa.total_students) || 0;
+    const courseStarters =
+        sa.students_with_course_activity != null
+            ? Number(sa.students_with_course_activity) || 0
+            : new Set((sa.daily_course_attendance?.all_time_rows || []).map((r) => r.user_id)).size;
+    const courseSplit = splitCount(courseStarters, totalStudents);
+    const courseShareSlices = useMemo(() => {
+        const ranked = [...modules]
+            .filter((m) => Number(m.student_count) > 0)
+            .sort((a, b) => Number(b.student_count) - Number(a.student_count));
+        const top = ranked.slice(0, 6);
+        const rest = ranked.slice(6).reduce((sum, m) => sum + Number(m.student_count || 0), 0);
+        const slices = top.map((m, i) => ({
+            label: m.name || `Module ${m.id}`,
+            value: Number(m.student_count) || 0,
+            color: PIE_PALETTE[i % PIE_PALETTE.length],
+        }));
+        if (rest > 0) slices.push({ label: "Other courses", value: rest, color: "#64748b" });
+        return slices;
+    }, [modules]);
+
+    const anyShown =
+        shown(chartVis, "pieCourseStarted") ||
+        shown(chartVis, "pieCourseShare") ||
+        shown(chartVis, "courseReach") ||
+        shown(chartVis, "dailyAttendance");
+
+    if (!anyShown) return <HiddenChartsHint />;
+
     return (
         <>
+            {shown(chartVis, "pieCourseStarted") || shown(chartVis, "pieCourseShare") ? (
+                <div className="grid w-full grid-cols-1 gap-4 lg:grid-cols-2">
+                    {shown(chartVis, "pieCourseStarted") ? (
+                        <PieChartCard
+                            title="Started a course vs did not"
+                            subtitle="Students who viewed or started any Skill Center course, vs the rest of the cohort."
+                            slices={[
+                                { label: "Started a course", value: courseSplit.took, color: "#2dd4bf" },
+                                { label: "Did not start", value: courseSplit.didNot, color: "#64748b" },
+                            ]}
+                            emptyMessage="No students in this cohort yet."
+                        />
+                    ) : null}
+                    {shown(chartVis, "pieCourseShare") ? (
+                        <PieChartCard
+                            title="Course mix"
+                            subtitle="Unique students per course. A student can appear in more than one course."
+                            slices={courseShareSlices}
+                            emptyMessage="No course activity yet."
+                            centerLabel="Touches"
+                        />
+                    ) : null}
+                </div>
+            ) : null}
+
+            {shown(chartVis, "courseReach") ? (
             <div className="overflow-hidden rounded-xl border border-[#5a5a5a] bg-[#3a3a3a]">
                 <div className="flex items-start justify-between gap-2 border-b border-[#5a5a5a] px-4 py-4 sm:px-5">
                     <div className="min-w-0">
@@ -939,14 +1303,38 @@ function CoursesReport({ sa }) {
                     </table>
                 </div>
             </div>
-            <DailyCourseAttendanceTable attendance={sa.daily_course_attendance} />
+            ) : null}
+            {shown(chartVis, "dailyAttendance") ? (
+                <DailyCourseAttendanceTable attendance={sa.daily_course_attendance} />
+            ) : null}
         </>
     );
 }
 
-function ExamReport({ sa, ctcCohortLabel, readinessSubtitle }) {
+function ExamReport({ sa, chartVis, ctcCohortLabel, readinessSubtitle }) {
+    const totalStudents = Number(sa.total_students) || 0;
+    const tookEver = sa.distinct_attempters_all_time != null
+        ? Number(sa.distinct_attempters_all_time)
+        : Number(sa.distinct_attempters_30d ?? sa.distinct_submitters_30d) || 0;
+    const took30d = Number(sa.distinct_attempters_30d ?? sa.distinct_submitters_30d) || 0;
+    const completed30d = Number(sa.distinct_submitters_30d) || 0;
+    const loggedIn30d = Number(sa.students_logged_in_30d) || 0;
+    const ctcProfiles = Number(sa.students_with_ctc_profile) || 0;
+    const atRisk = Number(sa.at_risk_student_count) || 0;
+    const examSplit = splitCount(tookEver, totalStudents);
+    const took30Split = splitCount(took30d, totalStudents);
+    const completedSplit = splitCount(completed30d, totalStudents);
+    const loginSplit = splitCount(loggedIn30d, totalStudents);
+    const ctcSplit = splitCount(ctcProfiles, totalStudents);
+    const riskSplit = splitCount(atRisk, totalStudents);
+    const exams = Array.isArray(sa.exam_participation) ? sa.exam_participation : [];
+
+    const anyShown = EXAM_CHART_TOGGLES.some((d) => shown(chartVis, d.id));
+    if (!anyShown) return <HiddenChartsHint />;
+
     return (
         <>
+            {shown(chartVis, "kpis") ? (
             <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-3">
                 <div className="min-w-0 rounded-xl border border-[#5a5a5a] bg-[#3a3a3a] px-4 py-4 shadow-inner sm:px-5 sm:py-5">
                     <p className="text-sm text-white">Avg CTC score</p>
@@ -1018,7 +1406,9 @@ function ExamReport({ sa, ctcCohortLabel, readinessSubtitle }) {
                     ) : null}
                 </div>
             </div>
+            ) : null}
 
+            {shown(chartVis, "activity") ? (
             <div className="flex flex-col gap-3">
                 <p className="text-xs font-medium tracking-widest text-white uppercase">Exam activity</p>
                 <div className="grid w-full grid-cols-1 gap-3 min-[480px]:grid-cols-2 sm:grid-cols-3 xl:grid-cols-6">
@@ -1072,8 +1462,117 @@ function ExamReport({ sa, ctcCohortLabel, readinessSubtitle }) {
                     </div>
                 </div>
             </div>
+            ) : null}
 
+            {shown(chartVis, "pieTookExam") ||
+            shown(chartVis, "pieCompleted30d") ||
+            shown(chartVis, "pieLogin") ||
+            shown(chartVis, "pieCtc") ||
+            shown(chartVis, "pieRisk") ? (
+                <div className="grid w-full grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
+                    {shown(chartVis, "pieTookExam") ? (
+                        <PieChartCard
+                            title="Took an exam vs did not"
+                            subtitle={
+                                sa.distinct_attempters_all_time != null
+                                    ? "Students who started any exam, vs those who never started."
+                                    : "Students who started an exam in the last 30 days, vs the rest."
+                            }
+                            slices={[
+                                { label: "Took an exam", value: examSplit.took, color: "#A294F9" },
+                                { label: "Did not take", value: examSplit.didNot, color: "#64748b" },
+                            ]}
+                            emptyMessage="No students in this cohort yet."
+                        />
+                    ) : null}
+                    {shown(chartVis, "pieCompleted30d") ? (
+                        <PieChartCard
+                            title="Completed an exam (30d)"
+                            subtitle={`${took30Split.took} started · ${completedSplit.took} finished in the last 30 days.`}
+                            slices={[
+                                { label: "Completed", value: completedSplit.took, color: "#2dd4bf" },
+                                { label: "Did not complete", value: completedSplit.didNot, color: "#64748b" },
+                            ]}
+                            emptyMessage="No students in this cohort yet."
+                        />
+                    ) : null}
+                    {shown(chartVis, "pieLogin") ? (
+                        <PieChartCard
+                            title="Logged in vs inactive (30d)"
+                            subtitle="Unique students with a login in the last 30 days."
+                            slices={[
+                                { label: "Logged in", value: loginSplit.took, color: "#2dd4bf" },
+                                { label: "Inactive", value: loginSplit.didNot, color: "#64748b" },
+                            ]}
+                            emptyMessage="No students in this cohort yet."
+                        />
+                    ) : null}
+                    {shown(chartVis, "pieCtc") ? (
+                        <PieChartCard
+                            title="CTC profile vs none"
+                            subtitle="Students with a gamified CTC score profile."
+                            slices={[
+                                { label: "Has CTC profile", value: ctcSplit.took, color: "#A294F9" },
+                                { label: "No profile", value: ctcSplit.didNot, color: "#64748b" },
+                            ]}
+                            emptyMessage="No students in this cohort yet."
+                        />
+                    ) : null}
+                    {shown(chartVis, "pieRisk") ? (
+                        <PieChartCard
+                            title="At risk vs not flagged"
+                            subtitle="Proctoring flags in the last 30 days."
+                            slices={[
+                                { label: "Flagged", value: riskSplit.took, color: "#fb7185" },
+                                { label: "Not flagged", value: riskSplit.didNot, color: "#34d399" },
+                            ]}
+                            emptyMessage="No students in this cohort yet."
+                        />
+                    ) : null}
+                </div>
+            ) : null}
+
+            {shown(chartVis, "piePerExam") ? (
+                <div className="overflow-hidden rounded-xl border border-[#5a5a5a] bg-[#3a3a3a]">
+                    <div className="border-b border-[#5a5a5a] px-4 py-4 sm:px-5">
+                        <h3 className="text-base font-medium text-white">Took vs did not — recent exams</h3>
+                        <p className="mt-0.5 text-xs text-gray-400">
+                            Students who started each recent exam, vs the rest of the cohort.
+                        </p>
+                    </div>
+                    {exams.length ? (
+                        <div className="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2 xl:grid-cols-4 sm:p-5">
+                            {exams.map((ex) => {
+                                const attempted = Number(ex.attempted_count) || 0;
+                                const split = splitCount(attempted, totalStudents);
+                                return (
+                                    <div key={ex.id} className="rounded-lg border border-[#5a5a5a] bg-[#353535] px-3 py-3">
+                                        <p className="mb-2 line-clamp-2 min-h-[2.5rem] text-sm font-medium text-white">
+                                            {ex.name}
+                                        </p>
+                                        <AnalyticsPieChart
+                                            size="sm"
+                                            slices={[
+                                                { label: "Took", value: split.took, color: "#A294F9" },
+                                                { label: "Did not", value: split.didNot, color: "#64748b" },
+                                            ]}
+                                            emptyMessage="No students."
+                                        />
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    ) : (
+                        <div className="px-4 py-10 text-center text-sm text-gray-400 sm:px-5">
+                            Add exams to see who took each one.
+                        </div>
+                    )}
+                </div>
+            ) : null}
+
+            {shown(chartVis, "ctcDistribution") || shown(chartVis, "performanceHistory") ? (
             <div className="grid w-full grid-cols-1 gap-4 lg:grid-cols-2">
+                {shown(chartVis, "ctcDistribution") ? (
                 <div className="min-w-0 overflow-hidden rounded-xl border border-[#5a5a5a] bg-[#3a3a3a]">
                     <div className="border-b border-[#5a5a5a] px-4 py-4 sm:px-5">
                         <h3 className="text-base font-medium text-white">CTC score distribution</h3>
@@ -1087,6 +1586,8 @@ function ExamReport({ sa, ctcCohortLabel, readinessSubtitle }) {
                         />
                     </div>
                 </div>
+                ) : null}
+                {shown(chartVis, "performanceHistory") ? (
                 <div className="min-w-0 rounded-xl border border-[#5a5a5a] bg-[#3a3a3a]">
                     <div className="border-b border-[#5a5a5a] px-4 py-4 sm:px-5">
                         <div className="flex flex-wrap items-start justify-between gap-2">
@@ -1150,8 +1651,11 @@ function ExamReport({ sa, ctcCohortLabel, readinessSubtitle }) {
                         />
                     </div>
                 </div>
+                ) : null}
             </div>
+            ) : null}
 
+            {shown(chartVis, "placementReadiness") ? (
             <div className="overflow-hidden rounded-xl border border-[#5a5a5a] bg-[#3a3a3a]">
                 <div className="flex flex-col gap-3 border-b border-[#5a5a5a] px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
                     <div>
@@ -1177,6 +1681,7 @@ function ExamReport({ sa, ctcCohortLabel, readinessSubtitle }) {
                     </p>
                 </div>
             </div>
+            ) : null}
         </>
     );
 }

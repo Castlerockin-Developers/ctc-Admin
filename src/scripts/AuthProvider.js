@@ -6,7 +6,7 @@ import {
 } from './web-device-id';
 
 /** Django mounts REST routes under /api/ (see crackthecampus/urls.py). */
-export const baseUrl = 'https://api.corp.crackthecampus.com/api';
+export const baseUrl = 'http://localhost:8000/api';
 export const staticUrl = '';
 export const SESSION_EXPIRED_MESSAGE = 'Failed to refresh access token';
 export const ACCESS_DENIED_MESSAGE = 'You do not have access to the admin panel.';
