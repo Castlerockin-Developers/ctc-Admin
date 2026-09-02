@@ -321,7 +321,6 @@ const ManageExam = ({ onCreateNewExam, cacheAllowed, onEditExam, examToView, onB
                                                 <div className="flex items-start justify-between gap-3">
                                                     <div className="min-w-0 flex-1">
                                                         <p className="truncate font-medium text-white">{row.name}</p>
-                                                        <p className="mt-0.5 text-xs text-gray-400">#{row.id}</p>
                                                     </div>
                                                     <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColor}`}>
                                                         {row.status}
@@ -350,7 +349,6 @@ const ManageExam = ({ onCreateNewExam, cacheAllowed, onEditExam, examToView, onB
                                     <table className="w-full min-w-[600px] table-auto border-collapse">
                                         <thead className="sticky top-0 z-10 bg-[#4a4a4a]">
                                             <tr>
-                                                <th className="whitespace-nowrap border-b border-[#666] px-4 py-4 text-center text-sm font-medium text-white">#ID</th>
                                                 <th className="whitespace-nowrap border-b border-[#666] px-4 py-4 text-left text-sm font-medium text-white">Name</th>
                                                 <th className="whitespace-nowrap border-b border-[#666] px-4 py-4 text-center text-sm font-medium text-white">Start Time</th>
                                                 <th className="whitespace-nowrap border-b border-[#666] px-4 py-4 text-center text-sm font-medium text-white">End Time</th>
@@ -365,7 +363,6 @@ const ManageExam = ({ onCreateNewExam, cacheAllowed, onEditExam, examToView, onB
                                                     key={row.id}
                                                     className={`border-b border-[#555] transition-colors hover:bg-[#404040] ${idx % 2 === 0 ? "bg-[#3a3a3a]" : "bg-[#353535]"}`}
                                                 >
-                                                    <td className="px-4 py-3.5 text-center text-sm text-white">{row.id}</td>
                                                     <td className="max-w-[180px] truncate px-4 py-3.5 text-left text-sm text-white md:max-w-none">{row.name}</td>
                                                     <td className="whitespace-nowrap px-4 py-3.5 text-center text-sm text-white">{row.startTime}</td>
                                                     <td className="whitespace-nowrap px-4 py-3.5 text-center text-sm text-white">{row.endTime}</td>
