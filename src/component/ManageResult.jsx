@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { log, error as logError } from "../utils/logger";
 import { FaSearch, FaFilter, FaSort, FaSortUp, FaSortDown } from "react-icons/fa";
 import { motion } from "framer-motion";
@@ -45,11 +45,13 @@ const STATUS_OPTIONS = [
   { key: "completed", label: "Completed" },
 ];
 
+const DEFAULT_SORT = "start_desc";
+
 const SORT_OPTIONS = [
-  { key: "modified_desc", label: "Newest by date" },
-  { key: "modified_asc", label: "Oldest by date" },
-  { key: "start_desc", label: "Newest start date" },
-  { key: "start_asc", label: "Oldest start date" },
+  { key: "start_desc", label: "Newest by date" },
+  { key: "start_asc", label: "Oldest by date" },
+  { key: "modified_desc", label: "Newest end date" },
+  { key: "modified_asc", label: "Oldest end date" },
 ];
 
 function matchesStatusFilter(row, status) {
@@ -77,6 +79,19 @@ function matchesDateModifiedFilter(row, from, to) {
   return true;
 }
 
+function filterResultRows(rows, { statusFilter, modifiedFrom, modifiedTo, searchQuery }) {
+  return rows
+    .filter((row) => matchesStatusFilter(row, statusFilter))
+    .filter((row) => matchesDateModifiedFilter(row, modifiedFrom, modifiedTo))
+    .filter((row) => {
+      if (!searchQuery) return true;
+      const q = searchQuery.toLowerCase();
+      return [row.id, row.name, row.analytics, row.status].some((field) =>
+        String(field).toLowerCase().includes(q)
+      );
+    });
+}
+
 function sortRows(rows, sortKey) {
   const sorted = [...rows];
   const compareDates = (a, b, field, direction) => {
@@ -89,15 +104,15 @@ function sortRows(rows, sortKey) {
     case "modified_asc":
       sorted.sort((a, b) => compareDates(a, b, "endTimeRaw", 1));
       break;
-    case "start_desc":
-      sorted.sort((a, b) => compareDates(a, b, "startTimeRaw", -1));
-      break;
     case "start_asc":
       sorted.sort((a, b) => compareDates(a, b, "startTimeRaw", 1));
       break;
     case "modified_desc":
-    default:
       sorted.sort((a, b) => compareDates(a, b, "endTimeRaw", -1));
+      break;
+    case "start_desc":
+    default:
+      sorted.sort((a, b) => compareDates(a, b, "startTimeRaw", -1));
       break;
   }
   return sorted;
@@ -105,7 +120,7 @@ function sortRows(rows, sortKey) {
 
 const ManageResult = ({ onNext, cacheAllowed }) => {
   const [statusFilter, setStatusFilter] = useState("all");
-  const [sortBy, setSortBy] = useState("modified_desc");
+  const [sortBy, setSortBy] = useState(DEFAULT_SORT);
   const [modifiedFrom, setModifiedFrom] = useState("");
   const [modifiedTo, setModifiedTo] = useState("");
   const [showFilter, setShowFilter] = useState(false);
@@ -118,8 +133,7 @@ const ManageResult = ({ onNext, cacheAllowed }) => {
     typeof window !== "undefined" && window.innerWidth >= 2560 ? 15 : 10
   );
   const [loadingResultId, setLoadingResultId] = useState(null);
-  const [resultsData, setResultsData] = useState(null);
-  const [totalCount, setTotalCount] = useState(0);
+  const [allResults, setAllResults] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const searchDebounceRef = useRef(null);
@@ -167,46 +181,34 @@ const ManageResult = ({ onNext, cacheAllowed }) => {
     return () => document.removeEventListener("keydown", handleEsc);
   }, []);
 
-  const fetchResults = useCallback(
-    async (page, pageSize, filters, search) => {
-      log(
-        "fetchResults: page=%s pageSize=%s status=%s sort=%s modifiedFrom=%s modifiedTo=%s search=%s",
-        page,
-        pageSize,
-        filters.status,
-        filters.sort,
-        filters.modifiedFrom || "",
-        filters.modifiedTo || "",
-        search || ""
-      );
-      const params = new URLSearchParams();
-      params.set("page", String(page));
-      params.set("page_size", String(pageSize));
-      if (filters.status && filters.status !== "all") {
-        params.set("status", filters.status);
-      }
-      if (filters.sort) {
-        params.set("sort", filters.sort);
-      }
-      if (filters.modifiedFrom) params.set("modified_from", filters.modifiedFrom);
-      if (filters.modifiedTo) params.set("modified_to", filters.modifiedTo);
-      if (search) params.set("search", search.trim());
-      const url = `/admin/results/?${params.toString()}`;
-      const response = await authFetch(url, { method: "GET" });
-      if (!response.ok) throw new Error("Failed to fetch results");
-      const data = await response.json();
-      if (data && Array.isArray(data.results) && typeof data.count === "number") {
-        const mapped = data.results.map(mapApiRowToDisplay);
-        return { paginated: true, results: mapped, totalCount: data.count };
-      }
-      if (Array.isArray(data)) {
-        const mapped = data.map(mapApiRowToDisplay);
-        return { paginated: false, results: mapped, totalCount: mapped.length };
-      }
-      throw new Error("Unexpected response format");
-    },
-    []
-  );
+  const fetchResults = useCallback(async (filters, search) => {
+    log(
+      "fetchResults: status=%s modifiedFrom=%s modifiedTo=%s search=%s",
+      filters.status,
+      filters.modifiedFrom || "",
+      filters.modifiedTo || "",
+      search || ""
+    );
+    const params = new URLSearchParams();
+    if (filters.status && filters.status !== "all") {
+      params.set("status", filters.status);
+    }
+    if (filters.modifiedFrom) params.set("modified_from", filters.modifiedFrom);
+    if (filters.modifiedTo) params.set("modified_to", filters.modifiedTo);
+    if (search) params.set("search", search.trim());
+    const query = params.toString();
+    const url = query ? `/admin/results/?${query}` : "/admin/results/";
+    const response = await authFetch(url, { method: "GET" });
+    if (!response.ok) throw new Error("Failed to fetch results");
+    const data = await response.json();
+    if (Array.isArray(data)) {
+      return data.map(mapApiRowToDisplay);
+    }
+    if (data && Array.isArray(data.results)) {
+      return data.results.map(mapApiRowToDisplay);
+    }
+    throw new Error("Unexpected response format");
+  }, []);
 
   useEffect(() => {
     if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
@@ -225,43 +227,19 @@ const ManageResult = ({ onNext, cacheAllowed }) => {
     setError(null);
     const filters = {
       status: statusFilter,
-      sort: sortBy,
       modifiedFrom,
       modifiedTo,
     };
-    fetchResults(currentPage, resultsPerPage, filters, searchQuery)
-      .then(({ paginated, results, totalCount: count }) => {
+    fetchResults(filters, searchQuery)
+      .then((results) => {
         if (cancelled) return;
-        if (paginated) {
-          setResultsData(results);
-          setTotalCount(count);
-        } else {
-          const filtered = sortRows(
-            results
-              .filter((row) => matchesStatusFilter(row, statusFilter))
-              .filter((row) =>
-                matchesDateModifiedFilter(row, modifiedFrom, modifiedTo)
-              )
-              .filter((row) => {
-                if (!searchQuery) return true;
-                const q = searchQuery.toLowerCase();
-                return [row.id, row.name, row.analytics, row.status].some((field) =>
-                  String(field).toLowerCase().includes(q)
-                );
-              }),
-            sortBy
-          );
-          const start = (currentPage - 1) * resultsPerPage;
-          setResultsData(filtered.slice(start, start + resultsPerPage));
-          setTotalCount(filtered.length);
-        }
+        setAllResults(results);
       })
       .catch((err) => {
         if (!cancelled) {
           logError("fetchResults:", err);
           setError(err);
-          setResultsData(null);
-          setTotalCount(0);
+          setAllResults(null);
         }
       })
       .finally(() => {
@@ -270,19 +248,34 @@ const ManageResult = ({ onNext, cacheAllowed }) => {
     return () => {
       cancelled = true;
     };
+  }, [statusFilter, modifiedFrom, modifiedTo, searchQuery, fetchResults]);
+
+  const filteredResults = useMemo(() => {
+    if (!allResults) return [];
+    return sortRows(
+      filterResultRows(allResults, {
+        statusFilter,
+        modifiedFrom,
+        modifiedTo,
+        searchQuery,
+      }),
+      sortBy
+    );
   }, [
-    currentPage,
-    resultsPerPage,
+    allResults,
     statusFilter,
-    sortBy,
     modifiedFrom,
     modifiedTo,
     searchQuery,
-    fetchResults,
+    sortBy,
   ]);
 
+  const totalCount = filteredResults.length;
   const totalPages = Math.max(1, Math.ceil(totalCount / resultsPerPage));
-  const currentResults = resultsData || [];
+  const currentResults = useMemo(() => {
+    const start = (currentPage - 1) * resultsPerPage;
+    return filteredResults.slice(start, start + resultsPerPage);
+  }, [filteredResults, currentPage, resultsPerPage]);
   const hasResults = currentResults.length > 0;
 
   const goToNextPage = () => {
@@ -365,13 +358,13 @@ const ManageResult = ({ onNext, cacheAllowed }) => {
 
   const hasActiveFilters =
     statusFilter !== "all" ||
-    sortBy !== "modified_desc" ||
+    sortBy !== DEFAULT_SORT ||
     Boolean(modifiedFrom) ||
     Boolean(modifiedTo);
 
   const handleClearFilters = () => {
     setStatusFilter("all");
-    setSortBy("modified_desc");
+    setSortBy(DEFAULT_SORT);
     setModifiedFrom("");
     setModifiedTo("");
     setCurrentPage(1);
@@ -407,7 +400,7 @@ const ManageResult = ({ onNext, cacheAllowed }) => {
     );
   };
 
-  if (loading && !resultsData) return <Spinner className="min-h-[200px]" />;
+  if (loading && !allResults) return <Spinner className="min-h-[200px]" />;
 
   if (error) {
     return (
@@ -575,7 +568,7 @@ const ManageResult = ({ onNext, cacheAllowed }) => {
             </div>
           </div>
 
-          {loading && resultsData ? (
+          {loading && allResults ? (
             <div className="flex flex-1 items-center justify-center">
               <Spinner className="h-8 w-8" />
             </div>
@@ -597,7 +590,6 @@ const ManageResult = ({ onNext, cacheAllowed }) => {
                         <p className="truncate font-medium text-white">
                           {row.name}
                         </p>
-                        <p className="mt-0.5 text-xs text-gray-400">#{row.id}</p>
                       </div>
                       <span
                         className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${getStatusColor(
@@ -642,9 +634,6 @@ const ManageResult = ({ onNext, cacheAllowed }) => {
                   <table className="w-full min-w-[640px] table-auto border-collapse">
                     <thead className="sticky top-0 z-10 bg-[#4a4a4a]">
                       <tr>
-                        <th className="whitespace-nowrap border-b border-[#666] px-4 py-4 text-center text-sm font-medium text-white">
-                          #ID
-                        </th>
                         <th className="whitespace-nowrap border-b border-[#666] px-4 py-4 text-left text-sm font-medium text-white">
                           Name
                         </th>
@@ -691,9 +680,6 @@ const ManageResult = ({ onNext, cacheAllowed }) => {
                             index % 2 === 0 ? "bg-[#3a3a3a]" : "bg-[#353535]"
                           }`}
                         >
-                          <td className="px-4 py-3.5 text-center text-sm text-white">
-                            {row.id}
-                          </td>
                           <td className="max-w-[180px] truncate px-4 py-3.5 text-left text-sm text-white md:max-w-none">
                             {row.name}
                           </td>

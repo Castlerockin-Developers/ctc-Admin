@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { log, error as logError } from "../utils/logger";
 import { FaSearch, FaPlus, FaFilter, FaEllipsisV, FaArrowLeft } from "react-icons/fa";
 import Swal from "sweetalert2";
@@ -20,9 +20,45 @@ function mapExamToDisplay(exam) {
     name: exam.name,
     startTime: startTime.toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short', hour12: true }),
     endTime: endTime.toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short', hour12: true }),
+    startTimeRaw: startTime,
+    endTimeRaw: endTime,
     attemptsAllowed: exam.attempts_allowed,
     status,
   };
+}
+
+function filterExamRows(rows, { status, searchQuery }) {
+  return rows
+    .filter((row) => {
+      if (status === "all") return true;
+      if (status === "active") return row.status === "Ongoing";
+      if (status === "upcoming") return row.status === "Upcoming";
+      if (status === "completed") {
+        return row.status === "Results Declared" || row.status === "Completed";
+      }
+      return true;
+    })
+    .filter((row) => {
+      if (!searchQuery) return true;
+      const q = searchQuery.toLowerCase();
+      return (
+        row.id.toString().includes(searchQuery) ||
+        row.name.toLowerCase().includes(q) ||
+        row.startTime.toLowerCase().includes(q) ||
+        row.endTime.toLowerCase().includes(q) ||
+        row.attemptsAllowed.toString().includes(searchQuery) ||
+        row.status.toLowerCase().includes(q)
+      );
+    });
+}
+
+function sortExamRows(rows) {
+  return [...rows].sort((a, b) => {
+    const av = a.startTimeRaw?.getTime?.() ?? 0;
+    const bv = b.startTimeRaw?.getTime?.() ?? 0;
+    if (av === bv) return b.id - a.id;
+    return bv - av;
+  });
 }
 
 const ManageExam = ({ onCreateNewExam, cacheAllowed, onEditExam, examToView, onBackToDashboard, onClearExamToView }) => {
@@ -36,8 +72,7 @@ const ManageExam = ({ onCreateNewExam, cacheAllowed, onEditExam, examToView, onB
     const actionsMenuRef = useRef(null);
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(() => typeof window !== "undefined" && window.innerWidth >= 2560 ? 15 : 10);
-    const [examsData, setExamsData] = useState(null);
-    const [totalCount, setTotalCount] = useState(0);
+    const [allExams, setAllExams] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const searchDebounceRef = useRef(null);
@@ -94,19 +129,19 @@ const ManageExam = ({ onCreateNewExam, cacheAllowed, onEditExam, examToView, onB
     setShowFilter(false);
   };
 
-  const fetchExams = useCallback(async (page, pageSize, status, search) => {
+  const fetchExams = useCallback(async (status, search) => {
     const params = new URLSearchParams();
-    params.set("page", String(page));
-    params.set("page_size", String(pageSize));
     if (status && status !== "all") params.set("status", status);
     if (search) params.set("search", search.trim());
-    const response = await authFetch(`/admin/exams/?${params.toString()}`, { method: "GET" });
+    const query = params.toString();
+    const url = query ? `/admin/exams/?${query}` : "/admin/exams/";
+    const response = await authFetch(url, { method: "GET" });
     const data = await response.json();
-    if (data && Array.isArray(data.results) && typeof data.count === "number") {
-      return { paginated: true, results: data.results.map(mapExamToDisplay), totalCount: data.count };
-    }
     if (Array.isArray(data)) {
-      return { paginated: false, results: data.map(mapExamToDisplay), totalCount: data.length };
+      return data.map(mapExamToDisplay);
+    }
+    if (data && Array.isArray(data.results)) {
+      return data.results.map(mapExamToDisplay);
     }
     throw new Error("Unexpected response format");
   }, []);
@@ -115,49 +150,33 @@ const ManageExam = ({ onCreateNewExam, cacheAllowed, onEditExam, examToView, onB
     let cancelled = false;
     setLoading(true);
     setError(null);
-    fetchExams(currentPage, itemsPerPage, activeButton, searchQuery)
-      .then(({ paginated, results, totalCount: count }) => {
+    fetchExams(activeButton, searchQuery)
+      .then((results) => {
         if (cancelled) return;
-        if (paginated) {
-          setExamsData(results);
-          setTotalCount(count);
-        } else {
-          const filtered = results
-            .filter(row => {
-              if (activeButton === "all") return true;
-              if (activeButton === "active") return row.status === "Ongoing";
-              if (activeButton === "upcoming") return row.status === "Upcoming";
-              if (activeButton === "completed") return row.status === "Results Declared" || row.status === "Completed";
-              return true;
-            })
-            .filter(row =>
-              !searchQuery ||
-              row.id.toString().includes(searchQuery) ||
-              row.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-              row.startTime.toLowerCase().includes(searchQuery.toLowerCase()) ||
-              row.endTime.toLowerCase().includes(searchQuery.toLowerCase()) ||
-              row.attemptsAllowed.toString().includes(searchQuery) ||
-              row.status.toLowerCase().includes(searchQuery.toLowerCase())
-            );
-          const start = (currentPage - 1) * itemsPerPage;
-          setExamsData(filtered.slice(start, start + itemsPerPage));
-          setTotalCount(filtered.length);
-        }
+        setAllExams(results);
       })
       .catch((err) => {
         if (!cancelled) {
           logError("fetchExams:", err);
           setError(err);
-          setExamsData(null);
-          setTotalCount(0);
+          setAllExams(null);
         }
       })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
-  }, [currentPage, itemsPerPage, activeButton, searchQuery, retryCount, fetchExams]);
+  }, [activeButton, searchQuery, retryCount, fetchExams]);
 
-  const tableData = examsData || [];
+  const filteredExams = useMemo(() => {
+    if (!allExams) return [];
+    return sortExamRows(filterExamRows(allExams, { status: activeButton, searchQuery }));
+  }, [allExams, activeButton, searchQuery]);
+
+  const totalCount = filteredExams.length;
   const totalPages = Math.max(1, Math.ceil(totalCount / itemsPerPage));
+  const tableData = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filteredExams.slice(start, start + itemsPerPage);
+  }, [filteredExams, currentPage, itemsPerPage]);
 
   const handlePageChange = (pageNumber) => {
     if (pageNumber >= 1 && pageNumber <= totalPages) setCurrentPage(pageNumber);
@@ -264,7 +283,7 @@ const ManageExam = ({ onCreateNewExam, cacheAllowed, onEditExam, examToView, onB
                     </div>
 
                     <div className="min-h-0 flex-1 overflow-hidden rounded-lg">
-                        {loading && examsData === null && !error ? (
+                        {loading && allExams === null && !error ? (
                             <Spinner className="min-h-[280px]" />
                         ) : error ? (
                             <div className="flex min-h-[200px] flex-col items-center justify-center gap-4 rounded-lg bg-[#353535] p-6 text-center">
