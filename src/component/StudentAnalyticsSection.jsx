@@ -1,5 +1,7 @@
 import React, { useMemo, useId, useState, useEffect, useCallback } from "react";
 import { FaInfoCircle, FaSlidersH } from "react-icons/fa";
+import { authFetch } from "../scripts/AuthProvider";
+import { error as logError } from "../utils/logger";
 
 /**
  * Theme-matched info tooltip (hover + keyboard focus).
@@ -561,6 +563,7 @@ const DEFAULT_CHART_VIS = {
     pieCourseShare: true,
     courseReach: true,
     dailyAttendance: true,
+    courseDayProgress: true,
 };
 
 const EXAM_CHART_TOGGLES = [
@@ -582,6 +585,7 @@ const COURSE_CHART_TOGGLES = [
     { id: "pieCourseShare", label: "Course mix" },
     { id: "courseReach", label: "Course reach" },
     { id: "dailyAttendance", label: "Daily attendance" },
+    { id: "courseDayProgress", label: "Day / unit progress" },
 ];
 
 function readChartVis() {
@@ -766,6 +770,366 @@ function aggregateCoursesProgress(courses) {
     const total = courses.reduce((s, c) => s + (Number(c.chapters_total) || 0), 0);
     const pct = total ? Math.round((1000 * done) / total) / 10 : 0;
     return { chapters_completed: done, chapters_total: total, progress_percent: pct };
+}
+
+function courseIdFromFilterKey(key) {
+    if (!key || !String(key).startsWith("id:")) return null;
+    const id = Number(String(key).slice(3));
+    return Number.isFinite(id) ? id : null;
+}
+
+function courseProgressStatusBadge(status) {
+    const map = {
+        not_started: "bg-slate-600/40 text-slate-200 border-slate-500/50",
+        in_progress: "bg-amber-500/15 text-amber-200 border-amber-500/40",
+        complete: "bg-emerald-500/15 text-emerald-200 border-emerald-500/40",
+    };
+    const labels = {
+        not_started: "Not started",
+        in_progress: "In progress",
+        complete: "Completed",
+    };
+    return (
+        <span
+            className={`inline-flex rounded-full border px-2.5 py-0.5 text-xs font-medium ${map[status] || map.not_started}`}
+        >
+            {labels[status] || status}
+        </span>
+    );
+}
+
+function CourseDayUnitProgressSection({ courseFilterOptions, selectedGroup }) {
+    const [selectedCourseKey, setSelectedCourseKey] = useState("");
+    const [selectedTopic, setSelectedTopic] = useState("all");
+    const [selectedStatus, setSelectedStatus] = useState("all");
+    const [searchInput, setSearchInput] = useState("");
+    const [search, setSearch] = useState("");
+    const [loading, setLoading] = useState(false);
+    const [data, setData] = useState(null);
+
+    const moduleId = courseIdFromFilterKey(selectedCourseKey);
+    const selectedCourseMeta = courseFilterOptions.find((c) => c.key === selectedCourseKey);
+
+    useEffect(() => {
+        const timer = setTimeout(() => setSearch(searchInput), 350);
+        return () => clearTimeout(timer);
+    }, [searchInput]);
+
+    useEffect(() => {
+        if (selectedCourseKey && !courseFilterOptions.some((c) => c.key === selectedCourseKey)) {
+            setSelectedCourseKey("");
+        }
+    }, [courseFilterOptions, selectedCourseKey]);
+
+    const loadProgress = useCallback(async () => {
+        if (!moduleId) {
+            setData(null);
+            return;
+        }
+        try {
+            setLoading(true);
+            const params = new URLSearchParams();
+            if (selectedGroup && selectedGroup !== "all") {
+                params.set("group", String(selectedGroup));
+            }
+            if (selectedTopic && selectedTopic !== "all") {
+                params.set("topic_id", String(selectedTopic));
+            }
+            if (selectedStatus && selectedStatus !== "all") {
+                params.set("status", selectedStatus);
+            }
+            if (search.trim()) {
+                params.set("search", search.trim());
+            }
+            const qs = params.toString();
+            const response = await authFetch(
+                `/admin/courses/${moduleId}/progress/${qs ? `?${qs}` : ""}`,
+                { method: "GET" }
+            );
+            if (!response.ok) throw new Error("Failed to load course progress");
+            setData(await response.json());
+        } catch (err) {
+            logError("Course day progress load error:", err);
+            setData(null);
+        } finally {
+            setLoading(false);
+        }
+    }, [moduleId, selectedGroup, selectedTopic, selectedStatus, search]);
+
+    useEffect(() => {
+        loadProgress();
+    }, [loadProgress]);
+
+    const summary = data?.summary || { total: 0, not_started: 0, in_progress: 0, complete: 0 };
+    const students = data?.students || [];
+
+    const statusPieSlices = useMemo(
+        () => [
+            { label: "Not started", value: summary.not_started, color: "#64748b" },
+            { label: "In progress", value: summary.in_progress, color: "#fbbf24" },
+            { label: "Completed", value: summary.complete, color: "#2dd4bf" },
+        ],
+        [summary]
+    );
+
+    const dayBarChart = useMemo(() => {
+        const rows = (data?.topic_distribution || []).filter(
+            (row) => row.topic_id !== -2 && row.student_count > 0
+        );
+        return rows.map((row) => ({
+            label:
+                row.topic_id === -1
+                    ? "Not started"
+                    : row.day_number
+                      ? `Day ${row.day_number}`
+                      : row.label,
+            value: row.student_count,
+        }));
+    }, [data]);
+
+    const dayDistributionPie = useMemo(() => {
+        const rows = (data?.topic_distribution || []).filter((row) => row.student_count > 0);
+        return rows.map((row, i) => ({
+            label:
+                row.topic_id === -1
+                    ? "Not started"
+                    : row.topic_id === -2
+                      ? "Completed"
+                      : row.day_number
+                        ? `Day ${row.day_number}`
+                        : row.label,
+            value: row.student_count,
+            color: PIE_PALETTE[i % PIE_PALETTE.length],
+        }));
+    }, [data]);
+
+    const topicFilterOptions = useMemo(() => {
+        const topics = data?.topics || [];
+        return [
+            { value: "all", label: "All units / days" },
+            { value: "-1", label: "Not started" },
+            ...topics.map((t) => ({
+                value: String(t.id),
+                label: t.day_number ? `Day ${t.day_number} — ${t.name}` : t.name,
+            })),
+            { value: "-2", label: "Completed course" },
+        ];
+    }, [data]);
+
+    return (
+        <div className="flex flex-col gap-4">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+                <div className="min-w-0">
+                    <div className="flex items-center gap-1.5">
+                        <p className="text-xs font-medium tracking-widest text-white uppercase">
+                            Day / unit progress
+                        </p>
+                        <InfoTooltip align="end" label="Day and unit progress tracking">
+                            <span className="text-gray-300">
+                                Pick a course to see where students are in its day-wise structure — e.g. how
+                                many are on Day 2, which unit they&apos;re in, and overall chapter completion.
+                                Works best for structured courses like Capgemini preparation.
+                            </span>
+                        </InfoTooltip>
+                    </div>
+                    <p className="mt-1 text-sm text-gray-400">
+                        Select a course to monitor cohort progress by day or unit.
+                    </p>
+                </div>
+                <CourseFilterSelect
+                    value={selectedCourseKey}
+                    onChange={setSelectedCourseKey}
+                    options={courseFilterOptions}
+                    className="shrink-0"
+                />
+            </div>
+
+            {!moduleId ? (
+                <div className="rounded-xl border border-dashed border-[#5a5a5a] bg-[#3a3a3a]/50 px-6 py-10 text-center text-sm text-gray-400">
+                    Choose a course above to view day / unit progress for your cohort.
+                </div>
+            ) : loading && !data ? (
+                <div className="flex h-40 items-center justify-center rounded-xl border border-[#5a5a5a] bg-[#3a3a3a] text-sm text-gray-400">
+                    Loading progress…
+                </div>
+            ) : (
+                <>
+                    <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+                        {[
+                            { label: "Total students", value: summary.total, accent: "text-white" },
+                            { label: "Not started", value: summary.not_started, accent: "text-slate-300" },
+                            { label: "In progress", value: summary.in_progress, accent: "text-amber-200" },
+                            { label: "Completed", value: summary.complete, accent: "text-emerald-200" },
+                        ].map((card) => (
+                            <div
+                                key={card.label}
+                                className="rounded-xl border border-[#5a5a5a] bg-[#3a3a3a] px-4 py-3 shadow-inner"
+                            >
+                                <p className="text-xs uppercase tracking-wide text-gray-400">{card.label}</p>
+                                <p className={`mt-1 text-2xl font-semibold tabular-nums ${card.accent}`}>
+                                    {card.value}
+                                </p>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="grid w-full grid-cols-1 gap-4 lg:grid-cols-2">
+                        <PieChartCard
+                            title="Progress status"
+                            subtitle={
+                                selectedCourseMeta
+                                    ? `Completion status for students in ${selectedCourseMeta.name}.`
+                                    : "Completion status for the selected course."
+                            }
+                            slices={statusPieSlices}
+                            emptyMessage="No students in this cohort yet."
+                        />
+                        <PieChartCard
+                            title="Students by day / unit"
+                            subtitle="Where students currently are in the course structure."
+                            slices={dayDistributionPie}
+                            emptyMessage="No progress data yet for this course."
+                            centerLabel="Students"
+                        />
+                    </div>
+
+                    <div className="overflow-hidden rounded-xl border border-[#5a5a5a] bg-[#3a3a3a]">
+                        <div className="border-b border-[#5a5a5a] px-4 py-4 sm:px-5">
+                            <h3 className="text-base font-medium text-white">Students per day / unit</h3>
+                            <p className="mt-0.5 text-xs text-gray-400">
+                                Bar height shows how many students are at each day or unit right now.
+                            </p>
+                        </div>
+                        <div className="overflow-x-auto px-2 pb-4 sm:px-4">
+                            <AnalyticsBarChart
+                                bars={dayBarChart}
+                                variant="purple"
+                                valueSuffix=" students"
+                                emptyMessage="No students with progress in this course yet."
+                            />
+                        </div>
+                    </div>
+
+                    <div className="overflow-hidden rounded-xl border border-[#5a5a5a] bg-[#3a3a3a]">
+                        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#5a5a5a] px-4 py-4 sm:px-5">
+                            <div>
+                                <h3 className="text-base font-medium text-white">
+                                    Student detail ({students.length})
+                                </h3>
+                                <p className="mt-0.5 text-xs text-gray-400">
+                                    Filter by unit, status, or search by name / email.
+                                </p>
+                            </div>
+                            <div className="flex flex-wrap items-center gap-2">
+                                <select
+                                    value={selectedTopic}
+                                    onChange={(e) => setSelectedTopic(e.target.value)}
+                                    aria-label="Filter by unit or day"
+                                    className="min-h-[40px] rounded-lg border border-[#5a5a5a] bg-[#404040] px-3 py-2 text-sm text-white outline-none focus:border-[#A294F9] focus:ring-1 focus:ring-[#A294F9]"
+                                >
+                                    {topicFilterOptions.map((opt) => (
+                                        <option key={opt.value} value={opt.value}>
+                                            {opt.label}
+                                        </option>
+                                    ))}
+                                </select>
+                                <select
+                                    value={selectedStatus}
+                                    onChange={(e) => setSelectedStatus(e.target.value)}
+                                    aria-label="Filter by status"
+                                    className="min-h-[40px] rounded-lg border border-[#5a5a5a] bg-[#404040] px-3 py-2 text-sm text-white outline-none focus:border-[#A294F9] focus:ring-1 focus:ring-[#A294F9]"
+                                >
+                                    <option value="all">All statuses</option>
+                                    <option value="not_started">Not started</option>
+                                    <option value="in_progress">In progress</option>
+                                    <option value="complete">Completed</option>
+                                </select>
+                                <input
+                                    type="search"
+                                    value={searchInput}
+                                    onChange={(e) => setSearchInput(e.target.value)}
+                                    placeholder="Search name or email"
+                                    className="min-h-[40px] w-44 rounded-lg border border-[#5a5a5a] bg-[#404040] px-3 py-2 text-sm text-white placeholder:text-gray-500 focus:border-[#A294F9] focus:outline-none focus:ring-1 focus:ring-[#A294F9] sm:w-52"
+                                />
+                            </div>
+                        </div>
+                        <div className="max-h-[28rem] overflow-auto pb-3 [scrollbar-width:thin] [scrollbar-color:rgba(255,255,255,0.2)_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/20 [&::-webkit-scrollbar-track]:bg-transparent">
+                            <table className="min-w-full text-left text-sm">
+                                <thead className="sticky top-0 z-10 bg-[#333] text-xs uppercase tracking-wide text-gray-400">
+                                    <tr>
+                                        <th className="px-5 py-3 font-medium sm:px-6">Student</th>
+                                        <th className="px-4 py-3 font-medium">Current day / unit</th>
+                                        <th className="px-4 py-3 font-medium">Unit progress</th>
+                                        <th className="px-4 py-3 font-medium">Overall</th>
+                                        <th className="px-4 py-3 font-medium">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {students.length === 0 ? (
+                                        <tr>
+                                            <td
+                                                colSpan={5}
+                                                className="px-5 py-10 text-center text-sm text-gray-400 sm:px-6"
+                                            >
+                                                No students match the current filters.
+                                            </td>
+                                        </tr>
+                                    ) : (
+                                        students.map((student) => (
+                                            <tr
+                                                key={student.id}
+                                                className="border-t border-white/5 hover:bg-[#404040]/40"
+                                            >
+                                                <td className="px-5 py-3 sm:px-6">
+                                                    <div className="font-medium text-white">{student.name}</div>
+                                                    <div className="text-xs text-gray-400">{student.email}</div>
+                                                </td>
+                                                <td className="px-4 py-3 text-gray-200">
+                                                    {student.status === "not_started" ? (
+                                                        <span className="text-gray-400">Not started</span>
+                                                    ) : student.current_day_number ? (
+                                                        <div>
+                                                            <div>Day {student.current_day_number}</div>
+                                                            <div className="text-xs text-gray-400">
+                                                                {student.current_topic_name}
+                                                            </div>
+                                                        </div>
+                                                    ) : (
+                                                        student.current_topic_name || "—"
+                                                    )}
+                                                </td>
+                                                <td className="px-4 py-3 tabular-nums text-gray-300">
+                                                    {student.topic_chapters_total > 0
+                                                        ? `${student.topic_chapters_completed}/${student.topic_chapters_total}`
+                                                        : "—"}
+                                                </td>
+                                                <td className="px-4 py-3">
+                                                    <div className="flex min-w-[120px] flex-col gap-1">
+                                                        <div className="flex justify-between text-xs text-gray-400">
+                                                            <span className="tabular-nums">
+                                                                {student.chapters_completed}/{student.chapters_total}
+                                                            </span>
+                                                            <span className="tabular-nums">
+                                                                {student.progress_percent}%
+                                                            </span>
+                                                        </div>
+                                                        <ProgressBar percent={student.progress_percent || 0} />
+                                                    </div>
+                                                </td>
+                                                <td className="px-4 py-3">
+                                                    {courseProgressStatusBadge(student.status)}
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </>
+            )}
+        </div>
+    );
 }
 
 const COURSE_PROGRESS_MODE_KEY = "ctc_admin_course_progress_mode";
@@ -1082,6 +1446,7 @@ export default function StudentAnalyticsSection({
     ctcCohortLabel = "Students per band (org cohort)",
     readinessSubtitle = "Share of org students who started each recent exam",
     headerRight = null,
+    selectedGroup = "all",
 }) {
     const [reportTab, setReportTab] = useState(readStoredReportTab);
     const [chartVis, setChartVis] = useState(readChartVis);
@@ -1176,7 +1541,7 @@ export default function StudentAnalyticsSection({
                             onHideAll={() => setAllCharts(false)}
                         />
                         {reportTab === "courses" ? (
-                            <CoursesReport sa={sa} chartVis={chartVis} />
+                            <CoursesReport sa={sa} chartVis={chartVis} selectedGroup={selectedGroup} />
                         ) : (
                             <ExamReport
                                 sa={sa}
@@ -1210,7 +1575,7 @@ function HiddenChartsHint() {
     );
 }
 
-function CoursesReport({ sa, chartVis }) {
+function CoursesReport({ sa, chartVis, selectedGroup = "all" }) {
     const modules = sa.module_attendance || [];
     const totalStudents = Number(sa.total_students) || 0;
     const assignedCourses = Array.isArray(sa.daily_course_attendance?.available_courses)
@@ -1282,7 +1647,8 @@ function CoursesReport({ sa, chartVis }) {
         shown(chartVis, "pieCourseStarted") ||
         shown(chartVis, "pieCourseShare") ||
         shown(chartVis, "courseReach") ||
-        shown(chartVis, "dailyAttendance");
+        shown(chartVis, "dailyAttendance") ||
+        shown(chartVis, "courseDayProgress");
 
     if (!anyShown) return <HiddenChartsHint />;
 
@@ -1385,6 +1751,12 @@ function CoursesReport({ sa, chartVis }) {
             ) : null}
             {shown(chartVis, "dailyAttendance") ? (
                 <DailyCourseAttendanceTable attendance={sa.daily_course_attendance} />
+            ) : null}
+            {shown(chartVis, "courseDayProgress") ? (
+                <CourseDayUnitProgressSection
+                    courseFilterOptions={courseFilterOptions}
+                    selectedGroup={selectedGroup}
+                />
             ) : null}
         </>
     );

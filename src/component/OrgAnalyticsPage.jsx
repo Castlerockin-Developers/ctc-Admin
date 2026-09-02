@@ -175,6 +175,7 @@ export default function OrgAnalyticsPage({ cacheAllowed }) {
                         className="w-full sm:w-auto sm:min-w-[12rem]"
                     />
                 }
+                selectedGroup={selectedGroup}
             />
         </div>
     );
