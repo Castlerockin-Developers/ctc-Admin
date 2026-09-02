@@ -761,6 +761,13 @@ function startedCoursesFromRow(row) {
     return (row?.courses || []).map(normalizeCourse).filter(isStartedCourse);
 }
 
+function aggregateCoursesProgress(courses) {
+    const done = courses.reduce((s, c) => s + (Number(c.chapters_completed) || 0), 0);
+    const total = courses.reduce((s, c) => s + (Number(c.chapters_total) || 0), 0);
+    const pct = total ? Math.round((1000 * done) / total) / 10 : 0;
+    return { chapters_completed: done, chapters_total: total, progress_percent: pct };
+}
+
 const COURSE_PROGRESS_MODE_KEY = "ctc_admin_course_progress_mode";
 
 function readStoredProgressMode() {
@@ -838,7 +845,15 @@ function DailyCourseAttendanceTable({ attendance }) {
                 if (selectedCourse) {
                     courses = courses.filter((c) => courseFilterKey(c) === selectedCourse);
                 }
-                return { ...row, courses, course_count: courses.length };
+                const progress = aggregateCoursesProgress(courses);
+                return {
+                    ...row,
+                    courses,
+                    course_count: courses.length,
+                    chapters_completed: progress.chapters_completed,
+                    chapters_total: progress.chapters_total,
+                    progress_percent: progress.progress_percent,
+                };
             })
             .filter((row) => row.course_count > 0)
             .filter((row) => {
