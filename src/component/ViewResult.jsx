@@ -30,7 +30,7 @@ const mapAttemptToStudent = (a) => ({
   }),
   startTimeRaw: a.start_time,
   endTimeRaw: a.end_time,
-  score: a.score,
+  score: a.total_marks ?? a.score,
   trustScore: a.trust_score,
 });
 
@@ -488,7 +488,7 @@ const ViewResult = ({ result, onBack, onNext }) => {
                     <p className="text-xs text-gray-400">{student.usn}</p>
                   </div>
                   <span className="shrink-0 text-sm text-white">
-                    Score: {formatScore(student.score)}
+                    Score: {formatScoreOutOfTotal(student.score)}
                   </span>
                 </div>
                 <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-gray-300">
@@ -613,7 +613,7 @@ const ViewResult = ({ result, onBack, onNext }) => {
                         {student.endTime}
                       </td>
                       <td className="px-4 py-3 text-center text-sm text-white">
-                        {formatScore(student.score)}
+                        {formatScoreOutOfTotal(student.score)}
                       </td>
                       <td className="px-4 py-3 text-center text-sm text-white">
                         {formatScore(student.trustScore)}

@@ -315,7 +315,7 @@ const ManageResult = ({ onNext, cacheAllowed }) => {
         }),
         startTimeRaw: a.start_time,
         endTimeRaw: a.end_time,
-        score: a.score,
+        score: a.total_marks ?? a.score,
         trustScore: a.trust_score,
         campusScore: a.campus_score,
       });
