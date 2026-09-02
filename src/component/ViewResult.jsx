@@ -12,7 +12,6 @@ const SORT_OPTIONS = [
   { key: "start_time", label: "Start Time" },
   { key: "end_time", label: "End Time" },
   { key: "marks", label: "Marks" },
-  { key: "campus_score", label: "Campus Score" },
 ];
 
 const mapAttemptToStudent = (a) => ({
@@ -33,7 +32,6 @@ const mapAttemptToStudent = (a) => ({
   endTimeRaw: a.end_time,
   score: a.score,
   trustScore: a.trust_score,
-  campusScore: a.campus_score,
 });
 
 const compareStudents = (a, b, sortBy, sortOrder) => {
@@ -49,8 +47,6 @@ const compareStudents = (a, b, sortBy, sortOrder) => {
     });
   } else if (sortBy === "marks") {
     cmp = (Number(a.score) || 0) - (Number(b.score) || 0);
-  } else if (sortBy === "campus_score") {
-    cmp = (Number(a.campusScore) || 0) - (Number(b.campusScore) || 0);
   } else if (sortBy === "start_time") {
     cmp =
       new Date(a.startTimeRaw || 0).getTime() -
@@ -294,11 +290,10 @@ const ViewResult = ({ result, onBack, onNext }) => {
       </div>
 
       {/* Stats cards */}
-      <div className="mb-8 grid grid-cols-2 gap-4 sm:gap-5 md:grid-cols-3 lg:grid-cols-6 md:gap-6">
+      <div className="mb-8 grid grid-cols-2 gap-4 sm:gap-5 md:grid-cols-3 lg:grid-cols-5 md:gap-6">
         {[
           { label: "Students Attempted", value: result.studentsAttempted },
           { label: "Students Unattempted", value: result.studentsUnattempted },
-          { label: "Malpractice", value: result.malpractice },
           {
             label: "Total score",
             value:
@@ -447,7 +442,6 @@ const ViewResult = ({ result, onBack, onNext }) => {
                       <th className="px-4 py-3 text-left text-xs font-medium text-white">Name</th>
                       <th className="px-4 py-3 text-center text-xs font-medium text-white">USN</th>
                       <th className="px-4 py-3 text-center text-xs font-medium text-white">Score</th>
-                      <th className="px-4 py-3 text-center text-xs font-medium text-white">Campus Score</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -460,9 +454,6 @@ const ViewResult = ({ result, onBack, onNext }) => {
                         <td className="px-4 py-2.5 text-center text-sm text-white">{row.usn || "—"}</td>
                         <td className="px-4 py-2.5 text-center text-sm font-medium text-white">
                           {formatScore(row.exam_score)}
-                        </td>
-                        <td className="px-4 py-2.5 text-center text-sm text-white">
-                          {formatScore(row.campus_score)}
                         </td>
                       </tr>
                     ))}
@@ -508,10 +499,6 @@ const ViewResult = ({ result, onBack, onNext }) => {
                   <span className="text-gray-500">Trust Score</span>
                   <span className="text-right text-white">
                     {formatScore(student.trustScore)}
-                  </span>
-                  <span className="text-gray-500">Campus Score</span>
-                  <span className="text-right text-white">
-                    {formatScore(student.campusScore)}
                   </span>
                 </div>
                 <button
@@ -591,16 +578,6 @@ const ViewResult = ({ result, onBack, onNext }) => {
                     Trust Score
                   </th>
                   <th className="whitespace-nowrap border-b border-[#666] px-4 py-3 text-center text-sm font-medium text-white">
-                    <button
-                      type="button"
-                      onClick={() => handleSort("campus_score")}
-                      className="inline-flex w-full cursor-pointer items-center justify-center gap-1.5 text-white hover:text-[#A294F9]"
-                    >
-                      Campus Score
-                      {sortIcon("campus_score")}
-                    </button>
-                  </th>
-                  <th className="whitespace-nowrap border-b border-[#666] px-4 py-3 text-center text-sm font-medium text-white">
                     {" "}
                   </th>
                 </tr>
@@ -609,7 +586,7 @@ const ViewResult = ({ result, onBack, onNext }) => {
                 {currentStudents.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={8}
+                      colSpan={7}
                       className="py-8 text-center text-gray-400"
                     >
                       No students found
@@ -640,9 +617,6 @@ const ViewResult = ({ result, onBack, onNext }) => {
                       </td>
                       <td className="px-4 py-3 text-center text-sm text-white">
                         {formatScore(student.trustScore)}
-                      </td>
-                      <td className="px-4 py-3 text-center text-sm text-white">
-                        {formatScore(student.campusScore)}
                       </td>
                       <td className="px-4 py-3 text-center">
                         <button
